@@ -25,7 +25,7 @@ Interface web pour gérer un serveur dédié **Assetto Corsa EVO** (v0.6.0+) sou
 ## Installation
 
 ```bash
-git clone https://github.com/<votre-user>/pannel-ac-evo-server.git
+git clone https://github.com/Zyphro3D/pannel-ac-evo-server.git
 cd pannel-ac-evo-server
 python -m venv .venv
 .venv\Scripts\activate
