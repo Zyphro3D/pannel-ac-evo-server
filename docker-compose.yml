@@ -1,0 +1,21 @@
+version: "3.9"
+
+services:
+  ace-panel:
+    build: .
+    container_name: ace-evo-panel
+    restart: unless-stopped
+    ports:
+      - "4300:4300"
+    volumes:
+      - "${SERVER_CONFIG_PATH:-C:/Users/Administrateur/Documents/ACE}:/ace/config"
+      - "${ACESERVER_PATH:-C:/aceserver}:/ace/server"
+    environment:
+      - SECRET_KEY=${SECRET_KEY}
+      - ADMIN_USERNAME=${ADMIN_USERNAME}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - SERVER_CONFIG_PATH=/ace/config/server_launcher.json
+      - ACESERVER_EXE_PATH=/ace/server/AssettoCorsaEVOServer.exe
+      - CARS_JSON_PATH=/ace/server/cars.json
+      - EVENTS_PRACTICE_JSON_PATH=/ace/server/events_practice.json
+      - EVENTS_RACE_JSON_PATH=/ace/server/events_race_weekend.json

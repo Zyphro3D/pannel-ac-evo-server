@@ -1,0 +1,39 @@
+# Environnement
+.env
+.env.*
+!.env.example
+
+# État du serveur (runtime)
+.server_state
+.server_output.log
+.server_pid
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.eggs/
+venv/
+.venv/
+env/
+
+# Babel compilé (regénéré avec pybabel)
+translations/*/LC_MESSAGES/*.mo
+
+# Crash dumps
+serverConfig/crashdumps/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
+.DS_Store
+desktop.ini

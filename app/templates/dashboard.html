@@ -1,0 +1,388 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — AC EVO Panel{% endblock %}
+{% block content %}
+<div class="dashboard">
+
+  <!-- ── Sélecteur de config ── -->
+  <div class="config-bar">
+    <div class="config-bar-left">
+      <span class="config-label">{{ _('Configuration') }}</span>
+      <div class="config-select-wrapper">
+        <select id="config-select" onchange="switchConfig(this.value)">
+          {% for cfg in configs %}
+          <option value="{{ cfg }}" {% if cfg == active_config %}selected{% endif %}>{{ cfg }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <div class="config-bar-right">
+      <button class="btn-secondary" onclick="openCreateModal(false)">+ {{ _('Nouveau') }}</button>
+      <button class="btn-secondary" onclick="openCreateModal(true)">&#10697; {{ _('Dupliquer') }}</button>
+<button class="btn-danger"    onclick="confirmDeleteConfig()">&#128465; {{ _('Supprimer') }}</button>
+    </div>
+  </div>
+
+  <!-- ── Modal création ── -->
+  <div class="modal-overlay" id="modal-create" style="display:none">
+    <div class="modal-box">
+      <h3 id="modal-title">{{ _('Nouvelle configuration') }}</h3>
+      <div class="form-group" style="margin-top:14px">
+        <label>{{ _('Nom du fichier') }}</label>
+        <input type="text" id="modal-name" placeholder="ma-config.json">
+      </div>
+      <input type="hidden" id="modal-copy-from">
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeModal()">{{ _('Annuler') }}</button>
+        <button class="btn-primary"   onclick="submitCreate()">{{ _('Créer') }}</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Modal erreur config ── -->
+  <div class="modal-overlay" id="modal-config-error" style="display:none">
+    <div class="modal-box">
+      <h3 style="color:#d97706">&#9888; {{ _('Fichier invalide') }}</h3>
+      <p style="margin:10px 0 6px;color:var(--text-muted);font-size:13px">{{ _('Ce fichier contient des erreurs :') }}</p>
+      <ul id="modal-error-list" style="margin:0 0 16px 16px;font-size:12px;color:var(--text-muted);line-height:1.8"></ul>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeConfigErrorModal()">{{ _('Choisir autre') }}</button>
+        <button class="btn-primary"   onclick="doRepairConfig()">&#9881; {{ _('Réparer') }}</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Modal logs serveur ── -->
+  <div class="modal-overlay" id="modal-logs" style="display:none">
+    <div class="modal-box modal-logs-box">
+      <h3>&#128196; {{ _('Logs serveur') }}</h3>
+      <pre id="logs-content" class="logs-pre">{{ _('Chargement...') }}</pre>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="document.getElementById('modal-logs').style.display='none'">{{ _('Fermer') }}</button>
+        <button class="btn-secondary" onclick="loadLogs()">&#8635; {{ _('Actualiser') }}</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Tabs nav ── -->
+  <div class="tabs-nav">
+    <button class="tab-btn active" data-tab="tab-server">{{ _('Serveur') }}</button>
+    <button class="tab-btn" data-tab="tab-event">{{ _('Événement & Sessions') }}</button>
+    <button class="tab-btn" data-tab="tab-cars">{{ _('Véhicules') }}</button>
+  </div>
+
+  <!-- ── Status bar ── -->
+  <div class="status-bar">
+    <div class="server-status-large">
+      <span class="dot" id="main-status-dot"></span>
+      <span id="main-status-label">{{ _('Vérification...') }}</span>
+      <span id="player-count" class="player-count"></span>
+    </div>
+    <div class="control-actions">
+      <button class="btn-start"   id="btn-start"   onclick="serverAction('start')">{{ _('Démarrer') }}</button>
+      <button class="btn-stop"    id="btn-stop"    onclick="serverAction('stop')">{{ _('Arrêter') }}</button>
+      <button class="btn-restart" id="btn-restart" onclick="serverAction('restart')">{{ _('Redémarrer') }}</button>
+      <button class="btn-logs"    onclick="openLogs()">{{ _('Logs') }}</button>
+      <label class="toggle-label" title="{{ _('Relancer automatiquement en cas de crash') }}">
+        <input type="checkbox" id="chk-auto-restart" onchange="toggleAutoRestart(this.checked)">
+        <span>{{ _('Auto-restart') }}</span>
+      </label>
+    </div>
+  </div>
+
+  <!-- ── Tab: Serveur ── -->
+  <div class="tab-panel active" id="tab-server">
+    <section class="card">
+      <div class="card-header"><h2>{{ _('Informations serveur') }}</h2></div>
+      <form id="form-server" class="panel-form">
+
+        <div class="form-group">
+          <label>{{ _('Nom du serveur') }}</label>
+          <input type="text" name="ServerName" value="{{ config.Server.ServerName }}">
+        </div>
+
+        {% if current_user.is_superadmin %}
+        <div class="form-row">
+          <div class="form-group">
+            <label>TCP Port</label>
+            <input type="number" name="TcpPort" value="{{ config.Server.TcpPort }}">
+          </div>
+          <div class="form-group">
+            <label>UDP Port</label>
+            <input type="number" name="UdpPort" value="{{ config.Server.UdpPort }}">
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>{{ _('Joueurs max') }}</label>
+            <input type="number" name="MaxPlayers" min="1" max="32" value="{{ config.Server.MaxPlayers }}">
+          </div>
+          <div class="form-group form-toggle">
+            <label>{{ _('Cycle actif') }}</label>
+            <label class="toggle">
+              <input type="checkbox" name="IsCycleEnabled" {% if config.Server.IsCycleEnabled %}checked{% endif %}>
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>{{ _('Mot de passe pilote') }}</label>
+            <input type="password" name="DriverPassword" value="{{ config.Server.DriverPassword }}">
+          </div>
+          <div class="form-group">
+            <label>{{ _('Mot de passe admin') }}</label>
+            <input type="password" name="AdminPassword" value="{{ config.Server.AdminPassword }}">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>{{ _('Entry List Path') }}</label>
+            <input type="text" name="EntryListPath" value="{{ config.Server.EntryListPath }}">
+          </div>
+          <div class="form-group">
+            <label>{{ _('Results Path') }}</label>
+            <input type="text" name="ResultsPath" value="{{ config.Server.ResultsPath }}">
+          </div>
+        </div>
+
+        <button type="button" class="btn-primary" onclick="saveSection('form-server')">{{ _('Sauvegarder') }}</button>
+      </form>
+    </section>
+  </div>
+
+  <!-- ── Tab: Événement & Sessions ── -->
+  <div class="tab-panel" id="tab-event">
+
+    <!-- Événement -->
+    <section class="card">
+      <div class="card-header"><h2>{{ _('Événement') }}</h2></div>
+      <form id="form-event" class="panel-form">
+
+        <div class="form-group">
+          <label>{{ _('Type de session') }}</label>
+          <select name="SelectedSessionTypeValue" id="session-type-select" onchange="onSessionTypeChange(this.value)">
+            <option value="GameModeType_PRACTICE"     {% if config.Event.SelectedSessionTypeValue == 'GameModeType_PRACTICE'     %}selected{% endif %}>{{ _('Libre') }}</option>
+            <option value="GameModeType_RACE_WEEKEND" {% if config.Event.SelectedSessionTypeValue == 'GameModeType_RACE_WEEKEND' %}selected{% endif %}>{{ _('Race Weekend') }}</option>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>{{ _('Météo') }}</label>
+            <select name="SelectedWeatherTypeValue">
+              <option value="GameModeSelectionWeatherType_CLEAR"    {% if config.Event.SelectedWeatherTypeValue == 'GameModeSelectionWeatherType_CLEAR'    %}selected{% endif %}>{{ _('Dégagé') }}</option>
+              <option value="GameModeSelectionWeatherType_OVERCAST" {% if config.Event.SelectedWeatherTypeValue == 'GameModeSelectionWeatherType_OVERCAST' %}selected{% endif %}>{{ _('Nuageux') }}</option>
+              <option value="GameModeSelectionWeatherType_RAIN"     {% if config.Event.SelectedWeatherTypeValue == 'GameModeSelectionWeatherType_RAIN'     %}selected{% endif %}>{{ _('Pluie') }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>{{ _('Comportement météo') }}</label>
+            <select name="SelectedWeatherBehaviorValue">
+              <option value="GameModeSelectionWeatherBehaviour_STATIC"  {% if config.Event.SelectedWeatherBehaviorValue == 'GameModeSelectionWeatherBehaviour_STATIC'  %}selected{% endif %}>{{ _('Statique') }}</option>
+              <option value="GameModeSelectionWeatherBehaviour_DYNAMIC" {% if config.Event.SelectedWeatherBehaviorValue == 'GameModeSelectionWeatherBehaviour_DYNAMIC' %}selected{% endif %}>{{ _('Dynamique') }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>{{ _('Adhérence initiale') }}</label>
+          <select name="SelectedInitialGripValue">
+            <option value="InitialGrip_GREEN"   {% if config.Event.SelectedInitialGripValue == 'InitialGrip_GREEN'   %}selected{% endif %}>{{ _('Vert') }}</option>
+            <option value="InitialGrip_FAST"    {% if config.Event.SelectedInitialGripValue == 'InitialGrip_FAST'    %}selected{% endif %}>{{ _('Rapide') }}</option>
+            <option value="InitialGrip_OPTIMAL" {% if config.Event.SelectedInitialGripValue == 'InitialGrip_OPTIMAL' %}selected{% endif %}>{{ _('Optimal') }}</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>{{ _('Circuit') }}</label>
+          <select name="SelectedTrackValue">
+            {% for ev in events_practice %}
+            {% set tv = ev.track + '|' + ev.layout + '|' + ev.event_name + '|' + ev.track_length|string %}
+            <option value="{{ tv }}" {% if config.Event.SelectedTrackValue == tv %}selected{% endif %}>
+              {{ ev.track }} — {{ ev.layout }} ({{ "%.2f"|format(ev.track_length / 1000) }} km)
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+
+      </form>
+    </section>
+
+    <!-- Sessions -->
+    <section class="card" style="margin-top:16px">
+      <div class="card-header"><h2>{{ _('Sessions') }}</h2></div>
+      <form id="form-sessions" class="panel-form">
+        <div class="sessions-grid">
+
+          <!-- Practice — toujours visible -->
+          {% set s = config.Sessions.PracticeSession %}
+          <div class="session-block" id="sess-practice">
+            <div class="session-title"><span>{{ _('Libre') }}</span></div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>{{ _('Durée (s)') }} <span class="hint">{{ _('(0 = ignoré)') }}</span></label>
+                <input type="number" name="PracticeSession[Length]" value="{{ s.Length }}">
+              </div>
+              <div class="form-group">
+                <label>{{ _('Heure') }}</label>
+                <input type="number" name="PracticeSession[Hour]" min="0" max="23" value="{{ s.Hour }}">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>{{ _('Attente max box (s)') }}</label>
+                <input type="number" name="PracticeSession[MaxWaitToBox]" value="{{ s.MaxWaitToBox }}">
+              </div>
+              <div class="form-group">
+                <label>{{ _('Overtime (s)') }}</label>
+                <input type="number" name="PracticeSession[OvertimeWaitingNextSession]" value="{{ s.OvertimeWaitingNextSession }}">
+              </div>
+            </div>
+          </div>
+
+          <!-- Qualification — Race Weekend uniquement -->
+          {% set s = config.Sessions.QualifyingSession %}
+          <div class="session-block sess-race-only" id="sess-qualifying">
+            <div class="session-title"><span>{{ _('Qualification') }}</span></div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>{{ _('Durée (s)') }} <span class="hint">{{ _('(0 = ignoré)') }}</span></label>
+                <input type="number" name="QualifyingSession[Length]" value="{{ s.Length }}">
+              </div>
+              <div class="form-group">
+                <label>{{ _('Heure') }}</label>
+                <input type="number" name="QualifyingSession[Hour]" min="0" max="23" value="{{ s.Hour }}">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>{{ _('Attente max box (s)') }}</label>
+                <input type="number" name="QualifyingSession[MaxWaitToBox]" value="{{ s.MaxWaitToBox }}">
+              </div>
+              <div class="form-group">
+                <label>{{ _('Overtime (s)') }}</label>
+                <input type="number" name="QualifyingSession[OvertimeWaitingNextSession]" value="{{ s.OvertimeWaitingNextSession }}">
+              </div>
+            </div>
+          </div>
+
+          <!-- Chauffe — Race Weekend uniquement -->
+          {% set s = config.Sessions.WarmupSession %}
+          <div class="session-block sess-race-only" id="sess-warmup">
+            <div class="session-title"><span>{{ _('Chauffe') }}</span></div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>{{ _('Durée (s)') }} <span class="hint">{{ _('(0 = ignoré)') }}</span></label>
+                <input type="number" name="WarmupSession[Length]" value="{{ s.Length }}">
+              </div>
+              <div class="form-group">
+                <label>{{ _('Heure') }}</label>
+                <input type="number" name="WarmupSession[Hour]" min="0" max="23" value="{{ s.Hour }}">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>{{ _('Attente max box (s)') }}</label>
+                <input type="number" name="WarmupSession[MaxWaitToBox]" value="{{ s.MaxWaitToBox }}">
+              </div>
+              <div class="form-group">
+                <label>{{ _('Overtime (s)') }}</label>
+                <input type="number" name="WarmupSession[OvertimeWaitingNextSession]" value="{{ s.OvertimeWaitingNextSession }}">
+              </div>
+            </div>
+          </div>
+
+          <!-- Course — Race Weekend uniquement -->
+          {% set s = config.Sessions.RaceSession %}
+          <div class="session-block sess-race-only" id="sess-race">
+            <div class="session-title"><span>{{ _('Course') }}</span></div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>{{ _('Durée (s)') }} <span class="hint">{{ _('(0 = ignoré)') }}</span></label>
+                <input type="number" name="RaceSession[Length]" value="{{ s.Length }}">
+              </div>
+              <div class="form-group">
+                <label>{{ _('Heure') }}</label>
+                <input type="number" name="RaceSession[Hour]" min="0" max="23" value="{{ s.Hour }}">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>{{ _('Attente max box (s)') }}</label>
+                <input type="number" name="RaceSession[MaxWaitToBox]" value="{{ s.MaxWaitToBox }}">
+              </div>
+              <div class="form-group">
+                <label>{{ _('Overtime (s)') }}</label>
+                <input type="number" name="RaceSession[OvertimeWaitingNextSession]" value="{{ s.OvertimeWaitingNextSession }}">
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <button type="button" class="btn-primary" onclick="saveEventAndSessions()">{{ _('Sauvegarder') }}</button>
+      </form>
+    </section>
+  </div>
+
+  <!-- ── Tab: Véhicules ── -->
+  <div class="tab-panel" id="tab-cars">
+    <section class="card">
+      <div class="card-header">
+        <h2>{{ _('Véhicules') }}</h2>
+        <div class="cars-controls">
+          <input type="text" id="car-search" placeholder="{{ _('Filtrer...') }}" oninput="filterCars()">
+          <div class="pi-range">
+            <label>PI</label>
+            <input type="number" id="pi-min" placeholder="min" step="0.1" oninput="filterCars()">
+            <span>—</span>
+            <input type="number" id="pi-max" placeholder="max" step="0.1" oninput="filterCars()">
+          </div>
+          <button class="btn-secondary" onclick="selectAllVisible(true)">{{ _('Tout sélectionner') }}</button>
+          <button class="btn-secondary" onclick="selectAllVisible(false)">{{ _('Tout désélectionner') }}</button>
+        </div>
+      </div>
+
+      <div class="cars-table-wrapper">
+        <table class="cars-table" id="cars-table">
+          <thead>
+            <tr>
+              <th></th>
+              <th>{{ _('Véhicule') }}</th>
+              <th>PI</th>
+              <th>Ballast</th>
+              <th>Restrictor</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for car in cars %}
+            {% set cfg_car = config.Event.Cars | selectattr('name', 'equalto', car.name) | first | default(none) %}
+            <tr class="car-row" data-name="{{ car.display_name|lower }}" data-pi="{{ car.performance_indicator }}">
+              <td>
+                <input type="checkbox" class="car-check" data-car="{{ car.name }}"
+                       {% if cfg_car and (cfg_car.IsSelected or cfg_car.is_selected) %}checked{% endif %}>
+              </td>
+              <td class="car-name">{{ car.display_name }}</td>
+              <td class="car-pi">{{ "%.1f"|format(car.performance_indicator) }}</td>
+              <td><input type="number" class="car-ballast" data-car="{{ car.name }}" value="{{ cfg_car.Ballast if cfg_car else 0 }}" min="0" step="1"></td>
+              <td><input type="number" class="car-restrictor" data-car="{{ car.name }}" value="{{ cfg_car.Restrictor if cfg_car else 0 }}" min="0" step="1"></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="cars-footer">
+        <span id="cars-selected-count">0 {{ _('véhicule(s) sélectionné(s)') }}</span>
+        <button class="btn-primary" onclick="saveCars()">{{ _('Sauvegarder véhicules') }}</button>
+      </div>
+    </section>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+{% endblock %}

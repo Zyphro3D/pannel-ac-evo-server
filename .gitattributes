@@ -1,0 +1,17 @@
+# Normalise les fins de ligne en LF dans le repo
+* text=auto eol=lf
+*.py text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+*.js text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.po text eol=lf
+*.txt text eol=lf
+*.cfg text eol=lf
+
+# Binaires
+*.mo binary
+*.png binary
+*.ico binary
+*.dmp binary

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="{{ get_locale() }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}AC EVO Panel{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+</head>
+<body data-active-config="{{ active_config | default('') }}">
+  {% if current_user.is_authenticated %}
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <span class="brand-evo">EVO</span>
+      <span class="brand-panel">PANEL</span>
+    </div>
+    <div class="navbar-right">
+      <div class="server-badge" id="nav-status">
+        <span class="dot" id="status-dot"></span>
+        <span id="status-label">—</span>
+      </div>
+      <div class="lang-switcher">
+        <a href="{{ url_for('auth.set_language', lang='fr') }}" class="{% if get_locale() == 'fr' %}active{% endif %}">FR</a>
+        <a href="{{ url_for('auth.set_language', lang='en') }}" class="{% if get_locale() == 'en' %}active{% endif %}">EN</a>
+      </div>
+      <a href="{{ url_for('auth.logout') }}" class="btn-logout">{{ _('Déconnexion') }}</a>
+    </div>
+  </nav>
+  {% endif %}
+
+  <main class="main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <script>
+  const I18N = {
+    online:          "{{ _('En ligne') }}",
+    offline:         "{{ _('Hors ligne') }}",
+    saved:           "{{ _('Sauvegardé') }}",
+    error:           "{{ _('Erreur') }}",
+    networkError:    "{{ _('Erreur réseau') }}",
+    serverStarted:   "{{ _('Serveur démarré') }}",
+    serverStopped:   "{{ _('Serveur arrêté') }}",
+    serverRestarted: "{{ _('Serveur redémarré') }}",
+    sessionsSaved:   "{{ _('Sessions sauvegardées') }}",
+    carsSaved:       "{{ _('Véhicules sauvegardés') }}",
+    nameRequired:    "{{ _('Nom requis') }}",
+    duplicateTitle:  "{{ _('Dupliquer la configuration') }}",
+    newConfigTitle:  "{{ _('Nouvelle configuration') }}",
+    configRepaired:  "{{ _('Config réparée') }}",
+    autoRestartOn:   "{{ _('Auto-restart activé') }}",
+    autoRestartOff:  "{{ _('Auto-restart désactivé') }}",
+    players:         "{{ _('joueur(s)') }}",
+  };
+  </script>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,256 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Connexion"
+msgstr "Login"
+
+msgid "Déconnexion"
+msgstr "Logout"
+
+msgid "Administration serveur"
+msgstr "Server Administration"
+
+msgid "Utilisateur"
+msgstr "Username"
+
+msgid "Mot de passe"
+msgstr "Password"
+
+msgid "Identifiants incorrects"
+msgstr "Invalid credentials"
+
+msgid "Contrôle serveur"
+msgstr "Server Control"
+
+msgid "Vérification..."
+msgstr "Checking..."
+
+msgid "Démarrer"
+msgstr "Start"
+
+msgid "Arrêter"
+msgstr "Stop"
+
+msgid "Redémarrer"
+msgstr "Restart"
+
+msgid "Informations serveur"
+msgstr "Server Info"
+
+msgid "Nom du serveur"
+msgstr "Server Name"
+
+msgid "Joueurs max"
+msgstr "Max Players"
+
+msgid "Cycle actif"
+msgstr "Cycle enabled"
+
+msgid "Type de serveur"
+msgstr "Server Type"
+
+msgid "Classé"
+msgstr "Ranked"
+
+msgid "Non classé"
+msgstr "Unranked"
+
+msgid "Mot de passe pilote"
+msgstr "Driver Password"
+
+msgid "Mot de passe admin"
+msgstr "Admin Password"
+
+msgid "Mot de passe spectateur"
+msgstr "Spectator Password"
+
+msgid "Entry List Path"
+msgstr "Entry List Path"
+
+msgid "Results Path"
+msgstr "Results Path"
+
+msgid "Sauvegarder"
+msgstr "Save"
+
+msgid "Événement"
+msgstr "Event"
+
+msgid "Événement & Sessions"
+msgstr "Event & Sessions"
+
+msgid "Type de session"
+msgstr "Session Type"
+
+msgid "Libre"
+msgstr "Practice"
+
+msgid "Race Weekend"
+msgstr "Race Weekend"
+
+msgid "Météo"
+msgstr "Weather"
+
+msgid "Dégagé"
+msgstr "Clear"
+
+msgid "Nuageux"
+msgstr "Overcast"
+
+msgid "Pluie"
+msgstr "Rain"
+
+msgid "Comportement météo"
+msgstr "Weather Behavior"
+
+msgid "Statique"
+msgstr "Static"
+
+msgid "Dynamique"
+msgstr "Dynamic"
+
+msgid "Adhérence initiale"
+msgstr "Initial Grip"
+
+msgid "Vert"
+msgstr "Green"
+
+msgid "Rapide"
+msgstr "Fast"
+
+msgid "Optimal"
+msgstr "Optimal"
+
+msgid "Circuit"
+msgstr "Track"
+
+msgid "Sessions"
+msgstr "Sessions"
+
+msgid "Durée (s)"
+msgstr "Duration (s)"
+
+msgid "Heure"
+msgstr "Hour"
+
+msgid "Attente max box (s)"
+msgstr "Max wait to box (s)"
+
+msgid "Overtime (s)"
+msgstr "Overtime (s)"
+
+msgid "Qualification"
+msgstr "Qualifying"
+
+msgid "Chauffe"
+msgstr "Warmup"
+
+msgid "Course"
+msgstr "Race"
+
+msgid "Sauvegarder sessions"
+msgstr "Save sessions"
+
+msgid "(0 = ignoré)"
+msgstr "(0 = skipped)"
+
+msgid "Véhicules"
+msgstr "Vehicles"
+
+msgid "Filtrer..."
+msgstr "Filter..."
+
+msgid "Tout sélectionner"
+msgstr "Select all"
+
+msgid "Tout désélectionner"
+msgstr "Deselect all"
+
+msgid "Véhicule"
+msgstr "Vehicle"
+
+msgid "Sauvegarder véhicules"
+msgstr "Save vehicles"
+
+msgid "véhicule(s) sélectionné(s)"
+msgstr "vehicle(s) selected"
+
+msgid "Configuration"
+msgstr "Configuration"
+
+msgid "Nouveau"
+msgstr "New"
+
+msgid "Dupliquer"
+msgstr "Duplicate"
+
+msgid "Supprimer"
+msgstr "Delete"
+
+msgid "Nouvelle configuration"
+msgstr "New configuration"
+
+msgid "Nom du fichier"
+msgstr "File name"
+
+msgid "Annuler"
+msgstr "Cancel"
+
+msgid "Créer"
+msgstr "Create"
+
+msgid "Serveur"
+msgstr "Server"
+
+msgid "En ligne"
+msgstr "Online"
+
+msgid "Hors ligne"
+msgstr "Offline"
+
+msgid "Sauvegardé"
+msgstr "Saved"
+
+msgid "Erreur"
+msgstr "Error"
+
+msgid "Erreur réseau"
+msgstr "Network error"
+
+msgid "Serveur démarré"
+msgstr "Server started"
+
+msgid "Serveur arrêté"
+msgstr "Server stopped"
+
+msgid "Serveur redémarré"
+msgstr "Server restarted"
+
+msgid "Sessions sauvegardées"
+msgstr "Sessions saved"
+
+msgid "Véhicules sauvegardés"
+msgstr "Vehicles saved"
+
+msgid "Nom requis"
+msgstr "Name required"
+
+msgid "Dupliquer la configuration"
+msgstr "Duplicate configuration"
+
+msgid "Réparer"
+msgstr "Repair"
+
+msgid "Config réparée"
+msgstr "Config repaired"
+
+msgid "Fichier invalide"
+msgstr "Invalid file"
+
+msgid "Ce fichier contient des erreurs :"
+msgstr "This file contains errors:"
+
+msgid "Choisir autre"
+msgstr "Choose another"

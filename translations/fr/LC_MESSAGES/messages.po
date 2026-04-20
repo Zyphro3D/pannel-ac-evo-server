@@ -1,0 +1,256 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Connexion"
+msgstr "Connexion"
+
+msgid "Déconnexion"
+msgstr "Déconnexion"
+
+msgid "Administration serveur"
+msgstr "Administration serveur"
+
+msgid "Utilisateur"
+msgstr "Utilisateur"
+
+msgid "Mot de passe"
+msgstr "Mot de passe"
+
+msgid "Identifiants incorrects"
+msgstr "Identifiants incorrects"
+
+msgid "Contrôle serveur"
+msgstr "Contrôle serveur"
+
+msgid "Vérification..."
+msgstr "Vérification..."
+
+msgid "Démarrer"
+msgstr "Démarrer"
+
+msgid "Arrêter"
+msgstr "Arrêter"
+
+msgid "Redémarrer"
+msgstr "Redémarrer"
+
+msgid "Informations serveur"
+msgstr "Informations serveur"
+
+msgid "Nom du serveur"
+msgstr "Nom du serveur"
+
+msgid "Joueurs max"
+msgstr "Joueurs max"
+
+msgid "Cycle actif"
+msgstr "Cycle actif"
+
+msgid "Type de serveur"
+msgstr "Type de serveur"
+
+msgid "Classé"
+msgstr "Classé"
+
+msgid "Non classé"
+msgstr "Non classé"
+
+msgid "Mot de passe pilote"
+msgstr "Mot de passe pilote"
+
+msgid "Mot de passe admin"
+msgstr "Mot de passe admin"
+
+msgid "Mot de passe spectateur"
+msgstr "Mot de passe spectateur"
+
+msgid "Entry List Path"
+msgstr "Chemin entry list"
+
+msgid "Results Path"
+msgstr "Chemin résultats"
+
+msgid "Sauvegarder"
+msgstr "Sauvegarder"
+
+msgid "Événement"
+msgstr "Événement"
+
+msgid "Événement & Sessions"
+msgstr "Événement & Sessions"
+
+msgid "Type de session"
+msgstr "Type de session"
+
+msgid "Libre"
+msgstr "Libre"
+
+msgid "Race Weekend"
+msgstr "Race Weekend"
+
+msgid "Météo"
+msgstr "Météo"
+
+msgid "Dégagé"
+msgstr "Dégagé"
+
+msgid "Nuageux"
+msgstr "Nuageux"
+
+msgid "Pluie"
+msgstr "Pluie"
+
+msgid "Comportement météo"
+msgstr "Comportement météo"
+
+msgid "Statique"
+msgstr "Statique"
+
+msgid "Dynamique"
+msgstr "Dynamique"
+
+msgid "Adhérence initiale"
+msgstr "Adhérence initiale"
+
+msgid "Vert"
+msgstr "Vert"
+
+msgid "Rapide"
+msgstr "Rapide"
+
+msgid "Optimal"
+msgstr "Optimal"
+
+msgid "Circuit"
+msgstr "Circuit"
+
+msgid "Sessions"
+msgstr "Sessions"
+
+msgid "Durée (s)"
+msgstr "Durée (s)"
+
+msgid "Heure"
+msgstr "Heure"
+
+msgid "Attente max box (s)"
+msgstr "Attente max box (s)"
+
+msgid "Overtime (s)"
+msgstr "Overtime (s)"
+
+msgid "Qualification"
+msgstr "Qualification"
+
+msgid "Chauffe"
+msgstr "Chauffe"
+
+msgid "Course"
+msgstr "Course"
+
+msgid "Sauvegarder sessions"
+msgstr "Sauvegarder sessions"
+
+msgid "(0 = ignoré)"
+msgstr "(0 = ignoré)"
+
+msgid "Véhicules"
+msgstr "Véhicules"
+
+msgid "Filtrer..."
+msgstr "Filtrer..."
+
+msgid "Tout sélectionner"
+msgstr "Tout sélectionner"
+
+msgid "Tout désélectionner"
+msgstr "Tout désélectionner"
+
+msgid "Véhicule"
+msgstr "Véhicule"
+
+msgid "Sauvegarder véhicules"
+msgstr "Sauvegarder véhicules"
+
+msgid "véhicule(s) sélectionné(s)"
+msgstr "véhicule(s) sélectionné(s)"
+
+msgid "Configuration"
+msgstr "Configuration"
+
+msgid "Nouveau"
+msgstr "Nouveau"
+
+msgid "Dupliquer"
+msgstr "Dupliquer"
+
+msgid "Supprimer"
+msgstr "Supprimer"
+
+msgid "Nouvelle configuration"
+msgstr "Nouvelle configuration"
+
+msgid "Nom du fichier"
+msgstr "Nom du fichier"
+
+msgid "Annuler"
+msgstr "Annuler"
+
+msgid "Créer"
+msgstr "Créer"
+
+msgid "Serveur"
+msgstr "Serveur"
+
+msgid "En ligne"
+msgstr "En ligne"
+
+msgid "Hors ligne"
+msgstr "Hors ligne"
+
+msgid "Sauvegardé"
+msgstr "Sauvegardé"
+
+msgid "Erreur"
+msgstr "Erreur"
+
+msgid "Erreur réseau"
+msgstr "Erreur réseau"
+
+msgid "Serveur démarré"
+msgstr "Serveur démarré"
+
+msgid "Serveur arrêté"
+msgstr "Serveur arrêté"
+
+msgid "Serveur redémarré"
+msgstr "Serveur redémarré"
+
+msgid "Sessions sauvegardées"
+msgstr "Sessions sauvegardées"
+
+msgid "Véhicules sauvegardés"
+msgstr "Véhicules sauvegardés"
+
+msgid "Nom requis"
+msgstr "Nom requis"
+
+msgid "Dupliquer la configuration"
+msgstr "Dupliquer la configuration"
+
+msgid "Réparer"
+msgstr "Réparer"
+
+msgid "Config réparée"
+msgstr "Configuration réparée"
+
+msgid "Fichier invalide"
+msgstr "Fichier invalide"
+
+msgid "Ce fichier contient des erreurs :"
+msgstr "Ce fichier contient des erreurs :"
+
+msgid "Choisir autre"
+msgstr "Choisir autre"
