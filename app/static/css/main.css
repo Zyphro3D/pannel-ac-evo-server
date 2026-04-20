@@ -161,6 +161,22 @@ body {
   padding: 5px 10px;
 }
 .toggle-label input[type="checkbox"] { cursor: pointer; accent-color: var(--accent); }
+
+.dur-widget {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.dur-widget .dur-part {
+  width: 52px;
+  text-align: center;
+  padding: 6px 4px;
+}
+.dur-sep {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-right: 4px;
+}
 .toggle-label:has(input:checked) { border-color: var(--accent); color: var(--accent); }
 
 .modal-logs-box { width: 700px; max-width: 95vw; }

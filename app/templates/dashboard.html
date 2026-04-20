@@ -213,111 +213,110 @@
     </section>
 
     <!-- Sessions -->
+    {% macro dur_widget(key, seconds) %}
+    {% set h = (seconds // 3600) %}
+    {% set m = ((seconds % 3600) // 60) %}
+    {% set s = (seconds % 60) %}
+    <div class="form-group dur-group">
+      <label>{{ _('Durée') }} <span class="hint">{{ _('(0 = ignoré)') }}</span></label>
+      <input type="number" name="{{ key }}[Length]" id="dur-{{ key }}" value="{{ seconds }}" style="display:none">
+      <div class="dur-widget">
+        <input type="number" min="0" max="24" value="{{ h }}" class="dur-part" oninput="calcDur('{{ key }}',this.closest('.dur-widget'))"><span class="dur-sep">h</span>
+        <input type="number" min="0" max="59" value="{{ m }}" class="dur-part" oninput="calcDur('{{ key }}',this.closest('.dur-widget'))"><span class="dur-sep">min</span>
+        <input type="number" min="0" max="59" value="{{ s }}" class="dur-part" oninput="calcDur('{{ key }}',this.closest('.dur-widget'))"><span class="dur-sep">s</span>
+      </div>
+    </div>
+    {% endmacro %}
+
     <section class="card" style="margin-top:16px">
       <div class="card-header"><h2>{{ _('Sessions') }}</h2></div>
       <form id="form-sessions" class="panel-form">
         <div class="sessions-grid">
 
-          <!-- Practice — toujours visible -->
           {% set s = config.Sessions.PracticeSession %}
           <div class="session-block" id="sess-practice">
             <div class="session-title"><span>{{ _('Libre') }}</span></div>
             <div class="form-row">
+              {{ dur_widget('PracticeSession', s.Length) }}
               <div class="form-group">
-                <label>{{ _('Durée (s)') }} <span class="hint">{{ _('(0 = ignoré)') }}</span></label>
-                <input type="number" name="PracticeSession[Length]" value="{{ s.Length }}">
-              </div>
-              <div class="form-group">
-                <label>{{ _('Heure') }}</label>
+                <label>{{ _('Heure in-game') }}</label>
                 <input type="number" name="PracticeSession[Hour]" min="0" max="23" value="{{ s.Hour }}">
               </div>
             </div>
             <div class="form-row">
               <div class="form-group">
                 <label>{{ _('Attente max box (s)') }}</label>
-                <input type="number" name="PracticeSession[MaxWaitToBox]" value="{{ s.MaxWaitToBox }}">
+                <input type="number" name="PracticeSession[MaxWaitToBox]" min="0" max="999" value="{{ s.MaxWaitToBox }}">
               </div>
               <div class="form-group">
                 <label>{{ _('Overtime (s)') }}</label>
-                <input type="number" name="PracticeSession[OvertimeWaitingNextSession]" value="{{ s.OvertimeWaitingNextSession }}">
+                <input type="number" name="PracticeSession[OvertimeWaitingNextSession]" min="0" max="999" value="{{ s.OvertimeWaitingNextSession }}">
               </div>
             </div>
           </div>
 
-          <!-- Qualification — Race Weekend uniquement -->
           {% set s = config.Sessions.QualifyingSession %}
           <div class="session-block sess-race-only" id="sess-qualifying">
             <div class="session-title"><span>{{ _('Qualification') }}</span></div>
             <div class="form-row">
+              {{ dur_widget('QualifyingSession', s.Length) }}
               <div class="form-group">
-                <label>{{ _('Durée (s)') }} <span class="hint">{{ _('(0 = ignoré)') }}</span></label>
-                <input type="number" name="QualifyingSession[Length]" value="{{ s.Length }}">
-              </div>
-              <div class="form-group">
-                <label>{{ _('Heure') }}</label>
+                <label>{{ _('Heure in-game') }}</label>
                 <input type="number" name="QualifyingSession[Hour]" min="0" max="23" value="{{ s.Hour }}">
               </div>
             </div>
             <div class="form-row">
               <div class="form-group">
                 <label>{{ _('Attente max box (s)') }}</label>
-                <input type="number" name="QualifyingSession[MaxWaitToBox]" value="{{ s.MaxWaitToBox }}">
+                <input type="number" name="QualifyingSession[MaxWaitToBox]" min="0" max="999" value="{{ s.MaxWaitToBox }}">
               </div>
               <div class="form-group">
                 <label>{{ _('Overtime (s)') }}</label>
-                <input type="number" name="QualifyingSession[OvertimeWaitingNextSession]" value="{{ s.OvertimeWaitingNextSession }}">
+                <input type="number" name="QualifyingSession[OvertimeWaitingNextSession]" min="0" max="999" value="{{ s.OvertimeWaitingNextSession }}">
               </div>
             </div>
           </div>
 
-          <!-- Chauffe — Race Weekend uniquement -->
           {% set s = config.Sessions.WarmupSession %}
           <div class="session-block sess-race-only" id="sess-warmup">
             <div class="session-title"><span>{{ _('Chauffe') }}</span></div>
             <div class="form-row">
+              {{ dur_widget('WarmupSession', s.Length) }}
               <div class="form-group">
-                <label>{{ _('Durée (s)') }} <span class="hint">{{ _('(0 = ignoré)') }}</span></label>
-                <input type="number" name="WarmupSession[Length]" value="{{ s.Length }}">
-              </div>
-              <div class="form-group">
-                <label>{{ _('Heure') }}</label>
+                <label>{{ _('Heure in-game') }}</label>
                 <input type="number" name="WarmupSession[Hour]" min="0" max="23" value="{{ s.Hour }}">
               </div>
             </div>
             <div class="form-row">
               <div class="form-group">
                 <label>{{ _('Attente max box (s)') }}</label>
-                <input type="number" name="WarmupSession[MaxWaitToBox]" value="{{ s.MaxWaitToBox }}">
+                <input type="number" name="WarmupSession[MaxWaitToBox]" min="0" max="999" value="{{ s.MaxWaitToBox }}">
               </div>
               <div class="form-group">
                 <label>{{ _('Overtime (s)') }}</label>
-                <input type="number" name="WarmupSession[OvertimeWaitingNextSession]" value="{{ s.OvertimeWaitingNextSession }}">
+                <input type="number" name="WarmupSession[OvertimeWaitingNextSession]" min="0" max="999" value="{{ s.OvertimeWaitingNextSession }}">
               </div>
             </div>
           </div>
 
-          <!-- Course — Race Weekend uniquement -->
           {% set s = config.Sessions.RaceSession %}
           <div class="session-block sess-race-only" id="sess-race">
             <div class="session-title"><span>{{ _('Course') }}</span></div>
             <div class="form-row">
+              {{ dur_widget('RaceSession', s.Length) }}
               <div class="form-group">
-                <label>{{ _('Durée (s)') }} <span class="hint">{{ _('(0 = ignoré)') }}</span></label>
-                <input type="number" name="RaceSession[Length]" value="{{ s.Length }}">
-              </div>
-              <div class="form-group">
-                <label>{{ _('Heure') }}</label>
+                <label>{{ _('Heure in-game') }}</label>
                 <input type="number" name="RaceSession[Hour]" min="0" max="23" value="{{ s.Hour }}">
               </div>
             </div>
             <div class="form-row">
               <div class="form-group">
                 <label>{{ _('Attente max box (s)') }}</label>
-                <input type="number" name="RaceSession[MaxWaitToBox]" value="{{ s.MaxWaitToBox }}">
+                <input type="number" name="RaceSession[MaxWaitToBox]" min="0" max="999" value="{{ s.MaxWaitToBox }}">
               </div>
               <div class="form-group">
                 <label>{{ _('Overtime (s)') }}</label>
-                <input type="number" name="RaceSession[OvertimeWaitingNextSession]" value="{{ s.OvertimeWaitingNextSession }}">
+                <input type="number" name="RaceSession[OvertimeWaitingNextSession]" min="0" max="999" value="{{ s.OvertimeWaitingNextSession }}">
               </div>
             </div>
           </div>

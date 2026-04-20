@@ -24,8 +24,9 @@ env/
 # Babel compilé (regénéré avec pybabel)
 translations/*/LC_MESSAGES/*.mo
 
-# Crash dumps
-serverConfig/crashdumps/
+# Fichiers runtime du serveur ACE (générés par le jeu)
+serverConfig/
+system/
 
 # IDE
 .vscode/

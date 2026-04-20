@@ -52,8 +52,12 @@ def _active_path() -> Path:
 
 def create_config(name: str, copy_from: str | None = None) -> dict:
     """Crée un nouveau fichier de config. Copie copy_from si fourni, sinon template vide."""
+    import re
     if not name.endswith(".json"):
         name += ".json"
+    # Interdit tout caractère hors alphanum, tiret, underscore, point
+    if not re.match(r'^[\w\-. ]+\.json$', name) or '..' in name or '/' in name or '\\' in name:
+        return {"ok": False, "error": "invalid_name"}
 
     dest = _configs_dir() / name
     if dest.exists():

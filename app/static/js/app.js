@@ -6,7 +6,12 @@ async function checkConfig() {
     if (!d.ok && d.issues && d.issues.length > 0) {
       const list = document.getElementById('modal-error-list');
       if (list) {
-        list.innerHTML = d.issues.map(i => `<li>${i}</li>`).join('');
+        list.innerHTML = '';
+        d.issues.forEach(i => {
+          const li = document.createElement('li');
+          li.textContent = i;
+          list.appendChild(li);
+        });
       }
       document.getElementById('modal-config-error').style.display = 'flex';
     }
@@ -346,6 +351,21 @@ async function saveSessions() {
   } catch (_) {
     showToast(I18N.networkError, 'error');
   }
+}
+
+/* ── Duration widget ── */
+function calcDur(key, widget) {
+  const parts = widget.querySelectorAll('.dur-part');
+  let h = parseInt(parts[0].value) || 0;
+  let m = parseInt(parts[1].value) || 0;
+  let s = parseInt(parts[2].value) || 0;
+  let total = h * 3600 + m * 60 + s;
+  if (total > 86400) {
+    total = 86400;
+    parts[0].value = 24; parts[1].value = 0; parts[2].value = 0;
+  }
+  const hidden = document.getElementById('dur-' + key);
+  if (hidden) hidden.value = total;
 }
 
 /* ── Session type toggle ── */

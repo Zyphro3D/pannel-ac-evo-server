@@ -2,6 +2,7 @@ from pathlib import Path
 from flask import Flask, request, session
 from flask_babel import Babel
 from flask_login import LoginManager
+from werkzeug.middleware.proxy_fix import ProxyFix
 from config import Config
 
 _TRANSLATIONS_DIR = str(Path(__file__).parent.parent / "translations")
@@ -19,6 +20,7 @@ def get_locale():
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 
     babel.init_app(app, locale_selector=get_locale, default_translation_directories=_TRANSLATIONS_DIR)
     login_manager.init_app(app)
@@ -33,6 +35,14 @@ def create_app():
     app.register_blueprint(api_bp, url_prefix="/api")
 
     app.jinja_env.globals["get_locale"] = get_locale
+
+    @app.after_request
+    def _security_headers(response):
+        response.headers["X-Frame-Options"]        = "DENY"
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-XSS-Protection"]       = "1; mode=block"
+        response.headers["Referrer-Policy"]        = "strict-origin-when-cross-origin"
+        return response
 
     from app.services.process_manager import init_watchdog
     init_watchdog(app.config["ACESERVER_EXE_PATH"])

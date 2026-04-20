@@ -38,3 +38,8 @@ class Config:
 
     BABEL_DEFAULT_LOCALE = "fr"
     BABEL_SUPPORTED_LOCALES = ["fr", "en"]
+
+    # Sécurité cookies
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = "Lax"
+    SESSION_COOKIE_SECURE   = os.environ.get("SESSION_COOKIE_SECURE", "true").lower() == "true"
