@@ -152,7 +152,10 @@ def save_config(data: dict):
         json.dump(data, f, indent=2, ensure_ascii=False)
 
 
-def apply_server_patch(patch: dict) -> dict:
+_SUPERADMIN_ONLY_FIELDS = {"TcpPort", "UdpPort", "HttpPort"}
+
+
+def apply_server_patch(patch: dict, is_superadmin: bool = False) -> dict:
     config = load_config()
 
     server_fields = {
@@ -169,6 +172,8 @@ def apply_server_patch(patch: dict) -> dict:
 
     for key, value in patch.items():
         if key in server_fields:
+            if key in _SUPERADMIN_ONLY_FIELDS and not is_superadmin:
+                continue
             config["Server"][key] = value
         elif key in event_fields:
             config["Event"][key] = value

@@ -320,39 +320,6 @@ async function saveEventAndSessions() {
   }
 }
 
-/* ── Save sessions ── */
-async function saveSessions() {
-  const form = document.getElementById('form-sessions');
-  const sessions = {};
-
-  for (const el of form.elements) {
-    if (!el.name) continue;
-    const match = el.name.match(/^(\w+)\[(\w+)\]$/);
-    if (!match) continue;
-    const [, sessKey, field] = match;
-    if (!sessions[sessKey]) sessions[sessKey] = {};
-    if (el.type === 'checkbox') {
-      sessions[sessKey][field] = el.checked;
-    } else if (el.type === 'number') {
-      sessions[sessKey][field] = Number(el.value);
-    } else {
-      sessions[sessKey][field] = el.value;
-    }
-  }
-
-  try {
-    const r = await fetch('/api/config', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ Sessions: sessions }),
-    });
-    const d = await r.json();
-    showToast(d.ok ? I18N.sessionsSaved : I18N.error, d.ok ? 'success' : 'error');
-  } catch (_) {
-    showToast(I18N.networkError, 'error');
-  }
-}
-
 /* ── Duration widget ── */
 function calcDur(key, widget) {
   const parts = widget.querySelectorAll('.dur-part');
@@ -383,16 +350,59 @@ function onSessionTypeChange(val) {
 })();
 
 /* ── Cars ── */
+function toggleCat(btn) {
+  btn.classList.toggle('active');
+  filterCars();
+}
+
+function updatePiSlider() {
+  const minR = document.getElementById('pi-range-min');
+  const maxR = document.getElementById('pi-range-max');
+  if (!minR || !maxR) return;
+  let minVal = parseFloat(minR.value);
+  let maxVal = parseFloat(maxR.value);
+  if (minVal > maxVal) {
+    minR.value = maxVal; maxR.value = minVal;
+    [minVal, maxVal] = [maxVal, minVal];
+  }
+  const lo = parseFloat(minR.min), hi = parseFloat(minR.max), span = hi - lo;
+  const p1 = span > 0 ? ((minVal - lo) / span * 100) : 0;
+  const p2 = span > 0 ? ((maxVal - lo) / span * 100) : 100;
+  const track = document.getElementById('pi-slider-track');
+  if (track) track.style.background =
+    `linear-gradient(to right,var(--border) ${p1}%,var(--accent) ${p1}%,var(--accent) ${p2}%,var(--border) ${p2}%)`;
+  const disp = document.getElementById('pi-display');
+  if (disp) disp.textContent = `${minVal.toFixed(1)} — ${maxVal.toFixed(1)}`;
+  filterCars();
+}
+
 function filterCars() {
   const search = (document.getElementById('car-search')?.value || '').toLowerCase();
-  const piMin  = parseFloat(document.getElementById('pi-min')?.value) || 0;
-  const piMax  = parseFloat(document.getElementById('pi-max')?.value) || 999;
+  const showSelected = document.getElementById('show-selected-only')?.checked || false;
+  const minR = document.getElementById('pi-range-min');
+  const maxR = document.getElementById('pi-range-max');
+  const piMin = minR ? parseFloat(minR.value) : 0;
+  const piMax = maxR ? parseFloat(maxR.value) : 999;
+
+  // Catégories : OR à l'intérieur de chaque colonne, AND entre colonnes.
+  // Si aucune catégorie n'est active dans une colonne → tous les véhicules passent pour cette colonne.
+  // Si aucune catégorie n'est active du tout → tous les véhicules sont affichés.
+  const COL = { Road:'p1',Race:'p1',Track:'p1', Modern:'p2',Vintage:'p2',YT:'p2', ICE:'p3',EV:'p3',Hybrid:'p3' };
+  const active = { p1: new Set(), p2: new Set(), p3: new Set() };
+  document.querySelectorAll('.cat-btn').forEach(btn => {
+    const col = COL[btn.dataset.cat];
+    if (col && btn.classList.contains('active')) active[col].add(btn.dataset.cat);
+  });
+  const colOk = (val, col) => active[col].size === 0 || !val || active[col].has(val);
 
   document.querySelectorAll('.car-row').forEach(row => {
-    const name = row.dataset.name.toLowerCase();
+    const name = row.dataset.name;
     const pi   = parseFloat(row.dataset.pi);
-    const match = name.includes(search) && pi >= piMin && pi <= piMax;
-    row.classList.toggle('hidden', !match);
+    const matchSearch   = name.includes(search);
+    const matchPi       = pi >= piMin && pi <= piMax;
+    const matchSelected = !showSelected || row.querySelector('.car-check')?.checked;
+    const matchCat      = colOk(row.dataset.p1,'p1') && colOk(row.dataset.p2,'p2') && colOk(row.dataset.p3,'p3');
+    row.classList.toggle('hidden', !(matchSearch && matchPi && matchCat && matchSelected));
   });
   updateSelectedCount();
 }
@@ -411,9 +421,12 @@ function updateSelectedCount() {
 }
 
 document.querySelectorAll('.car-check').forEach(cb => {
-  cb.addEventListener('change', updateSelectedCount);
+  cb.addEventListener('change', () => { updateSelectedCount(); if (document.getElementById('show-selected-only')?.checked) filterCars(); });
 });
 updateSelectedCount();
+
+// Init du slider PI (colore la plage dès le chargement)
+(function () { if (document.getElementById('pi-range-min')) updatePiSlider(); })();
 
 async function saveCars() {
   const allCars = [];

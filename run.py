@@ -1,3 +1,19 @@
+import logging
+from logging.handlers import RotatingFileHandler
+from pathlib import Path
+
+# ── Logging vers fichier rotatif (avant create_app) ──────────────────────────
+_log_dir = Path(__file__).parent / "logs"
+_log_dir.mkdir(exist_ok=True)
+_fmt = logging.Formatter("%(asctime)s %(levelname)-8s %(name)s — %(message)s")
+_file_handler = RotatingFileHandler(
+    _log_dir / "app.log", maxBytes=5_000_000, backupCount=3, encoding="utf-8"
+)
+_file_handler.setFormatter(_fmt)
+_console_handler = logging.StreamHandler()
+_console_handler.setFormatter(_fmt)
+logging.basicConfig(level=logging.INFO, handlers=[_file_handler, _console_handler])
+
 from app import create_app
 
 app = create_app()
@@ -17,6 +33,7 @@ if __name__ == "__main__":
     print(f"  Local   : http://127.0.0.1:{port}")
     print(f"  Réseau  : http://{local_ip}:{port}")
     print(f"  Threads : 8")
+    print(f"  Logs    : logs/app.log")
     print("=" * 52)
     print("  CTRL+C pour arrêter")
     print()

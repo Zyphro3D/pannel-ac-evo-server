@@ -24,7 +24,8 @@ def create_app():
 
     babel.init_app(app, locale_selector=get_locale, default_translation_directories=_TRANSLATIONS_DIR)
     login_manager.init_app(app)
-    login_manager.login_view = "auth.login"
+    login_manager.login_view    = "auth.login"
+    login_manager.login_message = None  # supprime le flash auto à la redirection
 
     from app.routes.auth import auth_bp
     from app.routes.admin import admin_bp

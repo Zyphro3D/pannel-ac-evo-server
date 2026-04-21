@@ -332,17 +332,45 @@
     <section class="card">
       <div class="card-header">
         <h2>{{ _('Véhicules') }}</h2>
-        <div class="cars-controls">
-          <input type="text" id="car-search" placeholder="{{ _('Filtrer...') }}" oninput="filterCars()">
-          <div class="pi-range">
-            <label>PI</label>
-            <input type="number" id="pi-min" placeholder="min" step="0.1" oninput="filterCars()">
-            <span>—</span>
-            <input type="number" id="pi-max" placeholder="max" step="0.1" oninput="filterCars()">
-          </div>
+      </div>
+
+      <!-- Filtres -->
+      <div class="cars-filters">
+
+        <!-- Ligne 1 : recherche + sélectionnés seulement + boutons -->
+        <div class="cars-filters-top">
+          <input type="text" id="car-search" placeholder="{{ _('Rechercher...') }}" oninput="filterCars()">
+          <label class="toggle-label">
+            <input type="checkbox" id="show-selected-only" onchange="filterCars()">
+            <span>{{ _('Sélectionnés seulement') }}</span>
+          </label>
           <button class="btn-secondary" onclick="selectAllVisible(true)">{{ _('Tout sélectionner') }}</button>
           <button class="btn-secondary" onclick="selectAllVisible(false)">{{ _('Tout désélectionner') }}</button>
         </div>
+
+        <!-- Ligne 2 : slider PI double -->
+        <div class="pi-filter">
+          <span class="pi-filter-label">PI&nbsp;<span id="pi-display">{{ "%.1f"|format(pi_min) }} — {{ "%.1f"|format(pi_max) }}</span></span>
+          <div class="pi-slider-wrapper">
+            <div class="pi-slider-track" id="pi-slider-track"></div>
+            <input type="range" id="pi-range-min"
+                   min="{{ pi_min }}" max="{{ pi_max }}" value="{{ pi_min }}" step="0.1"
+                   oninput="updatePiSlider()">
+            <input type="range" id="pi-range-max"
+                   min="{{ pi_min }}" max="{{ pi_max }}" value="{{ pi_max }}" step="0.1"
+                   oninput="updatePiSlider()">
+          </div>
+        </div>
+
+        <!-- Ligne 3 : filtres par catégorie -->
+        {% if car_categories %}
+        <div class="cat-filters">
+          {% for cat in car_categories %}
+          <button class="cat-btn active" data-cat="{{ cat }}" onclick="toggleCat(this)">{{ cat }}</button>
+          {% endfor %}
+        </div>
+        {% endif %}
+
       </div>
 
       <div class="cars-table-wrapper">
@@ -359,7 +387,12 @@
           <tbody>
             {% for car in cars %}
             {% set cfg_car = config.Event.Cars | selectattr('name', 'equalto', car.name) | first | default(none) %}
-            <tr class="car-row" data-name="{{ car.display_name|lower }}" data-pi="{{ car.performance_indicator }}">
+            <tr class="car-row"
+                data-name="{{ car.display_name|lower }}"
+                data-pi="{{ car.performance_indicator }}"
+                data-p1="{{ car.property_1_label }}"
+                data-p2="{{ car.property_2_label }}"
+                data-p3="{{ car.property_3_label }}">
               <td>
                 <input type="checkbox" class="car-check" data-car="{{ car.name }}"
                        {% if cfg_car and (cfg_car.IsSelected or cfg_car.is_selected) %}checked{% endif %}>

@@ -1,5 +1,9 @@
-from flask import Blueprint, jsonify, request, redirect, url_for, current_app
-from flask_login import login_required
+import logging
+
+from flask import Blueprint, jsonify, request, current_app
+from flask_login import login_required, current_user
+
+log = logging.getLogger(__name__)
 from app.services.server_config import (
     load_config, apply_server_patch, load_cars, load_events,
     list_configs, get_active_config_name, set_active_config,
@@ -57,7 +61,7 @@ def server_start():
         data = request.get_json(silent=True) or {}
         result = _do_start(auto_restart=bool(data.get("auto_restart", False)))
     except Exception as e:
-        import traceback; traceback.print_exc()
+        log.exception("Server action failed")
         result = {"ok": False, "error": str(e)}
     return jsonify(result)
 
@@ -92,7 +96,7 @@ def server_restart():
     try:
         result = _do_start(auto_restart=prev_auto_restart)
     except Exception as e:
-        import traceback; traceback.print_exc()
+        log.exception("Server action failed")
         result = {"ok": False, "error": str(e)}
     return jsonify(result)
 
@@ -109,7 +113,7 @@ def get_config():
 @login_required
 def post_config():
     patch = request.get_json(force=True)
-    updated = apply_server_patch(patch)
+    updated = apply_server_patch(patch, is_superadmin=current_user.is_superadmin)
     return jsonify({"ok": True, "config": updated})
 
 

@@ -8,6 +8,9 @@
 .server_output.log
 .server_pid
 
+# Logs applicatifs
+logs/
+
 # Python
 __pycache__/
 *.py[cod]

@@ -135,17 +135,18 @@ def _watchdog_loop():
                 pass
 
         if not alive:
+            exe          = Path(_exe_path)
+            sc           = state.get("sc", "")
+            sd           = state.get("sd", "")
+            config_name  = state.get("config", "")
+            auto_restart = state.get("auto_restart", True)
+
             log.warning("Watchdog: server crashed, restarting…")
             try:
                 from app.services import discord_notifier
                 discord_notifier.notify_crash(config_name, restarting=auto_restart)
             except Exception:
                 pass
-            exe = Path(_exe_path)
-            sc  = state.get("sc", "")
-            sd  = state.get("sd", "")
-            config_name = state.get("config", "")
-            auto_restart = state.get("auto_restart", True)
 
             # Append restart marker to log
             try:

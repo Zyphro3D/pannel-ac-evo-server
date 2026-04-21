@@ -9,23 +9,33 @@
     </div>
     <p class="login-sub">{{ _('Administration serveur') }}</p>
 
-    {% with messages = get_flashed_messages() %}
+    {% with messages = get_flashed_messages(category_filter=["error"]) %}
       {% if messages %}
         <div class="alert alert-error">{{ _('Identifiants incorrects') }}</div>
       {% endif %}
     {% endwith %}
 
-    <form method="post" class="login-form">
+    <form method="post" class="login-form" id="login-form">
       <div class="form-group">
         <label>{{ _('Utilisateur') }}</label>
-        <input type="text" name="username" autofocus required>
+        <input type="text" name="username" id="username-input" autofocus required autocomplete="username">
       </div>
       <div class="form-group">
         <label>{{ _('Mot de passe') }}</label>
-        <input type="password" name="password" required>
+        <input type="password" name="password" required autocomplete="current-password">
       </div>
       <button type="submit" class="btn-primary full-width">{{ _('Connexion') }}</button>
     </form>
   </div>
 </div>
+<script>
+(function () {
+  const input = document.getElementById('username-input');
+  const saved = localStorage.getItem('ace_login_username');
+  if (saved && !input.value) input.value = saved;
+  document.getElementById('login-form').addEventListener('submit', function () {
+    localStorage.setItem('ace_login_username', input.value);
+  });
+})();
+</script>
 {% endblock %}

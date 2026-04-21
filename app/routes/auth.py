@@ -14,7 +14,7 @@ def login():
         if role:
             login_user(AdminUser(role=role))
             return redirect(url_for("admin.dashboard"))
-        flash("invalid_credentials")
+        flash("invalid_credentials", "error")
     return render_template("login.html")
 
 
