@@ -6,6 +6,8 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from config import Config
 
 _TRANSLATIONS_DIR = str(Path(__file__).parent.parent / "translations")
+_VERSION_FILE     = Path(__file__).parent.parent / "VERSION"
+_APP_VERSION      = _VERSION_FILE.read_text().strip() if _VERSION_FILE.exists() else "?"
 
 login_manager = LoginManager()
 babel = Babel()
@@ -35,7 +37,8 @@ def create_app():
     app.register_blueprint(admin_bp)
     app.register_blueprint(api_bp, url_prefix="/api")
 
-    app.jinja_env.globals["get_locale"] = get_locale
+    app.jinja_env.globals["get_locale"]    = get_locale
+    app.jinja_env.globals["app_version"]   = _APP_VERSION
 
     @app.after_request
     def _security_headers(response):

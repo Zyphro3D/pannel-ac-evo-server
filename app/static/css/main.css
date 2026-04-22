@@ -39,8 +39,9 @@ body {
 }
 
 .navbar-brand { display: flex; align-items: baseline; gap: 4px; }
-.brand-evo    { font-size: 20px; font-weight: 900; color: var(--accent); letter-spacing: 2px; }
-.brand-panel  { font-size: 13px; font-weight: 400; color: var(--text-muted); letter-spacing: 3px; text-transform: uppercase; }
+.brand-evo     { font-size: 20px; font-weight: 900; color: var(--accent); letter-spacing: 2px; }
+.brand-panel   { font-size: 13px; font-weight: 400; color: var(--text-muted); letter-spacing: 3px; text-transform: uppercase; }
+.brand-version { font-size: 10px; font-weight: 500; color: var(--border); margin-left: 6px; align-self: center; }
 
 .navbar-right { display: flex; align-items: center; gap: 20px; }
 

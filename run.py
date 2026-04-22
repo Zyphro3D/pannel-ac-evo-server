@@ -14,6 +14,9 @@ _console_handler = logging.StreamHandler()
 _console_handler.setFormatter(_fmt)
 logging.basicConfig(level=logging.INFO, handlers=[_file_handler, _console_handler])
 
+from pathlib import Path
+_version = (Path(__file__).parent / "VERSION").read_text().strip()
+
 from app import create_app
 
 app = create_app()
@@ -28,7 +31,7 @@ if __name__ == "__main__":
     local_ip = socket.gethostbyname(socket.gethostname())
 
     print("=" * 52)
-    print("  AC EVO Server Panel")
+    print(f"  AC EVO Server Panel  v{_version}")
     print("=" * 52)
     print(f"  Local   : http://127.0.0.1:{port}")
     print(f"  Réseau  : http://{local_ip}:{port}")
