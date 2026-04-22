@@ -352,7 +352,7 @@ function onSessionTypeChange(val) {
 /* ── Cars ── */
 function toggleCat(btn) {
   btn.classList.toggle('active');
-  filterCars();
+  filterCars(true);
 }
 
 function updatePiSlider() {
@@ -373,10 +373,13 @@ function updatePiSlider() {
     `linear-gradient(to right,var(--border) ${p1}%,var(--accent) ${p1}%,var(--accent) ${p2}%,var(--border) ${p2}%)`;
   const disp = document.getElementById('pi-display');
   if (disp) disp.textContent = `${minVal.toFixed(1)} — ${maxVal.toFixed(1)}`;
-  filterCars();
+  filterCars(true);
 }
 
-function filterCars() {
+// autoSelect=true : les filtres catégorie/PI cochent automatiquement les voitures visibles
+//                   et décochez les cachées.
+// autoSelect=false : la recherche texte et "sélectionnés seulement" filtrent la vue sans toucher aux coches.
+function filterCars(autoSelect = false) {
   const search = (document.getElementById('car-search')?.value || '').toLowerCase();
   const showSelected = document.getElementById('show-selected-only')?.checked || false;
   const minR = document.getElementById('pi-range-min');
@@ -385,8 +388,6 @@ function filterCars() {
   const piMax = maxR ? parseFloat(maxR.value) : 999;
 
   // Catégories : OR à l'intérieur de chaque colonne, AND entre colonnes.
-  // Si aucune catégorie n'est active dans une colonne → tous les véhicules passent pour cette colonne.
-  // Si aucune catégorie n'est active du tout → tous les véhicules sont affichés.
   const COL = { Road:'p1',Race:'p1',Track:'p1', Modern:'p2',Vintage:'p2',YT:'p2', ICE:'p3',EV:'p3',Hybrid:'p3' };
   const active = { p1: new Set(), p2: new Set(), p3: new Set() };
   document.querySelectorAll('.cat-btn').forEach(btn => {
@@ -398,11 +399,16 @@ function filterCars() {
   document.querySelectorAll('.car-row').forEach(row => {
     const name = row.dataset.name;
     const pi   = parseFloat(row.dataset.pi);
-    const matchSearch   = name.includes(search);
-    const matchPi       = pi >= piMin && pi <= piMax;
-    const matchSelected = !showSelected || row.querySelector('.car-check')?.checked;
     const matchCat      = colOk(row.dataset.p1,'p1') && colOk(row.dataset.p2,'p2') && colOk(row.dataset.p3,'p3');
-    row.classList.toggle('hidden', !(matchSearch && matchPi && matchCat && matchSelected));
+    const matchPi       = pi >= piMin && pi <= piMax;
+    const matchSearch   = name.includes(search);
+    const matchSelected = !showSelected || row.querySelector('.car-check')?.checked;
+    const visible = matchCat && matchPi && matchSearch && matchSelected;
+    row.classList.toggle('hidden', !visible);
+    if (autoSelect) {
+      const cb = row.querySelector('.car-check');
+      if (cb) cb.checked = matchCat && matchPi; // sélection basée sur catégorie+PI uniquement (pas la recherche)
+    }
   });
   updateSelectedCount();
 }
