@@ -24,8 +24,8 @@ venv/
 .venv/
 env/
 
-# Babel compilé (regénéré avec pybabel)
-translations/*/LC_MESSAGES/*.mo
+# Babel compilé — inclus dans le repo pour éviter l'étape de compilation manuelle
+# Régénérer avec : python compile_mo.py
 
 # Fichiers runtime du serveur ACE (générés par le jeu)
 serverConfig/

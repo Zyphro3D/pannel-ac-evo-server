@@ -35,7 +35,6 @@ pip install -r requirements.txt
 copy .env.example .env
 # Éditez .env avec vos chemins et mots de passe
 
-python compile_mo.py   # compile les fichiers de traduction
 python run.py          # démarre sur http://localhost:4300
 ```
 
