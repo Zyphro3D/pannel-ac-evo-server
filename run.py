@@ -14,7 +14,6 @@ _console_handler = logging.StreamHandler()
 _console_handler.setFormatter(_fmt)
 logging.basicConfig(level=logging.INFO, handlers=[_file_handler, _console_handler])
 
-from pathlib import Path
 _version = (Path(__file__).parent / "VERSION").read_text().strip()
 
 from app import create_app

@@ -69,7 +69,7 @@ def server_start():
 @api_bp.route("/server/auto-restart", methods=["POST"])
 @login_required
 def server_auto_restart():
-    data = request.get_json(force=True)
+    data = request.get_json(force=True) or {}
     enabled = bool(data.get("enabled", False))
     return jsonify(set_auto_restart(enabled))
 
@@ -112,7 +112,7 @@ def get_config():
 @api_bp.route("/config", methods=["POST"])
 @login_required
 def post_config():
-    patch = request.get_json(force=True)
+    patch = request.get_json(force=True) or {}
     updated = apply_server_patch(patch, is_superadmin=current_user.is_superadmin)
     return jsonify({"ok": True, "config": updated})
 
@@ -131,7 +131,7 @@ def get_configs():
 @api_bp.route("/configs/select", methods=["POST"])
 @login_required
 def select_config():
-    name = request.get_json(force=True).get("name", "")
+    name = (request.get_json(force=True) or {}).get("name", "")
     if set_active_config(name):
         return jsonify({"ok": True, "active": name})
     return jsonify({"ok": False, "error": "not_found"}), 404
@@ -140,7 +140,7 @@ def select_config():
 @api_bp.route("/configs/create", methods=["POST"])
 @login_required
 def create_config_route():
-    data = request.get_json(force=True)
+    data = request.get_json(force=True) or {}
     name = data.get("name", "").strip()
     copy_from = data.get("copy_from")
     if not name:
@@ -151,7 +151,7 @@ def create_config_route():
 @api_bp.route("/configs/delete", methods=["POST"])
 @login_required
 def delete_config_route():
-    name = request.get_json(force=True).get("name", "")
+    name = (request.get_json(force=True) or {}).get("name", "")
     return jsonify(delete_config(name))
 
 

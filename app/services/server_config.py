@@ -81,7 +81,7 @@ def delete_config(name: str) -> dict:
     if len(configs) == 1:
         return {"ok": False, "error": "cannot_delete_last"}
 
-    (  _configs_dir() / name).unlink()
+    (_configs_dir() / name).unlink()
 
     # Si c'était la config active, basculer sur une autre
     if session.get("active_config") == name:
