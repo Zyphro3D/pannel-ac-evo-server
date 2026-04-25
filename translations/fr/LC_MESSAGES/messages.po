@@ -21,6 +21,81 @@ msgstr "Mot de passe"
 msgid "Identifiants incorrects"
 msgstr "Identifiants incorrects"
 
+msgid "Identifiant ou email"
+msgstr "Identifiant ou email"
+
+msgid "S'inscrire"
+msgstr "S'inscrire"
+
+msgid "Se connecter"
+msgstr "Se connecter"
+
+msgid "Mot de passe oublié ?"
+msgstr "Mot de passe oublié ?"
+
+msgid "Pilote ?"
+msgstr "Pilote ?"
+
+msgid "Votre compte est en attente de validation."
+msgstr "Votre compte est en attente de validation."
+
+msgid "Votre compte a été refusé."
+msgstr "Votre compte a été refusé."
+
+msgid "Inscription pilote"
+msgstr "Inscription pilote"
+
+msgid "Nom in-game"
+msgstr "Nom in-game"
+
+msgid "Adresse email"
+msgstr "Adresse email"
+
+msgid "Confirmer le mot de passe"
+msgstr "Confirmer le mot de passe"
+
+msgid "Déjà un compte ?"
+msgstr "Déjà un compte ?"
+
+msgid "Votre compte sera activé par un administrateur."
+msgstr "Votre compte sera activé par un administrateur."
+
+msgid "10 caractères minimum"
+msgstr "10 caractères minimum"
+
+msgid "Une majuscule"
+msgstr "Une majuscule"
+
+msgid "Une minuscule"
+msgstr "Une minuscule"
+
+msgid "Un chiffre"
+msgstr "Un chiffre"
+
+msgid "Un caractère spécial"
+msgstr "Un caractère spécial"
+
+msgid "Mot de passe oublié"
+msgstr "Mot de passe oublié"
+
+msgid "Entrez votre identifiant ou votre adresse email. Si votre compte est approuvé, vous recevrez un lien de réinitialisation valable 1 heure."
+msgstr "Entrez votre identifiant ou votre adresse email. Si votre compte est approuvé, vous recevrez un lien de réinitialisation valable 1 heure."
+
+msgid "Nom in-game ou email"
+msgstr "Nom in-game ou email"
+
+msgid "Envoyer le lien"
+msgstr "Envoyer le lien"
+
+msgid "Retour à la connexion"
+msgstr "Retour à la connexion"
+
+msgid "Nouveau mot de passe"
+msgstr "Nouveau mot de passe"
+
+msgid "Enregistrer le mot de passe"
+msgstr "Enregistrer le mot de passe"
+
 msgid "Contrôle serveur"
 msgstr "Contrôle serveur"
 
@@ -35,6 +110,36 @@ msgstr "Arrêter"
 
 msgid "Redémarrer"
 msgstr "Redémarrer"
+
+msgid "Logs"
+msgstr "Logs"
+
+msgid "Logs serveur"
+msgstr "Logs serveur"
+
+msgid "Chargement..."
+msgstr "Chargement..."
+
+msgid "Fermer"
+msgstr "Fermer"
+
+msgid "Actualiser"
+msgstr "Actualiser"
+
+msgid "Auto-restart"
+msgstr "Auto-restart"
+
+msgid "Relancer automatiquement en cas de crash"
+msgstr "Relancer automatiquement en cas de crash"
+
+msgid "Auto-restart activé"
+msgstr "Auto-restart activé"
+
+msgid "Auto-restart désactivé"
+msgstr "Auto-restart désactivé"
+
+msgid "joueur(s)"
+msgstr "joueur(s)"
 
 msgid "Informations serveur"
 msgstr "Informations serveur"
@@ -126,14 +231,23 @@ msgstr "Optimal"
 msgid "Circuit"
 msgstr "Circuit"
 
+msgid "Mode"
+msgstr "Mode"
+
 msgid "Sessions"
 msgstr "Sessions"
 
 msgid "Durée (s)"
 msgstr "Durée (s)"
 
+msgid "Durée"
+msgstr "Durée"
+
 msgid "Heure"
 msgstr "Heure"
+
+msgid "Heure in-game"
+msgstr "Heure in-game"
 
 msgid "Attente max box (s)"
 msgstr "Attente max box (s)"
@@ -156,11 +270,20 @@ msgstr "Sauvegarder sessions"
 msgid "(0 = ignoré)"
 msgstr "(0 = ignoré)"
 
+msgid "Qualif"
+msgstr "Qualif"
+
 msgid "Véhicules"
 msgstr "Véhicules"
 
 msgid "Filtrer..."
 msgstr "Filtrer..."
+
+msgid "Rechercher..."
+msgstr "Rechercher..."
+
+msgid "Sélectionnés seulement"
+msgstr "Sélectionnés seulement"
 
 msgid "Tout sélectionner"
 msgstr "Tout sélectionner"
@@ -201,6 +324,24 @@ msgstr "Annuler"
 msgid "Créer"
 msgstr "Créer"
 
+msgid "Choisir autre"
+msgstr "Choisir autre"
+
+msgid "Réparer"
+msgstr "Réparer"
+
+msgid "Config réparée"
+msgstr "Configuration réparée"
+
+msgid "Fichier invalide"
+msgstr "Fichier invalide"
+
+msgid "Ce fichier contient des erreurs :"
+msgstr "Ce fichier contient des erreurs :"
+
+msgid "Dupliquer la configuration"
+msgstr "Dupliquer la configuration"
+
 msgid "Serveur"
 msgstr "Serveur"
 
@@ -237,20 +378,377 @@ msgstr "Véhicules sauvegardés"
 msgid "Nom requis"
 msgstr "Nom requis"
 
-msgid "Dupliquer la configuration"
-msgstr "Dupliquer la configuration"
+msgid "Statut serveur"
+msgstr "Statut serveur"
 
-msgid "Réparer"
-msgstr "Réparer"
+msgid "Contrôles"
+msgstr "Contrôles"
 
-msgid "Config réparée"
-msgstr "Configuration réparée"
+msgid "Durée libre"
+msgstr "Durée libre"
 
-msgid "Fichier invalide"
-msgstr "Fichier invalide"
+msgid "Prochains événements"
+msgstr "Prochains événements"
 
-msgid "Ce fichier contient des erreurs :"
-msgstr "Ce fichier contient des erreurs :"
+msgid "Inscrits"
+msgstr "Inscrits"
 
-msgid "Choisir autre"
-msgstr "Choisir autre"
+msgid "Pilotes"
+msgstr "Pilotes"
+
+msgid "Aucun événement à venir."
+msgstr "Aucun événement à venir."
+
+msgid "Aucun pilote en attente."
+msgstr "Aucun pilote en attente."
+
+msgid "Gérer"
+msgstr "Gérer"
+
+msgid "En attente de validation"
+msgstr "En attente de validation"
+
+msgid "pilote(s)"
+msgstr "pilote(s)"
+
+msgid "Email"
+msgstr "Email"
+
+msgid "Inscrit le"
+msgstr "Inscrit le"
+
+msgid "Actions"
+msgstr "Actions"
+
+msgid "Approuver"
+msgstr "Approuver"
+
+msgid "Refuser"
+msgstr "Refuser"
+
+msgid "Pilotes approuvés"
+msgstr "Pilotes approuvés"
+
+msgid "Aucun pilote approuvé."
+msgstr "Aucun pilote approuvé."
+
+msgid "Pilotes refusés"
+msgstr "Pilotes refusés"
+
+msgid "Ré-approuver"
+msgstr "Ré-approuver"
+
+msgid "Supprimer définitivement"
+msgstr "Supprimer définitivement"
+
+msgid "Événements"
+msgstr "Événements"
+
+msgid "Titre"
+msgstr "Titre"
+
+msgid "Date (UTC)"
+msgstr "Date (UTC)"
+
+msgid "Statut"
+msgstr "Statut"
+
+msgid "Modifier"
+msgstr "Modifier"
+
+msgid "Dépublier"
+msgstr "Dépublier"
+
+msgid "Publier"
+msgstr "Publier"
+
+msgid "Terminer"
+msgstr "Terminer"
+
+msgid "Aucun événement."
+msgstr "Aucun événement."
+
+msgid "Créer le premier"
+msgstr "Créer le premier"
+
+msgid "Modifier l'événement"
+msgstr "Modifier l'événement"
+
+msgid "Nouvel événement"
+msgstr "Nouvel événement"
+
+msgid "Retour"
+msgstr "Retour"
+
+msgid "Description"
+msgstr "Description"
+
+msgid "(optionnel)"
+msgstr "(optionnel)"
+
+msgid "Date et heure (UTC)"
+msgstr "Date et heure (UTC)"
+
+msgid "Pilotes max"
+msgstr "Pilotes max"
+
+msgid "Durées de session"
+msgstr "Durées de session"
+
+msgid "Mot de passe serveur"
+msgstr "Mot de passe serveur"
+
+msgid "(vide = public)"
+msgstr "(vide = public)"
+
+msgid "Rappel email"
+msgstr "Rappel email"
+
+msgid "(minutes avant début)"
+msgstr "(minutes avant début)"
+
+msgid "Lancer le serveur automatiquement"
+msgstr "Lancer le serveur automatiquement"
+
+msgid "Serveur lancé automatiquement pour cet événement."
+msgstr "Serveur lancé automatiquement pour cet événement."
+
+msgid "Véhicules autorisés"
+msgstr "Véhicules autorisés"
+
+msgid "Catégories"
+msgstr "Catégories"
+
+msgid "Tous"
+msgstr "Tous"
+
+msgid "Enregistrer"
+msgstr "Enregistrer"
+
+msgid "Générer entry list"
+msgstr "Générer entry list"
+
+msgid "Course privée"
+msgstr "Course privée"
+
+msgid "Pilote"
+msgstr "Pilote"
+
+msgid "Voiture assignée"
+msgstr "Voiture assignée"
+
+msgid "Non assignée"
+msgstr "Non assignée"
+
+msgid "Confirmer"
+msgstr "Confirmer"
+
+msgid "Aucune inscription pour le moment."
+msgstr "Aucune inscription pour le moment."
+
+msgid "Événements disponibles"
+msgstr "Événements disponibles"
+
+msgid "Date"
+msgstr "Date"
+
+msgid "Complet"
+msgstr "Complet"
+
+msgid "Compte en attente"
+msgstr "Compte en attente"
+
+msgid "Mes inscriptions"
+msgstr "Mes inscriptions"
+
+msgid "Voiture"
+msgstr "Voiture"
+
+msgid "En attente"
+msgstr "En attente"
+
+msgid "Confirmé"
+msgstr "Confirmé"
+
+msgid "Vous n'êtes inscrit à aucun événement."
+msgstr "Vous n'êtes inscrit à aucun événement."
+
+msgid "Le serveur est actuellement hors ligne."
+msgstr "Le serveur est actuellement hors ligne."
+
+msgid "Événements à venir"
+msgstr "Événements à venir"
+
+msgid "Aucun événement à venir pour le moment."
+msgstr "Aucun événement à venir pour le moment."
+
+msgid "Rejoindre notre serveur Discord"
+msgstr "Rejoindre notre serveur Discord"
+
+msgid "Administration"
+msgstr "Administration"
+
+msgid "Configuration email"
+msgstr "Configuration email"
+
+msgid "Port"
+msgstr "Port"
+
+msgid "Expéditeur"
+msgstr "Expéditeur"
+
+msgid "Admin(s)"
+msgstr "Admin(s)"
+
+msgid "Envoyer un test"
+msgstr "Envoyer un test"
+
+msgid "Webhook Discord — Serveur"
+msgstr "Webhook Discord — Serveur"
+
+msgid "URL"
+msgstr "URL"
+
+msgid "Message envoyé sur le channel serveur."
+msgstr "Message envoyé sur le channel serveur."
+
+msgid "Envoyer un message de test"
+msgstr "Envoyer un message de test"
+
+msgid "Webhook Discord — Pilotes"
+msgstr "Webhook Discord — Pilotes"
+
+msgid "Message envoyé sur le channel pilotes."
+msgstr "Message envoyé sur le channel pilotes."
+
+msgid "utilise le webhook serveur"
+msgstr "utilise le webhook serveur"
+
+msgid "Inscription reçue ! Votre compte sera validé par un administrateur."
+msgstr "Inscription reçue ! Votre compte sera validé par un administrateur."
+
+msgid "Votre compte doit être validé avant de vous inscrire."
+msgstr "Votre compte doit être validé avant de vous inscrire."
+
+msgid "Cet événement n'est pas disponible."
+msgstr "Cet événement n'est pas disponible."
+
+msgid "Vous êtes déjà inscrit à cet événement."
+msgstr "Vous êtes déjà inscrit à cet événement."
+
+msgid "Cet événement est complet."
+msgstr "Cet événement est complet."
+
+msgid "Inscription envoyée !"
+msgstr "Inscription envoyée !"
+
+msgid "Désinscription effectuée."
+msgstr "Désinscription effectuée."
+
+msgid "Impossible de se désinscrire (inscription confirmée)."
+msgstr "Impossible de se désinscrire (inscription confirmée)."
+
+msgid "Un email de réinitialisation a été envoyé si le compte existe."
+msgstr "Un email de réinitialisation a été envoyé si le compte existe."
+
+msgid "Ce lien est invalide ou a expiré."
+msgstr "Ce lien est invalide ou a expiré."
+
+msgid "Mot de passe mis à jour. Vous pouvez vous connecter."
+msgstr "Mot de passe mis à jour. Vous pouvez vous connecter."
+
+msgid "Le mot de passe doit contenir au moins 10 caractères."
+msgstr "Le mot de passe doit contenir au moins 10 caractères."
+
+msgid "Le mot de passe doit contenir au moins une majuscule."
+msgstr "Le mot de passe doit contenir au moins une majuscule."
+
+msgid "Le mot de passe doit contenir au moins une minuscule."
+msgstr "Le mot de passe doit contenir au moins une minuscule."
+
+msgid "Le mot de passe doit contenir au moins un chiffre."
+msgstr "Le mot de passe doit contenir au moins un chiffre."
+
+msgid "Le mot de passe doit contenir au moins un caractère spécial."
+msgstr "Le mot de passe doit contenir au moins un caractère spécial."
+
+msgid "Les mots de passe ne correspondent pas."
+msgstr "Les mots de passe ne correspondent pas."
+
+msgid "Le nom in-game est requis."
+msgstr "Le nom in-game est requis."
+
+msgid "Nom in-game invalide (2–30 caractères)."
+msgstr "Nom in-game invalide (2–30 caractères)."
+
+msgid "Adresse email invalide."
+msgstr "Adresse email invalide."
+
+msgid "Ce nom in-game est déjà utilisé."
+msgstr "Ce nom in-game est déjà utilisé."
+
+msgid "Cet email est déjà utilisé."
+msgstr "Cet email est déjà utilisé."
+
+msgid "Événement créé."
+msgstr "Événement créé."
+
+msgid "Événement mis à jour."
+msgstr "Événement mis à jour."
+
+msgid "Événement supprimé."
+msgstr "Événement supprimé."
+
+msgid "Événement publié."
+msgstr "Événement publié."
+
+msgid "Événement repassé en brouillon."
+msgstr "Événement repassé en brouillon."
+
+msgid "Statut inchangé."
+msgstr "Statut inchangé."
+
+msgid "Événement marqué comme terminé."
+msgstr "Événement marqué comme terminé."
+
+msgid "Entry list générée."
+msgstr "Entry list générée."
+
+msgid "Erreur lors de la génération."
+msgstr "Erreur lors de la génération."
+
+msgid "%(name)s approuvé."
+msgstr "%(name)s approuvé."
+
+msgid "%(name)s refusé."
+msgstr "%(name)s refusé."
+
+msgid "%(name)s supprimé."
+msgstr "%(name)s supprimé."
+
+msgid "Se désinscrire ?"
+msgstr "Se désinscrire ?"
+
+msgid "Marquer comme terminé ?"
+msgstr "Marquer comme terminé ?"
+
+msgid "Supprimer cet événement ?"
+msgstr "Supprimer cet événement ?"
+
+msgid "Rejoindre"
+msgstr "Rejoindre"
+
+msgid "%(name)s confirmé(e)."
+msgstr "%(name)s confirmé(e)."
+
+msgid "Destinataire"
+msgstr "Destinataire"
+
+msgid "Email envoyé avec succès"
+msgstr "Email envoyé avec succès"
+
+msgid "Erreur SMTP"
+msgstr "Erreur SMTP"
+
+msgid "Ce site utilise uniquement des cookies techniques nécessaires à son fonctionnement."
+msgstr "Ce site utilise uniquement des cookies techniques nécessaires à son fonctionnement."

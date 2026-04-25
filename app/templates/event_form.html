@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}{{ 'Modifier' if action == 'edit' else 'Créer' }} un événement — AC EVO Panel{% endblock %}
+{% block title %}{{ _('Modifier l\'événement') if action == 'edit' else _('Nouvel événement') }} — AC EVO Panel{% endblock %}
 {% block content %}
 
 {# Helpers durée : convertir minutes → heures / reste #}
@@ -8,8 +8,8 @@
 
 <div class="card" style="max-width:860px">
   <div class="card-header">
-    <h2>{{ 'Modifier l\'événement' if action == 'edit' else 'Nouvel événement' }}</h2>
-    <a href="{{ url_for('events_admin.events_list') }}" class="btn-secondary">← Retour</a>
+    <h2>{{ _('Modifier l\'événement') if action == 'edit' else _('Nouvel événement') }}</h2>
+    <a href="{{ url_for('events_admin.events_list') }}" class="btn-secondary">← {{ _('Retour') }}</a>
   </div>
 
   {% with messages = get_flashed_messages(with_categories=true) %}
@@ -22,24 +22,24 @@
 
     <!-- ── Infos générales ── -->
     <div class="form-group">
-      <label>Titre</label>
+      <label>{{ _('Titre') }}</label>
       <input type="text" name="title" required maxlength="100"
              value="{{ event.title if event else '' }}">
     </div>
 
     <div class="form-group">
-      <label>Description <span class="label-hint">(optionnel)</span></label>
+      <label>{{ _('Description') }} <span class="label-hint">({{ _('optionnel') }})</span></label>
       <textarea name="description" rows="2" class="form-textarea">{{ event.description if event else '' }}</textarea>
     </div>
 
     <div class="form-row">
       <div class="form-group">
-        <label>Date et heure (UTC)</label>
+        <label>{{ _('Date et heure (UTC)') }}</label>
         <input type="datetime-local" name="date" required
                value="{{ event.date.strftime('%Y-%m-%dT%H:%M') if event and event.date else '' }}">
       </div>
       <div class="form-group">
-        <label>Pilotes max</label>
+        <label>{{ _('Pilotes max') }}</label>
         <input type="number" name="max_drivers" min="1" max="100"
                value="{{ event.max_drivers if event else 20 }}">
       </div>
@@ -47,7 +47,7 @@
 
     <!-- ── Circuit + mode ── -->
     <div class="form-group">
-      <label>Circuit</label>
+      <label>{{ _('Circuit') }}</label>
       <select name="circuit" id="circuit-select" onchange="updateCircuitDisplay(this)">
         {% for tr in tracks %}
         {% set tv = tr.track + '|' + tr.layout + '|' + tr.event_name + '|' + tr.track_length|string %}
@@ -64,29 +64,29 @@
 
     <div class="form-row">
       <div class="form-group">
-        <label>Mode</label>
+        <label>{{ _('Mode') }}</label>
         <select name="mode" id="mode-select" onchange="onModeChange(this.value)">
-          <option value="GameModeType_PRACTICE"     {% if not event or event.mode == 'GameModeType_PRACTICE'     %}selected{% endif %}>Practice</option>
-          <option value="GameModeType_RACE_WEEKEND" {% if event and event.mode == 'GameModeType_RACE_WEEKEND' %}selected{% endif %}>Race Weekend</option>
+          <option value="GameModeType_PRACTICE"     {% if not event or event.mode == 'GameModeType_PRACTICE'     %}selected{% endif %}>{{ _('Libre') }}</option>
+          <option value="GameModeType_RACE_WEEKEND" {% if event and event.mode == 'GameModeType_RACE_WEEKEND' %}selected{% endif %}>{{ _('Race Weekend') }}</option>
         </select>
       </div>
       <div class="form-group">
-        <label>Météo</label>
+        <label>{{ _('Météo') }}</label>
         <select name="weather">
-          <option value="GameModeSelectionWeatherType_CLEAR"    {% if not event or event.weather == 'GameModeSelectionWeatherType_CLEAR'    %}selected{% endif %}>Dégagé</option>
-          <option value="GameModeSelectionWeatherType_OVERCAST" {% if event and event.weather == 'GameModeSelectionWeatherType_OVERCAST' %}selected{% endif %}>Nuageux</option>
-          <option value="GameModeSelectionWeatherType_RAIN"     {% if event and event.weather == 'GameModeSelectionWeatherType_RAIN'     %}selected{% endif %}>Pluie</option>
+          <option value="GameModeSelectionWeatherType_CLEAR"    {% if not event or event.weather == 'GameModeSelectionWeatherType_CLEAR'    %}selected{% endif %}>{{ _('Dégagé') }}</option>
+          <option value="GameModeSelectionWeatherType_OVERCAST" {% if event and event.weather == 'GameModeSelectionWeatherType_OVERCAST' %}selected{% endif %}>{{ _('Nuageux') }}</option>
+          <option value="GameModeSelectionWeatherType_RAIN"     {% if event and event.weather == 'GameModeSelectionWeatherType_RAIN'     %}selected{% endif %}>{{ _('Pluie') }}</option>
         </select>
       </div>
     </div>
 
     <!-- ── Durées de session ── -->
-    <div class="form-section-title">Durées de session</div>
+    <div class="form-section-title">{{ _('Durées de session') }}</div>
 
     <div id="dur-practice-block">
       <div class="form-row">
         <div class="form-group">
-          <label>Libre</label>
+          <label>{{ _('Libre') }}</label>
           <div class="dur-inputs">
             <input type="number" name="practice_h" min="0" max="23" placeholder="0"
                    value="{{ dur_h(event.practice_minutes, 1) if event else 1 }}" class="dur-h">
@@ -102,7 +102,7 @@
     <div id="dur-race-block" style="display:none">
       <div class="form-row">
         <div class="form-group">
-          <label>Libre</label>
+          <label>{{ _('Libre') }}</label>
           <div class="dur-inputs">
             <input type="number" name="practice_h" min="0" max="23" placeholder="0"
                    value="{{ dur_h(event.practice_minutes, 1) if event else 1 }}" class="dur-h" id="practice-h-rw">
@@ -113,7 +113,7 @@
           </div>
         </div>
         <div class="form-group">
-          <label>Qualification</label>
+          <label>{{ _('Qualification') }}</label>
           <div class="dur-inputs">
             <input type="number" name="qualifying_h" min="0" max="23" placeholder="0"
                    value="{{ dur_h(event.qualifying_minutes, 0) if event else 0 }}" class="dur-h">
@@ -126,7 +126,7 @@
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label>Chauffe</label>
+          <label>{{ _('Chauffe') }}</label>
           <div class="dur-inputs">
             <input type="number" name="warmup_h" min="0" max="23" placeholder="0"
                    value="{{ dur_h(event.warmup_minutes, 0) if event else 0 }}" class="dur-h">
@@ -137,7 +137,7 @@
           </div>
         </div>
         <div class="form-group">
-          <label>Course</label>
+          <label>{{ _('Course') }}</label>
           <div class="dur-inputs">
             <input type="number" name="race_h" min="0" max="23" placeholder="0"
                    value="{{ dur_h(event.race_minutes, 1) if event else 1 }}" class="dur-h">
@@ -153,12 +153,12 @@
     <!-- ── Paramètres accès ── -->
     <div class="form-row" style="margin-top:4px">
       <div class="form-group">
-        <label>Mot de passe serveur <span class="label-hint">(vide = public)</span></label>
+        <label>{{ _('Mot de passe serveur') }} <span class="label-hint">({{ _('vide = public') }})</span></label>
         <input type="text" name="password" maxlength="50"
                value="{{ event.password if event else '' }}">
       </div>
       <div class="form-group">
-        <label>Rappel email <span class="label-hint">(minutes avant début)</span></label>
+        <label>{{ _('Rappel email') }} <span class="label-hint">({{ _('minutes avant début') }})</span></label>
         <input type="number" name="notify_before" min="0" max="10080"
                value="{{ event.notify_before if event else 60 }}">
       </div>
@@ -170,26 +170,26 @@
         <input type="hidden" name="auto_launch" value="0">
         <input type="checkbox" name="auto_launch" value="1"
                {% if event and event.auto_launch %}checked{% endif %}>
-        <span>Lancer le serveur automatiquement à la date et heure de l'événement</span>
+        <span>{{ _('Lancer le serveur automatiquement') }}</span>
       </label>
       {% if event and event.launched %}
-      <p style="font-size:12px;color:var(--green);margin-top:4px">✓ Serveur lancé automatiquement pour cet événement.</p>
+      <p style="font-size:12px;color:var(--green);margin-top:4px">✓ {{ _('Serveur lancé automatiquement pour cet événement.') }}</p>
       {% endif %}
     </div>
 
     <!-- ── Sélection véhicules ── -->
     {% if cars %}
     <div class="form-section-title" style="margin-top:8px">
-      Véhicules autorisés
+      {{ _('Véhicules autorisés') }}
       <span id="cars-sel-count" style="font-size:12px;font-weight:400;color:var(--text-muted)"></span>
     </div>
 
     <!-- Filtres -->
     <div class="cars-filters">
       <div class="cars-filters-top">
-        <input type="text" id="ef-car-search" placeholder="Rechercher un véhicule..." oninput="efApplyFilters()">
-        <button type="button" class="btn-secondary" onclick="efSelectAll(true)">Tout sélectionner</button>
-        <button type="button" class="btn-secondary" onclick="efSelectAll(false)">Tout désélectionner</button>
+        <input type="text" id="ef-car-search" placeholder="{{ _('Rechercher...') }}" oninput="efApplyFilters()">
+        <button type="button" class="btn-secondary" onclick="efSelectAll(true)">{{ _('Tout sélectionner') }}</button>
+        <button type="button" class="btn-secondary" onclick="efSelectAll(false)">{{ _('Tout désélectionner') }}</button>
       </div>
 
       <!-- Filtre PI -->
@@ -211,7 +211,7 @@
       <!-- Filtre catégorie -->
       {% if car_categories %}
       <div class="cat-filter-row">
-        <button type="button" class="cat-btn active" data-cat="all" onclick="efSetCat(this)">Tous</button>
+        <button type="button" class="cat-btn active" data-cat="all" onclick="efSetCat(this)">{{ _('Tous') }}</button>
         {% for cat in car_categories %}
         <button type="button" class="cat-btn" data-cat="{{ cat }}" onclick="efSetCat(this)">{{ cat }}</button>
         {% endfor %}
@@ -224,9 +224,9 @@
         <thead>
           <tr>
             <th></th>
-            <th>Véhicule</th>
+            <th>{{ _('Véhicule') }}</th>
             <th>PI</th>
-            <th>Catégories</th>
+            <th>{{ _('Catégories') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -255,8 +255,8 @@
     {% endif %}
 
     <div class="modal-actions" style="margin-top:16px">
-      <a href="{{ url_for('events_admin.events_list') }}" class="btn-secondary">Annuler</a>
-      <button type="submit" class="btn-primary">{{ 'Enregistrer' if action == 'edit' else 'Créer' }}</button>
+      <a href="{{ url_for('events_admin.events_list') }}" class="btn-secondary">{{ _('Annuler') }}</a>
+      <button type="submit" class="btn-primary">{{ _('Enregistrer') if action == 'edit' else _('Créer') }}</button>
     </div>
   </form>
 </div>

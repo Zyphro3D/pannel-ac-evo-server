@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Inscription pilote — AC EVO Panel{% endblock %}
+{% block title %}{{ _('Inscription pilote') }} — AC EVO Panel{% endblock %}
 {% block content %}
 <div class="login-wrapper">
   <div class="login-box" style="width:420px">
@@ -7,7 +7,7 @@
       <span class="brand-evo">EVO</span>
       <span class="brand-panel">PANEL</span>
     </div>
-    <p class="login-sub">Inscription pilote</p>
+    <p class="login-sub">{{ _('Inscription pilote') }}</p>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% for category, message in messages %}
@@ -17,40 +17,40 @@
 
     <form method="post" class="login-form">
       <div class="form-group">
-        <label>Nom in-game <span style="color:var(--text-muted);font-weight:400">(2–30 caractères)</span></label>
+        <label>{{ _('Nom in-game') }} <span style="color:var(--text-muted);font-weight:400">(2–30 caractères)</span></label>
         <input type="text" name="ingame_name" required minlength="2" maxlength="30"
                pattern="[A-Za-z0-9_\-.\s]{2,30}"
                placeholder="Ex: Jean-Pierre_Dupont"
                value="{{ request.form.get('ingame_name', '') }}">
       </div>
       <div class="form-group">
-        <label>Adresse email</label>
+        <label>{{ _('Adresse email') }}</label>
         <input type="email" name="email" required
                value="{{ request.form.get('email', '') }}">
       </div>
       <div class="form-group">
-        <label>Mot de passe</label>
+        <label>{{ _('Mot de passe') }}</label>
         <input type="password" name="password" id="pwd" required minlength="10" autocomplete="new-password">
         <div class="pwd-rules" id="pwd-rules">
-          <span id="r-len">✕ 10 caractères minimum</span>
-          <span id="r-upper">✕ Une majuscule</span>
-          <span id="r-lower">✕ Une minuscule</span>
-          <span id="r-digit">✕ Un chiffre</span>
-          <span id="r-special">✕ Un caractère spécial</span>
+          <span id="r-len">✕ {{ _('10 caractères minimum') }}</span>
+          <span id="r-upper">✕ {{ _('Une majuscule') }}</span>
+          <span id="r-lower">✕ {{ _('Une minuscule') }}</span>
+          <span id="r-digit">✕ {{ _('Un chiffre') }}</span>
+          <span id="r-special">✕ {{ _('Un caractère spécial') }}</span>
         </div>
       </div>
       <div class="form-group">
-        <label>Confirmer le mot de passe</label>
+        <label>{{ _('Confirmer le mot de passe') }}</label>
         <input type="password" name="confirm" required minlength="10" autocomplete="new-password">
       </div>
-      <button type="submit" class="btn-primary full-width">S'inscrire</button>
+      <button type="submit" class="btn-primary full-width">{{ _("S'inscrire") }}</button>
     </form>
 
     <p style="text-align:center;margin-top:16px;font-size:12px;color:var(--text-muted)">
-      Déjà un compte ? <a href="{{ url_for('auth.login') }}" style="color:var(--accent)">Se connecter</a>
+      {{ _('Déjà un compte ?') }} <a href="{{ url_for('auth.login') }}" style="color:var(--accent)">{{ _('Se connecter') }}</a>
     </p>
     <p style="text-align:center;margin-top:8px;font-size:11px;color:var(--border)">
-      Votre compte sera activé par un administrateur avant de pouvoir s'inscrire aux événements.
+      {{ _('Votre compte sera activé par un administrateur.') }}
     </p>
   </div>
 </div>
@@ -65,8 +65,11 @@ const rules = {
   special: { el: document.getElementById('r-special'), fn: v => /[!@#$%^&*()\-_=+\[\]{}|;:',.<>?/\\`~]/.test(v) },
 };
 const labels = {
-  len: '10 caractères minimum', upper: 'Une majuscule',
-  lower: 'Une minuscule', digit: 'Un chiffre', special: 'Un caractère spécial',
+  len:     '{{ _("10 caractères minimum") }}',
+  upper:   '{{ _("Une majuscule") }}',
+  lower:   '{{ _("Une minuscule") }}',
+  digit:   '{{ _("Un chiffre") }}',
+  special: '{{ _("Un caractère spécial") }}',
 };
 pwd.addEventListener('input', () => {
   const v = pwd.value;

@@ -21,27 +21,27 @@
         <a href="{{ url_for('admin.dashboard') }}"
            class="nav-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}">Dashboard</a>
         <a href="{{ url_for('admin.server') }}"
-           class="nav-link {% if request.endpoint == 'admin.server' %}active{% endif %}">Serveur</a>
+           class="nav-link {% if request.endpoint == 'admin.server' %}active{% endif %}">{{ _('Serveur') }}</a>
         <a href="{{ url_for('events_admin.events_list') }}"
-           class="nav-link {% if request.endpoint and request.endpoint.startswith('events_admin') and 'driver' not in request.endpoint %}active{% endif %}">Événements</a>
+           class="nav-link {% if request.endpoint and request.endpoint.startswith('events_admin') and 'driver' not in request.endpoint %}active{% endif %}">{{ _('Événements') }}</a>
         <a href="{{ url_for('events_admin.drivers_list') }}"
            class="nav-link {% if request.endpoint and 'driver' in request.endpoint %}active{% endif %}">
-          Pilotes
+          {{ _('Pilotes') }}
           {% if pending_pilots_count > 0 %}
           <span class="nav-badge">{{ pending_pilots_count }}</span>
           {% endif %}
         </a>
         {% if current_user.is_superadmin %}
         <a href="{{ url_for('admin.administration') }}"
-           class="nav-link {% if request.endpoint == 'admin.administration' %}active{% endif %}">Administration</a>
+           class="nav-link {% if request.endpoint == 'admin.administration' %}active{% endif %}">{{ _('Administration') }}</a>
         {% endif %}
       </div>
       {% elif current_user.is_pilot %}
       <div class="navbar-nav">
         <a href="{{ url_for('public.index') }}"
-           class="nav-link {% if request.endpoint == 'public.index' %}active{% endif %}">Événements</a>
+           class="nav-link {% if request.endpoint == 'public.index' %}active{% endif %}">{{ _('Événements') }}</a>
         <a href="{{ url_for('public.pilot_dashboard') }}"
-           class="nav-link {% if request.endpoint == 'public.pilot_dashboard' %}active{% endif %}">Mes inscriptions</a>
+           class="nav-link {% if request.endpoint == 'public.pilot_dashboard' %}active{% endif %}">{{ _('Mes inscriptions') }}</a>
       </div>
       {% endif %}
     {% endif %}
@@ -81,7 +81,7 @@
 
   <!-- Cookie consent GDPR -->
   <div id="cookie-banner" class="cookie-banner" style="display:none">
-    <span>Ce site utilise uniquement des cookies techniques nécessaires à son fonctionnement.</span>
+    <span>{{ _('Ce site utilise uniquement des cookies techniques nécessaires à son fonctionnement.') }}</span>
     <button class="btn-secondary" onclick="acceptCookies()">OK</button>
   </div>
 

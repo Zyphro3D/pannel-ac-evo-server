@@ -3,6 +3,9 @@
 .env.*
 !.env.example
 
+# Base de données (runtime)
+instance/
+
 # État du serveur (runtime)
 .server_state
 .server_output.log

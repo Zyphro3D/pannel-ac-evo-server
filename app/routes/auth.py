@@ -3,6 +3,7 @@ import secrets
 from datetime import datetime, timedelta
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+from flask_babel import _
 from flask_login import login_user, logout_user, login_required, current_user
 from app.models import AdminUser, Driver
 from app.services.database import db
@@ -15,15 +16,15 @@ _PWD_MIN_LEN = 10
 def _validate_password(pwd: str) -> list[str]:
     errors = []
     if len(pwd) < _PWD_MIN_LEN:
-        errors.append(f"Le mot de passe doit contenir au moins {_PWD_MIN_LEN} caractères.")
+        errors.append(_("Le mot de passe doit contenir au moins 10 caractères."))
     if not re.search(r"[A-Z]", pwd):
-        errors.append("Le mot de passe doit contenir au moins une majuscule.")
+        errors.append(_("Le mot de passe doit contenir au moins une majuscule."))
     if not re.search(r"[a-z]", pwd):
-        errors.append("Le mot de passe doit contenir au moins une minuscule.")
+        errors.append(_("Le mot de passe doit contenir au moins une minuscule."))
     if not re.search(r"\d", pwd):
-        errors.append("Le mot de passe doit contenir au moins un chiffre.")
+        errors.append(_("Le mot de passe doit contenir au moins un chiffre."))
     if not re.search(r"[!@#$%^&*()\-_=+\[\]{}|;:',.<>?/\\`~]", pwd):
-        errors.append("Le mot de passe doit contenir au moins un caractère spécial.")
+        errors.append(_("Le mot de passe doit contenir au moins un caractère spécial."))
     return errors
 
 
@@ -76,7 +77,7 @@ def forgot_password():
                   or Driver.query.filter_by(ingame_name=identifier).first())
 
         # Même message qu'il existe ou non (sécurité anti-énumération)
-        flash("Si un compte approuvé correspond à cet identifiant, un email de réinitialisation a été envoyé.", "success")
+        flash(_("Un email de réinitialisation a été envoyé si le compte existe."), "success")
 
         if driver and driver.status == "approved":
             token = secrets.token_urlsafe(32)
@@ -98,7 +99,7 @@ def reset_password(token):
 
     driver = Driver.query.filter_by(reset_token=token).first()
     if not driver or not driver.reset_token_expires or driver.reset_token_expires < datetime.utcnow():
-        flash("Ce lien est invalide ou a expiré.", "error")
+        flash(_("Ce lien est invalide ou a expiré."), "error")
         return redirect(url_for("auth.login"))
 
     if request.method == "POST":
@@ -106,7 +107,7 @@ def reset_password(token):
         conf = request.form.get("confirm", "")
         errors = _validate_password(pwd)
         if pwd != conf:
-            errors.append("Les mots de passe ne correspondent pas.")
+            errors.append(_("Les mots de passe ne correspondent pas."))
 
         if errors:
             for e in errors:
@@ -117,7 +118,7 @@ def reset_password(token):
         driver.reset_token         = None
         driver.reset_token_expires = None
         db.session.commit()
-        flash("Mot de passe mis à jour. Vous pouvez vous connecter.", "success")
+        flash(_("Mot de passe mis à jour. Vous pouvez vous connecter."), "success")
         return redirect(url_for("auth.login"))
 
     return render_template("reset_password.html", token=token)

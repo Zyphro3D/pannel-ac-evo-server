@@ -6,13 +6,13 @@
   <!-- ── Status serveur ── -->
   <section class="card">
     <div class="card-header">
-      <h2>Statut serveur</h2>
-      <a href="{{ url_for('admin.server') }}" class="btn-secondary">Contrôles →</a>
+      <h2>{{ _('Statut serveur') }}</h2>
+      <a href="{{ url_for('admin.server') }}" class="btn-secondary">{{ _('Contrôles') }} →</a>
     </div>
     <div class="dash-status-row">
       <div class="server-status-large">
         <span class="dot" id="main-status-dot"></span>
-        <span id="main-status-label">Vérification...</span>
+        <span id="main-status-label">{{ _('Vérification...') }}</span>
         <span id="player-count" class="player-count"></span>
       </div>
     </div>
@@ -20,43 +20,43 @@
     {% if status.running and server_info %}
     <div class="server-info-grid" style="margin-top:16px">
       <div class="server-info-item">
-        <span class="si-label">Serveur</span>
+        <span class="si-label">{{ _('Nom du serveur') }}</span>
         <span class="si-value">{{ server_info.server_name }}</span>
       </div>
       <div class="server-info-item">
-        <span class="si-label">Circuit</span>
+        <span class="si-label">{{ _('Circuit') }}</span>
         <span class="si-value">
           {{ server_info.circuit }}
           {% if server_info.track_km %}<span class="si-sub">{{ server_info.track_km }}</span>{% endif %}
         </span>
       </div>
       <div class="server-info-item">
-        <span class="si-label">Mode</span>
+        <span class="si-label">{{ _('Mode') }}</span>
         <span class="si-value">{{ server_info.mode }}</span>
       </div>
       <div class="server-info-item">
-        <span class="si-label">Météo</span>
+        <span class="si-label">{{ _('Météo') }}</span>
         <span class="si-value">{{ server_info.weather }}</span>
       </div>
       {% if server_info.is_race_weekend %}
       <div class="server-info-item">
-        <span class="si-label">Sessions</span>
+        <span class="si-label">{{ _('Sessions') }}</span>
         <span class="si-value">
-          Libre {{ server_info.practice_dur }} —
-          Qualif {{ server_info.qualifying_dur }} —
-          Chauffe {{ server_info.warmup_dur }} —
-          Course {{ server_info.race_dur }}
+          {{ _('Libre') }} {{ server_info.practice_dur }} —
+          {{ _('Qualif') }} {{ server_info.qualifying_dur }} —
+          {{ _('Chauffe') }} {{ server_info.warmup_dur }} —
+          {{ _('Course') }} {{ server_info.race_dur }}
         </span>
       </div>
       {% else %}
       <div class="server-info-item">
-        <span class="si-label">Durée libre</span>
+        <span class="si-label">{{ _('Durée libre') }}</span>
         <span class="si-value">{{ server_info.practice_dur }}</span>
       </div>
       {% endif %}
       {% if server_info.cars %}
       <div class="server-info-item server-info-cars">
-        <span class="si-label">Véhicules ({{ server_info.car_count }})</span>
+        <span class="si-label">{{ _('Véhicules') }} ({{ server_info.car_count }})</span>
         <div class="si-cars">
           {% for car in server_info.cars[:8] %}
           <span class="car-chip">{{ car }}</span>
@@ -76,8 +76,8 @@
     <!-- ── Prochains événements ── -->
     <section class="card">
       <div class="card-header">
-        <h2>Prochains événements</h2>
-        <a href="{{ url_for('events_admin.events_list') }}" class="btn-secondary">Tous →</a>
+        <h2>{{ _('Prochains événements') }}</h2>
+        <a href="{{ url_for('events_admin.events_list') }}" class="btn-secondary">{{ _('Tous') }} →</a>
       </div>
       {% if upcoming %}
       <table class="simple-table">
@@ -91,30 +91,30 @@
             <td class="ev-date">{{ ev.date.strftime('%d/%m %H:%M') }}</td>
             <td><span class="badge badge-{{ ev.status }}">{{ ev.status }}</span></td>
             <td style="text-align:right">
-              <a href="{{ url_for('events_admin.event_registrations', event_id=ev.id) }}" class="btn-secondary" style="font-size:11px">Inscrits</a>
+              <a href="{{ url_for('events_admin.event_registrations', event_id=ev.id) }}" class="btn-secondary" style="font-size:11px">{{ _('Inscrits') }}</a>
             </td>
           </tr>
           {% endfor %}
         </tbody>
       </table>
       {% else %}
-      <p class="text-muted">Aucun événement à venir.</p>
+      <p class="text-muted">{{ _('Aucun événement à venir.') }}</p>
       {% endif %}
     </section>
 
     <!-- ── Pilotes en attente ── -->
     <section class="card">
       <div class="card-header">
-        <h2>Pilotes</h2>
-        <a href="{{ url_for('events_admin.drivers_list') }}" class="btn-secondary">Gérer →</a>
+        <h2>{{ _('Pilotes') }}</h2>
+        <a href="{{ url_for('events_admin.drivers_list') }}" class="btn-secondary">{{ _('Gérer') }} →</a>
       </div>
       {% if pending_count > 0 %}
       <div class="pending-alert">
         <span class="pending-badge">{{ pending_count }}</span>
-        pilote{{ 's' if pending_count > 1 }} en attente de validation
+        {{ _('pilote(s)') }} {{ _('En attente de validation') }}
       </div>
       {% else %}
-      <p class="text-muted">Aucun pilote en attente.</p>
+      <p class="text-muted">{{ _('Aucun pilote en attente.') }}</p>
       {% endif %}
     </section>
 

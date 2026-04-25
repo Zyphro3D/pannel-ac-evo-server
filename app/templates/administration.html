@@ -1,91 +1,91 @@
 {% extends "base.html" %}
-{% block title %}Administration — AC EVO Panel{% endblock %}
+{% block title %}{{ _('Administration') }} — AC EVO Panel{% endblock %}
 {% block content %}
 
 <div style="max-width:720px;margin:0 auto">
-  <h1 style="font-size:20px;font-weight:700;margin-bottom:24px">Administration</h1>
+  <h1 style="font-size:20px;font-weight:700;margin-bottom:24px">{{ _('Administration') }}</h1>
 
   <!-- ── Email ── -->
   <section class="card" style="margin-bottom:20px">
     <div class="card-header">
-      <h2>Configuration email</h2>
+      <h2>{{ _('Configuration email') }}</h2>
     </div>
 
     <div class="admin-cfg-grid">
-      <div class="cfg-row"><span class="cfg-label">Serveur</span><span class="cfg-val">{{ mail_cfg.server or '—' }}</span></div>
-      <div class="cfg-row"><span class="cfg-label">Port</span><span class="cfg-val">{{ mail_cfg.port }}</span></div>
-      <div class="cfg-row"><span class="cfg-label">Expéditeur</span><span class="cfg-val">{{ (mail_cfg.from or mail_cfg.username) or '—' }}</span></div>
-      <div class="cfg-row"><span class="cfg-label">Admin(s)</span><span class="cfg-val">{{ mail_cfg.admin | join(', ') or '—' }}</span></div>
+      <div class="cfg-row"><span class="cfg-label">{{ _('Serveur') }}</span><span class="cfg-val">{{ mail_cfg.server or '—' }}</span></div>
+      <div class="cfg-row"><span class="cfg-label">{{ _('Port') }}</span><span class="cfg-val">{{ mail_cfg.port }}</span></div>
+      <div class="cfg-row"><span class="cfg-label">{{ _('Expéditeur') }}</span><span class="cfg-val">{{ (mail_cfg.from or mail_cfg.username) or '—' }}</span></div>
+      <div class="cfg-row"><span class="cfg-label">{{ _('Admin(s)') }}</span><span class="cfg-val">{{ mail_cfg.admin | join(', ') or '—' }}</span></div>
     </div>
 
     {% if result_email is defined %}
       {% if result_email.ok %}
-      <div class="alert-success" style="margin-top:12px">✓ Email envoyé avec succès à <strong>{{ result_email.to }}</strong></div>
+      <div class="alert-success" style="margin-top:12px">✓ {{ _('Email envoyé avec succès') }} à <strong>{{ result_email.to }}</strong></div>
       {% else %}
-      <div class="alert-error" style="margin-top:12px">✕ Erreur SMTP : <code>{{ result_email.error }}</code></div>
+      <div class="alert-error" style="margin-top:12px">✕ {{ _('Erreur SMTP') }} : <code>{{ result_email.error }}</code></div>
       {% endif %}
     {% endif %}
 
     <form method="post" action="{{ url_for('admin.test_email') }}" style="margin-top:16px;display:flex;gap:10px;align-items:flex-end">
       <div class="form-group" style="flex:1;margin:0">
-        <label style="font-size:12px">Destinataire (laisser vide = premier admin)</label>
+        <label style="font-size:12px">{{ _('Destinataire') }}</label>
         <input type="email" name="to" placeholder="{{ mail_cfg.admin[0] if mail_cfg.admin else 'email@exemple.fr' }}">
       </div>
-      <button class="btn-primary" style="white-space:nowrap">Envoyer un test</button>
+      <button class="btn-primary" style="white-space:nowrap">{{ _('Envoyer un test') }}</button>
     </form>
   </section>
 
   <!-- ── Discord Serveur ── -->
   <section class="card" style="margin-bottom:20px">
     <div class="card-header">
-      <h2>Webhook Discord — Serveur</h2>
+      <h2>{{ _('Webhook Discord — Serveur') }}</h2>
     </div>
 
     <div class="admin-cfg-grid">
       <div class="cfg-row">
-        <span class="cfg-label">URL</span>
+        <span class="cfg-label">{{ _('URL') }}</span>
         <span class="cfg-val cfg-url">{{ webhook_url or '—' }}</span>
       </div>
     </div>
 
     {% if result_webhook is defined and result_webhook_channel == 'server' %}
       {% if result_webhook.ok %}
-      <div class="alert-success" style="margin-top:12px">✓ Message envoyé avec succès sur le channel serveur</div>
+      <div class="alert-success" style="margin-top:12px">✓ {{ _('Message envoyé sur le channel serveur.') }}</div>
       {% else %}
-      <div class="alert-error" style="margin-top:12px">✕ Erreur : <code>{{ result_webhook.error }}</code></div>
+      <div class="alert-error" style="margin-top:12px">✕ {{ _('Erreur') }} : <code>{{ result_webhook.error }}</code></div>
       {% endif %}
     {% endif %}
 
     <form method="post" action="{{ url_for('admin.test_webhook') }}" style="margin-top:16px">
       <input type="hidden" name="channel" value="server">
-      <button class="btn-secondary" {% if not webhook_url %}disabled{% endif %}>Envoyer un message de test</button>
+      <button class="btn-secondary" {% if not webhook_url %}disabled{% endif %}>{{ _('Envoyer un message de test') }}</button>
     </form>
   </section>
 
   <!-- ── Discord Pilotes ── -->
   <section class="card">
     <div class="card-header">
-      <h2>Webhook Discord — Pilotes</h2>
+      <h2>{{ _('Webhook Discord — Pilotes') }}</h2>
     </div>
 
     <div class="admin-cfg-grid">
       <div class="cfg-row">
-        <span class="cfg-label">URL</span>
-        <span class="cfg-val cfg-url">{{ pilots_webhook_url or '— (utilise le webhook serveur)' }}</span>
+        <span class="cfg-label">{{ _('URL') }}</span>
+        <span class="cfg-val cfg-url">{{ pilots_webhook_url or ('— ' + _('utilise le webhook serveur')) }}</span>
       </div>
     </div>
 
     {% if result_webhook is defined and result_webhook_channel == 'pilots' %}
       {% if result_webhook.ok %}
-      <div class="alert-success" style="margin-top:12px">✓ Message envoyé avec succès sur le channel pilotes</div>
+      <div class="alert-success" style="margin-top:12px">✓ {{ _('Message envoyé sur le channel pilotes.') }}</div>
       {% else %}
-      <div class="alert-error" style="margin-top:12px">✕ Erreur : <code>{{ result_webhook.error }}</code></div>
+      <div class="alert-error" style="margin-top:12px">✕ {{ _('Erreur') }} : <code>{{ result_webhook.error }}</code></div>
       {% endif %}
     {% endif %}
 
     <form method="post" action="{{ url_for('admin.test_webhook') }}" style="margin-top:16px">
       <input type="hidden" name="channel" value="pilots">
-      <button class="btn-secondary" {% if not pilots_webhook_url and not webhook_url %}disabled{% endif %}>Envoyer un message de test</button>
+      <button class="btn-secondary" {% if not pilots_webhook_url and not webhook_url %}disabled{% endif %}>{{ _('Envoyer un message de test') }}</button>
     </form>
   </section>
 

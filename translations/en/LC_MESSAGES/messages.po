@@ -4,13 +4,13 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 msgid "Connexion"
-msgstr "Login"
+msgstr "Sign in"
 
 msgid "Déconnexion"
-msgstr "Logout"
+msgstr "Sign out"
 
 msgid "Administration serveur"
-msgstr "Server Administration"
+msgstr "Server administration"
 
 msgid "Utilisateur"
 msgstr "Username"
@@ -19,10 +19,85 @@ msgid "Mot de passe"
 msgstr "Password"
 
 msgid "Identifiants incorrects"
-msgstr "Invalid credentials"
+msgstr "Incorrect credentials"
+
+msgid "Identifiant ou email"
+msgstr "Username or email"
+
+msgid "S'inscrire"
+msgstr "Register"
+
+msgid "Se connecter"
+msgstr "Sign in"
+
+msgid "Mot de passe oublié ?"
+msgstr "Forgot password?"
+
+msgid "Pilote ?"
+msgstr "Driver?"
+
+msgid "Votre compte est en attente de validation."
+msgstr "Your account is awaiting validation."
+
+msgid "Votre compte a été refusé."
+msgstr "Your account has been rejected."
+
+msgid "Inscription pilote"
+msgstr "Driver registration"
+
+msgid "Nom in-game"
+msgstr "In-game name"
+
+msgid "Adresse email"
+msgstr "Email address"
+
+msgid "Confirmer le mot de passe"
+msgstr "Confirm password"
+
+msgid "Déjà un compte ?"
+msgstr "Already have an account?"
+
+msgid "Votre compte sera activé par un administrateur."
+msgstr "Your account will be activated by an administrator."
+
+msgid "10 caractères minimum"
+msgstr "10 characters minimum"
+
+msgid "Une majuscule"
+msgstr "One uppercase letter"
+
+msgid "Une minuscule"
+msgstr "One lowercase letter"
+
+msgid "Un chiffre"
+msgstr "One digit"
+
+msgid "Un caractère spécial"
+msgstr "One special character"
+
+msgid "Mot de passe oublié"
+msgstr "Forgot password"
+
+msgid "Entrez votre identifiant ou votre adresse email. Si votre compte est approuvé, vous recevrez un lien de réinitialisation valable 1 heure."
+msgstr "Enter your username or email address. If your account is approved, you will receive a reset link valid for 1 hour."
+
+msgid "Nom in-game ou email"
+msgstr "In-game name or email"
+
+msgid "Envoyer le lien"
+msgstr "Send link"
+
+msgid "Retour à la connexion"
+msgstr "Back to sign in"
+
+msgid "Nouveau mot de passe"
+msgstr "New password"
+
+msgid "Enregistrer le mot de passe"
+msgstr "Save password"
 
 msgid "Contrôle serveur"
-msgstr "Server Control"
+msgstr "Server control"
 
 msgid "Vérification..."
 msgstr "Checking..."
@@ -36,20 +111,50 @@ msgstr "Stop"
 msgid "Redémarrer"
 msgstr "Restart"
 
+msgid "Logs"
+msgstr "Logs"
+
+msgid "Logs serveur"
+msgstr "Server logs"
+
+msgid "Chargement..."
+msgstr "Loading..."
+
+msgid "Fermer"
+msgstr "Close"
+
+msgid "Actualiser"
+msgstr "Refresh"
+
+msgid "Auto-restart"
+msgstr "Auto-restart"
+
+msgid "Relancer automatiquement en cas de crash"
+msgstr "Auto-restart on crash"
+
+msgid "Auto-restart activé"
+msgstr "Auto-restart enabled"
+
+msgid "Auto-restart désactivé"
+msgstr "Auto-restart disabled"
+
+msgid "joueur(s)"
+msgstr "player(s)"
+
 msgid "Informations serveur"
-msgstr "Server Info"
+msgstr "Server information"
 
 msgid "Nom du serveur"
-msgstr "Server Name"
+msgstr "Server name"
 
 msgid "Joueurs max"
-msgstr "Max Players"
+msgstr "Max players"
 
 msgid "Cycle actif"
-msgstr "Cycle enabled"
+msgstr "Active cycle"
 
 msgid "Type de serveur"
-msgstr "Server Type"
+msgstr "Server type"
 
 msgid "Classé"
 msgstr "Ranked"
@@ -58,19 +163,19 @@ msgid "Non classé"
 msgstr "Unranked"
 
 msgid "Mot de passe pilote"
-msgstr "Driver Password"
+msgstr "Driver password"
 
 msgid "Mot de passe admin"
-msgstr "Admin Password"
+msgstr "Admin password"
 
 msgid "Mot de passe spectateur"
-msgstr "Spectator Password"
+msgstr "Spectator password"
 
 msgid "Entry List Path"
-msgstr "Entry List Path"
+msgstr "Entry list path"
 
 msgid "Results Path"
-msgstr "Results Path"
+msgstr "Results path"
 
 msgid "Sauvegarder"
 msgstr "Save"
@@ -82,7 +187,7 @@ msgid "Événement & Sessions"
 msgstr "Event & Sessions"
 
 msgid "Type de session"
-msgstr "Session Type"
+msgstr "Session type"
 
 msgid "Libre"
 msgstr "Practice"
@@ -103,7 +208,7 @@ msgid "Pluie"
 msgstr "Rain"
 
 msgid "Comportement météo"
-msgstr "Weather Behavior"
+msgstr "Weather behaviour"
 
 msgid "Statique"
 msgstr "Static"
@@ -112,7 +217,7 @@ msgid "Dynamique"
 msgstr "Dynamic"
 
 msgid "Adhérence initiale"
-msgstr "Initial Grip"
+msgstr "Initial grip"
 
 msgid "Vert"
 msgstr "Green"
@@ -124,7 +229,10 @@ msgid "Optimal"
 msgstr "Optimal"
 
 msgid "Circuit"
-msgstr "Track"
+msgstr "Circuit"
+
+msgid "Mode"
+msgstr "Mode"
 
 msgid "Sessions"
 msgstr "Sessions"
@@ -132,11 +240,17 @@ msgstr "Sessions"
 msgid "Durée (s)"
 msgstr "Duration (s)"
 
+msgid "Durée"
+msgstr "Duration"
+
 msgid "Heure"
-msgstr "Hour"
+msgstr "Time"
+
+msgid "Heure in-game"
+msgstr "In-game time"
 
 msgid "Attente max box (s)"
-msgstr "Max wait to box (s)"
+msgstr "Max pit wait (s)"
 
 msgid "Overtime (s)"
 msgstr "Overtime (s)"
@@ -145,7 +259,7 @@ msgid "Qualification"
 msgstr "Qualifying"
 
 msgid "Chauffe"
-msgstr "Warmup"
+msgstr "Warm-up"
 
 msgid "Course"
 msgstr "Race"
@@ -154,13 +268,22 @@ msgid "Sauvegarder sessions"
 msgstr "Save sessions"
 
 msgid "(0 = ignoré)"
-msgstr "(0 = skipped)"
+msgstr "(0 = ignored)"
+
+msgid "Qualif"
+msgstr "Qualif"
 
 msgid "Véhicules"
 msgstr "Vehicles"
 
 msgid "Filtrer..."
 msgstr "Filter..."
+
+msgid "Rechercher..."
+msgstr "Search..."
+
+msgid "Sélectionnés seulement"
+msgstr "Selected only"
 
 msgid "Tout sélectionner"
 msgstr "Select all"
@@ -201,6 +324,24 @@ msgstr "Cancel"
 msgid "Créer"
 msgstr "Create"
 
+msgid "Choisir autre"
+msgstr "Choose another"
+
+msgid "Réparer"
+msgstr "Repair"
+
+msgid "Config réparée"
+msgstr "Configuration repaired"
+
+msgid "Fichier invalide"
+msgstr "Invalid file"
+
+msgid "Ce fichier contient des erreurs :"
+msgstr "This file contains errors:"
+
+msgid "Dupliquer la configuration"
+msgstr "Duplicate configuration"
+
 msgid "Serveur"
 msgstr "Server"
 
@@ -237,20 +378,377 @@ msgstr "Vehicles saved"
 msgid "Nom requis"
 msgstr "Name required"
 
-msgid "Dupliquer la configuration"
-msgstr "Duplicate configuration"
+msgid "Statut serveur"
+msgstr "Server status"
 
-msgid "Réparer"
-msgstr "Repair"
+msgid "Contrôles"
+msgstr "Controls"
 
-msgid "Config réparée"
-msgstr "Config repaired"
+msgid "Durée libre"
+msgstr "Practice duration"
 
-msgid "Fichier invalide"
-msgstr "Invalid file"
+msgid "Prochains événements"
+msgstr "Upcoming events"
 
-msgid "Ce fichier contient des erreurs :"
-msgstr "This file contains errors:"
+msgid "Inscrits"
+msgstr "Registered"
 
-msgid "Choisir autre"
-msgstr "Choose another"
+msgid "Pilotes"
+msgstr "Drivers"
+
+msgid "Aucun événement à venir."
+msgstr "No upcoming events."
+
+msgid "Aucun pilote en attente."
+msgstr "No pending drivers."
+
+msgid "Gérer"
+msgstr "Manage"
+
+msgid "En attente de validation"
+msgstr "Awaiting validation"
+
+msgid "pilote(s)"
+msgstr "driver(s)"
+
+msgid "Email"
+msgstr "Email"
+
+msgid "Inscrit le"
+msgstr "Registered on"
+
+msgid "Actions"
+msgstr "Actions"
+
+msgid "Approuver"
+msgstr "Approve"
+
+msgid "Refuser"
+msgstr "Reject"
+
+msgid "Pilotes approuvés"
+msgstr "Approved drivers"
+
+msgid "Aucun pilote approuvé."
+msgstr "No approved drivers."
+
+msgid "Pilotes refusés"
+msgstr "Rejected drivers"
+
+msgid "Ré-approuver"
+msgstr "Re-approve"
+
+msgid "Supprimer définitivement"
+msgstr "Delete permanently"
+
+msgid "Événements"
+msgstr "Events"
+
+msgid "Titre"
+msgstr "Title"
+
+msgid "Date (UTC)"
+msgstr "Date (UTC)"
+
+msgid "Statut"
+msgstr "Status"
+
+msgid "Modifier"
+msgstr "Edit"
+
+msgid "Dépublier"
+msgstr "Unpublish"
+
+msgid "Publier"
+msgstr "Publish"
+
+msgid "Terminer"
+msgstr "Finish"
+
+msgid "Aucun événement."
+msgstr "No events."
+
+msgid "Créer le premier"
+msgstr "Create the first"
+
+msgid "Modifier l'événement"
+msgstr "Edit event"
+
+msgid "Nouvel événement"
+msgstr "New event"
+
+msgid "Retour"
+msgstr "Back"
+
+msgid "Description"
+msgstr "Description"
+
+msgid "(optionnel)"
+msgstr "(optional)"
+
+msgid "Date et heure (UTC)"
+msgstr "Date and time (UTC)"
+
+msgid "Pilotes max"
+msgstr "Max drivers"
+
+msgid "Durées de session"
+msgstr "Session durations"
+
+msgid "Mot de passe serveur"
+msgstr "Server password"
+
+msgid "(vide = public)"
+msgstr "(empty = public)"
+
+msgid "Rappel email"
+msgstr "Email reminder"
+
+msgid "(minutes avant début)"
+msgstr "(minutes before start)"
+
+msgid "Lancer le serveur automatiquement"
+msgstr "Launch server automatically"
+
+msgid "Serveur lancé automatiquement pour cet événement."
+msgstr "Server launched automatically for this event."
+
+msgid "Véhicules autorisés"
+msgstr "Allowed vehicles"
+
+msgid "Catégories"
+msgstr "Categories"
+
+msgid "Tous"
+msgstr "All"
+
+msgid "Enregistrer"
+msgstr "Save"
+
+msgid "Générer entry list"
+msgstr "Generate entry list"
+
+msgid "Course privée"
+msgstr "Private race"
+
+msgid "Pilote"
+msgstr "Driver"
+
+msgid "Voiture assignée"
+msgstr "Assigned car"
+
+msgid "Non assignée"
+msgstr "Not assigned"
+
+msgid "Confirmer"
+msgstr "Confirm"
+
+msgid "Aucune inscription pour le moment."
+msgstr "No registrations yet."
+
+msgid "Événements disponibles"
+msgstr "Available events"
+
+msgid "Date"
+msgstr "Date"
+
+msgid "Complet"
+msgstr "Full"
+
+msgid "Compte en attente"
+msgstr "Account pending"
+
+msgid "Mes inscriptions"
+msgstr "My registrations"
+
+msgid "Voiture"
+msgstr "Car"
+
+msgid "En attente"
+msgstr "Pending"
+
+msgid "Confirmé"
+msgstr "Confirmed"
+
+msgid "Vous n'êtes inscrit à aucun événement."
+msgstr "You are not registered for any event."
+
+msgid "Le serveur est actuellement hors ligne."
+msgstr "The server is currently offline."
+
+msgid "Événements à venir"
+msgstr "Upcoming events"
+
+msgid "Aucun événement à venir pour le moment."
+msgstr "No upcoming events at the moment."
+
+msgid "Rejoindre notre serveur Discord"
+msgstr "Join our Discord server"
+
+msgid "Administration"
+msgstr "Administration"
+
+msgid "Configuration email"
+msgstr "Email configuration"
+
+msgid "Port"
+msgstr "Port"
+
+msgid "Expéditeur"
+msgstr "Sender"
+
+msgid "Admin(s)"
+msgstr "Admin(s)"
+
+msgid "Envoyer un test"
+msgstr "Send a test"
+
+msgid "Webhook Discord — Serveur"
+msgstr "Discord Webhook — Server"
+
+msgid "URL"
+msgstr "URL"
+
+msgid "Message envoyé sur le channel serveur."
+msgstr "Message sent to server channel."
+
+msgid "Envoyer un message de test"
+msgstr "Send a test message"
+
+msgid "Webhook Discord — Pilotes"
+msgstr "Discord Webhook — Drivers"
+
+msgid "Message envoyé sur le channel pilotes."
+msgstr "Message sent to drivers channel."
+
+msgid "utilise le webhook serveur"
+msgstr "uses server webhook"
+
+msgid "Inscription reçue ! Votre compte sera validé par un administrateur."
+msgstr "Registration received! Your account will be validated by an administrator."
+
+msgid "Votre compte doit être validé avant de vous inscrire."
+msgstr "Your account must be validated before you can register."
+
+msgid "Cet événement n'est pas disponible."
+msgstr "This event is not available."
+
+msgid "Vous êtes déjà inscrit à cet événement."
+msgstr "You are already registered for this event."
+
+msgid "Cet événement est complet."
+msgstr "This event is full."
+
+msgid "Inscription envoyée !"
+msgstr "Registration sent!"
+
+msgid "Désinscription effectuée."
+msgstr "Unregistered successfully."
+
+msgid "Impossible de se désinscrire (inscription confirmée)."
+msgstr "Cannot unregister (registration confirmed)."
+
+msgid "Un email de réinitialisation a été envoyé si le compte existe."
+msgstr "A reset email has been sent if the account exists."
+
+msgid "Ce lien est invalide ou a expiré."
+msgstr "This link is invalid or has expired."
+
+msgid "Mot de passe mis à jour. Vous pouvez vous connecter."
+msgstr "Password updated. You can now sign in."
+
+msgid "Le mot de passe doit contenir au moins 10 caractères."
+msgstr "The password must contain at least 10 characters."
+
+msgid "Le mot de passe doit contenir au moins une majuscule."
+msgstr "The password must contain at least one uppercase letter."
+
+msgid "Le mot de passe doit contenir au moins une minuscule."
+msgstr "The password must contain at least one lowercase letter."
+
+msgid "Le mot de passe doit contenir au moins un chiffre."
+msgstr "The password must contain at least one digit."
+
+msgid "Le mot de passe doit contenir au moins un caractère spécial."
+msgstr "The password must contain at least one special character."
+
+msgid "Les mots de passe ne correspondent pas."
+msgstr "Passwords do not match."
+
+msgid "Le nom in-game est requis."
+msgstr "The in-game name is required."
+
+msgid "Nom in-game invalide (2–30 caractères)."
+msgstr "Invalid in-game name (2–30 characters)."
+
+msgid "Adresse email invalide."
+msgstr "Invalid email address."
+
+msgid "Ce nom in-game est déjà utilisé."
+msgstr "This in-game name is already taken."
+
+msgid "Cet email est déjà utilisé."
+msgstr "This email is already in use."
+
+msgid "Événement créé."
+msgstr "Event created."
+
+msgid "Événement mis à jour."
+msgstr "Event updated."
+
+msgid "Événement supprimé."
+msgstr "Event deleted."
+
+msgid "Événement publié."
+msgstr "Event published."
+
+msgid "Événement repassé en brouillon."
+msgstr "Event set back to draft."
+
+msgid "Statut inchangé."
+msgstr "Status unchanged."
+
+msgid "Événement marqué comme terminé."
+msgstr "Event marked as finished."
+
+msgid "Entry list générée."
+msgstr "Entry list generated."
+
+msgid "Erreur lors de la génération."
+msgstr "Error during generation."
+
+msgid "%(name)s approuvé."
+msgstr "%(name)s approved."
+
+msgid "%(name)s refusé."
+msgstr "%(name)s rejected."
+
+msgid "%(name)s supprimé."
+msgstr "%(name)s deleted."
+
+msgid "Se désinscrire ?"
+msgstr "Unregister?"
+
+msgid "Marquer comme terminé ?"
+msgstr "Mark as finished?"
+
+msgid "Supprimer cet événement ?"
+msgstr "Delete this event?"
+
+msgid "Rejoindre"
+msgstr "Join"
+
+msgid "%(name)s confirmé(e)."
+msgstr "%(name)s confirmed."
+
+msgid "Destinataire"
+msgstr "Recipient"
+
+msgid "Email envoyé avec succès"
+msgstr "Email sent successfully"
+
+msgid "Erreur SMTP"
+msgstr "SMTP error"
+
+msgid "Ce site utilise uniquement des cookies techniques nécessaires à son fonctionnement."
+msgstr "This site only uses technical cookies required for its operation."

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Mes inscriptions — AC EVO Panel{% endblock %}
+{% block title %}{{ _('Mes inscriptions') }} — AC EVO Panel{% endblock %}
 {% block content %}
 {% with errors = get_flashed_messages(category_filter=['error']) %}
   {% for msg in errors %}
@@ -11,7 +11,7 @@
   <!-- ── Événements disponibles ── -->
   {% if available %}
   <section class="card" style="margin-bottom:24px">
-    <div class="card-header"><h2>Événements disponibles</h2></div>
+    <div class="card-header"><h2>{{ _('Événements disponibles') }}</h2></div>
     <div class="events-list">
       {% for ev in available %}
       <div class="event-card">
@@ -22,32 +22,32 @@
           </div>
           <div class="event-card-meta">
             <div class="meta-item">
-              <span class="meta-label">Date</span>
+              <span class="meta-label">{{ _('Date') }}</span>
               <span class="meta-value">{{ ev.date.strftime('%d/%m/%Y %H:%M') }} UTC</span>
             </div>
             <div class="meta-item">
-              <span class="meta-label">Circuit</span>
+              <span class="meta-label">{{ _('Circuit') }}</span>
               <span class="meta-value">{{ ev.circuit_display or ev.circuit or '—' }}</span>
             </div>
             <div class="meta-item">
-              <span class="meta-label">Mode</span>
+              <span class="meta-label">{{ _('Mode') }}</span>
               <span class="meta-value">{{ ev.mode_display }}</span>
             </div>
             <div class="meta-item">
-              <span class="meta-label">Pilotes</span>
+              <span class="meta-label">{{ _('Pilotes') }}</span>
               <span class="meta-value">{{ ev.confirmed_count }} / {{ ev.max_drivers }}</span>
             </div>
           </div>
         </div>
         <div class="event-card-action">
           {% if ev.is_full %}
-          <span class="text-muted" style="font-size:12px">Complet</span>
+          <span class="text-muted" style="font-size:12px">{{ _('Complet') }}</span>
           {% elif current_user.is_approved %}
           <form method="post" action="{{ url_for('public.pilot_register', event_id=ev.id) }}">
-            <button class="btn-primary" style="font-size:13px">S'inscrire</button>
+            <button class="btn-primary" style="font-size:13px">{{ _("S'inscrire") }}</button>
           </form>
           {% else %}
-          <span class="text-muted" style="font-size:12px">Compte en attente</span>
+          <span class="text-muted" style="font-size:12px">{{ _('Compte en attente') }}</span>
           {% endif %}
         </div>
       </div>
@@ -58,7 +58,7 @@
 
   <!-- ── Mes inscriptions ── -->
   <section class="card">
-    <div class="card-header"><h2>Mes inscriptions</h2></div>
+    <div class="card-header"><h2>{{ _('Mes inscriptions') }}</h2></div>
     {% if regs %}
     <div class="events-list">
       {% for reg in regs %}
@@ -70,12 +70,12 @@
           </div>
           <div class="event-card-meta">
             <div class="meta-item">
-              <span class="meta-label">Date</span>
+              <span class="meta-label">{{ _('Date') }}</span>
               <span class="meta-value">{{ reg.event.date.strftime('%d/%m/%Y %H:%M') }} UTC</span>
             </div>
             {% if reg.car_display or reg.assigned_car %}
             <div class="meta-item">
-              <span class="meta-label">Voiture</span>
+              <span class="meta-label">{{ _('Voiture') }}</span>
               <span class="meta-value">{{ reg.car_display or reg.assigned_car }}</span>
             </div>
             {% endif %}
@@ -83,13 +83,13 @@
         </div>
         <div class="event-card-action">
           <span class="badge badge-{{ reg.status }}">
-            {% if reg.status == 'pending' %}En attente
-            {% elif reg.status == 'confirmed' %}Confirmé
-            {% else %}Refusé{% endif %}
+            {% if reg.status == 'pending' %}{{ _('En attente') }}
+            {% elif reg.status == 'confirmed' %}{{ _('Confirmé') }}
+            {% else %}{{ _('Refusé') }}{% endif %}
           </span>
           {% if reg.status == 'pending' %}
           <form method="post" action="{{ url_for('public.pilot_unregister', event_id=reg.event_id) }}" style="margin-top:8px">
-            <button class="btn-danger" style="font-size:11px;padding:4px 10px" onclick="return confirm('Se désinscrire ?')">Annuler</button>
+            <button class="btn-danger" style="font-size:11px;padding:4px 10px" onclick="return confirm('{{ _("Se désinscrire ?") }}')">{{ _('Annuler') }}</button>
           </form>
           {% endif %}
         </div>
@@ -97,7 +97,7 @@
       {% endfor %}
     </div>
     {% else %}
-    <p class="text-muted" style="padding:8px 0">Vous n'êtes inscrit à aucun événement.</p>
+    <p class="text-muted" style="padding:8px 0">{{ _('Vous n\'êtes inscrit à aucun événement.') }}</p>
     {% endif %}
   </section>
 </div>

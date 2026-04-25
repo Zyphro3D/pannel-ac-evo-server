@@ -18,19 +18,19 @@
     <div class="hero-status-pill {% if status.running %}online{% endif %}">
       <span class="dot {% if status.running %}online{% endif %} {% if not status.running %}offline{% endif %}"></span>
       {% if status.running %}
-      <span>En ligne</span>
+      <span>{{ _('En ligne') }}</span>
       {% if status.players is not none %}
-      <span class="hero-players">{{ status.players }} / {{ server_info.max_players if server_info else '?' }} joueur(s)</span>
+      <span class="hero-players">{{ status.players }} / {{ server_info.max_players if server_info else '?' }} {{ _('joueur(s)') }}</span>
       {% endif %}
       {% else %}
-      <span style="color:var(--text-muted)">Hors ligne</span>
+      <span style="color:var(--text-muted)">{{ _('Hors ligne') }}</span>
       {% endif %}
     </div>
 
     {% if not current_user.is_authenticated %}
     <div class="hero-actions">
-      <a href="{{ url_for('auth.login') }}" class="btn-primary" style="font-size:13px">Se connecter</a>
-      <a href="{{ url_for('public.register') }}" class="btn-secondary" style="padding:7px 16px;font-size:13px">S'inscrire</a>
+      <a href="{{ url_for('auth.login') }}" class="btn-primary" style="font-size:13px">{{ _('Se connecter') }}</a>
+      <a href="{{ url_for('public.register') }}" class="btn-secondary" style="padding:7px 16px;font-size:13px">{{ _("S'inscrire") }}</a>
     </div>
     {% endif %}
   </div>
@@ -38,43 +38,43 @@
   {% if status.running and server_info %}
   <div class="server-info-grid">
     <div class="server-info-item">
-      <span class="si-label">Serveur</span>
+      <span class="si-label">{{ _('Nom du serveur') }}</span>
       <span class="si-value">{{ server_info.server_name }}</span>
     </div>
     <div class="server-info-item">
-      <span class="si-label">Circuit</span>
+      <span class="si-label">{{ _('Circuit') }}</span>
       <span class="si-value">
         {{ server_info.circuit }}
         {% if server_info.track_km %}<span class="si-sub">{{ server_info.track_km }}</span>{% endif %}
       </span>
     </div>
     <div class="server-info-item">
-      <span class="si-label">Mode</span>
+      <span class="si-label">{{ _('Mode') }}</span>
       <span class="si-value">{{ server_info.mode }}</span>
     </div>
     <div class="server-info-item">
-      <span class="si-label">Météo</span>
+      <span class="si-label">{{ _('Météo') }}</span>
       <span class="si-value">{{ server_info.weather }}</span>
     </div>
     {% if server_info.is_race_weekend %}
     <div class="server-info-item">
-      <span class="si-label">Sessions</span>
+      <span class="si-label">{{ _('Sessions') }}</span>
       <span class="si-value">
-        Libre {{ server_info.practice_dur }} —
-        Qualif {{ server_info.qualifying_dur }} —
-        Chauffe {{ server_info.warmup_dur }} —
-        Course {{ server_info.race_dur }}
+        {{ _('Libre') }} {{ server_info.practice_dur }} —
+        {{ _('Qualif') }} {{ server_info.qualifying_dur }} —
+        {{ _('Chauffe') }} {{ server_info.warmup_dur }} —
+        {{ _('Course') }} {{ server_info.race_dur }}
       </span>
     </div>
     {% else %}
     <div class="server-info-item">
-      <span class="si-label">Durée libre</span>
+      <span class="si-label">{{ _('Durée libre') }}</span>
       <span class="si-value">{{ server_info.practice_dur }}</span>
     </div>
     {% endif %}
     {% if server_info.cars %}
     <div class="server-info-item server-info-cars">
-      <span class="si-label">Véhicules ({{ server_info.car_count }})</span>
+      <span class="si-label">{{ _('Véhicules') }} ({{ server_info.car_count }})</span>
       <div class="si-cars">
         {% for car in server_info.cars[:8] %}
         <span class="car-chip">{{ car }}</span>
@@ -87,7 +87,7 @@
     {% endif %}
   </div>
   {% elif not status.running %}
-  <p style="color:var(--text-muted);font-size:13px;margin-top:12px">Le serveur est actuellement hors ligne.</p>
+  <p style="color:var(--text-muted);font-size:13px;margin-top:12px">{{ _('Le serveur est actuellement hors ligne.') }}</p>
   {% endif %}
 </div>
 
@@ -97,17 +97,17 @@
   <svg class="discord-icon" viewBox="0 0 127.14 96.36" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
     <path fill="currentColor" d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83 97.68 97.68 0 0 0-29.11 0A72.37 72.37 0 0 0 45.64 0a105.89 105.89 0 0 0-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0 0 32.17 16.15 77.7 77.7 0 0 0 6.89-11.11 68.42 68.42 0 0 1-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.66 2a68.68 68.68 0 0 1-10.87 5.19 77 77 0 0 0 6.89 11.1 105.25 105.25 0 0 0 32.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15zM42.45 65.69C36.18 65.69 31 60 31 53s5-12.74 11.43-12.74S54 46 53.89 53s-5.05 12.69-11.44 12.69zm42.24 0C78.41 65.69 73.25 60 73.25 53s5-12.74 11.44-12.74S96.23 46 96.12 53s-5.04 12.69-11.43 12.69z"/>
   </svg>
-  <span class="discord-text">Rejoignez notre serveur Discord</span>
-  <a href="{{ discord_invite }}" target="_blank" rel="noopener noreferrer" class="discord-btn">Rejoindre</a>
+  <span class="discord-text">{{ _('Rejoindre notre serveur Discord') }}</span>
+  <a href="{{ discord_invite }}" target="_blank" rel="noopener noreferrer" class="discord-btn">{{ _('Rejoindre') }}</a>
 </div>
 {% endif %}
 
 <!-- ── Événements à venir ── -->
 <section class="card" style="margin-top:24px">
   <div class="card-header">
-    <h2>Événements à venir</h2>
+    <h2>{{ _('Événements à venir') }}</h2>
     {% if current_user.is_authenticated and current_user.is_pilot %}
-    <a href="{{ url_for('public.pilot_dashboard') }}" class="btn-secondary">Mes inscriptions →</a>
+    <a href="{{ url_for('public.pilot_dashboard') }}" class="btn-secondary">{{ _('Mes inscriptions') }} →</a>
     {% endif %}
   </div>
 
@@ -125,23 +125,23 @@
         </div>
         <div class="event-card-meta">
           <div class="meta-item">
-            <span class="meta-label">Date</span>
+            <span class="meta-label">{{ _('Date') }}</span>
             <span class="meta-value">{{ ev.date.strftime('%d/%m/%Y %H:%M') }} UTC</span>
           </div>
           <div class="meta-item">
-            <span class="meta-label">Circuit</span>
+            <span class="meta-label">{{ _('Circuit') }}</span>
             <span class="meta-value">{{ ev.circuit_display or ev.circuit or '—' }}</span>
           </div>
           <div class="meta-item">
-            <span class="meta-label">Mode</span>
+            <span class="meta-label">{{ _('Mode') }}</span>
             <span class="meta-value">{{ ev.mode_display }}</span>
           </div>
           <div class="meta-item">
-            <span class="meta-label">Météo</span>
+            <span class="meta-label">{{ _('Météo') }}</span>
             <span class="meta-value">{{ ev.weather_display }}</span>
           </div>
           <div class="meta-item">
-            <span class="meta-label">Pilotes</span>
+            <span class="meta-label">{{ _('Pilotes') }}</span>
             <span class="meta-value">{{ ev.confirmed_count }} / {{ ev.max_drivers }}</span>
           </div>
         </div>
@@ -151,33 +151,33 @@
         {% if current_user.is_authenticated and current_user.is_pilot %}
           {% if reg %}
             <span class="badge badge-{{ reg.status }}">
-              {% if reg.status == 'pending' %}En attente
-              {% elif reg.status == 'confirmed' %}Confirmé
-              {% else %}Refusé{% endif %}
+              {% if reg.status == 'pending' %}{{ _('En attente') }}
+              {% elif reg.status == 'confirmed' %}{{ _('Confirmé') }}
+              {% else %}{{ _('Refusé') }}{% endif %}
             </span>
             {% if reg.status == 'pending' %}
             <form method="post" action="{{ url_for('public.pilot_unregister', event_id=ev.id) }}" style="display:inline">
-              <button class="btn-danger" style="font-size:12px;padding:5px 10px" onclick="return confirm('Se désinscrire ?')">Se désinscrire</button>
+              <button class="btn-danger" style="font-size:12px;padding:5px 10px" onclick="return confirm('{{ _("Se désinscrire ?") }}')">{{ _('Annuler') }}</button>
             </form>
             {% endif %}
           {% elif ev.is_full %}
-            <span class="text-muted" style="font-size:12px">Complet</span>
+            <span class="text-muted" style="font-size:12px">{{ _('Complet') }}</span>
           {% elif current_user.is_approved %}
             <form method="post" action="{{ url_for('public.pilot_register', event_id=ev.id) }}">
-              <button class="btn-primary" style="font-size:13px">S'inscrire</button>
+              <button class="btn-primary" style="font-size:13px">{{ _("S'inscrire") }}</button>
             </form>
           {% else %}
-            <span class="text-muted" style="font-size:12px">Compte en attente</span>
+            <span class="text-muted" style="font-size:12px">{{ _('Compte en attente') }}</span>
           {% endif %}
         {% elif not current_user.is_authenticated %}
-          <a href="{{ url_for('auth.login') }}" class="btn-secondary" style="font-size:12px;padding:7px 14px">Se connecter</a>
+          <a href="{{ url_for('auth.login') }}" class="btn-secondary" style="font-size:12px;padding:7px 14px">{{ _('Se connecter') }}</a>
         {% endif %}
       </div>
     </div>
     {% endfor %}
   </div>
   {% else %}
-  <p class="text-muted" style="padding:12px 0">Aucun événement à venir pour le moment.</p>
+  <p class="text-muted" style="padding:12px 0">{{ _('Aucun événement à venir pour le moment.') }}</p>
   {% endif %}
 </section>
 

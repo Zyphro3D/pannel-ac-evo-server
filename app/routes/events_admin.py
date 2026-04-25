@@ -3,6 +3,7 @@ from functools import wraps
 from datetime import datetime
 
 from flask import Blueprint, render_template, redirect, url_for, request, flash
+from flask_babel import _
 from flask_login import current_user
 
 from app.models import Event, EventRegistration, Driver
@@ -94,7 +95,7 @@ def event_create():
         event = _event_from_form(Event(), request.form)
         db.session.add(event)
         db.session.commit()
-        flash("Événement créé.", "success")
+        flash(_("Événement créé."), "success")
         return redirect(url_for("events_admin.events_list"))
     return render_template("event_form.html", event=None, action="create",
                            tracks=tracks, cars=cars,
@@ -111,7 +112,7 @@ def event_edit(event_id):
     if request.method == "POST":
         _event_from_form(event, request.form)
         db.session.commit()
-        flash("Événement mis à jour.", "success")
+        flash(_("Événement mis à jour."), "success")
         return redirect(url_for("events_admin.events_list"))
     return render_template("event_form.html", event=event, action="edit",
                            tracks=tracks, cars=cars,
@@ -124,7 +125,7 @@ def event_delete(event_id):
     event = Event.query.get_or_404(event_id)
     db.session.delete(event)
     db.session.commit()
-    flash("Événement supprimé.", "success")
+    flash(_("Événement supprimé."), "success")
     return redirect(url_for("events_admin.events_list"))
 
 
@@ -134,12 +135,12 @@ def event_publish(event_id):
     event = Event.query.get_or_404(event_id)
     if event.status == "draft":
         event.status = "published"
-        msg = "Événement publié."
+        msg = _("Événement publié.")
     elif event.status == "published":
         event.status = "draft"
-        msg = "Événement repassé en brouillon."
+        msg = _("Événement repassé en brouillon.")
     else:
-        msg = "Statut inchangé."
+        msg = _("Statut inchangé.")
     db.session.commit()
     flash(msg, "success")
     return redirect(url_for("events_admin.events_list"))
@@ -151,7 +152,7 @@ def event_finish(event_id):
     event = Event.query.get_or_404(event_id)
     event.status = "finished"
     db.session.commit()
-    flash("Événement marqué comme terminé.", "success")
+    flash(_("Événement marqué comme terminé."), "success")
     return redirect(url_for("events_admin.events_list"))
 
 
@@ -172,7 +173,7 @@ def reg_approve(event_id, rid):
     reg = EventRegistration.query.get_or_404(rid)
     reg.status = "confirmed"
     db.session.commit()
-    flash(f"{reg.driver.ingame_name} confirmé(e).", "success")
+    flash(_("%(name)s confirmé(e).", name=reg.driver.ingame_name), "success")
     return redirect(url_for("events_admin.event_registrations", event_id=event_id))
 
 
@@ -182,7 +183,7 @@ def reg_reject(event_id, rid):
     reg = EventRegistration.query.get_or_404(rid)
     reg.status = "rejected"
     db.session.commit()
-    flash(f"{reg.driver.ingame_name} refusé(e).", "success")
+    flash(_("%(name)s refusé.", name=reg.driver.ingame_name), "success")
     return redirect(url_for("events_admin.event_registrations", event_id=event_id))
 
 
@@ -204,7 +205,7 @@ def event_entry_list(event_id):
     event = Event.query.get_or_404(event_id)
     from app.services import entry_list
     ok = entry_list.generate(event)
-    flash("Entry list générée." if ok else "Erreur lors de la génération.", "success" if ok else "error")
+    flash(_("Entry list générée.") if ok else _("Erreur lors de la génération."), "success" if ok else "error")
     return redirect(url_for("events_admin.event_registrations", event_id=event_id))
 
 
@@ -227,7 +228,7 @@ def driver_approve(driver_id):
     db.session.commit()
     from app.services import mailer
     mailer.send_registration_approved(driver)
-    flash(f"{driver.ingame_name} approuvé(e).", "success")
+    flash(_("%(name)s approuvé.", name=driver.ingame_name), "success")
     return redirect(url_for("events_admin.drivers_list"))
 
 
@@ -239,7 +240,7 @@ def driver_reject(driver_id):
     db.session.commit()
     from app.services import mailer
     mailer.send_registration_rejected(driver)
-    flash(f"{driver.ingame_name} refusé(e).", "error")
+    flash(_("%(name)s refusé.", name=driver.ingame_name), "error")
     return redirect(url_for("events_admin.drivers_list"))
 
 
@@ -250,5 +251,5 @@ def driver_delete(driver_id):
     name = driver.ingame_name
     db.session.delete(driver)
     db.session.commit()
-    flash(f"{name} supprimé(e).", "success")
+    flash(_("%(name)s supprimé.", name=name), "success")
     return redirect(url_for("events_admin.drivers_list"))

@@ -2,6 +2,7 @@ import re
 from datetime import datetime, timezone
 
 from flask import Blueprint, render_template, redirect, url_for, request, flash
+from flask_babel import _
 from flask_login import current_user, login_user
 
 from app.models import Driver, Event, EventRegistration
@@ -59,20 +60,20 @@ def register():
 
         errors = []
         if not ingame:
-            errors.append("Le nom in-game est requis.")
+            errors.append(_("Le nom in-game est requis."))
         elif not _INGAME_RE.match(ingame):
-            errors.append("Nom in-game invalide (2–30 caractères, lettres/chiffres/._- seulement).")
+            errors.append(_("Nom in-game invalide (2–30 caractères)."))
         if not email or "@" not in email:
-            errors.append("Adresse email invalide.")
+            errors.append(_("Adresse email invalide."))
         errors.extend(_validate_password(pwd))
         if pwd != conf:
-            errors.append("Les mots de passe ne correspondent pas.")
+            errors.append(_("Les mots de passe ne correspondent pas."))
 
         if not errors:
             if Driver.query.filter_by(ingame_name=ingame).first():
-                errors.append("Ce nom in-game est déjà utilisé.")
+                errors.append(_("Ce nom in-game est déjà utilisé."))
             if Driver.query.filter_by(email=email).first():
-                errors.append("Cet email est déjà utilisé.")
+                errors.append(_("Cet email est déjà utilisé."))
 
         if not errors:
             driver = Driver(ingame_name=ingame, email=email)
@@ -82,7 +83,7 @@ def register():
             from app.services import mailer, discord_notifier
             mailer.send_new_registration(driver)
             discord_notifier.notify_new_registration(driver)
-            flash("Inscription reçue ! Votre compte sera activé par un administrateur.", "success")
+            flash(_("Inscription reçue ! Votre compte sera activé par un administrateur."), "success")
             return redirect(url_for("auth.login"))
 
         for e in errors:
@@ -121,25 +122,25 @@ def pilot_register(event_id):
         return redirect(url_for("auth.login"))
 
     if not current_user.is_approved:
-        flash("Votre compte doit être validé avant de pouvoir s'inscrire.", "error")
+        flash(_("Votre compte doit être validé avant de vous inscrire."), "error")
         return redirect(url_for("public.pilot_dashboard"))
 
     event = Event.query.get_or_404(event_id)
     if event.status != "published":
-        flash("Cet événement n'est pas disponible.", "error")
+        flash(_("Cet événement n'est pas disponible."), "error")
         return redirect(url_for("public.pilot_dashboard"))
 
     if EventRegistration.query.filter_by(event_id=event_id, driver_id=current_user.id).first():
-        flash("Vous êtes déjà inscrit à cet événement.", "error")
+        flash(_("Vous êtes déjà inscrit à cet événement."), "error")
         return redirect(url_for("public.pilot_dashboard"))
 
     if event.is_full:
-        flash("Cet événement est complet.", "error")
+        flash(_("Cet événement est complet."), "error")
         return redirect(url_for("public.pilot_dashboard"))
 
     db.session.add(EventRegistration(event_id=event_id, driver_id=current_user.id))
     db.session.commit()
-    flash("Inscription envoyée !", "success")
+    flash(_("Inscription envoyée !"), "success")
     return redirect(url_for("public.pilot_dashboard"))
 
 
@@ -152,7 +153,7 @@ def pilot_unregister(event_id):
     if reg and reg.status == "pending":
         db.session.delete(reg)
         db.session.commit()
-        flash("Désinscription effectuée.", "success")
+        flash(_("Désinscription effectuée."), "success")
     else:
-        flash("Impossible de se désinscrire (inscription déjà confirmée).", "error")
+        flash(_("Impossible de se désinscrire (inscription confirmée)."), "error")
     return redirect(url_for("public.pilot_dashboard"))

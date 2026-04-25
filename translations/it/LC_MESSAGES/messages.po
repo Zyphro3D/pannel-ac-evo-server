@@ -21,6 +21,81 @@ msgstr "Password"
 msgid "Identifiants incorrects"
 msgstr "Credenziali errate"
 
+msgid "Identifiant ou email"
+msgstr "Nome utente o email"
+
+msgid "S'inscrire"
+msgstr "Registrati"
+
+msgid "Se connecter"
+msgstr "Accedi"
+
+msgid "Mot de passe oublié ?"
+msgstr "Password dimenticata?"
+
+msgid "Pilote ?"
+msgstr "Pilota?"
+
+msgid "Votre compte est en attente de validation."
+msgstr "Il tuo account è in attesa di convalida."
+
+msgid "Votre compte a été refusé."
+msgstr "Il tuo account è stato rifiutato."
+
+msgid "Inscription pilote"
+msgstr "Registrazione pilota"
+
+msgid "Nom in-game"
+msgstr "Nome in gioco"
+
+msgid "Adresse email"
+msgstr "Indirizzo email"
+
+msgid "Confirmer le mot de passe"
+msgstr "Conferma password"
+
+msgid "Déjà un compte ?"
+msgstr "Hai già un account?"
+
+msgid "Votre compte sera activé par un administrateur."
+msgstr "Il tuo account sarà attivato da un amministratore."
+
+msgid "10 caractères minimum"
+msgstr "Minimo 10 caratteri"
+
+msgid "Une majuscule"
+msgstr "Una lettera maiuscola"
+
+msgid "Une minuscule"
+msgstr "Una lettera minuscola"
+
+msgid "Un chiffre"
+msgstr "Una cifra"
+
+msgid "Un caractère spécial"
+msgstr "Un carattere speciale"
+
+msgid "Mot de passe oublié"
+msgstr "Password dimenticata"
+
+msgid "Entrez votre identifiant ou votre adresse email. Si votre compte est approuvé, vous recevrez un lien de réinitialisation valable 1 heure."
+msgstr "Inserisci il tuo nome utente o indirizzo email. Se il tuo account è approvato, riceverai un link di ripristino valido per 1 ora."
+
+msgid "Nom in-game ou email"
+msgstr "Nome in gioco o email"
+
+msgid "Envoyer le lien"
+msgstr "Invia link"
+
+msgid "Retour à la connexion"
+msgstr "Torna al login"
+
+msgid "Nouveau mot de passe"
+msgstr "Nuova password"
+
+msgid "Enregistrer le mot de passe"
+msgstr "Salva password"
+
 msgid "Contrôle serveur"
 msgstr "Controllo del server"
 
@@ -35,6 +110,36 @@ msgstr "Ferma"
 
 msgid "Redémarrer"
 msgstr "Riavvia"
+
+msgid "Logs"
+msgstr "Log"
+
+msgid "Logs serveur"
+msgstr "Log del server"
+
+msgid "Chargement..."
+msgstr "Caricamento..."
+
+msgid "Fermer"
+msgstr "Chiudi"
+
+msgid "Actualiser"
+msgstr "Aggiorna"
+
+msgid "Auto-restart"
+msgstr "Auto-restart"
+
+msgid "Relancer automatiquement en cas de crash"
+msgstr "Riavvio automatico in caso di crash"
+
+msgid "Auto-restart activé"
+msgstr "Auto-restart attivato"
+
+msgid "Auto-restart désactivé"
+msgstr "Auto-restart disattivato"
+
+msgid "joueur(s)"
+msgstr "giocatore/i"
 
 msgid "Informations serveur"
 msgstr "Informazioni del server"
@@ -126,14 +231,23 @@ msgstr "Ottimale"
 msgid "Circuit"
 msgstr "Circuito"
 
+msgid "Mode"
+msgstr "Modalità"
+
 msgid "Sessions"
 msgstr "Sessioni"
 
 msgid "Durée (s)"
 msgstr "Durata (s)"
 
+msgid "Durée"
+msgstr "Durata"
+
 msgid "Heure"
 msgstr "Ora"
+
+msgid "Heure in-game"
+msgstr "Ora in gioco"
 
 msgid "Attente max box (s)"
 msgstr "Attesa max ai box (s)"
@@ -156,11 +270,20 @@ msgstr "Salva sessioni"
 msgid "(0 = ignoré)"
 msgstr "(0 = ignorato)"
 
+msgid "Qualif"
+msgstr "Qualif"
+
 msgid "Véhicules"
 msgstr "Veicoli"
 
 msgid "Filtrer..."
 msgstr "Filtra..."
+
+msgid "Rechercher..."
+msgstr "Cerca..."
+
+msgid "Sélectionnés seulement"
+msgstr "Solo selezionati"
 
 msgid "Tout sélectionner"
 msgstr "Seleziona tutto"
@@ -201,6 +324,24 @@ msgstr "Annulla"
 msgid "Créer"
 msgstr "Crea"
 
+msgid "Choisir autre"
+msgstr "Scegli altro"
+
+msgid "Réparer"
+msgstr "Ripara"
+
+msgid "Config réparée"
+msgstr "Configurazione riparata"
+
+msgid "Fichier invalide"
+msgstr "File non valido"
+
+msgid "Ce fichier contient des erreurs :"
+msgstr "Questo file contiene errori:"
+
+msgid "Dupliquer la configuration"
+msgstr "Duplica configurazione"
+
 msgid "Serveur"
 msgstr "Server"
 
@@ -237,20 +378,377 @@ msgstr "Veicoli salvati"
 msgid "Nom requis"
 msgstr "Nome richiesto"
 
-msgid "Dupliquer la configuration"
-msgstr "Duplica configurazione"
+msgid "Statut serveur"
+msgstr "Stato del server"
 
-msgid "Réparer"
-msgstr "Ripara"
+msgid "Contrôles"
+msgstr "Controlli"
 
-msgid "Config réparée"
-msgstr "Configurazione riparata"
+msgid "Durée libre"
+msgstr "Durata libera"
 
-msgid "Fichier invalide"
-msgstr "File non valido"
+msgid "Prochains événements"
+msgstr "Prossimi eventi"
 
-msgid "Ce fichier contient des erreurs :"
-msgstr "Questo file contiene errori:"
+msgid "Inscrits"
+msgstr "Iscritti"
 
-msgid "Choisir autre"
-msgstr "Scegli altro"
+msgid "Pilotes"
+msgstr "Piloti"
+
+msgid "Aucun événement à venir."
+msgstr "Nessun evento in arrivo."
+
+msgid "Aucun pilote en attente."
+msgstr "Nessun pilota in attesa."
+
+msgid "Gérer"
+msgstr "Gestisci"
+
+msgid "En attente de validation"
+msgstr "In attesa di convalida"
+
+msgid "pilote(s)"
+msgstr "pilota/i"
+
+msgid "Email"
+msgstr "Email"
+
+msgid "Inscrit le"
+msgstr "Iscritto il"
+
+msgid "Actions"
+msgstr "Azioni"
+
+msgid "Approuver"
+msgstr "Approva"
+
+msgid "Refuser"
+msgstr "Rifiuta"
+
+msgid "Pilotes approuvés"
+msgstr "Piloti approvati"
+
+msgid "Aucun pilote approuvé."
+msgstr "Nessun pilota approvato."
+
+msgid "Pilotes refusés"
+msgstr "Piloti rifiutati"
+
+msgid "Ré-approuver"
+msgstr "Riapprova"
+
+msgid "Supprimer définitivement"
+msgstr "Elimina definitivamente"
+
+msgid "Événements"
+msgstr "Eventi"
+
+msgid "Titre"
+msgstr "Titolo"
+
+msgid "Date (UTC)"
+msgstr "Data (UTC)"
+
+msgid "Statut"
+msgstr "Stato"
+
+msgid "Modifier"
+msgstr "Modifica"
+
+msgid "Dépublier"
+msgstr "Ritira"
+
+msgid "Publier"
+msgstr "Pubblica"
+
+msgid "Terminer"
+msgstr "Termina"
+
+msgid "Aucun événement."
+msgstr "Nessun evento."
+
+msgid "Créer le premier"
+msgstr "Crea il primo"
+
+msgid "Modifier l'événement"
+msgstr "Modifica evento"
+
+msgid "Nouvel événement"
+msgstr "Nuovo evento"
+
+msgid "Retour"
+msgstr "Indietro"
+
+msgid "Description"
+msgstr "Descrizione"
+
+msgid "(optionnel)"
+msgstr "(opzionale)"
+
+msgid "Date et heure (UTC)"
+msgstr "Data e ora (UTC)"
+
+msgid "Pilotes max"
+msgstr "Piloti max"
+
+msgid "Durées de session"
+msgstr "Durate delle sessioni"
+
+msgid "Mot de passe serveur"
+msgstr "Password del server"
+
+msgid "(vide = public)"
+msgstr "(vuoto = pubblico)"
+
+msgid "Rappel email"
+msgstr "Promemoria email"
+
+msgid "(minutes avant début)"
+msgstr "(minuti prima dell'inizio)"
+
+msgid "Lancer le serveur automatiquement"
+msgstr "Avvia il server automaticamente"
+
+msgid "Serveur lancé automatiquement pour cet événement."
+msgstr "Server avviato automaticamente per questo evento."
+
+msgid "Véhicules autorisés"
+msgstr "Veicoli consentiti"
+
+msgid "Catégories"
+msgstr "Categorie"
+
+msgid "Tous"
+msgstr "Tutti"
+
+msgid "Enregistrer"
+msgstr "Salva"
+
+msgid "Générer entry list"
+msgstr "Genera entry list"
+
+msgid "Course privée"
+msgstr "Gara privata"
+
+msgid "Pilote"
+msgstr "Pilota"
+
+msgid "Voiture assignée"
+msgstr "Auto assegnata"
+
+msgid "Non assignée"
+msgstr "Non assegnata"
+
+msgid "Confirmer"
+msgstr "Conferma"
+
+msgid "Aucune inscription pour le moment."
+msgstr "Nessuna iscrizione al momento."
+
+msgid "Événements disponibles"
+msgstr "Eventi disponibili"
+
+msgid "Date"
+msgstr "Data"
+
+msgid "Complet"
+msgstr "Completo"
+
+msgid "Compte en attente"
+msgstr "Account in attesa"
+
+msgid "Mes inscriptions"
+msgstr "Le mie iscrizioni"
+
+msgid "Voiture"
+msgstr "Auto"
+
+msgid "En attente"
+msgstr "In attesa"
+
+msgid "Confirmé"
+msgstr "Confermato"
+
+msgid "Vous n'êtes inscrit à aucun événement."
+msgstr "Non sei iscritto a nessun evento."
+
+msgid "Le serveur est actuellement hors ligne."
+msgstr "Il server è attualmente offline."
+
+msgid "Événements à venir"
+msgstr "Prossimi eventi"
+
+msgid "Aucun événement à venir pour le moment."
+msgstr "Nessun evento in arrivo al momento."
+
+msgid "Rejoindre notre serveur Discord"
+msgstr "Unisciti al nostro server Discord"
+
+msgid "Administration"
+msgstr "Amministrazione"
+
+msgid "Configuration email"
+msgstr "Configurazione email"
+
+msgid "Port"
+msgstr "Porta"
+
+msgid "Expéditeur"
+msgstr "Mittente"
+
+msgid "Admin(s)"
+msgstr "Admin"
+
+msgid "Envoyer un test"
+msgstr "Invia un test"
+
+msgid "Webhook Discord — Serveur"
+msgstr "Webhook Discord — Server"
+
+msgid "URL"
+msgstr "URL"
+
+msgid "Message envoyé sur le channel serveur."
+msgstr "Messaggio inviato sul canale server."
+
+msgid "Envoyer un message de test"
+msgstr "Invia un messaggio di test"
+
+msgid "Webhook Discord — Pilotes"
+msgstr "Webhook Discord — Piloti"
+
+msgid "Message envoyé sur le channel pilotes."
+msgstr "Messaggio inviato sul canale piloti."
+
+msgid "utilise le webhook serveur"
+msgstr "usa il webhook del server"
+
+msgid "Inscription reçue ! Votre compte sera validé par un administrateur."
+msgstr "Registrazione ricevuta! Il tuo account sarà convalidato da un amministratore."
+
+msgid "Votre compte doit être validé avant de vous inscrire."
+msgstr "Il tuo account deve essere convalidato prima di poterti iscrivere."
+
+msgid "Cet événement n'est pas disponible."
+msgstr "Questo evento non è disponibile."
+
+msgid "Vous êtes déjà inscrit à cet événement."
+msgstr "Sei già iscritto a questo evento."
+
+msgid "Cet événement est complet."
+msgstr "Questo evento è al completo."
+
+msgid "Inscription envoyée !"
+msgstr "Iscrizione inviata!"
+
+msgid "Désinscription effectuée."
+msgstr "Disiscrizione effettuata."
+
+msgid "Impossible de se désinscrire (inscription confirmée)."
+msgstr "Impossibile disiscriversi (iscrizione confermata)."
+
+msgid "Un email de réinitialisation a été envoyé si le compte existe."
+msgstr "È stata inviata un'email di ripristino se l'account esiste."
+
+msgid "Ce lien est invalide ou a expiré."
+msgstr "Questo link non è valido o è scaduto."
+
+msgid "Mot de passe mis à jour. Vous pouvez vous connecter."
+msgstr "Password aggiornata. Puoi ora accedere."
+
+msgid "Le mot de passe doit contenir au moins 10 caractères."
+msgstr "La password deve contenere almeno 10 caratteri."
+
+msgid "Le mot de passe doit contenir au moins une majuscule."
+msgstr "La password deve contenere almeno una lettera maiuscola."
+
+msgid "Le mot de passe doit contenir au moins une minuscule."
+msgstr "La password deve contenere almeno una lettera minuscola."
+
+msgid "Le mot de passe doit contenir au moins un chiffre."
+msgstr "La password deve contenere almeno una cifra."
+
+msgid "Le mot de passe doit contenir au moins un caractère spécial."
+msgstr "La password deve contenere almeno un carattere speciale."
+
+msgid "Les mots de passe ne correspondent pas."
+msgstr "Le password non corrispondono."
+
+msgid "Le nom in-game est requis."
+msgstr "Il nome in gioco è obbligatorio."
+
+msgid "Nom in-game invalide (2–30 caractères)."
+msgstr "Nome in gioco non valido (2–30 caratteri)."
+
+msgid "Adresse email invalide."
+msgstr "Indirizzo email non valido."
+
+msgid "Ce nom in-game est déjà utilisé."
+msgstr "Questo nome in gioco è già in uso."
+
+msgid "Cet email est déjà utilisé."
+msgstr "Questa email è già in uso."
+
+msgid "Événement créé."
+msgstr "Evento creato."
+
+msgid "Événement mis à jour."
+msgstr "Evento aggiornato."
+
+msgid "Événement supprimé."
+msgstr "Evento eliminato."
+
+msgid "Événement publié."
+msgstr "Evento pubblicato."
+
+msgid "Événement repassé en brouillon."
+msgstr "Evento riportato in bozza."
+
+msgid "Statut inchangé."
+msgstr "Stato invariato."
+
+msgid "Événement marqué comme terminé."
+msgstr "Evento contrassegnato come terminato."
+
+msgid "Entry list générée."
+msgstr "Entry list generata."
+
+msgid "Erreur lors de la génération."
+msgstr "Errore durante la generazione."
+
+msgid "%(name)s approuvé."
+msgstr "%(name)s approvato."
+
+msgid "%(name)s refusé."
+msgstr "%(name)s rifiutato."
+
+msgid "%(name)s supprimé."
+msgstr "%(name)s eliminato."
+
+msgid "Se désinscrire ?"
+msgstr "Disiscriversi?"
+
+msgid "Marquer comme terminé ?"
+msgstr "Contrassegnare come terminato?"
+
+msgid "Supprimer cet événement ?"
+msgstr "Eliminare questo evento?"
+
+msgid "Rejoindre"
+msgstr "Unisciti"
+
+msgid "%(name)s confirmé(e)."
+msgstr "%(name)s confermato/a."
+
+msgid "Destinataire"
+msgstr "Destinatario"
+
+msgid "Email envoyé avec succès"
+msgstr "Email inviata con successo"
+
+msgid "Erreur SMTP"
+msgstr "Errore SMTP"
+
+msgid "Ce site utilise uniquement des cookies techniques nécessaires à son fonctionnement."
+msgstr "Questo sito utilizza solo cookie tecnici necessari al suo funzionamento."
