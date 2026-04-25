@@ -10,7 +10,8 @@ from datetime import datetime
 
 log = logging.getLogger(__name__)
 
-_webhook_url: str = ""
+_webhook_url: str        = ""
+_pilots_webhook_url: str = ""
 
 _MODE_LABELS = {
     "GameModeType_PRACTICE":     "Practice",
@@ -23,20 +24,18 @@ _COLOR_RED    = 0xE74C3C
 _COLOR_ORANGE = 0xE67E22
 
 
-def init(webhook_url: str):
-    global _webhook_url
-    _webhook_url = webhook_url
+def init(webhook_url: str, pilots_webhook_url: str = ""):
+    global _webhook_url, _pilots_webhook_url
+    _webhook_url        = webhook_url
+    _pilots_webhook_url = pilots_webhook_url
 
 
-def _send(payload: dict):
-    if not _webhook_url:
-        return
-
+def _post_to(url: str, payload: dict):
     def _post():
         try:
             data = json.dumps(payload).encode("utf-8")
             req  = urllib.request.Request(
-                _webhook_url + "?wait=true", data=data,
+                url + "?wait=true", data=data,
                 headers={
                     "Content-Type": "application/json",
                     "User-Agent": "DiscordBot (https://github.com/discord/discord-api-docs, 10)",
@@ -51,6 +50,17 @@ def _send(payload: dict):
             log.warning("Discord webhook failed: %s", e)
 
     threading.Thread(target=_post, daemon=True).start()
+
+
+def _send(payload: dict):
+    if _webhook_url:
+        _post_to(_webhook_url, payload)
+
+
+def _send_pilots(payload: dict):
+    url = _pilots_webhook_url or _webhook_url
+    if url:
+        _post_to(url, payload)
 
 
 def _fmt_duration(seconds: int) -> str:
@@ -131,5 +141,65 @@ def notify_crash(config_name: str, restarting: bool = True):
         "title":  title,
         "color":  _COLOR_RED,
         "fields": [{"name": "Config", "value": config_name or "—", "inline": True}],
+        "footer": {"text": datetime.now().strftime("%d/%m/%Y %H:%M")},
+    }]})
+
+
+def test_webhook(url: str) -> dict:
+    """Envoi synchrone pour le bouton de test — retourne {"ok": bool, "error": str|None}."""
+    if not url:
+        return {"ok": False, "error": "URL vide"}
+    payload = {"embeds": [{
+        "title":  "Test webhook AC EVO Panel",
+        "color":  0x3498DB,
+        "description": "La configuration Discord fonctionne correctement.",
+        "footer": {"text": datetime.now().strftime("%d/%m/%Y %H:%M")},
+    }]}
+    try:
+        data = json.dumps(payload).encode("utf-8")
+        req  = urllib.request.Request(
+            url + "?wait=true", data=data,
+            headers={
+                "Content-Type": "application/json",
+                "User-Agent": "DiscordBot (https://github.com/discord/discord-api-docs, 10)",
+            },
+            method="POST",
+        )
+        urllib.request.urlopen(req, timeout=10)
+        return {"ok": True}
+    except urllib.error.HTTPError as e:
+        body = e.read().decode("utf-8", errors="replace")
+        return {"ok": False, "error": f"HTTP {e.code} — {body}"}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+
+def notify_event_soon(event):
+    date_str = event.date.strftime("%d/%m/%Y à %H:%M") + " UTC"
+    circuit  = event.circuit_display or event.circuit or "—"
+    fields   = [
+        {"name": "Circuit",  "value": circuit,           "inline": True},
+        {"name": "Mode",     "value": event.mode_display, "inline": True},
+        {"name": "Météo",    "value": event.weather_display, "inline": True},
+        {"name": "Date",     "value": date_str,          "inline": False},
+    ]
+    if event.description:
+        fields.append({"name": "Infos", "value": event.description, "inline": False})
+    _send_pilots({"embeds": [{
+        "title":       f"🏁 {event.title} — Départ dans 30 minutes !",
+        "color":       0xE67E22,
+        "fields":      fields,
+        "footer":      {"text": datetime.now().strftime("%d/%m/%Y %H:%M")},
+    }]})
+
+
+def notify_new_registration(driver):
+    _send_pilots({"embeds": [{
+        "title":  "Nouvelle demande d'inscription pilote",
+        "color":  0x3498DB,
+        "fields": [
+            {"name": "Nom in-game", "value": driver.ingame_name, "inline": True},
+            {"name": "Email",       "value": driver.email,       "inline": True},
+        ],
         "footer": {"text": datetime.now().strftime("%d/%m/%Y %H:%M")},
     }]})

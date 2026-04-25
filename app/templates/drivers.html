@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block title %}Pilotes — AC EVO Panel{% endblock %}
+{% block content %}
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% for category, message in messages %}
+  <div class="alert-{{ category }}" style="margin-bottom:12px">{{ message }}</div>
+  {% endfor %}
+{% endwith %}
+
+<!-- ── En attente ── -->
+<section class="card" style="margin-bottom:20px">
+  <div class="card-header">
+    <h2>En attente de validation</h2>
+    <span style="font-size:13px;color:var(--text-muted)">{{ pending|length }} pilote(s)</span>
+  </div>
+  {% if pending %}
+  <table class="simple-table full-width">
+    <thead>
+      <tr><th>Nom in-game</th><th>Email</th><th>Inscrit le</th><th style="text-align:right">Actions</th></tr>
+    </thead>
+    <tbody>
+      {% for d in pending %}
+      <tr>
+        <td style="font-weight:600">{{ d.ingame_name }}</td>
+        <td style="color:var(--text-muted);font-size:12px">{{ d.email }}</td>
+        <td style="font-size:12px;color:var(--text-muted)">{{ d.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+        <td>
+          <div class="table-actions" style="justify-content:flex-end">
+            <form method="post" action="{{ url_for('events_admin.driver_approve', driver_id=d.id) }}" style="display:inline">
+              <button class="btn-secondary" style="font-size:12px;color:var(--green);border-color:var(--green)">✓ Approuver</button>
+            </form>
+            <form method="post" action="{{ url_for('events_admin.driver_reject', driver_id=d.id) }}" style="display:inline">
+              <button class="btn-secondary" style="font-size:12px;color:var(--red);border-color:var(--red)" onclick="return confirm('Refuser {{ d.ingame_name }} ?')">✕ Refuser</button>
+            </form>
+            <form method="post" action="{{ url_for('events_admin.driver_delete', driver_id=d.id) }}" style="display:inline">
+              <button class="btn-danger" style="font-size:12px" onclick="return confirm('Supprimer définitivement {{ d.ingame_name }} ?')">🗑</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="text-muted" style="padding:8px 0">Aucun pilote en attente.</p>
+  {% endif %}
+</section>
+
+<!-- ── Approuvés ── -->
+<section class="card" style="margin-bottom:20px">
+  <div class="card-header">
+    <h2>Pilotes approuvés</h2>
+    <span style="font-size:13px;color:var(--text-muted)">{{ approved|length }} pilote(s)</span>
+  </div>
+  {% if approved %}
+  <table class="simple-table full-width">
+    <thead>
+      <tr><th>Nom in-game</th><th>Email</th><th>Inscrit le</th><th style="text-align:right">Actions</th></tr>
+    </thead>
+    <tbody>
+      {% for d in approved %}
+      <tr>
+        <td style="font-weight:600">{{ d.ingame_name }}</td>
+        <td style="color:var(--text-muted);font-size:12px">{{ d.email }}</td>
+        <td style="font-size:12px;color:var(--text-muted)">{{ d.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+        <td>
+          <div class="table-actions" style="justify-content:flex-end">
+            <form method="post" action="{{ url_for('events_admin.driver_delete', driver_id=d.id) }}" style="display:inline">
+              <button class="btn-danger" style="font-size:12px" onclick="return confirm('Supprimer définitivement {{ d.ingame_name }} ?')">🗑 Supprimer</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="text-muted" style="padding:8px 0">Aucun pilote approuvé.</p>
+  {% endif %}
+</section>
+
+<!-- ── Refusés ── -->
+{% if rejected %}
+<section class="card">
+  <div class="card-header">
+    <h2>Pilotes refusés</h2>
+    <span style="font-size:13px;color:var(--text-muted)">{{ rejected|length }}</span>
+  </div>
+  <table class="simple-table full-width">
+    <thead>
+      <tr><th>Nom in-game</th><th>Email</th><th>Actions</th></tr>
+    </thead>
+    <tbody>
+      {% for d in rejected %}
+      <tr>
+        <td>{{ d.ingame_name }}</td>
+        <td style="color:var(--text-muted);font-size:12px">{{ d.email }}</td>
+        <td>
+          <div class="table-actions">
+            <form method="post" action="{{ url_for('events_admin.driver_approve', driver_id=d.id) }}" style="display:inline">
+              <button class="btn-secondary" style="font-size:11px">Ré-approuver</button>
+            </form>
+            <form method="post" action="{{ url_for('events_admin.driver_delete', driver_id=d.id) }}" style="display:inline">
+              <button class="btn-danger" style="font-size:11px" onclick="return confirm('Supprimer définitivement {{ d.ingame_name }} ?')">🗑 Supprimer</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endif %}
+
+{% endblock %}

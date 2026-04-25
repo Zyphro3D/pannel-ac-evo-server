@@ -7,30 +7,80 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 </head>
 <body data-active-config="{{ active_config | default('') }}">
-  {% if current_user.is_authenticated %}
+
   <nav class="navbar">
-    <div class="navbar-brand">
+    <a class="navbar-brand" href="{{ url_for('public.index') }}">
       <span class="brand-evo">EVO</span>
       <span class="brand-panel">PANEL</span>
       <span class="brand-version">v{{ app_version }}</span>
-    </div>
+    </a>
+
+    {% if current_user.is_authenticated %}
+      {% if current_user.is_admin %}
+      <div class="navbar-nav">
+        <a href="{{ url_for('admin.dashboard') }}"
+           class="nav-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}">Dashboard</a>
+        <a href="{{ url_for('admin.server') }}"
+           class="nav-link {% if request.endpoint == 'admin.server' %}active{% endif %}">Serveur</a>
+        <a href="{{ url_for('events_admin.events_list') }}"
+           class="nav-link {% if request.endpoint and request.endpoint.startswith('events_admin') and 'driver' not in request.endpoint %}active{% endif %}">Événements</a>
+        <a href="{{ url_for('events_admin.drivers_list') }}"
+           class="nav-link {% if request.endpoint and 'driver' in request.endpoint %}active{% endif %}">
+          Pilotes
+          {% if pending_pilots_count > 0 %}
+          <span class="nav-badge">{{ pending_pilots_count }}</span>
+          {% endif %}
+        </a>
+        {% if current_user.is_superadmin %}
+        <a href="{{ url_for('admin.administration') }}"
+           class="nav-link {% if request.endpoint == 'admin.administration' %}active{% endif %}">Administration</a>
+        {% endif %}
+      </div>
+      {% elif current_user.is_pilot %}
+      <div class="navbar-nav">
+        <a href="{{ url_for('public.index') }}"
+           class="nav-link {% if request.endpoint == 'public.index' %}active{% endif %}">Événements</a>
+        <a href="{{ url_for('public.pilot_dashboard') }}"
+           class="nav-link {% if request.endpoint == 'public.pilot_dashboard' %}active{% endif %}">Mes inscriptions</a>
+      </div>
+      {% endif %}
+    {% endif %}
+
     <div class="navbar-right">
+      {% if current_user.is_authenticated and current_user.is_admin %}
       <div class="server-badge" id="nav-status">
         <span class="dot" id="status-dot"></span>
         <span id="status-label">—</span>
       </div>
+      {% endif %}
+
       <div class="lang-switcher">
         <a href="{{ url_for('auth.set_language', lang='fr') }}" class="{% if get_locale() == 'fr' %}active{% endif %}">FR</a>
         <a href="{{ url_for('auth.set_language', lang='en') }}" class="{% if get_locale() == 'en' %}active{% endif %}">EN</a>
       </div>
-      <a href="{{ url_for('auth.logout') }}" class="btn-logout">{{ _('Déconnexion') }}</a>
+
+      {% if current_user.is_authenticated %}
+        <a href="{{ url_for('auth.logout') }}" class="btn-logout">{{ _('Déconnexion') }}</a>
+      {% else %}
+        <a href="{{ url_for('auth.login') }}" class="btn-logout">{{ _('Connexion') }}</a>
+      {% endif %}
     </div>
   </nav>
-  {% endif %}
 
   <main class="main-content">
+    {% with messages = get_flashed_messages(category_filter=['success']) %}
+      {% for message in messages %}
+      <div class="flash flash-success">{{ message }}</div>
+      {% endfor %}
+    {% endwith %}
     {% block content %}{% endblock %}
   </main>
+
+  <!-- Cookie consent GDPR -->
+  <div id="cookie-banner" class="cookie-banner" style="display:none">
+    <span>Ce site utilise uniquement des cookies techniques nécessaires à son fonctionnement.</span>
+    <button class="btn-secondary" onclick="acceptCookies()">OK</button>
+  </div>
 
   <script>
   const I18N = {
@@ -52,6 +102,14 @@
     autoRestartOff:  "{{ _('Auto-restart désactivé') }}",
     players:         "{{ _('joueur(s)') }}",
   };
+
+  function acceptCookies() {
+    localStorage.setItem('cookies_accepted', '1');
+    document.getElementById('cookie-banner').style.display = 'none';
+  }
+  if (!localStorage.getItem('cookies_accepted')) {
+    document.getElementById('cookie-banner').style.display = 'flex';
+  }
   </script>
   <script src="{{ url_for('static', filename='js/app.js') }}"></script>
   {% block scripts %}{% endblock %}

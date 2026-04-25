@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Événements — AC EVO Panel{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <h2>Événements</h2>
+    <a href="{{ url_for('events_admin.event_create') }}" class="btn-primary" style="font-size:13px">+ Créer</a>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+    <div class="alert-{{ category }}" style="margin-bottom:12px">{{ message }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  {% if events %}
+  <table class="simple-table full-width">
+    <thead>
+      <tr>
+        <th>Titre</th>
+        <th>Date (UTC)</th>
+        <th>Circuit</th>
+        <th>Mode</th>
+        <th>Inscrits</th>
+        <th>Statut</th>
+        <th style="text-align:right">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for ev in events %}
+      <tr>
+        <td style="font-weight:600">{{ ev.title }}</td>
+        <td style="white-space:nowrap">{{ ev.date.strftime('%d/%m/%Y %H:%M') }}</td>
+        <td>{{ ev.circuit_display or ev.circuit or '—' }}</td>
+        <td>{{ ev.mode_display }}</td>
+        <td>{{ ev.confirmed_count }}/{{ ev.max_drivers }}</td>
+        <td><span class="badge badge-{{ ev.status }}">{{ ev.status }}</span></td>
+        <td>
+          <div class="table-actions">
+            <a href="{{ url_for('events_admin.event_registrations', event_id=ev.id) }}" class="btn-secondary" style="font-size:11px">Inscrits</a>
+            <a href="{{ url_for('events_admin.event_edit', event_id=ev.id) }}" class="btn-secondary" style="font-size:11px">Modifier</a>
+            {% if ev.status != 'finished' %}
+            <form method="post" action="{{ url_for('events_admin.event_publish', event_id=ev.id) }}" style="display:inline">
+              <button class="btn-secondary" style="font-size:11px">
+                {{ 'Dépublier' if ev.status == 'published' else 'Publier' }}
+              </button>
+            </form>
+            {% endif %}
+            {% if ev.status == 'published' %}
+            <form method="post" action="{{ url_for('events_admin.event_finish', event_id=ev.id) }}" style="display:inline">
+              <button class="btn-secondary" style="font-size:11px" onclick="return confirm('Marquer comme terminé ?')">Terminer</button>
+            </form>
+            {% endif %}
+            <form method="post" action="{{ url_for('events_admin.event_delete', event_id=ev.id) }}" style="display:inline">
+              <button class="btn-danger" style="font-size:11px;padding:5px 10px" onclick="return confirm('Supprimer cet événement ?')">&#128465;</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="text-muted" style="padding:12px 0">Aucun événement. <a href="{{ url_for('events_admin.event_create') }}" style="color:var(--accent)">Créer le premier →</a></p>
+  {% endif %}
+</div>
+{% endblock %}

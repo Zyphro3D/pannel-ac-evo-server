@@ -7,17 +7,24 @@
       <span class="brand-evo">EVO</span>
       <span class="brand-panel">PANEL</span>
     </div>
-    <p class="login-sub">{{ _('Administration serveur') }}</p>
+    <p class="login-sub">{{ _('Connexion') }}</p>
 
     {% with messages = get_flashed_messages(category_filter=["error"]) %}
       {% if messages %}
-        <div class="alert alert-error">{{ _('Identifiants incorrects') }}</div>
+        {% set msg = messages[0] %}
+        {% if msg == 'pending' %}
+        <div class="alert-error" style="margin-bottom:10px">Votre compte est en attente de validation par un administrateur.</div>
+        {% elif msg == 'rejected' %}
+        <div class="alert-error" style="margin-bottom:10px">Votre compte a été refusé.</div>
+        {% else %}
+        <div class="alert-error" style="margin-bottom:10px">{{ _('Identifiants incorrects') }}</div>
+        {% endif %}
       {% endif %}
     {% endwith %}
 
     <form method="post" class="login-form" id="login-form">
       <div class="form-group">
-        <label>{{ _('Utilisateur') }}</label>
+        <label>{{ _('Identifiant ou email') }}</label>
         <input type="text" name="username" id="username-input" autofocus required autocomplete="username">
       </div>
       <div class="form-group">
@@ -26,6 +33,12 @@
       </div>
       <button type="submit" class="btn-primary full-width">{{ _('Connexion') }}</button>
     </form>
+
+    <p style="text-align:center;margin-top:16px;font-size:12px;color:var(--text-muted)">
+      Pilote ? <a href="{{ url_for('public.register') }}" style="color:var(--accent)">S'inscrire</a>
+      &nbsp;·&nbsp;
+      <a href="{{ url_for('auth.forgot_password') }}" style="color:var(--text-muted)">Mot de passe oublié ?</a>
+    </p>
   </div>
 </div>
 <script>

@@ -147,6 +147,155 @@ def load_config() -> dict:
         return json.load(f)
 
 
+def load_config_by_name(name: str) -> dict | None:
+    """Charge un fichier de config par son nom de fichier, sans toucher à la session."""
+    path = _configs_dir() / name
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return None
+
+
+_MODE_LABELS = {
+    "GameModeType_PRACTICE":     "Practice",
+    "GameModeType_RACE_WEEKEND": "Race Weekend",
+}
+_WEATHER_LABELS = {
+    "GameModeSelectionWeatherType_CLEAR":    "Dégagé",
+    "GameModeSelectionWeatherType_OVERCAST": "Nuageux",
+    "GameModeSelectionWeatherType_RAIN":     "Pluie",
+}
+
+
+def get_running_server_info() -> dict | None:
+    """
+    Retourne les infos affichables de la session en cours (circuit, mode, météo,
+    véhicules sélectionnés, durée de session…) ou None si le serveur est arrêté.
+    Fonctionne sans contexte de session utilisateur.
+    """
+    from app.services.process_manager import _read_state, is_running
+    if not is_running():
+        return None
+
+    state = _read_state()
+    config_name = state.get("config", "")
+    if not config_name:
+        return None
+
+    cfg = load_config_by_name(config_name)
+    if not cfg:
+        return None
+
+    ev  = cfg.get("Event", {})
+    srv = cfg.get("Server", {})
+    ses = cfg.get("Sessions", {})
+
+    # Circuit : "track|layout|event_name|length"
+    track_raw = ev.get("SelectedTrackValue", "")
+    parts = track_raw.split("|") if track_raw else []
+    circuit = f"{parts[0]} — {parts[1]}" if len(parts) >= 2 else "—"
+    track_km = f"{float(parts[3]) / 1000:.2f} km" if len(parts) >= 4 else ""
+
+    mode    = _MODE_LABELS.get(ev.get("SelectedSessionTypeValue", ""), ev.get("SelectedSessionTypeValue", "—"))
+    weather = _WEATHER_LABELS.get(ev.get("SelectedWeatherTypeValue", ""), "—")
+
+    # Véhicules sélectionnés
+    cars = ev.get("Cars", [])
+    selected = [c.get("display_name") or c.get("name", "") for c in cars
+                if c.get("is_selected") or c.get("IsSelected")]
+
+    # Durée principale (Practice) en secondes → h/min
+    def _fmt_dur(seconds: int) -> str:
+        if not seconds:
+            return "—"
+        h, m = divmod(seconds // 60, 60)
+        return f"{h}h{m:02d}" if h else f"{m} min"
+
+    practice_dur  = _fmt_dur(ses.get("PracticeSession", {}).get("Length", 0))
+    qualifying_dur = _fmt_dur(ses.get("QualifyingSession", {}).get("Length", 0))
+    warmup_dur    = _fmt_dur(ses.get("WarmupSession", {}).get("Length", 0))
+    race_dur      = _fmt_dur(ses.get("RaceSession", {}).get("Length", 0))
+
+    return {
+        "server_name":    srv.get("ServerName", "—"),
+        "config_file":    config_name,
+        "circuit":        circuit,
+        "track_km":       track_km,
+        "mode":           mode,
+        "weather":        weather,
+        "cars":           selected,
+        "car_count":      len(selected),
+        "max_players":    srv.get("MaxPlayers", "—"),
+        "practice_dur":   practice_dur,
+        "qualifying_dur": qualifying_dur,
+        "warmup_dur":     warmup_dur,
+        "race_dur":       race_dur,
+        "is_race_weekend": ev.get("SelectedSessionTypeValue") == "GameModeType_RACE_WEEKEND",
+    }
+
+
+def build_config_from_event(event) -> dict:
+    """Construit un dict de config complet à partir d'un Event de la DB."""
+    import json as _json
+    import re
+
+    cfg = _default_config()
+
+    # Server
+    cfg["Server"]["ServerName"]     = event.title
+    cfg["Server"]["MaxPlayers"]     = event.max_drivers
+    cfg["Server"]["DriverPassword"] = event.password or ""
+
+    # Event
+    cfg["Event"]["SelectedSessionTypeValue"]    = event.mode
+    cfg["Event"]["SelectedWeatherTypeValue"]    = event.weather
+    cfg["Event"]["SelectedTrackValue"]          = event.circuit
+
+    # Cars — marquer comme sélectionnées celles dans allowed_cars (ou toutes si liste vide)
+    allowed_names = set(_json.loads(event.allowed_cars or "[]"))
+    car_list = []
+    for car in load_cars():
+        selected = (not allowed_names) or (car["name"] in allowed_names)
+        car_list.append({
+            "is_selected": selected,   "IsSelected": selected,
+            "ballast": 0.0,            "Ballast": 0,
+            "restrictor": 0.0,         "Restrictor": 0.0,
+            "performance_indicator": car["performance_indicator"],
+            "PerformanceIndicator":  car["performance_indicator"],
+            "property_1": car.get("property_1"), "P1": car.get("property_1"),
+            "property_2": car.get("property_2"), "P2": car.get("property_2"),
+            "property_3": car.get("property_3"), "P3": car.get("property_3"),
+            "name": car["name"], "display_name": car["display_name"],
+        })
+    cfg["Event"]["Cars"] = car_list
+
+    # Sessions (minutes → secondes)
+    sess = cfg["Sessions"]
+    sess["PracticeSession"]["Length"]   = (event.practice_minutes   or 60) * 60
+    sess["QualifyingSession"]["Length"] = (event.qualifying_minutes or 30) * 60
+    sess["WarmupSession"]["Length"]     = (event.warmup_minutes     or 10) * 60
+    sess["RaceSession"]["Length"]       = (event.race_minutes       or 60) * 60
+
+    if event.mode == "GameModeType_RACE_WEEKEND":
+        sess["QualifyingSession"]["IsVisible"] = True
+        sess["WarmupSession"]["IsVisible"]     = True
+        sess["RaceSession"]["IsVisible"]       = True
+
+    return cfg
+
+
+def save_event_config(event, cfg: dict) -> str:
+    """Sauvegarde la config d'un événement dans CONFIGS_DIR. Retourne le nom du fichier."""
+    import re
+    slug = re.sub(r"[^\w\-]", "_", event.title)[:40].strip("_")
+    name = f"event_{event.id}_{slug}.json"
+    path = _configs_dir() / name
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(cfg, f, indent=2, ensure_ascii=False)
+    return name
+
+
 def save_config(data: dict):
     with open(_active_path(), "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)

@@ -1,0 +1,342 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Modifier' if action == 'edit' else 'Créer' }} un événement — AC EVO Panel{% endblock %}
+{% block content %}
+
+{# Helpers durée : convertir minutes → heures / reste #}
+{% macro dur_h(minutes, default=0) %}{{ ((minutes if minutes is not none else default) // 60) }}{% endmacro %}
+{% macro dur_m(minutes, default=0) %}{{ ((minutes if minutes is not none else default) % 60) }}{% endmacro %}
+
+<div class="card" style="max-width:860px">
+  <div class="card-header">
+    <h2>{{ 'Modifier l\'événement' if action == 'edit' else 'Nouvel événement' }}</h2>
+    <a href="{{ url_for('events_admin.events_list') }}" class="btn-secondary">← Retour</a>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+    <div class="alert-{{ category }}" style="margin-bottom:12px">{{ message }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  <form method="post" class="panel-form" id="event-form">
+
+    <!-- ── Infos générales ── -->
+    <div class="form-group">
+      <label>Titre</label>
+      <input type="text" name="title" required maxlength="100"
+             value="{{ event.title if event else '' }}">
+    </div>
+
+    <div class="form-group">
+      <label>Description <span class="label-hint">(optionnel)</span></label>
+      <textarea name="description" rows="2" class="form-textarea">{{ event.description if event else '' }}</textarea>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Date et heure (UTC)</label>
+        <input type="datetime-local" name="date" required
+               value="{{ event.date.strftime('%Y-%m-%dT%H:%M') if event and event.date else '' }}">
+      </div>
+      <div class="form-group">
+        <label>Pilotes max</label>
+        <input type="number" name="max_drivers" min="1" max="100"
+               value="{{ event.max_drivers if event else 20 }}">
+      </div>
+    </div>
+
+    <!-- ── Circuit + mode ── -->
+    <div class="form-group">
+      <label>Circuit</label>
+      <select name="circuit" id="circuit-select" onchange="updateCircuitDisplay(this)">
+        {% for tr in tracks %}
+        {% set tv = tr.track + '|' + tr.layout + '|' + tr.event_name + '|' + tr.track_length|string %}
+        {% set disp = tr.track ~ ' — ' ~ tr.layout %}
+        <option value="{{ tv }}" data-display="{{ disp }}"
+                {% if event and event.circuit == tv %}selected{% endif %}>
+          {{ disp }} ({{ "%.2f"|format(tr.track_length / 1000) }} km)
+        </option>
+        {% endfor %}
+      </select>
+      <input type="hidden" name="circuit_display" id="circuit-display"
+             value="{{ event.circuit_display if event else '' }}">
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Mode</label>
+        <select name="mode" id="mode-select" onchange="onModeChange(this.value)">
+          <option value="GameModeType_PRACTICE"     {% if not event or event.mode == 'GameModeType_PRACTICE'     %}selected{% endif %}>Practice</option>
+          <option value="GameModeType_RACE_WEEKEND" {% if event and event.mode == 'GameModeType_RACE_WEEKEND' %}selected{% endif %}>Race Weekend</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Météo</label>
+        <select name="weather">
+          <option value="GameModeSelectionWeatherType_CLEAR"    {% if not event or event.weather == 'GameModeSelectionWeatherType_CLEAR'    %}selected{% endif %}>Dégagé</option>
+          <option value="GameModeSelectionWeatherType_OVERCAST" {% if event and event.weather == 'GameModeSelectionWeatherType_OVERCAST' %}selected{% endif %}>Nuageux</option>
+          <option value="GameModeSelectionWeatherType_RAIN"     {% if event and event.weather == 'GameModeSelectionWeatherType_RAIN'     %}selected{% endif %}>Pluie</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- ── Durées de session ── -->
+    <div class="form-section-title">Durées de session</div>
+
+    <div id="dur-practice-block">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Libre</label>
+          <div class="dur-inputs">
+            <input type="number" name="practice_h" min="0" max="23" placeholder="0"
+                   value="{{ dur_h(event.practice_minutes, 1) if event else 1 }}" class="dur-h">
+            <span class="dur-sep">h</span>
+            <input type="number" name="practice_m" min="0" max="59" step="5" placeholder="00"
+                   value="{{ dur_m(event.practice_minutes, 0) if event else 0 }}" class="dur-m">
+            <span class="dur-sep">min</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="dur-race-block" style="display:none">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Libre</label>
+          <div class="dur-inputs">
+            <input type="number" name="practice_h" min="0" max="23" placeholder="0"
+                   value="{{ dur_h(event.practice_minutes, 1) if event else 1 }}" class="dur-h" id="practice-h-rw">
+            <span class="dur-sep">h</span>
+            <input type="number" name="practice_m" min="0" max="59" step="5" placeholder="00"
+                   value="{{ dur_m(event.practice_minutes, 0) if event else 0 }}" class="dur-m" id="practice-m-rw">
+            <span class="dur-sep">min</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Qualification</label>
+          <div class="dur-inputs">
+            <input type="number" name="qualifying_h" min="0" max="23" placeholder="0"
+                   value="{{ dur_h(event.qualifying_minutes, 0) if event else 0 }}" class="dur-h">
+            <span class="dur-sep">h</span>
+            <input type="number" name="qualifying_m" min="0" max="59" step="5" placeholder="00"
+                   value="{{ dur_m(event.qualifying_minutes, 30) if event else 30 }}" class="dur-m">
+            <span class="dur-sep">min</span>
+          </div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Chauffe</label>
+          <div class="dur-inputs">
+            <input type="number" name="warmup_h" min="0" max="23" placeholder="0"
+                   value="{{ dur_h(event.warmup_minutes, 0) if event else 0 }}" class="dur-h">
+            <span class="dur-sep">h</span>
+            <input type="number" name="warmup_m" min="0" max="59" step="5" placeholder="00"
+                   value="{{ dur_m(event.warmup_minutes, 10) if event else 10 }}" class="dur-m">
+            <span class="dur-sep">min</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Course</label>
+          <div class="dur-inputs">
+            <input type="number" name="race_h" min="0" max="23" placeholder="0"
+                   value="{{ dur_h(event.race_minutes, 1) if event else 1 }}" class="dur-h">
+            <span class="dur-sep">h</span>
+            <input type="number" name="race_m" min="0" max="59" step="5" placeholder="00"
+                   value="{{ dur_m(event.race_minutes, 0) if event else 0 }}" class="dur-m">
+            <span class="dur-sep">min</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Paramètres accès ── -->
+    <div class="form-row" style="margin-top:4px">
+      <div class="form-group">
+        <label>Mot de passe serveur <span class="label-hint">(vide = public)</span></label>
+        <input type="text" name="password" maxlength="50"
+               value="{{ event.password if event else '' }}">
+      </div>
+      <div class="form-group">
+        <label>Rappel email <span class="label-hint">(minutes avant début)</span></label>
+        <input type="number" name="notify_before" min="0" max="10080"
+               value="{{ event.notify_before if event else 60 }}">
+      </div>
+    </div>
+
+    <!-- ── Lancement automatique ── -->
+    <div class="form-group" style="margin-top:4px">
+      <label class="toggle-label" style="display:flex;align-items:center;gap:10px;cursor:pointer">
+        <input type="hidden" name="auto_launch" value="0">
+        <input type="checkbox" name="auto_launch" value="1"
+               {% if event and event.auto_launch %}checked{% endif %}>
+        <span>Lancer le serveur automatiquement à la date et heure de l'événement</span>
+      </label>
+      {% if event and event.launched %}
+      <p style="font-size:12px;color:var(--green);margin-top:4px">✓ Serveur lancé automatiquement pour cet événement.</p>
+      {% endif %}
+    </div>
+
+    <!-- ── Sélection véhicules ── -->
+    {% if cars %}
+    <div class="form-section-title" style="margin-top:8px">
+      Véhicules autorisés
+      <span id="cars-sel-count" style="font-size:12px;font-weight:400;color:var(--text-muted)"></span>
+    </div>
+
+    <!-- Filtres -->
+    <div class="cars-filters">
+      <div class="cars-filters-top">
+        <input type="text" id="ef-car-search" placeholder="Rechercher un véhicule..." oninput="efApplyFilters()">
+        <button type="button" class="btn-secondary" onclick="efSelectAll(true)">Tout sélectionner</button>
+        <button type="button" class="btn-secondary" onclick="efSelectAll(false)">Tout désélectionner</button>
+      </div>
+
+      <!-- Filtre PI -->
+      <div class="pi-filter-row">
+        <span class="pi-filter-label">PI</span>
+        <div class="pi-slider-wrapper" style="flex:1">
+          <input type="range" id="ef-pi-min" min="{{ pi_min|int }}" max="{{ pi_max|int }}"
+                 value="{{ pi_min|int }}" step="1" oninput="efSyncPi('min')">
+          <input type="range" id="ef-pi-max" min="{{ pi_min|int }}" max="{{ pi_max|int }}"
+                 value="{{ pi_max|int }}" step="1" oninput="efSyncPi('max')">
+        </div>
+        <span class="pi-range-label">
+          <span id="ef-pi-min-val">{{ pi_min|int }}</span>
+          <span style="color:var(--text-muted)"> — </span>
+          <span id="ef-pi-max-val">{{ pi_max|int }}</span>
+        </span>
+      </div>
+
+      <!-- Filtre catégorie -->
+      {% if car_categories %}
+      <div class="cat-filter-row">
+        <button type="button" class="cat-btn active" data-cat="all" onclick="efSetCat(this)">Tous</button>
+        {% for cat in car_categories %}
+        <button type="button" class="cat-btn" data-cat="{{ cat }}" onclick="efSetCat(this)">{{ cat }}</button>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="cars-table-wrapper" style="max-height:320px">
+      <table class="cars-table" id="ef-cars-table">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Véhicule</th>
+            <th>PI</th>
+            <th>Catégories</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% set allowed_list = event.allowed_cars | from_json if event and event.allowed_cars else [] %}
+          {% for car in cars %}
+          {% set cats = [] %}
+          {% if car.property_1_label %}{% set _ = cats.append(car.property_1_label) %}{% endif %}
+          {% if car.property_2_label %}{% set _ = cats.append(car.property_2_label) %}{% endif %}
+          {% if car.property_3_label %}{% set _ = cats.append(car.property_3_label) %}{% endif %}
+          <tr class="car-row"
+              data-name="{{ car.display_name | lower }}"
+              data-pi="{{ car.performance_indicator | default(0) }}"
+              data-cats="{{ cats | join(' ') | lower }}">
+            <td>
+              <input type="checkbox" name="allowed_cars" value="{{ car.name }}" class="ef-car-check"
+                     {% if car.name in allowed_list %}checked{% endif %}>
+            </td>
+            <td class="car-name">{{ car.display_name }}</td>
+            <td class="car-pi">{{ "%.0f"|format(car.performance_indicator) }}</td>
+            <td style="font-size:11px;color:var(--text-muted)">{{ cats | join(' · ') }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+
+    <div class="modal-actions" style="margin-top:16px">
+      <a href="{{ url_for('events_admin.events_list') }}" class="btn-secondary">Annuler</a>
+      <button type="submit" class="btn-primary">{{ 'Enregistrer' if action == 'edit' else 'Créer' }}</button>
+    </div>
+  </form>
+</div>
+
+{% block scripts %}
+<script>
+// ── Circuit display ──
+function updateCircuitDisplay(sel) {
+  const opt = sel.options[sel.selectedIndex];
+  document.getElementById('circuit-display').value = opt.dataset.display || '';
+}
+
+// ── Mode toggle ──
+function onModeChange(val) {
+  const isRW = val === 'GameModeType_RACE_WEEKEND';
+  document.getElementById('dur-practice-block').style.display = isRW ? 'none' : '';
+  document.getElementById('dur-race-block').style.display     = isRW ? ''     : 'none';
+}
+
+// ── PI slider sync ──
+const PI_MIN = {{ pi_min|int }};
+const PI_MAX = {{ pi_max|int }};
+let _piMin = PI_MIN, _piMax = PI_MAX;
+function efSyncPi(which) {
+  const slMin = document.getElementById('ef-pi-min');
+  const slMax = document.getElementById('ef-pi-max');
+  _piMin = parseInt(slMin.value);
+  _piMax = parseInt(slMax.value);
+  if (_piMin > _piMax) {
+    if (which === 'min') { _piMax = _piMin; slMax.value = _piMin; }
+    else                  { _piMin = _piMax; slMin.value = _piMax; }
+  }
+  document.getElementById('ef-pi-min-val').textContent = _piMin;
+  document.getElementById('ef-pi-max-val').textContent = _piMax;
+  efApplyFilters();
+}
+
+// ── Category filter ──
+let _activeCat = 'all';
+function efSetCat(btn) {
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  _activeCat = btn.dataset.cat;
+  efApplyFilters();
+}
+
+// ── Combined filter ──
+function efApplyFilters() {
+  const q = (document.getElementById('ef-car-search')?.value || '').toLowerCase();
+  document.querySelectorAll('#ef-cars-table .car-row').forEach(row => {
+    const name  = row.dataset.name || '';
+    const pi    = parseFloat(row.dataset.pi || 0);
+    const cats  = row.dataset.cats || '';
+    const show  = name.includes(q)
+                  && pi >= _piMin && pi <= _piMax
+                  && (_activeCat === 'all' || cats.includes(_activeCat.toLowerCase()));
+    row.classList.toggle('hidden', !show);
+  });
+  efUpdateCount();
+}
+
+function efSelectAll(checked) {
+  document.querySelectorAll('#ef-cars-table .car-row:not(.hidden) .ef-car-check').forEach(cb => {
+    cb.checked = checked;
+  });
+  efUpdateCount();
+}
+function efUpdateCount() {
+  const n  = document.querySelectorAll('.ef-car-check:checked').length;
+  const el = document.getElementById('cars-sel-count');
+  if (el) el.textContent = n > 0 ? `(${n} sélectionné${n > 1 ? 's' : ''})` : '';
+}
+document.querySelectorAll('.ef-car-check').forEach(cb => cb.addEventListener('change', efUpdateCount));
+
+// ── Init ──
+document.addEventListener('DOMContentLoaded', () => {
+  updateCircuitDisplay(document.getElementById('circuit-select'));
+  onModeChange(document.getElementById('mode-select').value);
+  efUpdateCount();
+});
+</script>
+{% endblock %}
+{% endblock %}

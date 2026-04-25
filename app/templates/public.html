@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% block title %}AC EVO Panel{% endblock %}
+{% block content %}
+{% with errors = get_flashed_messages(category_filter=['error']) %}
+  {% for msg in errors %}
+  <div class="alert-error" style="margin-bottom:12px">{{ msg }}</div>
+  {% endfor %}
+{% endwith %}
+
+<!-- ── Hero serveur ── -->
+<div class="public-hero">
+  <div class="public-hero-top">
+    <div class="hero-brand">
+      <span class="brand-evo" style="font-size:28px">EVO</span>
+      <span class="brand-panel" style="font-size:14px">PANEL</span>
+    </div>
+
+    <div class="hero-status-pill {% if status.running %}online{% endif %}">
+      <span class="dot {% if status.running %}online{% endif %} {% if not status.running %}offline{% endif %}"></span>
+      {% if status.running %}
+      <span>En ligne</span>
+      {% if status.players is not none %}
+      <span class="hero-players">{{ status.players }} / {{ server_info.max_players if server_info else '?' }} joueur(s)</span>
+      {% endif %}
+      {% else %}
+      <span style="color:var(--text-muted)">Hors ligne</span>
+      {% endif %}
+    </div>
+
+    {% if not current_user.is_authenticated %}
+    <div class="hero-actions">
+      <a href="{{ url_for('auth.login') }}" class="btn-primary" style="font-size:13px">Se connecter</a>
+      <a href="{{ url_for('public.register') }}" class="btn-secondary" style="padding:7px 16px;font-size:13px">S'inscrire</a>
+    </div>
+    {% endif %}
+  </div>
+
+  {% if status.running and server_info %}
+  <div class="server-info-grid">
+    <div class="server-info-item">
+      <span class="si-label">Serveur</span>
+      <span class="si-value">{{ server_info.server_name }}</span>
+    </div>
+    <div class="server-info-item">
+      <span class="si-label">Circuit</span>
+      <span class="si-value">
+        {{ server_info.circuit }}
+        {% if server_info.track_km %}<span class="si-sub">{{ server_info.track_km }}</span>{% endif %}
+      </span>
+    </div>
+    <div class="server-info-item">
+      <span class="si-label">Mode</span>
+      <span class="si-value">{{ server_info.mode }}</span>
+    </div>
+    <div class="server-info-item">
+      <span class="si-label">Météo</span>
+      <span class="si-value">{{ server_info.weather }}</span>
+    </div>
+    {% if server_info.is_race_weekend %}
+    <div class="server-info-item">
+      <span class="si-label">Sessions</span>
+      <span class="si-value">
+        Libre {{ server_info.practice_dur }} —
+        Qualif {{ server_info.qualifying_dur }} —
+        Chauffe {{ server_info.warmup_dur }} —
+        Course {{ server_info.race_dur }}
+      </span>
+    </div>
+    {% else %}
+    <div class="server-info-item">
+      <span class="si-label">Durée libre</span>
+      <span class="si-value">{{ server_info.practice_dur }}</span>
+    </div>
+    {% endif %}
+    {% if server_info.cars %}
+    <div class="server-info-item server-info-cars">
+      <span class="si-label">Véhicules ({{ server_info.car_count }})</span>
+      <div class="si-cars">
+        {% for car in server_info.cars[:8] %}
+        <span class="car-chip">{{ car }}</span>
+        {% endfor %}
+        {% if server_info.car_count > 8 %}
+        <span class="car-chip car-chip-more">+{{ server_info.car_count - 8 }}</span>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+  {% elif not status.running %}
+  <p style="color:var(--text-muted);font-size:13px;margin-top:12px">Le serveur est actuellement hors ligne.</p>
+  {% endif %}
+</div>
+
+<!-- ── Événements à venir ── -->
+<section class="card" style="margin-top:24px">
+  <div class="card-header">
+    <h2>Événements à venir</h2>
+    {% if current_user.is_authenticated and current_user.is_pilot %}
+    <a href="{{ url_for('public.pilot_dashboard') }}" class="btn-secondary">Mes inscriptions →</a>
+    {% endif %}
+  </div>
+
+  {% if events %}
+  <div class="events-list">
+    {% for ev in events %}
+    {% set reg = my_regs.get(ev.id) %}
+    <div class="event-card {% if ev.is_full and not reg %}event-full{% endif %}">
+      <div class="event-card-main">
+        <div>
+          <div class="event-card-title">{{ ev.title }}</div>
+          {% if ev.description %}
+          <div class="event-card-desc">{{ ev.description }}</div>
+          {% endif %}
+        </div>
+        <div class="event-card-meta">
+          <div class="meta-item">
+            <span class="meta-label">Date</span>
+            <span class="meta-value">{{ ev.date.strftime('%d/%m/%Y %H:%M') }} UTC</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Circuit</span>
+            <span class="meta-value">{{ ev.circuit_display or ev.circuit or '—' }}</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Mode</span>
+            <span class="meta-value">{{ ev.mode_display }}</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Météo</span>
+            <span class="meta-value">{{ ev.weather_display }}</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Pilotes</span>
+            <span class="meta-value">{{ ev.confirmed_count }} / {{ ev.max_drivers }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card-action">
+        {% if current_user.is_authenticated and current_user.is_pilot %}
+          {% if reg %}
+            <span class="badge badge-{{ reg.status }}">
+              {% if reg.status == 'pending' %}En attente
+              {% elif reg.status == 'confirmed' %}Confirmé
+              {% else %}Refusé{% endif %}
+            </span>
+            {% if reg.status == 'pending' %}
+            <form method="post" action="{{ url_for('public.pilot_unregister', event_id=ev.id) }}" style="display:inline">
+              <button class="btn-danger" style="font-size:12px;padding:5px 10px" onclick="return confirm('Se désinscrire ?')">Se désinscrire</button>
+            </form>
+            {% endif %}
+          {% elif ev.is_full %}
+            <span class="text-muted" style="font-size:12px">Complet</span>
+          {% elif current_user.is_approved %}
+            <form method="post" action="{{ url_for('public.pilot_register', event_id=ev.id) }}">
+              <button class="btn-primary" style="font-size:13px">S'inscrire</button>
+            </form>
+          {% else %}
+            <span class="text-muted" style="font-size:12px">Compte en attente</span>
+          {% endif %}
+        {% elif not current_user.is_authenticated %}
+          <a href="{{ url_for('auth.login') }}" class="btn-secondary" style="font-size:12px;padding:7px 14px">Se connecter</a>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="text-muted" style="padding:12px 0">Aucun événement à venir pour le moment.</p>
+  {% endif %}
+</section>
+
+<div class="toast" id="toast"></div>
+{% endblock %}

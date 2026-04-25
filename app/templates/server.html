@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Dashboard — AC EVO Panel{% endblock %}
+{% block title %}Serveur — AC EVO Panel{% endblock %}
 {% block content %}
 <div class="dashboard">
 
@@ -18,7 +18,7 @@
     <div class="config-bar-right">
       <button class="btn-secondary" onclick="openCreateModal(false)">+ {{ _('Nouveau') }}</button>
       <button class="btn-secondary" onclick="openCreateModal(true)">&#10697; {{ _('Dupliquer') }}</button>
-<button class="btn-danger"    onclick="confirmDeleteConfig()">&#128465; {{ _('Supprimer') }}</button>
+      <button class="btn-danger"    onclick="confirmDeleteConfig()">&#128465; {{ _('Supprimer') }}</button>
     </div>
   </div>
 
@@ -157,7 +157,6 @@
   <!-- ── Tab: Événement & Sessions ── -->
   <div class="tab-panel" id="tab-event">
 
-    <!-- Événement -->
     <section class="card">
       <div class="card-header"><h2>{{ _('Événement') }}</h2></div>
       <form id="form-event" class="panel-form">
@@ -334,10 +333,7 @@
         <h2>{{ _('Véhicules') }}</h2>
       </div>
 
-      <!-- Filtres -->
       <div class="cars-filters">
-
-        <!-- Ligne 1 : recherche + sélectionnés seulement + boutons -->
         <div class="cars-filters-top">
           <input type="text" id="car-search" placeholder="{{ _('Rechercher...') }}" oninput="filterCars()">
           <label class="toggle-label">
@@ -348,7 +344,6 @@
           <button class="btn-secondary" onclick="selectAllVisible(false)">{{ _('Tout désélectionner') }}</button>
         </div>
 
-        <!-- Ligne 2 : slider PI double -->
         <div class="pi-filter">
           <span class="pi-filter-label">PI&nbsp;<span id="pi-display">{{ "%.1f"|format(pi_min) }} — {{ "%.1f"|format(pi_max) }}</span></span>
           <div class="pi-slider-wrapper">
@@ -362,7 +357,6 @@
           </div>
         </div>
 
-        <!-- Ligne 3 : filtres par catégorie -->
         {% if car_categories %}
         <div class="cat-filters">
           {% for cat in car_categories %}
@@ -370,7 +364,6 @@
           {% endfor %}
         </div>
         {% endif %}
-
       </div>
 
       <div class="cars-table-wrapper">

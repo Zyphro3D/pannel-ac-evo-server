@@ -20,7 +20,6 @@ api_bp = Blueprint("api", __name__)
 # ── Serveur ──────────────────────────────────────────────────────────────────
 
 @api_bp.route("/status")
-@login_required
 def status():
     return jsonify(get_status())
 

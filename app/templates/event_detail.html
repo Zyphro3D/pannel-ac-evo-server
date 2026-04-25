@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Inscriptions — {{ event.title }} — AC EVO Panel{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <div>
+      <h2>{{ event.title }}</h2>
+      <div style="font-size:12px;color:var(--text-muted);margin-top:4px">
+        {{ event.date.strftime('%d/%m/%Y %H:%M') }} UTC —
+        {{ event.circuit_display or event.circuit }} —
+        {{ event.mode_display }} — {{ event.weather_display }}
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <form method="post" action="{{ url_for('events_admin.event_entry_list', event_id=event.id) }}">
+        <button class="btn-secondary" style="font-size:12px">&#9654; Générer entry list</button>
+      </form>
+      <a href="{{ url_for('events_admin.events_list') }}" class="btn-secondary" style="font-size:12px">← Retour</a>
+    </div>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+    <div class="alert-{{ category }}" style="margin-bottom:12px">{{ message }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  <div style="font-size:12px;color:var(--text-muted);margin-bottom:16px">
+    {{ event.confirmed_count }} confirmé(s) / {{ event.pending_count }} en attente — max {{ event.max_drivers }}
+    {% if event.password %}&nbsp;— 🔒 Course privée{% endif %}
+  </div>
+
+  {% if regs %}
+  <table class="simple-table full-width">
+    <thead>
+      <tr>
+        <th>Pilote</th>
+        <th>Email</th>
+        <th>Voiture assignée</th>
+        <th>Statut</th>
+        <th style="text-align:right">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for reg in regs %}
+      <tr>
+        <td style="font-weight:600">{{ reg.driver.ingame_name }}</td>
+        <td style="color:var(--text-muted);font-size:12px">{{ reg.driver.email }}</td>
+        <td>
+          <form method="post" action="{{ url_for('events_admin.reg_assign_car', event_id=event.id, rid=reg.id) }}"
+                style="display:flex;gap:6px;align-items:center">
+            <select name="assigned_car" onchange="updateDisplay(this)" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);padding:4px 8px;font-size:12px;max-width:200px">
+              <option value="">— Non assignée —</option>
+              {% for car in cars %}
+              <option value="{{ car.name }}"
+                      data-display="{{ car.display_name }}"
+                      {% if reg.assigned_car == car.name %}selected{% endif %}>
+                {{ car.display_name }}
+              </option>
+              {% endfor %}
+            </select>
+            <input type="hidden" name="car_display" id="car-display-{{ reg.id }}"
+                   value="{{ reg.car_display }}">
+            <button class="btn-secondary" style="font-size:11px;padding:4px 10px">OK</button>
+          </form>
+        </td>
+        <td><span class="badge badge-{{ reg.status }}">{{ reg.status }}</span></td>
+        <td>
+          <div class="table-actions" style="justify-content:flex-end">
+            {% if reg.status != 'confirmed' %}
+            <form method="post" action="{{ url_for('events_admin.reg_approve', event_id=event.id, rid=reg.id) }}" style="display:inline">
+              <button class="btn-secondary" style="font-size:11px;color:var(--green);border-color:var(--green)">Confirmer</button>
+            </form>
+            {% endif %}
+            {% if reg.status != 'rejected' %}
+            <form method="post" action="{{ url_for('events_admin.reg_reject', event_id=event.id, rid=reg.id) }}" style="display:inline">
+              <button class="btn-secondary" style="font-size:11px;color:var(--red);border-color:var(--red)">Refuser</button>
+            </form>
+            {% endif %}
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="text-muted" style="padding:8px 0">Aucune inscription pour le moment.</p>
+  {% endif %}
+</div>
+
+<script>
+function updateDisplay(sel) {
+  const opt  = sel.options[sel.selectedIndex];
+  const id   = sel.closest('form').querySelector('[id^="car-display-"]').id.replace('car-display-','');
+  document.getElementById('car-display-' + id).value = opt.dataset.display || '';
+}
+</script>
+{% endblock %}

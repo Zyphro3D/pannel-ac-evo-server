@@ -14,8 +14,6 @@ class Config:
     CONFIGS_DIR = os.environ.get("CONFIGS_DIR", r"C:\Users\Administrateur\Documents\ACE")
 
     # Dossier d'installation du serveur de jeu.
-    # ACESERVER_DIR suffit ; les chemins individuels sont dérivés automatiquement.
-    # Définir une variable individuelle uniquement si le fichier est ailleurs.
     ACESERVER_DIR = os.environ.get("ACESERVER_DIR", r"C:\aceserver")
 
     ACESERVER_EXE_PATH = os.environ.get(
@@ -36,12 +34,31 @@ class Config:
     )
 
     ACESERVER_HTTP_PORT = int(os.environ.get("ACESERVER_HTTP_PORT", 8080))
-    DISCORD_WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL", "")
+    DISCORD_WEBHOOK_URL        = os.environ.get("DISCORD_WEBHOOK_URL", "")
+    DISCORD_PILOTS_WEBHOOK_URL = os.environ.get("DISCORD_PILOTS_WEBHOOK_URL", "")
     SERVER_SHOW_CONSOLE = os.environ.get("SERVER_SHOW_CONSOLE", "true").lower() == "true"
 
+    # ── Base de données ───────────────────────────────────────────────────────
+    SQLALCHEMY_DATABASE_URI     = os.environ.get("DATABASE_URL", "sqlite:///ace_evo.db")
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    # ── Email ─────────────────────────────────────────────────────────────────
+    MAIL_SERVER   = os.environ.get("MAIL_SERVER",   "")
+    MAIL_PORT     = int(os.environ.get("MAIL_PORT", 587))
+    MAIL_USE_TLS  = os.environ.get("MAIL_USE_TLS",  "true").lower() == "true"
+    MAIL_USERNAME = os.environ.get("MAIL_USERNAME", "")
+    MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD", "")
+    MAIL_FROM     = os.environ.get("MAIL_FROM",     "")
+    MAIL_ADMIN    = os.environ.get("MAIL_ADMIN",    "")
+
+    # URL publique du panel (pour les liens dans les emails)
+    PANEL_URL = os.environ.get("PANEL_URL", "http://localhost:4300")
+
+    # ── i18n ─────────────────────────────────────────────────────────────────
     BABEL_DEFAULT_LOCALE    = "fr"
     BABEL_SUPPORTED_LOCALES = ["fr", "en"]
 
+    # ── Cookies ───────────────────────────────────────────────────────────────
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = "Lax"
     SESSION_COOKIE_SECURE   = os.environ.get("SESSION_COOKIE_SECURE", "true").lower() == "true"
