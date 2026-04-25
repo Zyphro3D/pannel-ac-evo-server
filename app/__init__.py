@@ -84,7 +84,7 @@ def create_app():
     app.jinja_env.filters["from_json"] = lambda s: _json.loads(s or "[]")
 
     @app.context_processor
-    def _inject_pending_pilots():
+    def _inject_globals():
         from flask_login import current_user
         count = 0
         try:
@@ -93,7 +93,10 @@ def create_app():
                 count = Driver.query.filter_by(status="pending").count()
         except Exception:
             pass
-        return {"pending_pilots_count": count}
+        return {
+            "pending_pilots_count": count,
+            "discord_invite": Config.DISCORD_INVITE_URL,
+        }
 
     @app.after_request
     def _security_headers(response):

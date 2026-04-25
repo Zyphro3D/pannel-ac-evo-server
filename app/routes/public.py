@@ -38,13 +38,11 @@ def index():
         for reg in EventRegistration.query.filter_by(driver_id=current_user.id).all():
             my_regs[reg.event_id] = reg
 
-    from config import Config
     return render_template("public.html",
                            status=status,
                            server_info=server_info,
                            events=events,
-                           my_regs=my_regs,
-                           discord_invite=Config.DISCORD_INVITE_URL)
+                           my_regs=my_regs)
 
 
 @public_bp.route("/register", methods=["GET", "POST"])
