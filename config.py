@@ -59,6 +59,9 @@ class Config:
     BABEL_DEFAULT_LOCALE    = os.environ.get("DEFAULT_LOCALE", "fr")
     BABEL_SUPPORTED_LOCALES = ["fr", "en", "es", "de", "it"]
 
+    # ── Fuseau horaire ────────────────────────────────────────────────────────
+    PANEL_TIMEZONE = os.environ.get("PANEL_TIMEZONE", "Europe/Paris")
+
     # ── Cookies ───────────────────────────────────────────────────────────────
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = "Lax"

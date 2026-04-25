@@ -31,8 +31,9 @@ def _migrate_db(db):
         ("event",  "allowed_cars",        "TEXT    DEFAULT '[]'"),
         ("driver", "reset_token",         "TEXT"),
         ("driver", "reset_token_expires", "DATETIME"),
-        ("event",  "auto_launch",         "INTEGER DEFAULT 0"),
+        ("event",  "auto_launch",          "INTEGER DEFAULT 0"),
         ("event",  "launched",            "INTEGER DEFAULT 0"),
+        ("event",  "discord_notified",    "INTEGER DEFAULT 0"),
     ]
     with engine.connect() as conn:
         for table, col, col_def in cols_to_add:
@@ -114,6 +115,7 @@ def create_app():
     discord_notifier.init(
         app.config.get("DISCORD_WEBHOOK_URL", ""),
         app.config.get("DISCORD_PILOTS_WEBHOOK_URL", ""),
+        app.config.get("PANEL_TIMEZONE", "Europe/Paris"),
     )
 
     from app.services import mailer

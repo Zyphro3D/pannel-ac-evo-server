@@ -33,12 +33,14 @@ def _loop(app):
                     if 0 < delta_min <= 31 and not event.email_sent:
                         pass  # géré ci-dessous séparément
 
-                # Discord exactly ~30 min avant (fenêtre 60s)
+                # Discord exactly ~30 min avant (fenêtre 60s, une seule fois via flag)
                 from app.services import discord_notifier
-                for event in Event.query.filter_by(status="published").all():
+                for event in Event.query.filter_by(status="published", discord_notified=False).all():
                     delta_min = (event.date - now).total_seconds() / 60
                     if 29 <= delta_min <= 31:
                         discord_notifier.notify_event_soon(event)
+                        event.discord_notified = True
+                        db.session.commit()
                         log.info("Discord 30min envoyé pour '%s'", event.title)
 
                 # ── Lancement automatique du serveur ──────────────────────────

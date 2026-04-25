@@ -6,9 +6,24 @@ import logging
 import threading
 import urllib.request
 import urllib.error
-from datetime import datetime
+from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 
 log = logging.getLogger(__name__)
+
+_tz: ZoneInfo = ZoneInfo("Europe/Paris")
+
+
+def _local_now() -> str:
+    return datetime.now(tz=_tz).strftime("%d/%m/%Y %H:%M")
+
+
+def _utc_to_local(dt_utc: datetime) -> str:
+    """Convert a naive UTC datetime to local time string with offset label."""
+    dt_aware = dt_utc.replace(tzinfo=timezone.utc).astimezone(_tz)
+    offset = dt_aware.strftime("%z")
+    offset_fmt = f"UTC{offset[:3]}:{offset[3:]}" if len(offset) == 5 else "UTC"
+    return dt_aware.strftime("%d/%m/%Y à %H:%M") + f" ({offset_fmt})"
 
 _webhook_url: str        = ""
 _pilots_webhook_url: str = ""
@@ -24,10 +39,15 @@ _COLOR_RED    = 0xE74C3C
 _COLOR_ORANGE = 0xE67E22
 
 
-def init(webhook_url: str, pilots_webhook_url: str = ""):
-    global _webhook_url, _pilots_webhook_url
+def init(webhook_url: str, pilots_webhook_url: str = "", panel_timezone: str = "Europe/Paris"):
+    global _webhook_url, _pilots_webhook_url, _tz
     _webhook_url        = webhook_url
     _pilots_webhook_url = pilots_webhook_url
+    try:
+        _tz = ZoneInfo(panel_timezone)
+    except Exception:
+        log.warning("Fuseau horaire inconnu '%s', fallback Europe/Paris", panel_timezone)
+        _tz = ZoneInfo("Europe/Paris")
 
 
 def _post_to(url: str, payload: dict):
@@ -122,7 +142,7 @@ def notify_start(config: dict, config_name: str):
         "title":       "Serveur démarré",
         "color":       _COLOR_GREEN,
         "fields":      fields,
-        "footer":      {"text": datetime.now().strftime("%d/%m/%Y %H:%M")},
+        "footer":      {"text": _local_now()},
     }]})
 
 
@@ -131,7 +151,7 @@ def notify_stop(config_name: str):
         "title":  "Serveur arrêté",
         "color":  _COLOR_ORANGE,
         "fields": [{"name": "Config", "value": config_name or "—", "inline": True}],
-        "footer": {"text": datetime.now().strftime("%d/%m/%Y %H:%M")},
+        "footer": {"text": _local_now()},
     }]})
 
 
@@ -141,7 +161,7 @@ def notify_crash(config_name: str, restarting: bool = True):
         "title":  title,
         "color":  _COLOR_RED,
         "fields": [{"name": "Config", "value": config_name or "—", "inline": True}],
-        "footer": {"text": datetime.now().strftime("%d/%m/%Y %H:%M")},
+        "footer": {"text": _local_now()},
     }]})
 
 
@@ -153,7 +173,7 @@ def test_webhook(url: str) -> dict:
         "title":  "Test webhook AC EVO Panel",
         "color":  0x3498DB,
         "description": "La configuration Discord fonctionne correctement.",
-        "footer": {"text": datetime.now().strftime("%d/%m/%Y %H:%M")},
+        "footer": {"text": _local_now()},
     }]}
     try:
         data = json.dumps(payload).encode("utf-8")
@@ -175,21 +195,21 @@ def test_webhook(url: str) -> dict:
 
 
 def notify_event_soon(event):
-    date_str = event.date.strftime("%d/%m/%Y à %H:%M") + " UTC"
+    date_str = _utc_to_local(event.date)
     circuit  = event.circuit_display or event.circuit or "—"
     fields   = [
-        {"name": "Circuit",  "value": circuit,           "inline": True},
-        {"name": "Mode",     "value": event.mode_display, "inline": True},
-        {"name": "Météo",    "value": event.weather_display, "inline": True},
-        {"name": "Date",     "value": date_str,          "inline": False},
+        {"name": "Circuit",  "value": circuit,              "inline": True},
+        {"name": "Mode",     "value": event.mode_display,   "inline": True},
+        {"name": "Météo",    "value": event.weather_display,"inline": True},
+        {"name": "Date",     "value": date_str,             "inline": False},
     ]
     if event.description:
         fields.append({"name": "Infos", "value": event.description, "inline": False})
     _send_pilots({"embeds": [{
-        "title":       f"🏁 {event.title} — Départ dans 30 minutes !",
-        "color":       0xE67E22,
-        "fields":      fields,
-        "footer":      {"text": datetime.now().strftime("%d/%m/%Y %H:%M")},
+        "title":  f"🏁 {event.title} — Départ dans 30 minutes !",
+        "color":  0xE67E22,
+        "fields": fields,
+        "footer": {"text": _local_now()},
     }]})
 
 
@@ -201,5 +221,5 @@ def notify_new_registration(driver):
             {"name": "Nom in-game", "value": driver.ingame_name, "inline": True},
             {"name": "Email",       "value": driver.email,       "inline": True},
         ],
-        "footer": {"text": datetime.now().strftime("%d/%m/%Y %H:%M")},
+        "footer": {"text": _local_now()},
     }]})

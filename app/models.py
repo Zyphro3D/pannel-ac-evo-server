@@ -95,9 +95,10 @@ class Event(db.Model):
     password        = db.Column(db.String(50),  default="")      # mot de passe course privée
     notify_before   = db.Column(db.Integer,     default=60)      # minutes avant le départ
     status          = db.Column(db.String(20),  default="draft") # draft/published/finished
-    email_sent      = db.Column(db.Boolean,     default=False)   # emails pré-événement envoyés
-    auto_launch     = db.Column(db.Boolean,     default=False)   # lancer le serveur automatiquement
-    launched        = db.Column(db.Boolean,     default=False)   # déjà lancé par le scheduler
+    email_sent        = db.Column(db.Boolean,     default=False)   # emails pré-événement envoyés
+    discord_notified  = db.Column(db.Boolean,     default=False)   # notif Discord 30min envoyée
+    auto_launch       = db.Column(db.Boolean,     default=False)   # lancer le serveur automatiquement
+    launched          = db.Column(db.Boolean,     default=False)   # déjà lancé par le scheduler
     created_at      = db.Column(db.DateTime,    default=datetime.utcnow)
     # Durées de session (minutes)
     practice_minutes   = db.Column(db.Integer, default=60)
