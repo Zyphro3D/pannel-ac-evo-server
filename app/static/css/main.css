@@ -800,6 +800,42 @@ body {
 /* ── Table actions ── */
 .table-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
 
+/* ── Discord banner ── */
+.discord-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #404eed1a;
+  border: 1px solid #5865f260;
+  border-radius: var(--radius);
+  padding: 12px 18px;
+  margin-top: 16px;
+}
+.discord-icon {
+  width: 22px;
+  height: 22px;
+  color: #5865f2;
+  flex-shrink: 0;
+}
+.discord-text {
+  flex: 1;
+  font-size: 13px;
+  color: var(--text);
+}
+.discord-btn {
+  background: #5865f2;
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background .15s;
+}
+.discord-btn:hover { background: #4752c4; }
+
 /* ── Public page ── */
 .public-hero {
   background: var(--surface);

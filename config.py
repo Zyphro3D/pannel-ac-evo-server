@@ -36,6 +36,7 @@ class Config:
     ACESERVER_HTTP_PORT = int(os.environ.get("ACESERVER_HTTP_PORT", 8080))
     DISCORD_WEBHOOK_URL        = os.environ.get("DISCORD_WEBHOOK_URL", "")
     DISCORD_PILOTS_WEBHOOK_URL = os.environ.get("DISCORD_PILOTS_WEBHOOK_URL", "")
+    DISCORD_INVITE_URL         = os.environ.get("DISCORD_INVITE_URL", "")
     SERVER_SHOW_CONSOLE = os.environ.get("SERVER_SHOW_CONSOLE", "true").lower() == "true"
 
     # ── Base de données ───────────────────────────────────────────────────────
