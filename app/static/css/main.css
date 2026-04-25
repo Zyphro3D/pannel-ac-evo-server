@@ -798,6 +798,8 @@ body {
 .badge-rejected  { background: rgba(239,68,68,0.15);  color: var(--red); }
 .badge-public    { background: rgba(99,179,237,0.15); color: #63b3ed; }
 .badge-private   { background: rgba(167,139,250,0.15); color: #a78bfa; }
+.badge-ongoing   { background: rgba(34,197,94,0.20);  color: var(--green); animation: pulse-ongoing 2s ease-in-out infinite; }
+@keyframes pulse-ongoing { 0%,100% { opacity:1; } 50% { opacity:.6; } }
 
 /* ── Table actions ── */
 .table-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }

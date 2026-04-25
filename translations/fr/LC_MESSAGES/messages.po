@@ -767,3 +767,6 @@ msgstr "Inscription non requise"
 
 msgid "Événement public (pas d'inscription requise)"
 msgstr "Événement public (pas d'inscription requise)"
+
+msgid "Événement en cours"
+msgstr "Événement en cours"

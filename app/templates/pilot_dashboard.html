@@ -23,7 +23,7 @@
           <div class="event-card-meta">
             <div class="meta-item">
               <span class="meta-label">{{ _('Date') }}</span>
-              <span class="meta-value">{{ ev.date.strftime('%d/%m/%Y %H:%M') }} UTC</span>
+              <span class="meta-value">{{ ev.date | local_dt }}</span>
             </div>
             <div class="meta-item">
               <span class="meta-label">{{ _('Circuit') }}</span>
@@ -71,7 +71,7 @@
           <div class="event-card-meta">
             <div class="meta-item">
               <span class="meta-label">{{ _('Date') }}</span>
-              <span class="meta-value">{{ reg.event.date.strftime('%d/%m/%Y %H:%M') }} UTC</span>
+              <span class="meta-value">{{ reg.event.date | local_dt }}</span>
             </div>
             {% if reg.car_display or reg.assigned_car %}
             <div class="meta-item">

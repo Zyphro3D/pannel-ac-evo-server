@@ -767,3 +767,6 @@ msgstr "Nessuna iscrizione richiesta"
 
 msgid "Événement public (pas d'inscription requise)"
 msgstr "Evento pubblico (nessuna iscrizione)"
+
+msgid "Événement en cours"
+msgstr "Evento in corso"

@@ -6,7 +6,7 @@
     <div>
       <h2>{{ event.title }}</h2>
       <div style="font-size:12px;color:var(--text-muted);margin-top:4px">
-        {{ event.date.strftime('%d/%m/%Y %H:%M') }} UTC —
+        {{ event.date | local_dt }} —
         {{ event.circuit_display or event.circuit }} —
         {{ event.mode_display }} — {{ event.weather_display }}
       </div>

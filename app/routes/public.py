@@ -27,11 +27,17 @@ def index():
 
     status      = get_status()
     server_info = get_running_server_info() if status["running"] else None
-    events = (Event.query
-              .filter_by(status="published")
-              .filter(Event.date >= _now_utc())
-              .order_by(Event.date)
-              .all())
+    now = _now_utc()
+    ongoing = (Event.query
+               .filter_by(status="published")
+               .filter(Event.date < now)
+               .order_by(Event.date.desc())
+               .all())
+    upcoming = (Event.query
+                .filter_by(status="published")
+                .filter(Event.date >= now)
+                .order_by(Event.date)
+                .all())
 
     my_regs = {}
     if current_user.is_authenticated and current_user.is_pilot:
@@ -41,7 +47,8 @@ def index():
     return render_template("public.html",
                            status=status,
                            server_info=server_info,
-                           events=events,
+                           ongoing=ongoing,
+                           upcoming=upcoming,
                            my_regs=my_regs)
 
 

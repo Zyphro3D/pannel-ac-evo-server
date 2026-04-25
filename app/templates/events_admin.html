@@ -18,7 +18,7 @@
     <thead>
       <tr>
         <th>{{ _('Titre') }}</th>
-        <th>{{ _('Date (UTC)') }}</th>
+        <th>{{ _('Date') }}</th>
         <th>{{ _('Circuit') }}</th>
         <th>{{ _('Mode') }}</th>
         <th>{{ _('Inscrits') }}</th>
@@ -30,7 +30,7 @@
       {% for ev in events %}
       <tr>
         <td style="font-weight:600">{{ ev.title }}</td>
-        <td style="white-space:nowrap">{{ ev.date.strftime('%d/%m/%Y %H:%M') }}</td>
+        <td style="white-space:nowrap">{{ ev.date | local_dt }}</td>
         <td>{{ ev.circuit_display or ev.circuit or '—' }}</td>
         <td>{{ ev.mode_display }}</td>
         <td>{{ ev.confirmed_count }}/{{ ev.max_drivers }}</td>

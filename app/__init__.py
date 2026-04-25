@@ -85,6 +85,16 @@ def create_app():
     import json as _json
     app.jinja_env.filters["from_json"] = lambda s: _json.loads(s or "[]")
 
+    from zoneinfo import ZoneInfo as _ZoneInfo
+    from datetime import timezone as _utc_tz
+    _panel_tz = _ZoneInfo(Config.PANEL_TIMEZONE)
+    def _local_dt(dt):
+        if dt is None:
+            return ''
+        aware = dt.replace(tzinfo=_utc_tz.utc).astimezone(_panel_tz)
+        return aware.strftime('%d/%m/%Y %H:%M') + f' ({aware.strftime("%Z")})'
+    app.jinja_env.filters['local_dt'] = _local_dt
+
     @app.context_processor
     def _inject_globals():
         from flask_login import current_user
