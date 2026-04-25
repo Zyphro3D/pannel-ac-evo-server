@@ -752,3 +752,18 @@ msgstr "Error SMTP"
 
 msgid "Ce site utilise uniquement des cookies techniques nécessaires à son fonctionnement."
 msgstr "Este sitio solo usa cookies técnicas necesarias para su funcionamiento."
+
+msgid "Public"
+msgstr "Público"
+
+msgid "Privé"
+msgstr "Privado"
+
+msgid "Session publique"
+msgstr "Sesión pública"
+
+msgid "Inscription non requise"
+msgstr "No se requiere inscripción"
+
+msgid "Événement public (pas d'inscription requise)"
+msgstr "Evento público (sin inscripción)"

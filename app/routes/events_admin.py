@@ -49,6 +49,8 @@ def _event_from_form(event, form):
     event.race_minutes       = _total_min("race_h",       "race_m",       60)
     # Voitures autorisées (multi-valeur)
     event.allowed_cars = json.dumps(form.getlist("allowed_cars"))
+    # Visibilité
+    event.is_public   = form.get("is_public") == "1"
     # Lancement automatique
     event.auto_launch  = form.get("auto_launch") == "1"
     return event

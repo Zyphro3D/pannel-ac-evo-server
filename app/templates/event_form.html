@@ -164,6 +164,16 @@
       </div>
     </div>
 
+    <!-- ── Événement public ── -->
+    <div class="form-group" style="margin-top:4px">
+      <label class="toggle-label" style="display:flex;align-items:center;gap:10px;cursor:pointer">
+        <input type="hidden" name="is_public" value="0">
+        <input type="checkbox" name="is_public" value="1"
+               {% if event and event.is_public %}checked{% endif %}>
+        <span>{{ _('Événement public (pas d\'inscription requise)') }}</span>
+      </label>
+    </div>
+
     <!-- ── Lancement automatique ── -->
     <div class="form-group" style="margin-top:4px">
       <label class="toggle-label" style="display:flex;align-items:center;gap:10px;cursor:pointer">

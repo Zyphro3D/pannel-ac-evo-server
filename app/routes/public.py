@@ -105,7 +105,7 @@ def pilot_dashboard():
 
     registered_ids = {r.event_id for r in regs}
     q = (Event.query
-         .filter_by(status="published")
+         .filter_by(status="published", is_public=False)
          .filter(Event.date >= _now_utc()))
     if registered_ids:
         q = q.filter(Event.id.notin_(registered_ids))

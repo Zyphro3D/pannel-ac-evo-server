@@ -104,10 +104,15 @@
   <div class="events-list">
     {% for ev in events %}
     {% set reg = my_regs.get(ev.id) %}
-    <div class="event-card {% if ev.is_full and not reg %}event-full{% endif %}">
+    <div class="event-card {% if not ev.is_public and ev.is_full and not reg %}event-full{% endif %}">
       <div class="event-card-main">
         <div>
-          <div class="event-card-title">{{ ev.title }}</div>
+          <div class="event-card-title">
+            {{ ev.title }}
+            <span class="badge {% if ev.is_public %}badge-public{% else %}badge-private{% endif %}" style="font-size:11px;margin-left:6px;vertical-align:middle">
+              {% if ev.is_public %}{{ _('Public') }}{% else %}{{ _('Privé') }}{% endif %}
+            </span>
+          </div>
           {% if ev.description %}
           <div class="event-card-desc">{{ ev.description }}</div>
           {% endif %}
@@ -129,15 +134,19 @@
             <span class="meta-label">{{ _('Météo') }}</span>
             <span class="meta-value">{{ ev.weather_display }}</span>
           </div>
+          {% if not ev.is_public %}
           <div class="meta-item">
             <span class="meta-label">{{ _('Pilotes') }}</span>
             <span class="meta-value">{{ ev.confirmed_count }} / {{ ev.max_drivers }}</span>
           </div>
+          {% endif %}
         </div>
       </div>
 
       <div class="event-card-action">
-        {% if current_user.is_authenticated and current_user.is_pilot %}
+        {% if ev.is_public %}
+          <span class="text-muted" style="font-size:12px">{{ _('Inscription non requise') }}</span>
+        {% elif current_user.is_authenticated and current_user.is_pilot %}
           {% if reg %}
             <span class="badge badge-{{ reg.status }}">
               {% if reg.status == 'pending' %}{{ _('En attente') }}

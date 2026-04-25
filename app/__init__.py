@@ -31,6 +31,7 @@ def _migrate_db(db):
         ("event",  "allowed_cars",        "TEXT    DEFAULT '[]'"),
         ("driver", "reset_token",         "TEXT"),
         ("driver", "reset_token_expires", "DATETIME"),
+        ("event",  "is_public",           "INTEGER DEFAULT 0"),
         ("event",  "auto_launch",          "INTEGER DEFAULT 0"),
         ("event",  "launched",            "INTEGER DEFAULT 0"),
         ("event",  "discord_notified",    "INTEGER DEFAULT 0"),
