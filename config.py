@@ -55,8 +55,8 @@ class Config:
     PANEL_URL = os.environ.get("PANEL_URL", "http://localhost:4300")
 
     # ── i18n ─────────────────────────────────────────────────────────────────
-    BABEL_DEFAULT_LOCALE    = "fr"
-    BABEL_SUPPORTED_LOCALES = ["fr", "en"]
+    BABEL_DEFAULT_LOCALE    = os.environ.get("DEFAULT_LOCALE", "fr")
+    BABEL_SUPPORTED_LOCALES = ["fr", "en", "es", "de", "it"]
 
     # ── Cookies ───────────────────────────────────────────────────────────────
     SESSION_COOKIE_HTTPONLY = True

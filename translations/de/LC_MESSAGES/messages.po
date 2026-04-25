@@ -1,0 +1,256 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Connexion"
+msgstr "Anmelden"
+
+msgid "Déconnexion"
+msgstr "Abmelden"
+
+msgid "Administration serveur"
+msgstr "Serververwaltung"
+
+msgid "Utilisateur"
+msgstr "Benutzer"
+
+msgid "Mot de passe"
+msgstr "Passwort"
+
+msgid "Identifiants incorrects"
+msgstr "Falsche Anmeldedaten"
+
+msgid "Contrôle serveur"
+msgstr "Serversteuerung"
+
+msgid "Vérification..."
+msgstr "Überprüfung..."
+
+msgid "Démarrer"
+msgstr "Starten"
+
+msgid "Arrêter"
+msgstr "Stoppen"
+
+msgid "Redémarrer"
+msgstr "Neustart"
+
+msgid "Informations serveur"
+msgstr "Serverinformationen"
+
+msgid "Nom du serveur"
+msgstr "Servername"
+
+msgid "Joueurs max"
+msgstr "Max. Spieler"
+
+msgid "Cycle actif"
+msgstr "Aktiver Zyklus"
+
+msgid "Type de serveur"
+msgstr "Servertyp"
+
+msgid "Classé"
+msgstr "Gerankt"
+
+msgid "Non classé"
+msgstr "Ungerankt"
+
+msgid "Mot de passe pilote"
+msgstr "Fahrer-Passwort"
+
+msgid "Mot de passe admin"
+msgstr "Admin-Passwort"
+
+msgid "Mot de passe spectateur"
+msgstr "Zuschauer-Passwort"
+
+msgid "Entry List Path"
+msgstr "Entry-List-Pfad"
+
+msgid "Results Path"
+msgstr "Ergebnispfad"
+
+msgid "Sauvegarder"
+msgstr "Speichern"
+
+msgid "Événement"
+msgstr "Veranstaltung"
+
+msgid "Événement & Sessions"
+msgstr "Veranstaltung & Sitzungen"
+
+msgid "Type de session"
+msgstr "Sitzungstyp"
+
+msgid "Libre"
+msgstr "Freies Training"
+
+msgid "Race Weekend"
+msgstr "Rennwochenende"
+
+msgid "Météo"
+msgstr "Wetter"
+
+msgid "Dégagé"
+msgstr "Klar"
+
+msgid "Nuageux"
+msgstr "Bewölkt"
+
+msgid "Pluie"
+msgstr "Regen"
+
+msgid "Comportement météo"
+msgstr "Wetterverhalten"
+
+msgid "Statique"
+msgstr "Statisch"
+
+msgid "Dynamique"
+msgstr "Dynamisch"
+
+msgid "Adhérence initiale"
+msgstr "Anfangshaftung"
+
+msgid "Vert"
+msgstr "Grün"
+
+msgid "Rapide"
+msgstr "Schnell"
+
+msgid "Optimal"
+msgstr "Optimal"
+
+msgid "Circuit"
+msgstr "Strecke"
+
+msgid "Sessions"
+msgstr "Sitzungen"
+
+msgid "Durée (s)"
+msgstr "Dauer (s)"
+
+msgid "Heure"
+msgstr "Zeit"
+
+msgid "Attente max box (s)"
+msgstr "Max. Box-Wartezeit (s)"
+
+msgid "Overtime (s)"
+msgstr "Overtime (s)"
+
+msgid "Qualification"
+msgstr "Qualifikation"
+
+msgid "Chauffe"
+msgstr "Aufwärmen"
+
+msgid "Course"
+msgstr "Rennen"
+
+msgid "Sauvegarder sessions"
+msgstr "Sitzungen speichern"
+
+msgid "(0 = ignoré)"
+msgstr "(0 = ignoriert)"
+
+msgid "Véhicules"
+msgstr "Fahrzeuge"
+
+msgid "Filtrer..."
+msgstr "Filtern..."
+
+msgid "Tout sélectionner"
+msgstr "Alle auswählen"
+
+msgid "Tout désélectionner"
+msgstr "Alle abwählen"
+
+msgid "Véhicule"
+msgstr "Fahrzeug"
+
+msgid "Sauvegarder véhicules"
+msgstr "Fahrzeuge speichern"
+
+msgid "véhicule(s) sélectionné(s)"
+msgstr "Fahrzeug(e) ausgewählt"
+
+msgid "Configuration"
+msgstr "Konfiguration"
+
+msgid "Nouveau"
+msgstr "Neu"
+
+msgid "Dupliquer"
+msgstr "Duplizieren"
+
+msgid "Supprimer"
+msgstr "Löschen"
+
+msgid "Nouvelle configuration"
+msgstr "Neue Konfiguration"
+
+msgid "Nom du fichier"
+msgstr "Dateiname"
+
+msgid "Annuler"
+msgstr "Abbrechen"
+
+msgid "Créer"
+msgstr "Erstellen"
+
+msgid "Serveur"
+msgstr "Server"
+
+msgid "En ligne"
+msgstr "Online"
+
+msgid "Hors ligne"
+msgstr "Offline"
+
+msgid "Sauvegardé"
+msgstr "Gespeichert"
+
+msgid "Erreur"
+msgstr "Fehler"
+
+msgid "Erreur réseau"
+msgstr "Netzwerkfehler"
+
+msgid "Serveur démarré"
+msgstr "Server gestartet"
+
+msgid "Serveur arrêté"
+msgstr "Server gestoppt"
+
+msgid "Serveur redémarré"
+msgstr "Server neu gestartet"
+
+msgid "Sessions sauvegardées"
+msgstr "Sitzungen gespeichert"
+
+msgid "Véhicules sauvegardés"
+msgstr "Fahrzeuge gespeichert"
+
+msgid "Nom requis"
+msgstr "Name erforderlich"
+
+msgid "Dupliquer la configuration"
+msgstr "Konfiguration duplizieren"
+
+msgid "Réparer"
+msgstr "Reparieren"
+
+msgid "Config réparée"
+msgstr "Konfiguration repariert"
+
+msgid "Fichier invalide"
+msgstr "Ungültige Datei"
+
+msgid "Ce fichier contient des erreurs :"
+msgstr "Diese Datei enthält Fehler:"
+
+msgid "Choisir autre"
+msgstr "Andere wählen"

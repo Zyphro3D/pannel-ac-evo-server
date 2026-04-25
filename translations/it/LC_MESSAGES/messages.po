@@ -1,0 +1,256 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Connexion"
+msgstr "Accesso"
+
+msgid "Déconnexion"
+msgstr "Disconnetti"
+
+msgid "Administration serveur"
+msgstr "Amministrazione del server"
+
+msgid "Utilisateur"
+msgstr "Utente"
+
+msgid "Mot de passe"
+msgstr "Password"
+
+msgid "Identifiants incorrects"
+msgstr "Credenziali errate"
+
+msgid "Contrôle serveur"
+msgstr "Controllo del server"
+
+msgid "Vérification..."
+msgstr "Verifica..."
+
+msgid "Démarrer"
+msgstr "Avvia"
+
+msgid "Arrêter"
+msgstr "Ferma"
+
+msgid "Redémarrer"
+msgstr "Riavvia"
+
+msgid "Informations serveur"
+msgstr "Informazioni del server"
+
+msgid "Nom du serveur"
+msgstr "Nome del server"
+
+msgid "Joueurs max"
+msgstr "Giocatori max"
+
+msgid "Cycle actif"
+msgstr "Ciclo attivo"
+
+msgid "Type de serveur"
+msgstr "Tipo di server"
+
+msgid "Classé"
+msgstr "Classificato"
+
+msgid "Non classé"
+msgstr "Non classificato"
+
+msgid "Mot de passe pilote"
+msgstr "Password pilota"
+
+msgid "Mot de passe admin"
+msgstr "Password admin"
+
+msgid "Mot de passe spectateur"
+msgstr "Password spettatore"
+
+msgid "Entry List Path"
+msgstr "Percorso entry list"
+
+msgid "Results Path"
+msgstr "Percorso risultati"
+
+msgid "Sauvegarder"
+msgstr "Salva"
+
+msgid "Événement"
+msgstr "Evento"
+
+msgid "Événement & Sessions"
+msgstr "Evento e sessioni"
+
+msgid "Type de session"
+msgstr "Tipo di sessione"
+
+msgid "Libre"
+msgstr "Libero"
+
+msgid "Race Weekend"
+msgstr "Weekend di gara"
+
+msgid "Météo"
+msgstr "Meteo"
+
+msgid "Dégagé"
+msgstr "Sereno"
+
+msgid "Nuageux"
+msgstr "Nuvoloso"
+
+msgid "Pluie"
+msgstr "Pioggia"
+
+msgid "Comportement météo"
+msgstr "Comportamento meteo"
+
+msgid "Statique"
+msgstr "Statico"
+
+msgid "Dynamique"
+msgstr "Dinamico"
+
+msgid "Adhérence initiale"
+msgstr "Aderenza iniziale"
+
+msgid "Vert"
+msgstr "Verde"
+
+msgid "Rapide"
+msgstr "Rapido"
+
+msgid "Optimal"
+msgstr "Ottimale"
+
+msgid "Circuit"
+msgstr "Circuito"
+
+msgid "Sessions"
+msgstr "Sessioni"
+
+msgid "Durée (s)"
+msgstr "Durata (s)"
+
+msgid "Heure"
+msgstr "Ora"
+
+msgid "Attente max box (s)"
+msgstr "Attesa max ai box (s)"
+
+msgid "Overtime (s)"
+msgstr "Overtime (s)"
+
+msgid "Qualification"
+msgstr "Qualifica"
+
+msgid "Chauffe"
+msgstr "Riscaldamento"
+
+msgid "Course"
+msgstr "Gara"
+
+msgid "Sauvegarder sessions"
+msgstr "Salva sessioni"
+
+msgid "(0 = ignoré)"
+msgstr "(0 = ignorato)"
+
+msgid "Véhicules"
+msgstr "Veicoli"
+
+msgid "Filtrer..."
+msgstr "Filtra..."
+
+msgid "Tout sélectionner"
+msgstr "Seleziona tutto"
+
+msgid "Tout désélectionner"
+msgstr "Deseleziona tutto"
+
+msgid "Véhicule"
+msgstr "Veicolo"
+
+msgid "Sauvegarder véhicules"
+msgstr "Salva veicoli"
+
+msgid "véhicule(s) sélectionné(s)"
+msgstr "veicolo/i selezionato/i"
+
+msgid "Configuration"
+msgstr "Configurazione"
+
+msgid "Nouveau"
+msgstr "Nuovo"
+
+msgid "Dupliquer"
+msgstr "Duplica"
+
+msgid "Supprimer"
+msgstr "Elimina"
+
+msgid "Nouvelle configuration"
+msgstr "Nuova configurazione"
+
+msgid "Nom du fichier"
+msgstr "Nome file"
+
+msgid "Annuler"
+msgstr "Annulla"
+
+msgid "Créer"
+msgstr "Crea"
+
+msgid "Serveur"
+msgstr "Server"
+
+msgid "En ligne"
+msgstr "Online"
+
+msgid "Hors ligne"
+msgstr "Offline"
+
+msgid "Sauvegardé"
+msgstr "Salvato"
+
+msgid "Erreur"
+msgstr "Errore"
+
+msgid "Erreur réseau"
+msgstr "Errore di rete"
+
+msgid "Serveur démarré"
+msgstr "Server avviato"
+
+msgid "Serveur arrêté"
+msgstr "Server fermato"
+
+msgid "Serveur redémarré"
+msgstr "Server riavviato"
+
+msgid "Sessions sauvegardées"
+msgstr "Sessioni salvate"
+
+msgid "Véhicules sauvegardés"
+msgstr "Veicoli salvati"
+
+msgid "Nom requis"
+msgstr "Nome richiesto"
+
+msgid "Dupliquer la configuration"
+msgstr "Duplica configurazione"
+
+msgid "Réparer"
+msgstr "Ripara"
+
+msgid "Config réparée"
+msgstr "Configurazione riparata"
+
+msgid "Fichier invalide"
+msgstr "File non valido"
+
+msgid "Ce fichier contient des erreurs :"
+msgstr "Questo file contiene errori:"
+
+msgid "Choisir autre"
+msgstr "Scegli altro"

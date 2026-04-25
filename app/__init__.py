@@ -16,7 +16,7 @@ babel         = Babel()
 def get_locale():
     if "lang" in session:
         return session["lang"]
-    return request.accept_languages.best_match(Config.BABEL_SUPPORTED_LOCALES, "fr")
+    return request.accept_languages.best_match(Config.BABEL_SUPPORTED_LOCALES, Config.BABEL_DEFAULT_LOCALE)
 
 
 def _migrate_db(db):

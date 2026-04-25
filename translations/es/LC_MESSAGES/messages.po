@@ -1,0 +1,256 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Connexion"
+msgstr "Iniciar sesión"
+
+msgid "Déconnexion"
+msgstr "Cerrar sesión"
+
+msgid "Administration serveur"
+msgstr "Administración del servidor"
+
+msgid "Utilisateur"
+msgstr "Usuario"
+
+msgid "Mot de passe"
+msgstr "Contraseña"
+
+msgid "Identifiants incorrects"
+msgstr "Credenciales incorrectas"
+
+msgid "Contrôle serveur"
+msgstr "Control del servidor"
+
+msgid "Vérification..."
+msgstr "Verificando..."
+
+msgid "Démarrer"
+msgstr "Iniciar"
+
+msgid "Arrêter"
+msgstr "Detener"
+
+msgid "Redémarrer"
+msgstr "Reiniciar"
+
+msgid "Informations serveur"
+msgstr "Información del servidor"
+
+msgid "Nom du serveur"
+msgstr "Nombre del servidor"
+
+msgid "Joueurs max"
+msgstr "Jugadores máx."
+
+msgid "Cycle actif"
+msgstr "Ciclo activo"
+
+msgid "Type de serveur"
+msgstr "Tipo de servidor"
+
+msgid "Classé"
+msgstr "Clasificado"
+
+msgid "Non classé"
+msgstr "Sin clasificación"
+
+msgid "Mot de passe pilote"
+msgstr "Contraseña piloto"
+
+msgid "Mot de passe admin"
+msgstr "Contraseña admin"
+
+msgid "Mot de passe spectateur"
+msgstr "Contraseña espectador"
+
+msgid "Entry List Path"
+msgstr "Ruta de la lista de entrada"
+
+msgid "Results Path"
+msgstr "Ruta de resultados"
+
+msgid "Sauvegarder"
+msgstr "Guardar"
+
+msgid "Événement"
+msgstr "Evento"
+
+msgid "Événement & Sessions"
+msgstr "Evento y sesiones"
+
+msgid "Type de session"
+msgstr "Tipo de sesión"
+
+msgid "Libre"
+msgstr "Libre"
+
+msgid "Race Weekend"
+msgstr "Fin de semana de carrera"
+
+msgid "Météo"
+msgstr "Clima"
+
+msgid "Dégagé"
+msgstr "Despejado"
+
+msgid "Nuageux"
+msgstr "Nublado"
+
+msgid "Pluie"
+msgstr "Lluvia"
+
+msgid "Comportement météo"
+msgstr "Comportamiento del clima"
+
+msgid "Statique"
+msgstr "Estático"
+
+msgid "Dynamique"
+msgstr "Dinámico"
+
+msgid "Adhérence initiale"
+msgstr "Adherencia inicial"
+
+msgid "Vert"
+msgstr "Verde"
+
+msgid "Rapide"
+msgstr "Rápido"
+
+msgid "Optimal"
+msgstr "Óptimo"
+
+msgid "Circuit"
+msgstr "Circuito"
+
+msgid "Sessions"
+msgstr "Sesiones"
+
+msgid "Durée (s)"
+msgstr "Duración (s)"
+
+msgid "Heure"
+msgstr "Hora"
+
+msgid "Attente max box (s)"
+msgstr "Espera máx. en boxes (s)"
+
+msgid "Overtime (s)"
+msgstr "Tiempo extra (s)"
+
+msgid "Qualification"
+msgstr "Clasificación"
+
+msgid "Chauffe"
+msgstr "Calentamiento"
+
+msgid "Course"
+msgstr "Carrera"
+
+msgid "Sauvegarder sessions"
+msgstr "Guardar sesiones"
+
+msgid "(0 = ignoré)"
+msgstr "(0 = ignorado)"
+
+msgid "Véhicules"
+msgstr "Vehículos"
+
+msgid "Filtrer..."
+msgstr "Filtrar..."
+
+msgid "Tout sélectionner"
+msgstr "Seleccionar todo"
+
+msgid "Tout désélectionner"
+msgstr "Deseleccionar todo"
+
+msgid "Véhicule"
+msgstr "Vehículo"
+
+msgid "Sauvegarder véhicules"
+msgstr "Guardar vehículos"
+
+msgid "véhicule(s) sélectionné(s)"
+msgstr "vehículo(s) seleccionado(s)"
+
+msgid "Configuration"
+msgstr "Configuración"
+
+msgid "Nouveau"
+msgstr "Nuevo"
+
+msgid "Dupliquer"
+msgstr "Duplicar"
+
+msgid "Supprimer"
+msgstr "Eliminar"
+
+msgid "Nouvelle configuration"
+msgstr "Nueva configuración"
+
+msgid "Nom du fichier"
+msgstr "Nombre del archivo"
+
+msgid "Annuler"
+msgstr "Cancelar"
+
+msgid "Créer"
+msgstr "Crear"
+
+msgid "Serveur"
+msgstr "Servidor"
+
+msgid "En ligne"
+msgstr "En línea"
+
+msgid "Hors ligne"
+msgstr "Fuera de línea"
+
+msgid "Sauvegardé"
+msgstr "Guardado"
+
+msgid "Erreur"
+msgstr "Error"
+
+msgid "Erreur réseau"
+msgstr "Error de red"
+
+msgid "Serveur démarré"
+msgstr "Servidor iniciado"
+
+msgid "Serveur arrêté"
+msgstr "Servidor detenido"
+
+msgid "Serveur redémarré"
+msgstr "Servidor reiniciado"
+
+msgid "Sessions sauvegardées"
+msgstr "Sesiones guardadas"
+
+msgid "Véhicules sauvegardés"
+msgstr "Vehículos guardados"
+
+msgid "Nom requis"
+msgstr "Nombre requerido"
+
+msgid "Dupliquer la configuration"
+msgstr "Duplicar configuración"
+
+msgid "Réparer"
+msgstr "Reparar"
+
+msgid "Config réparée"
+msgstr "Configuración reparada"
+
+msgid "Fichier invalide"
+msgstr "Archivo inválido"
+
+msgid "Ce fichier contient des erreurs :"
+msgstr "Este archivo contiene errores:"
+
+msgid "Choisir autre"
+msgstr "Elegir otro"

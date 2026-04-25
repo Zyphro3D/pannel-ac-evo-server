@@ -57,6 +57,9 @@
       <div class="lang-switcher">
         <a href="{{ url_for('auth.set_language', lang='fr') }}" class="{% if get_locale() == 'fr' %}active{% endif %}">FR</a>
         <a href="{{ url_for('auth.set_language', lang='en') }}" class="{% if get_locale() == 'en' %}active{% endif %}">EN</a>
+        <a href="{{ url_for('auth.set_language', lang='es') }}" class="{% if get_locale() == 'es' %}active{% endif %}">ES</a>
+        <a href="{{ url_for('auth.set_language', lang='de') }}" class="{% if get_locale() == 'de' %}active{% endif %}">DE</a>
+        <a href="{{ url_for('auth.set_language', lang='it') }}" class="{% if get_locale() == 'it' %}active{% endif %}">IT</a>
       </div>
 
       {% if current_user.is_authenticated %}
