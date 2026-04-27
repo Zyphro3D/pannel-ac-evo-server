@@ -16,6 +16,7 @@
     {% endwith %}
 
     <form method="post" class="login-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <div class="form-group">
         <label>{{ _('Nom in-game') }} <span style="color:var(--text-muted);font-weight:400">(2–30 caractères)</span></label>
         <input type="text" name="ingame_name" required minlength="2" maxlength="30"

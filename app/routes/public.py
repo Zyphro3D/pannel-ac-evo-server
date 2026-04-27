@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_babel import _
 from flask_login import current_user, login_user
+from app import limiter
 
 from app.models import Driver, Event, EventRegistration
 from app.routes.auth import _validate_password
@@ -53,6 +54,7 @@ def index():
 
 
 @public_bp.route("/register", methods=["GET", "POST"])
+@limiter.limit("5 per hour", methods=["POST"])
 def register():
     if current_user.is_authenticated:
         return redirect(url_for("public.index"))

@@ -41,6 +41,7 @@
             <a href="{{ url_for('events_admin.event_edit', event_id=ev.id) }}" class="btn-secondary" style="font-size:11px">{{ _('Modifier') }}</a>
             {% if ev.status != 'finished' %}
             <form method="post" action="{{ url_for('events_admin.event_publish', event_id=ev.id) }}" style="display:inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <button class="btn-secondary" style="font-size:11px">
                 {{ _('Dépublier') if ev.status == 'published' else _('Publier') }}
               </button>
@@ -48,10 +49,12 @@
             {% endif %}
             {% if ev.status == 'published' %}
             <form method="post" action="{{ url_for('events_admin.event_finish', event_id=ev.id) }}" style="display:inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <button class="btn-secondary" style="font-size:11px" onclick="return confirm('{{ _("Marquer comme terminé ?") }}')">{{ _('Terminer') }}</button>
             </form>
             {% endif %}
             <form method="post" action="{{ url_for('events_admin.event_delete', event_id=ev.id) }}" style="display:inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <button class="btn-danger" style="font-size:11px;padding:5px 10px" onclick="return confirm('{{ _("Supprimer cet événement ?") }}')">&#128465;</button>
             </form>
           </div>

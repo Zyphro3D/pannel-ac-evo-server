@@ -13,6 +13,7 @@
     </div>
     <div style="display:flex;gap:8px;align-items:center">
       <form method="post" action="{{ url_for('events_admin.event_entry_list', event_id=event.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button class="btn-secondary" style="font-size:12px">&#9654; {{ _('Générer entry list') }}</button>
       </form>
       <a href="{{ url_for('events_admin.events_list') }}" class="btn-secondary" style="font-size:12px">← {{ _('Retour') }}</a>
@@ -49,6 +50,7 @@
         <td>
           <form method="post" action="{{ url_for('events_admin.reg_assign_car', event_id=event.id, rid=reg.id) }}"
                 style="display:flex;gap:6px;align-items:center">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <select name="assigned_car" onchange="updateDisplay(this)" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);padding:4px 8px;font-size:12px;max-width:200px">
               <option value="">— {{ _('Non assignée') }} —</option>
               {% for car in cars %}
@@ -69,11 +71,13 @@
           <div class="table-actions" style="justify-content:flex-end">
             {% if reg.status != 'confirmed' %}
             <form method="post" action="{{ url_for('events_admin.reg_approve', event_id=event.id, rid=reg.id) }}" style="display:inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <button class="btn-secondary" style="font-size:11px;color:var(--green);border-color:var(--green)">{{ _('Confirmer') }}</button>
             </form>
             {% endif %}
             {% if reg.status != 'rejected' %}
             <form method="post" action="{{ url_for('events_admin.reg_reject', event_id=event.id, rid=reg.id) }}" style="display:inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <button class="btn-secondary" style="font-size:11px;color:var(--red);border-color:var(--red)">{{ _('Refuser') }}</button>
             </form>
             {% endif %}

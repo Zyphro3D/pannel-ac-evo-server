@@ -1,3 +1,9 @@
+/* ── CSRF helper ── */
+function _csrfHeaders(extra) {
+  const token = document.querySelector('meta[name="csrf-token"]')?.content || '';
+  return Object.assign({ 'Content-Type': 'application/json', 'X-CSRFToken': token }, extra);
+}
+
 /* ── Config check / repair ── */
 async function checkConfig() {
   try {

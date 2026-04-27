@@ -28,12 +28,15 @@
         <td>
           <div class="table-actions" style="justify-content:flex-end">
             <form method="post" action="{{ url_for('events_admin.driver_approve', driver_id=d.id) }}" style="display:inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <button class="btn-secondary" style="font-size:12px;color:var(--green);border-color:var(--green)">✓ {{ _('Approuver') }}</button>
             </form>
             <form method="post" action="{{ url_for('events_admin.driver_reject', driver_id=d.id) }}" style="display:inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <button class="btn-secondary" style="font-size:12px;color:var(--red);border-color:var(--red)" onclick="return confirm('{{ _("Refuser") }} {{ d.ingame_name }} ?')">✕ {{ _('Refuser') }}</button>
             </form>
             <form method="post" action="{{ url_for('events_admin.driver_delete', driver_id=d.id) }}" style="display:inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <button class="btn-danger" style="font-size:12px" onclick="return confirm('{{ _("Supprimer définitivement") }} {{ d.ingame_name }} ?')">🗑</button>
             </form>
           </div>
@@ -67,6 +70,7 @@
         <td>
           <div class="table-actions" style="justify-content:flex-end">
             <form method="post" action="{{ url_for('events_admin.driver_delete', driver_id=d.id) }}" style="display:inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <button class="btn-danger" style="font-size:12px" onclick="return confirm('{{ _("Supprimer définitivement") }} {{ d.ingame_name }} ?')">🗑 {{ _('Supprimer définitivement') }}</button>
             </form>
           </div>
@@ -99,9 +103,11 @@
         <td>
           <div class="table-actions">
             <form method="post" action="{{ url_for('events_admin.driver_approve', driver_id=d.id) }}" style="display:inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <button class="btn-secondary" style="font-size:11px">{{ _('Ré-approuver') }}</button>
             </form>
             <form method="post" action="{{ url_for('events_admin.driver_delete', driver_id=d.id) }}" style="display:inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <button class="btn-danger" style="font-size:11px" onclick="return confirm('{{ _("Supprimer définitivement") }} {{ d.ingame_name }} ?')">🗑 {{ _('Supprimer définitivement') }}</button>
             </form>
           </div>

@@ -8,6 +8,7 @@ from flask_babel import _
 from flask_login import login_user, logout_user, login_required, current_user
 from app.models import AdminUser, Driver
 from app.services.database import db
+from app import limiter
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -30,6 +31,7 @@ def _validate_password(pwd: str) -> list[str]:
 
 
 @auth_bp.route("/login", methods=["GET", "POST"])
+@limiter.limit("10 per minute", methods=["POST"])
 def login():
     if current_user.is_authenticated:
         return redirect(url_for("public.pilot_dashboard") if current_user.is_pilot else url_for("admin.dashboard"))
@@ -68,6 +70,7 @@ def logout():
 
 
 @auth_bp.route("/forgot-password", methods=["GET", "POST"])
+@limiter.limit("5 per minute", methods=["POST"])
 def forgot_password():
     if current_user.is_authenticated:
         return redirect(url_for("public.index"))

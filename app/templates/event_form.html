@@ -19,6 +19,7 @@
   {% endwith %}
 
   <form method="post" class="panel-form" id="event-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
     <!-- ── Infos générales ── -->
     <div class="form-group">

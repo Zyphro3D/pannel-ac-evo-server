@@ -146,6 +146,7 @@
         </span>
         {% if reg.status == 'pending' %}
         <form method="post" action="{{ url_for('public.pilot_unregister', event_id=ev.id) }}" style="display:inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <button class="btn-danger" style="font-size:12px;padding:5px 10px" onclick="return confirm('{{ _("Se désinscrire ?") }}')">{{ _('Annuler') }}</button>
         </form>
         {% endif %}
@@ -153,6 +154,7 @@
         <span class="text-muted" style="font-size:12px">{{ _('Complet') }}</span>
       {% elif current_user.is_approved %}
         <form method="post" action="{{ url_for('public.pilot_register', event_id=ev.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <button class="btn-primary" style="font-size:13px">{{ _("S'inscrire") }}</button>
         </form>
       {% else %}

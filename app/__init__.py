@@ -1,7 +1,10 @@
 from pathlib import Path
 from flask import Flask, request, session
 from flask_babel import Babel
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from flask_login import LoginManager
+from flask_wtf.csrf import CSRFProtect
 from werkzeug.middleware.proxy_fix import ProxyFix
 from config import Config
 
@@ -11,6 +14,8 @@ _APP_VERSION      = _VERSION_FILE.read_text().strip() if _VERSION_FILE.exists() 
 
 login_manager = LoginManager()
 babel         = Babel()
+csrf          = CSRFProtect()
+limiter       = Limiter(key_func=get_remote_address, default_limits=[])
 
 
 def get_locale():
@@ -66,6 +71,8 @@ def create_app():
     login_manager.init_app(app)
     login_manager.login_view    = "auth.login"
     login_manager.login_message = None
+    csrf.init_app(app)
+    limiter.init_app(app)
 
     # ── Blueprints ────────────────────────────────────────────────────────────
     from app.routes.auth         import auth_bp
@@ -79,6 +86,7 @@ def create_app():
     app.register_blueprint(api_bp,          url_prefix="/api")
     app.register_blueprint(public_bp)
     app.register_blueprint(events_admin_bp)
+    csrf.exempt(api_bp)  # API JSON : CSRF géré via X-CSRFToken dans app.js
 
     app.jinja_env.globals["get_locale"]  = get_locale
     app.jinja_env.globals["app_version"] = _APP_VERSION
