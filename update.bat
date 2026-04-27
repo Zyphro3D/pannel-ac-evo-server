@@ -8,64 +8,69 @@ echo   AC EVO Panel - Mise a jour
 echo  ================================================
 echo.
 
-:: -- Version actuelle --------------------------------------------------------
-set VER_BEFORE=?
-if exist "VERSION" set /p VER_BEFORE=<VERSION
+:: -- Verifications prerequis --------------------------------------------------
+if not exist ".venv\Scripts\python.exe" (
+    echo [ERREUR] Environnement virtuel introuvable.
+    echo Lancez install.bat d'abord.
+    pause & exit /b 1
+)
 
-:: -- Verifier git ------------------------------------------------------------
+:: -- Version actuelle ---------------------------------------------------------
+set VERSION_BEFORE=?
+if exist "VERSION" set /p VERSION_BEFORE=<VERSION
+
+:: -- Git pull -----------------------------------------------------------------
 git --version >nul 2>&1
 if errorlevel 1 (
-    echo [ERREUR] Git n'est pas installe ou pas dans le PATH.
-    pause & exit /b 1
+    echo [AVERTISSEMENT] Git non trouve - mise a jour du code ignoree.
+    echo Copiez les fichiers manuellement si necessaire.
+    goto :install_deps
 )
 
-:: -- Sauvegarder .env --------------------------------------------------------
-echo  Sauvegarde du fichier .env...
-if exist ".env" copy .env .env.backup >nul
-
-:: -- Pull --------------------------------------------------------------------
-echo  Telechargement de la mise a jour...
+echo  Recuperation des mises a jour...
 git pull
 if errorlevel 1 (
-    echo.
-    echo [ERREUR] git pull a echoue.
-    echo Verifiez votre connexion et que vous n'avez pas de modifications locales.
-    if exist ".env.backup" copy .env.backup .env >nul
+    echo [ERREUR] Echec du git pull.
+    echo Verifiez votre connexion ou les conflits locaux.
     pause & exit /b 1
 )
 
-:: -- Restaurer .env ----------------------------------------------------------
-if exist ".env.backup" (
-    copy .env.backup .env >nul
-    del .env.backup >nul
-)
+:: -- Version apres ------------------------------------------------------------
+set VERSION_AFTER=?
+if exist "VERSION" set /p VERSION_AFTER=<VERSION
 
-:: -- Mettre a jour les dependances -------------------------------------------
-echo  Mise a jour des dependances...
-if exist ".venv\Scripts\pip.exe" (
-    .venv\Scripts\pip install -r requirements.txt --quiet
+if "!VERSION_BEFORE!"=="!VERSION_AFTER!" (
+    echo  [OK] Deja a jour ^(v!VERSION_AFTER!^).
 ) else (
-    echo [ATTENTION] Environnement virtuel absent - lancez install.bat
+    echo  [OK] v!VERSION_BEFORE! -> v!VERSION_AFTER!
 )
 
-:: -- Recompiler les traductions ----------------------------------------------
+:install_deps
+:: -- Mise a jour des dependances ----------------------------------------------
+echo.
+echo  Mise a jour des dependances Python...
+.venv\Scripts\pip install -r requirements.txt --quiet --upgrade
+if errorlevel 1 (
+    echo [ERREUR] Echec pip install.
+    pause & exit /b 1
+)
+echo  [OK] Dependances a jour.
+
+:: -- Recompiler les traductions -----------------------------------------------
 if exist "compile_mo.py" (
+    echo  Compilation des traductions...
     .venv\Scripts\python compile_mo.py >nul 2>&1
-    echo  [OK] Traductions recompilees.
+    echo  [OK] Traductions compilees.
 )
 
-:: -- Resultat ----------------------------------------------------------------
-set VER_AFTER=?
-if exist "VERSION" set /p VER_AFTER=<VERSION
+:: -- Rappel : .env et DB jamais touches ---------------------------------------
+echo.
+echo  [INFO] Votre .env et votre base de donnees sont intacts.
 
 echo.
 echo  ================================================
 echo   Mise a jour terminee
-if "!VER_BEFORE!"=="!VER_AFTER!" (
-echo   Version : !VER_AFTER! (deja a jour)
-) else (
-echo   !VER_BEFORE! -^> !VER_AFTER!
-)
+echo   Relancez start.bat pour appliquer les changements
 echo  ================================================
 echo.
 pause
