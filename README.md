@@ -26,14 +26,20 @@ Interface web pour gérer un serveur dédié **Assetto Corsa EVO** sous Windows,
 
 ### Tableau de bord public
 - Statut du serveur en temps réel (circuit, mode, météo, voitures, durées, joueurs)
-- Liste des événements à venir avec bouton d'inscription
-- Accessible sans connexion
+- **Événement en cours** et **événements à venir** séparés — un événement démarré reste visible jusqu'à ce qu'un admin le termine
+- **Événements publics / privés** : les événements publics sont visibles sans inscription requise ; les événements privés affichent le formulaire d'inscription aux pilotes approuvés
+- Toutes les dates affichées dans le **fuseau horaire local** configuré (`PANEL_TIMEZONE`)
+- Accessible sans connexion ; bouton Discord optionnel (`DISCORD_INVITE_URL`)
 
 ### Sécurité et accès
 - Deux niveaux d'accès admin : `admin` (standard) et `superadmin` (ports réseau visibles)
 - Comptes pilotes en base de données SQLite avec hash bcrypt
-- Headers de sécurité HTTP (X-Frame-Options, CSP, etc.)
-- Interface bilingue **FR / EN**
+- **Protection CSRF** sur tous les formulaires HTML (Flask-WTF)
+- **Rate limiting** : 10 tentatives/min sur le login, 5/min sur le mot de passe oublié, 5/h sur l'inscription
+- **Tokens de réinitialisation** stockés en SHA-256 (jamais en clair en base)
+- Headers de sécurité HTTP : X-Frame-Options, CSP, HSTS, X-Content-Type-Options
+- Comparaison des identifiants admin en temps constant (anti timing-attack)
+- Interface multilingue **FR / EN / ES / DE / IT**
 
 ---
 
@@ -86,12 +92,12 @@ update.bat
 ```
 
 Le script :
-1. Sauvegarde le `.env` local
-2. Exécute `git pull`
-3. Restaure le `.env` (jamais écrasé)
-4. Met à jour les dépendances pip
-5. Recompile les traductions
-6. Affiche la version avant/après
+1. Exécute `git pull` (affiche la version avant/après)
+2. Met à jour les dépendances pip (`pip install --upgrade`)
+3. Recompile les traductions
+4. Votre `.env` et votre base de données ne sont **jamais touchés**
+
+Fonctionne même en sautant plusieurs versions : `requirements.txt` contient toujours la liste complète des dépendances, et les migrations de base de données s'appliquent automatiquement au démarrage.
 
 ---
 
@@ -111,6 +117,9 @@ Le script :
 | `DISCORD_WEBHOOK_URL` | Webhook Discord principal (démarrage / arrêt / crash serveur) | — |
 | `DISCORD_PILOTS_WEBHOOK_URL` | Webhook Discord pilotes (inscriptions, rappels événements) — si vide, utilise le webhook principal | — |
 | `SESSION_COOKIE_SECURE` | `true` si HTTPS (reverse proxy), `false` en HTTP local | `true` |
+| `PANEL_TIMEZONE` | Fuseau horaire pour l'affichage des dates et les notifications (ex: `Europe/Paris`) | `Europe/Paris` |
+| `DEFAULT_LOCALE` | Langue par défaut de l'interface (`fr` / `en` / `es` / `de` / `it`) | `fr` |
+| `DISCORD_INVITE_URL` | Lien d'invitation Discord affiché sur le tableau de bord public — laisser vide pour masquer | — |
 | `MAIL_SERVER` | Serveur SMTP (ex: `smtp.gmail.com`) | — |
 | `MAIL_PORT` | Port SMTP | `587` |
 | `MAIL_USE_TLS` | Activer STARTTLS | `true` |
