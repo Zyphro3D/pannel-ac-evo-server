@@ -21,12 +21,17 @@ api_bp = Blueprint("api", __name__)
 
 @api_bp.route("/status")
 def status():
-    return jsonify(get_status())
+    data = get_status()
+    if not (current_user.is_authenticated and current_user.is_admin):
+        data = {"running": data.get("running"), "players": data.get("players")}
+    return jsonify(data)
 
 
 @api_bp.route("/server/logs")
 @login_required
 def server_logs():
+    if not current_user.is_admin:
+        return jsonify({"error": "forbidden"}), 403
     return jsonify({"logs": get_server_logs()})
 
 

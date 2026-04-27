@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -62,7 +63,8 @@ class Config:
     # ── Fuseau horaire ────────────────────────────────────────────────────────
     PANEL_TIMEZONE = os.environ.get("PANEL_TIMEZONE", "Europe/Paris")
 
-    # ── Cookies ───────────────────────────────────────────────────────────────
-    SESSION_COOKIE_HTTPONLY = True
-    SESSION_COOKIE_SAMESITE = "Lax"
-    SESSION_COOKIE_SECURE   = os.environ.get("SESSION_COOKIE_SECURE", "true").lower() == "true"
+    # ── Cookies / Session ─────────────────────────────────────────────────────
+    SESSION_COOKIE_HTTPONLY  = True
+    SESSION_COOKIE_SAMESITE  = "Lax"
+    SESSION_COOKIE_SECURE    = os.environ.get("SESSION_COOKIE_SECURE", "true").lower() == "true"
+    PERMANENT_SESSION_LIFETIME = timedelta(hours=12)

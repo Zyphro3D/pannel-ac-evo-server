@@ -116,9 +116,29 @@ def create_app():
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-XSS-Protection"]       = "1; mode=block"
         response.headers["Referrer-Policy"]        = "strict-origin-when-cross-origin"
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline'; "
+            "style-src 'self' 'unsafe-inline'; "
+            "img-src 'self' data:; "
+            "font-src 'self'; "
+            "connect-src 'self'"
+        )
+        if Config.SESSION_COOKIE_SECURE:
+            response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
         return response
 
     # ── Services ──────────────────────────────────────────────────────────────
+    # ── Avertissements de sécurité au démarrage ───────────────────────────────
+    import logging as _logging
+    _sec = _logging.getLogger("security")
+    if Config.SECRET_KEY == "dev-secret-key":
+        _sec.critical("SECRET_KEY utilise la valeur par défaut — les sessions sont forgeable !")
+    if Config.ADMIN_PASSWORD == "admin":
+        _sec.warning("ADMIN_PASSWORD utilise la valeur par défaut 'admin' — changez-la dans .env")
+    if Config.SUPERADMIN_PASSWORD == "superadmin":
+        _sec.warning("SUPERADMIN_PASSWORD utilise la valeur par défaut 'superadmin' — changez-la dans .env")
+
     from app.services.process_manager import init_watchdog
     init_watchdog(app.config["ACESERVER_EXE_PATH"])
 

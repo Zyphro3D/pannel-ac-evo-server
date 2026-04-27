@@ -1,3 +1,4 @@
+import hashlib
 import re
 import secrets
 from datetime import datetime, timedelta
@@ -80,8 +81,9 @@ def forgot_password():
         flash(_("Un email de réinitialisation a été envoyé si le compte existe."), "success")
 
         if driver and driver.status == "approved":
-            token = secrets.token_urlsafe(32)
-            driver.reset_token         = token
+            token      = secrets.token_urlsafe(32)
+            token_hash = hashlib.sha256(token.encode()).hexdigest()
+            driver.reset_token         = token_hash
             driver.reset_token_expires = datetime.utcnow() + timedelta(hours=1)
             db.session.commit()
             from app.services import mailer
@@ -97,7 +99,8 @@ def reset_password(token):
     if current_user.is_authenticated:
         return redirect(url_for("public.index"))
 
-    driver = Driver.query.filter_by(reset_token=token).first()
+    token_hash = hashlib.sha256(token.encode()).hexdigest()
+    driver = Driver.query.filter_by(reset_token=token_hash).first()
     if not driver or not driver.reset_token_expires or driver.reset_token_expires < datetime.utcnow():
         flash(_("Ce lien est invalide ou a expiré."), "error")
         return redirect(url_for("auth.login"))

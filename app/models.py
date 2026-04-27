@@ -1,3 +1,4 @@
+import hmac
 from datetime import datetime
 from flask import current_app
 from flask_login import UserMixin
@@ -27,9 +28,11 @@ class AdminUser(UserMixin):
     @staticmethod
     def check_credentials(username: str, password: str) -> str | None:
         cfg = current_app.config
-        if username == cfg.get("SUPERADMIN_USERNAME") and password == cfg.get("SUPERADMIN_PASSWORD"):
+        def _eq(a: str, b: str) -> bool:
+            return hmac.compare_digest(a.encode(), b.encode())
+        if _eq(username, cfg.get("SUPERADMIN_USERNAME", "")) and _eq(password, cfg.get("SUPERADMIN_PASSWORD", "")):
             return "superadmin"
-        if username == cfg.get("ADMIN_USERNAME") and password == cfg.get("ADMIN_PASSWORD"):
+        if _eq(username, cfg.get("ADMIN_USERNAME", "")) and _eq(password, cfg.get("ADMIN_PASSWORD", "")):
             return "admin"
         return None
 

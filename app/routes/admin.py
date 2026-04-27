@@ -57,8 +57,9 @@ def administration():
         return redirect(url_for("admin.dashboard"))
     from app.services import mailer as _mailer, discord_notifier
     cfg = _mailer._cfg
+    safe_cfg = {k: v for k, v in cfg.items() if k != "password"}
     return render_template("administration.html",
-                           mail_cfg=cfg,
+                           mail_cfg=safe_cfg,
                            webhook_url=discord_notifier._webhook_url,
                            pilots_webhook_url=discord_notifier._pilots_webhook_url)
 
@@ -69,11 +70,12 @@ def test_email():
     if not current_user.is_superadmin:
         return redirect(url_for("admin.dashboard"))
     from app.services import mailer as _mailer, discord_notifier
-    cfg = _mailer._cfg
-    to  = request.form.get("to", "").strip() or (cfg.get("admin") or [None])[0]
+    cfg      = _mailer._cfg
+    safe_cfg = {k: v for k, v in cfg.items() if k != "password"}
+    to       = request.form.get("to", "").strip() or (cfg.get("admin") or [None])[0]
     result_email = _mailer.send_test(to) if to else {"ok": False, "error": "Aucune adresse destinataire"}
     return render_template("administration.html",
-                           mail_cfg=cfg,
+                           mail_cfg=safe_cfg,
                            webhook_url=discord_notifier._webhook_url,
                            pilots_webhook_url=discord_notifier._pilots_webhook_url,
                            result_email=result_email)
@@ -85,12 +87,13 @@ def test_webhook():
     if not current_user.is_superadmin:
         return redirect(url_for("admin.dashboard"))
     from app.services import mailer as _mailer, discord_notifier
-    cfg     = _mailer._cfg
-    channel = request.form.get("channel", "server")
-    url     = discord_notifier._pilots_webhook_url if channel == "pilots" else discord_notifier._webhook_url
-    result  = discord_notifier.test_webhook(url)
+    cfg      = _mailer._cfg
+    safe_cfg = {k: v for k, v in cfg.items() if k != "password"}
+    channel  = request.form.get("channel", "server")
+    url      = discord_notifier._pilots_webhook_url if channel == "pilots" else discord_notifier._webhook_url
+    result   = discord_notifier.test_webhook(url)
     return render_template("administration.html",
-                           mail_cfg=cfg,
+                           mail_cfg=safe_cfg,
                            webhook_url=discord_notifier._webhook_url,
                            pilots_webhook_url=discord_notifier._pilots_webhook_url,
                            result_webhook=result,
