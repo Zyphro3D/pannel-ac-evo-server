@@ -130,6 +130,18 @@ class Event(db.Model):
         return self.confirmed_count >= self.max_drivers
 
     @property
+    def total_minutes(self) -> int:
+        if self.mode == "GameModeType_RACE_WEEKEND":
+            return ((self.practice_minutes or 0) + (self.qualifying_minutes or 0)
+                    + (self.warmup_minutes or 0) + (self.race_minutes or 0))
+        return self.practice_minutes or 0
+
+    @property
+    def end_date(self):
+        from datetime import timedelta
+        return self.date + timedelta(minutes=self.total_minutes)
+
+    @property
     def mode_display(self) -> str:
         return {
             "GameModeType_PRACTICE":     "Practice",

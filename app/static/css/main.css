@@ -804,40 +804,27 @@ body {
 /* ── Table actions ── */
 .table-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
 
-/* ── Discord banner ── */
-.discord-banner {
+/* ── Discord (navbar) ── */
+.discord-nav-btn {
   display: flex;
   align-items: center;
-  gap: 8px;
-  background: #404eed12;
-  border-bottom: 1px solid #5865f230;
-  padding: 5px 24px;
-  height: 32px;
-}
-.discord-icon {
-  width: 14px;
-  height: 14px;
-  color: #5865f2;
-  flex-shrink: 0;
-}
-.discord-text {
-  font-size: 12px;
-  color: var(--text-muted);
-}
-.discord-btn {
+  gap: 5px;
   background: #5865f2;
   color: #fff;
-  border: none;
   border-radius: var(--radius);
-  padding: 2px 10px;
-  font-size: 11px;
+  padding: 4px 10px;
+  font-size: 12px;
   font-weight: 600;
   text-decoration: none;
   white-space: nowrap;
   transition: background .15s;
-  margin-left: 4px;
 }
-.discord-btn:hover { background: #4752c4; }
+.discord-nav-btn:hover { background: #4752c4; }
+.discord-nav-btn .discord-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
 
 /* ── Public page ── */
 .public-hero {
@@ -1005,3 +992,188 @@ body {
 
 /* ── Utilities ── */
 .text-muted { color: var(--text-muted); }
+
+/* ── Vue toggle (calendrier / liste) ── */
+.view-toggle { display: flex; background: var(--surface2); border-radius: var(--radius); padding: 2px; gap: 2px; }
+.view-btn { background: none; border: none; color: var(--text-muted); padding: 5px 14px; border-radius: 4px; cursor: pointer; font-size: 13px; transition: color .12s; }
+.view-btn.active { background: var(--surface); color: var(--text); }
+.view-btn:hover:not(.active) { color: var(--text); }
+
+/* ── Calendrier ── */
+.cal-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 0 10px;
+}
+.cal-nav-label {
+  font-size: 15px;
+  font-weight: 600;
+  min-width: 170px;
+  text-align: center;
+}
+.cal-legend {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.cal-legend-item { display: flex; align-items: center; gap: 5px; }
+.cal-legend-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.cal-legend-dot.private { background: var(--accent); }
+.cal-legend-dot.public  { background: #5865f2; }
+
+.cal-grid-wrapper {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.cal-headers {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+}
+.cal-headers div {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  padding: 8px 4px;
+}
+.cal-headers .weekend { color: var(--accent); }
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+.cal-day {
+  min-height: 88px;
+  padding: 5px 6px;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background .1s;
+  overflow: hidden;
+}
+.cal-day:nth-child(7n) { border-right: none; }
+.cal-day:hover { background: var(--surface2); }
+.cal-day.other-month { opacity: 0.3; cursor: default; pointer-events: none; }
+.cal-day.selected { background: var(--surface2); outline: 2px solid var(--accent); outline-offset: -2px; }
+.cal-day.today .cal-day-num {
+  background: var(--accent);
+  color: #fff;
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+.cal-day-num {
+  font-size: 12px;
+  color: var(--text-muted);
+  display: block;
+  margin-bottom: 3px;
+  line-height: 1;
+}
+.cal-event-chip {
+  display: block;
+  font-size: 10px;
+  border-radius: 3px;
+  padding: 2px 5px;
+  margin-bottom: 2px;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+  transition: opacity .12s;
+  pointer-events: all;
+}
+.cal-event-chip:hover { opacity: 0.75; }
+.cal-event-chip.private { background: var(--accent); color: #fff; }
+.cal-event-chip.public  { background: #5865f2; color: #fff; }
+.cal-event-chip.draft   { opacity: 0.5; filter: saturate(0.4); }
+.cal-event-chip.finished { opacity: 0.3; filter: grayscale(1); }
+
+/* ── Vue journée ── */
+.cal-day-detail {
+  margin-top: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.cal-detail-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+}
+.cal-detail-title { font-weight: 600; font-size: 14px; flex: 1; }
+.cal-detail-close {
+  background: none; border: none; color: var(--text-muted);
+  font-size: 20px; cursor: pointer; line-height: 1; padding: 0 2px;
+}
+.cal-detail-close:hover { color: var(--text); }
+.cal-detail-body {
+  max-height: 420px;
+  overflow-y: auto;
+}
+.cal-hour-row {
+  display: flex;
+  align-items: stretch;
+  min-height: 36px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background .1s;
+}
+.cal-hour-row:last-child { border-bottom: none; }
+.cal-hour-row:hover { background: var(--surface2); }
+.cal-hour-label {
+  width: 54px;
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--text-muted);
+  padding: 10px 10px 10px 0;
+  text-align: right;
+  border-right: 1px solid var(--border);
+}
+.cal-hour-content {
+  flex: 1;
+  padding: 5px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.cal-hour-event {
+  border-radius: 3px;
+  padding: 3px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity .12s;
+  white-space: nowrap;
+}
+.cal-hour-event:hover { opacity: 0.8; }
+.cal-hour-event.private  { background: var(--accent); color: #fff; }
+.cal-hour-event.public   { background: #5865f2; color: #fff; }
+.cal-hour-event.draft    { opacity: 0.55; filter: saturate(0.4); }
+.cal-hour-event.finished { opacity: 0.35; filter: grayscale(1); }
+.cal-hour-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  opacity: 0;
+  transition: opacity .15s;
+}
+.cal-hour-row:hover .cal-hour-hint { opacity: 1; }

@@ -1,8 +1,9 @@
 import json
 from functools import wraps
-from datetime import datetime
+from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 
-from flask import Blueprint, render_template, redirect, url_for, request, flash
+from flask import Blueprint, render_template, redirect, url_for, request, flash, current_app
 from flask_babel import _
 from flask_login import current_user
 
@@ -34,8 +35,10 @@ def _event_from_form(event, form):
     event.notify_before = max(0, int(form.get("notify_before", 60) or 60))
     date_str = form.get("date", "")
     try:
-        event.date = datetime.strptime(date_str, "%Y-%m-%dT%H:%M")
-    except ValueError:
+        panel_tz = ZoneInfo(current_app.config.get("PANEL_TIMEZONE", "Europe/Paris"))
+        naive_local = datetime.strptime(date_str, "%Y-%m-%dT%H:%M")
+        event.date = naive_local.replace(tzinfo=panel_tz).astimezone(timezone.utc).replace(tzinfo=None)
+    except (ValueError, KeyError):
         pass
     # Durées de session (heures + minutes → total minutes)
     def _total_min(h_key, m_key, default):
@@ -55,10 +58,12 @@ def _event_from_form(event, form):
         json.loads(event.cars_config)  # valide le JSON
     except (ValueError, TypeError):
         event.cars_config = "{}"
-    # Visibilité
-    event.is_public   = form.get("is_public") == "1"
-    # Lancement automatique
-    event.auto_launch  = form.get("auto_launch") == "1"
+    # Visibilité — getlist car hidden+checkbox envoient deux valeurs pour le même name
+    event.is_public   = "1" in form.getlist("is_public")
+    # Lancement automatique → publie automatiquement l'événement
+    event.auto_launch = "1" in form.getlist("auto_launch")
+    if event.auto_launch and event.status != "finished":
+        event.status = "published"
     return event
 
 

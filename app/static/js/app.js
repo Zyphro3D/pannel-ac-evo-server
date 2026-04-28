@@ -172,11 +172,9 @@ function updateStatusUI(running, runningConfig, autoRestart, players) {
     d.classList.toggle('offline', !running);
   });
 
-  let txt = I18N.offline;
-  if (sameConfig)   txt = I18N.online;
-  if (otherConfig)  txt = `${I18N.online} (${runningConfig})`;
+  let txt = running ? I18N.online : I18N.offline;
   if (label)  label.textContent  = txt;
-  if (navLbl) navLbl.textContent = txt; // sera affiné par nav_label si dispo
+  if (navLbl) navLbl.textContent = txt;
 
   if (playerEl) {
     playerEl.textContent = (running && players !== null && players !== undefined)
@@ -203,8 +201,6 @@ async function fetchStatus() {
     const r = await fetch('/api/status');
     const d = await r.json();
     updateStatusUI(d.running, d.config, d.auto_restart, d.players);
-    const navLbl = document.getElementById('status-label');
-    if (navLbl && d.running && d.nav_label) navLbl.textContent = d.nav_label;
   } catch (_) {}
 }
 
@@ -315,6 +311,30 @@ async function saveAll() {
   }
 }
 
+/* ── PI slider ── */
+function updatePiSlider(autoSelect = true) {
+  const minR = document.getElementById('pi-range-min');
+  const maxR = document.getElementById('pi-range-max');
+  if (!minR || !maxR) return;
+  let minVal = parseFloat(minR.value);
+  let maxVal = parseFloat(maxR.value);
+  if (minVal > maxVal) {
+    minR.value = maxVal; maxR.value = minVal;
+    [minVal, maxVal] = [maxVal, minVal];
+  }
+  localStorage.setItem('sv_pi_min', minVal);
+  localStorage.setItem('sv_pi_max', maxVal);
+  const lo = parseFloat(minR.min), hi = parseFloat(minR.max), span = hi - lo;
+  const p1 = span > 0 ? ((minVal - lo) / span * 100) : 0;
+  const p2 = span > 0 ? ((maxVal - lo) / span * 100) : 100;
+  const track = document.getElementById('pi-slider-track');
+  if (track) track.style.background =
+    `linear-gradient(to right,var(--border) ${p1}%,var(--accent) ${p1}%,var(--accent) ${p2}%,var(--border) ${p2}%)`;
+  const disp = document.getElementById('pi-display');
+  if (disp) disp.textContent = `${minVal.toFixed(1)} — ${maxVal.toFixed(1)}`;
+  filterCars(autoSelect);
+}
+
 /* ── Duration widget ── */
 function calcDur(key, widget) {
   const parts = widget.querySelectorAll('.dur-part');
@@ -347,27 +367,6 @@ function onSessionTypeChange(val) {
 /* ── Cars ── */
 function toggleCat(btn) {
   btn.classList.toggle('active');
-  filterCars(true);
-}
-
-function updatePiSlider() {
-  const minR = document.getElementById('pi-range-min');
-  const maxR = document.getElementById('pi-range-max');
-  if (!minR || !maxR) return;
-  let minVal = parseFloat(minR.value);
-  let maxVal = parseFloat(maxR.value);
-  if (minVal > maxVal) {
-    minR.value = maxVal; maxR.value = minVal;
-    [minVal, maxVal] = [maxVal, minVal];
-  }
-  const lo = parseFloat(minR.min), hi = parseFloat(minR.max), span = hi - lo;
-  const p1 = span > 0 ? ((minVal - lo) / span * 100) : 0;
-  const p2 = span > 0 ? ((maxVal - lo) / span * 100) : 100;
-  const track = document.getElementById('pi-slider-track');
-  if (track) track.style.background =
-    `linear-gradient(to right,var(--border) ${p1}%,var(--accent) ${p1}%,var(--accent) ${p2}%,var(--border) ${p2}%)`;
-  const disp = document.getElementById('pi-display');
-  if (disp) disp.textContent = `${minVal.toFixed(1)} — ${maxVal.toFixed(1)}`;
   filterCars(true);
 }
 
@@ -426,6 +425,15 @@ document.querySelectorAll('.car-check').forEach(cb => {
 });
 updateSelectedCount();
 
-// Init du slider PI (colore la plage dès le chargement)
-(function () { if (document.getElementById('pi-range-min')) updatePiSlider(); })();
+// Init du slider PI : restaure depuis localStorage sans toucher aux sélections sauvegardées
+(function () {
+  const minR = document.getElementById('pi-range-min');
+  const maxR = document.getElementById('pi-range-max');
+  if (!minR || !maxR) return;
+  const savedMin = localStorage.getItem('sv_pi_min');
+  const savedMax = localStorage.getItem('sv_pi_max');
+  if (savedMin !== null) minR.value = savedMin;
+  if (savedMax !== null) maxR.value = savedMax;
+  updatePiSlider(false);
+})();
 

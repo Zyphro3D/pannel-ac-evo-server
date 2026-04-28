@@ -102,7 +102,19 @@ def create_app():
             return ''
         aware = dt.replace(tzinfo=_utc_tz.utc).astimezone(_panel_tz)
         return aware.strftime('%d/%m/%Y %H:%M') + f' ({aware.strftime("%Z")})'
-    app.jinja_env.filters['local_dt'] = _local_dt
+    def _local_dt_short(dt):
+        if dt is None:
+            return ''
+        aware = dt.replace(tzinfo=_utc_tz.utc).astimezone(_panel_tz)
+        return aware.strftime('%d/%m %H:%M')
+    def _local_dt_input(dt):
+        if dt is None:
+            return ''
+        aware = dt.replace(tzinfo=_utc_tz.utc).astimezone(_panel_tz)
+        return aware.strftime('%Y-%m-%dT%H:%M')
+    app.jinja_env.filters['local_dt']       = _local_dt
+    app.jinja_env.filters['local_dt_short'] = _local_dt_short
+    app.jinja_env.filters['local_dt_input'] = _local_dt_input
 
     @app.context_processor
     def _inject_globals():

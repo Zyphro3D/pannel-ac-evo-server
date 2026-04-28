@@ -4,7 +4,13 @@
 <div class="card">
   <div class="card-header">
     <h2>{{ _('Événements') }}</h2>
-    <a href="{{ url_for('events_admin.event_create') }}" class="btn-primary" style="font-size:13px">+ {{ _('Créer') }}</a>
+    <div style="display:flex;gap:8px;align-items:center">
+      <div class="view-toggle">
+        <button class="view-btn" data-view="calendar" onclick="setView('calendar')">{{ _('Calendrier') }}</button>
+        <button class="view-btn" data-view="list" onclick="setView('list')">{{ _('Liste') }}</button>
+      </div>
+      <a href="{{ url_for('events_admin.event_create') }}" class="btn-primary" style="font-size:13px">+ {{ _('Créer') }}</a>
+    </div>
   </div>
 
   {% with messages = get_flashed_messages(with_categories=true) %}
@@ -13,66 +19,275 @@
     {% endfor %}
   {% endwith %}
 
-  {% if events %}
-  <table class="simple-table full-width">
-    <thead>
-      <tr>
-        <th>{{ _('Titre') }}</th>
-        <th>{{ _('Date') }}</th>
-        <th>{{ _('Circuit') }}</th>
-        <th>{{ _('Mode') }}</th>
-        <th>{{ _('Inscrits') }}</th>
-        <th>{{ _('Statut') }}</th>
-        <th style="text-align:right">{{ _('Actions') }}</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for ev in events %}
-      <tr>
-        <td style="font-weight:600">{{ ev.title }}</td>
-        <td style="white-space:nowrap">{{ ev.date | local_dt }}</td>
-        <td>{{ ev.circuit_display or ev.circuit or '—' }}</td>
-        <td>{{ ev.mode_display }}</td>
-        <td>{{ ev.confirmed_count }}/{{ ev.max_drivers }}</td>
-        <td>
-          <span class="badge badge-{{ ev.status }}">
-            {% if ev.status == 'draft' %}{{ _('Brouillon') }}
-            {% elif ev.status == 'published' %}{{ _('Publié') }}
-            {% else %}{{ _('Terminé') }}{% endif %}
-          </span>
-        </td>
-        <td>
-          <div class="table-actions">
-            {% if not ev.is_public %}
-            <a href="{{ url_for('events_admin.event_registrations', event_id=ev.id) }}" class="btn-secondary" style="font-size:11px">{{ _('Inscrits') }}</a>
-            {% endif %}
-            <a href="{{ url_for('events_admin.event_edit', event_id=ev.id) }}" class="btn-secondary" style="font-size:11px">{{ _('Modifier') }}</a>
-            {% if ev.status != 'finished' %}
-            <form method="post" action="{{ url_for('events_admin.event_publish', event_id=ev.id) }}" style="display:inline">
-              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-              <button class="btn-secondary" style="font-size:11px">
-                {{ _('Dépublier') if ev.status == 'published' else _('Publier') }}
-              </button>
-            </form>
-            {% endif %}
-            {% if ev.status == 'published' %}
-            <form method="post" action="{{ url_for('events_admin.event_finish', event_id=ev.id) }}" style="display:inline">
-              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-              <button class="btn-secondary" style="font-size:11px" onclick="return confirm('{{ _("Marquer comme terminé ?") }}')">{{ _('Terminer') }}</button>
-            </form>
-            {% endif %}
-            <form method="post" action="{{ url_for('events_admin.event_delete', event_id=ev.id) }}" style="display:inline">
-              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-              <button class="btn-danger" style="font-size:11px;padding:5px 10px" onclick="return confirm('{{ _("Supprimer cet événement ?") }}')">&#128465;</button>
-            </form>
-          </div>
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  {% else %}
-  <p class="text-muted" style="padding:12px 0">{{ _('Aucun événement.') }} <a href="{{ url_for('events_admin.event_create') }}" style="color:var(--accent)">{{ _('Créer le premier') }} →</a></p>
-  {% endif %}
+  <!-- ── Vue Calendrier ── -->
+  <div id="view-calendar">
+    <div class="cal-nav">
+      <button class="btn-secondary" onclick="prevMonth()">‹</button>
+      <span class="cal-nav-label" id="cal-month-label"></span>
+      <button class="btn-secondary" onclick="nextMonth()">›</button>
+      <div class="cal-legend">
+        <span class="cal-legend-item"><span class="cal-legend-dot private"></span>{{ _('Privé') }}</span>
+        <span class="cal-legend-item"><span class="cal-legend-dot public"></span>{{ _('Public') }}</span>
+      </div>
+    </div>
+    <div class="cal-grid-wrapper">
+      <div class="cal-headers">
+        <div>{{ _('Lun') }}</div>
+        <div>{{ _('Mar') }}</div>
+        <div>{{ _('Mer') }}</div>
+        <div>{{ _('Jeu') }}</div>
+        <div>{{ _('Ven') }}</div>
+        <div class="weekend">{{ _('Sam') }}</div>
+        <div class="weekend">{{ _('Dim') }}</div>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+    </div>
+
+    <!-- Détail du jour sélectionné -->
+    <div class="cal-day-detail" id="cal-day-detail" style="display:none">
+      <div class="cal-detail-header">
+        <span class="cal-detail-title" id="cal-detail-title"></span>
+        <a id="cal-detail-create-btn" href="#" class="btn-primary" style="font-size:12px">+ {{ _('Créer ce jour') }}</a>
+        <button class="cal-detail-close" onclick="closeDayDetail()" title="{{ _('Fermer') }}">×</button>
+      </div>
+      <div class="cal-detail-body" id="cal-detail-body"></div>
+    </div>
+  </div>
+
+  <!-- ── Vue Liste ── -->
+  <div id="view-list" style="display:none">
+    {% if events %}
+    <table class="simple-table full-width">
+      <thead>
+        <tr>
+          <th>{{ _('Titre') }}</th>
+          <th>{{ _('Date → Fin') }}</th>
+          <th>{{ _('Circuit') }}</th>
+          <th>{{ _('Mode') }}</th>
+          <th>{{ _('Inscrits') }}</th>
+          <th>{{ _('Statut') }}</th>
+          <th style="text-align:right">{{ _('Actions') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ev in events %}
+        <tr>
+          <td style="font-weight:600">{{ ev.title }}</td>
+          <td style="white-space:nowrap">
+            {{ ev.date | local_dt_short }}
+            <span style="color:var(--text-muted);font-size:11px"> → {{ ev.end_date | local_dt_short }}</span>
+          </td>
+          <td>{{ ev.circuit_display or ev.circuit or '—' }}</td>
+          <td>{{ ev.mode_display }}</td>
+          <td>{{ ev.confirmed_count }}/{{ ev.max_drivers }}</td>
+          <td>
+            <span class="badge badge-{{ ev.status }}">
+              {% if ev.status == 'draft' %}{{ _('Brouillon') }}
+              {% elif ev.status == 'published' %}{{ _('Publié') }}
+              {% else %}{{ _('Terminé') }}{% endif %}
+            </span>
+          </td>
+          <td>
+            <div class="table-actions">
+              {% if not ev.is_public %}
+              <a href="{{ url_for('events_admin.event_registrations', event_id=ev.id) }}" class="btn-secondary" style="font-size:11px">{{ _('Inscrits') }}</a>
+              {% endif %}
+              <a href="{{ url_for('events_admin.event_edit', event_id=ev.id) }}" class="btn-secondary" style="font-size:11px">{{ _('Modifier') }}</a>
+              {% if ev.status != 'finished' %}
+              <form method="post" action="{{ url_for('events_admin.event_publish', event_id=ev.id) }}" style="display:inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn-secondary" style="font-size:11px">
+                  {{ _('Dépublier') if ev.status == 'published' else _('Publier') }}
+                </button>
+              </form>
+              {% endif %}
+              {% if ev.status == 'published' %}
+              <form method="post" action="{{ url_for('events_admin.event_finish', event_id=ev.id) }}" style="display:inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn-secondary" style="font-size:11px" onclick="return confirm('{{ _("Marquer comme terminé ?") }}')">{{ _('Terminer') }}</button>
+              </form>
+              {% endif %}
+              <form method="post" action="{{ url_for('events_admin.event_delete', event_id=ev.id) }}" style="display:inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn-danger" style="font-size:11px;padding:5px 10px" onclick="return confirm('{{ _("Supprimer cet événement ?") }}')">&#128465;</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="text-muted" style="padding:12px 0">{{ _('Aucun événement.') }} <a href="{{ url_for('events_admin.event_create') }}" style="color:var(--accent)">{{ _('Créer le premier') }} →</a></p>
+    {% endif %}
+  </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Données événements (dates en heure locale via local_dt_input)
+const CAL_EVENTS = [
+  {% for ev in events %}
+  {
+    id: {{ ev.id }},
+    title: {{ ev.title | tojson }},
+    date: "{{ ev.date | local_dt_input }}",
+    end:  "{{ ev.end_date | local_dt_input }}",
+    status: {{ ev.status | tojson }},
+    is_public: {{ 'true' if ev.is_public else 'false' }},
+    url_edit: {{ url_for('events_admin.event_edit', event_id=ev.id) | tojson }},
+  },
+  {% endfor %}
+];
+
+// ── Calendrier ──────────────────────────────────────────────────────────────
+let _calYear  = new Date().getFullYear();
+let _calMonth = new Date().getMonth(); // 0-indexed
+
+const MONTHS_FR = ['Janvier','Février','Mars','Avril','Mai','Juin',
+                   'Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+
+function renderCalendar() {
+  const grid  = document.getElementById('cal-grid');
+  const label = document.getElementById('cal-month-label');
+  label.textContent = `${MONTHS_FR[_calMonth]} ${_calYear}`;
+
+  // First day of month, adjusted to Mon=0 … Sun=6
+  const firstDow    = (new Date(_calYear, _calMonth, 1).getDay() + 6) % 7;
+  const daysInMonth = new Date(_calYear, _calMonth + 1, 0).getDate();
+  const prevDays    = new Date(_calYear, _calMonth, 0).getDate();
+
+  const now      = new Date();
+  const todayKey = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
+
+  // Group events by YYYY-MM-DD
+  const evByDay = {};
+  CAL_EVENTS.forEach(ev => {
+    const d = ev.date.substring(0, 10);
+    (evByDay[d] = evByDay[d] || []).push(ev);
+  });
+
+  let html = '';
+
+  // Leading cells (previous month — not clickable)
+  for (let i = firstDow - 1; i >= 0; i--) {
+    html += `<div class="cal-day other-month"><span class="cal-day-num">${prevDays - i}</span></div>`;
+  }
+
+  // Current month cells
+  for (let day = 1; day <= daysInMonth; day++) {
+    const key      = `${_calYear}-${pad(_calMonth+1)}-${pad(day)}`;
+    const isToday  = key === todayKey;
+    const dayEvs   = (evByDay[key] || []).slice().sort((a, b) => a.date.localeCompare(b.date));
+    const createUrl = `/events/create?date=${key}T20:00`;
+
+    let chips = '';
+    dayEvs.forEach(ev => {
+      const typeClass   = ev.is_public ? 'public' : 'private';
+      const statusClass = (ev.status === 'draft' || ev.status === 'finished') ? ev.status : '';
+      const time        = ev.date.substring(11, 16);
+      chips += `<span class="cal-event-chip ${typeClass} ${statusClass}"
+        data-url="${ev.url_edit}"
+        onclick="event.stopPropagation(); window.location=this.dataset.url"
+        title="${ev.title} — ${ev.status}">${time} ${ev.title}</span>`;
+    });
+
+    html += `<div class="cal-day${isToday ? ' today' : ''}"
+      data-key="${key}"
+      onclick="openDayDetail('${key}')">
+      <span class="cal-day-num">${day}</span>${chips}
+    </div>`;
+  }
+
+  // Trailing cells (next month)
+  const total = Math.ceil((firstDow + daysInMonth) / 7) * 7;
+  for (let i = 1; i <= total - firstDow - daysInMonth; i++) {
+    html += `<div class="cal-day other-month"><span class="cal-day-num">${i}</span></div>`;
+  }
+
+  grid.innerHTML = html;
+}
+
+function pad(n) { return String(n).padStart(2, '0'); }
+function prevMonth() { if (--_calMonth < 0)  { _calMonth = 11; _calYear--; } renderCalendar(); closeDayDetail(); }
+function nextMonth() { if (++_calMonth > 11)  { _calMonth = 0;  _calYear++; } renderCalendar(); closeDayDetail(); }
+
+// ── Vue journée ─────────────────────────────────────────────────────────────
+const DAYS_FR  = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+const MONTHS_LONG_FR = ['janvier','février','mars','avril','mai','juin',
+                        'juillet','août','septembre','octobre','novembre','décembre'];
+
+function openDayDetail(dateKey) {
+  const [y, m, d] = dateKey.split('-').map(Number);
+  const dow = new Date(y, m-1, d).getDay();
+  document.getElementById('cal-detail-title').textContent =
+    `${DAYS_FR[dow]} ${d} ${MONTHS_LONG_FR[m-1]} ${y}`;
+  document.getElementById('cal-detail-create-btn').href =
+    `/events/create?date=${dateKey}T20:00`;
+
+  // Événements du jour groupés par heure de début
+  const dayEvs = CAL_EVENTS.filter(ev => ev.date.startsWith(dateKey))
+                            .sort((a, b) => a.date.localeCompare(b.date));
+  const evByHour = {};
+  dayEvs.forEach(ev => {
+    const h = parseInt(ev.date.substring(11, 13));
+    (evByHour[h] = evByHour[h] || []).push(ev);
+  });
+
+  let html = '';
+  for (let h = 0; h < 24; h++) {
+    const hPad = pad(h);
+    const evs  = evByHour[h] || [];
+    let evHtml = '';
+    evs.forEach(ev => {
+      const start = ev.date.substring(11, 16);
+      const end   = ev.end ? ev.end.substring(11, 16) : '?';
+      const tc = ev.is_public ? 'public' : 'private';
+      const sc = (ev.status === 'draft' || ev.status === 'finished') ? ev.status : '';
+      evHtml += `<div class="cal-hour-event ${tc} ${sc}"
+        data-url="${ev.url_edit}"
+        onclick="event.stopPropagation(); window.location=this.dataset.url"
+        title="${ev.title}">${start}→${end} ${ev.title}</div>`;
+    });
+    const hint = evs.length === 0 ? `<span class="cal-hour-hint">+ créer</span>` : '';
+    html += `<div class="cal-hour-row" data-url="/events/create?date=${dateKey}T${hPad}:00"
+      onclick="window.location=this.dataset.url">
+      <span class="cal-hour-label">${hPad}:00</span>
+      <div class="cal-hour-content">${evHtml}${hint}</div>
+    </div>`;
+  }
+
+  const body = document.getElementById('cal-detail-body');
+  body.innerHTML = html;
+  // Pre-scroll to 8h
+  body.scrollTop = 8 * 36;
+
+  const detail = document.getElementById('cal-day-detail');
+  detail.style.display = '';
+  detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  // Highlight selected day cell
+  document.querySelectorAll('.cal-day.selected').forEach(el => el.classList.remove('selected'));
+  document.querySelectorAll(`.cal-day[data-key="${dateKey}"]`).forEach(el => el.classList.add('selected'));
+}
+
+function closeDayDetail() {
+  document.getElementById('cal-day-detail').style.display = 'none';
+  document.querySelectorAll('.cal-day.selected').forEach(el => el.classList.remove('selected'));
+}
+
+// ── Toggle vue ──────────────────────────────────────────────────────────────
+function setView(v) {
+  document.getElementById('view-calendar').style.display = v === 'calendar' ? '' : 'none';
+  document.getElementById('view-list').style.display     = v === 'list'     ? '' : 'none';
+  document.querySelectorAll('.view-btn').forEach(b => b.classList.toggle('active', b.dataset.view === v));
+  localStorage.setItem('ev_view', v);
+}
+
+// Init
+const _savedView = localStorage.getItem('ev_view') || 'calendar';
+setView(_savedView);
+renderCalendar();
+</script>
 {% endblock %}

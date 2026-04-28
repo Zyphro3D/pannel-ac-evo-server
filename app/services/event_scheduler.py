@@ -1,7 +1,7 @@
 import time
 import threading
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 log = logging.getLogger(__name__)
 
@@ -50,6 +50,14 @@ def _loop(app):
                     if event.date > now:
                         continue  # pas encore l'heure
                     _launch_event(app, event, db)
+
+                # ── Auto-terminer les événements expirés (1h de grâce) ────────
+                for event in Event.query.filter_by(status="published").all():
+                    event_end = event.date + timedelta(minutes=event.total_minutes + 60)
+                    if now >= event_end:
+                        event.status = "finished"
+                        db.session.commit()
+                        log.info("Auto-terminé: '%s'", event.title)
 
         except Exception:
             log.exception("Erreur event_scheduler")

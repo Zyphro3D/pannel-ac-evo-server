@@ -88,10 +88,21 @@
               <span class="ev-title">{{ ev.title }}</span>
               <span class="ev-meta">{{ ev.circuit_display or ev.circuit }}</span>
             </td>
-            <td class="ev-date">{{ ev.date.strftime('%d/%m %H:%M') }}</td>
-            <td><span class="badge badge-{{ ev.status }}">{{ ev.status }}</span></td>
+            <td class="ev-date" style="white-space:nowrap">
+              {{ ev.date | local_dt_short }}
+              <span style="color:var(--text-muted);font-size:11px"> → {{ ev.end_date | local_dt_short }}</span>
+            </td>
+            <td>
+              <span class="badge badge-{{ ev.status }}">
+                {% if ev.status == 'draft' %}{{ _('Brouillon') }}
+                {% elif ev.status == 'published' %}{{ _('Publié') }}
+                {% else %}{{ _('Terminé') }}{% endif %}
+              </span>
+            </td>
             <td style="text-align:right">
+              {% if not ev.is_public %}
               <a href="{{ url_for('events_admin.event_registrations', event_id=ev.id) }}" class="btn-secondary" style="font-size:11px">{{ _('Inscrits') }}</a>
+              {% endif %}
             </td>
           </tr>
           {% endfor %}

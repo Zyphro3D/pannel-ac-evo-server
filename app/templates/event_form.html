@@ -35,9 +35,9 @@
 
     <div class="form-row">
       <div class="form-group">
-        <label>{{ _('Date et heure (UTC)') }}</label>
+        <label>{{ _('Date et heure') }}</label>
         <input type="datetime-local" name="date" required
-               value="{{ event.date.strftime('%Y-%m-%dT%H:%M') if event and event.date else '' }}">
+               value="{{ event.date | local_dt_input if event and event.date else '' }}">
       </div>
       <div class="form-group">
         <label>{{ _('Pilotes max') }}</label>
@@ -207,6 +207,7 @@
       <div class="pi-filter-row">
         <span class="pi-filter-label">PI</span>
         <div class="pi-slider-wrapper" style="flex:1">
+          <div class="pi-slider-track" id="ef-pi-track"></div>
           <input type="range" id="ef-pi-min" min="{{ pi_min|int }}" max="{{ pi_max|int }}"
                  value="{{ pi_min|int }}" step="1" oninput="efSyncPi('min')">
           <input type="range" id="ef-pi-max" min="{{ pi_min|int }}" max="{{ pi_max|int }}"
@@ -299,6 +300,18 @@ function onModeChange(val) {
 const PI_MIN = {{ pi_min|int }};
 const PI_MAX = {{ pi_max|int }};
 let _piMin = PI_MIN, _piMax = PI_MAX;
+
+function efUpdatePiTrack() {
+  const slMin = document.getElementById('ef-pi-min');
+  const slMax = document.getElementById('ef-pi-max');
+  const lo = parseInt(slMin.min), hi = parseInt(slMin.max), span = hi - lo;
+  const p1 = span > 0 ? ((_piMin - lo) / span * 100) : 0;
+  const p2 = span > 0 ? ((_piMax - lo) / span * 100) : 100;
+  const track = document.getElementById('ef-pi-track');
+  if (track) track.style.background =
+    `linear-gradient(to right,var(--border) ${p1}%,var(--accent) ${p1}%,var(--accent) ${p2}%,var(--border) ${p2}%)`;
+}
+
 function efSyncPi(which) {
   const slMin = document.getElementById('ef-pi-min');
   const slMax = document.getElementById('ef-pi-max');
@@ -310,7 +323,8 @@ function efSyncPi(which) {
   }
   document.getElementById('ef-pi-min-val').textContent = _piMin;
   document.getElementById('ef-pi-max-val').textContent = _piMax;
-  efApplyFilters();
+  efUpdatePiTrack();
+  efApplyFilters(true);
 }
 
 // ── Category filter ──
@@ -319,20 +333,24 @@ function efSetCat(btn) {
   document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   _activeCat = btn.dataset.cat;
-  efApplyFilters();
+  efApplyFilters(true);
 }
 
 // ── Combined filter ──
-function efApplyFilters() {
+function efApplyFilters(autoSelect = false) {
   const q = (document.getElementById('ef-car-search')?.value || '').toLowerCase();
   document.querySelectorAll('#ef-cars-table .car-row').forEach(row => {
-    const name  = row.dataset.name || '';
-    const pi    = parseFloat(row.dataset.pi || 0);
-    const cats  = row.dataset.cats || '';
-    const show  = name.includes(q)
-                  && pi >= _piMin && pi <= _piMax
-                  && (_activeCat === 'all' || cats.includes(_activeCat.toLowerCase()));
+    const name    = row.dataset.name || '';
+    const pi      = parseFloat(row.dataset.pi || 0);
+    const cats    = row.dataset.cats || '';
+    const matchPi  = pi >= _piMin && pi <= _piMax;
+    const matchCat = _activeCat === 'all' || cats.includes(_activeCat.toLowerCase());
+    const show    = name.includes(q) && matchPi && matchCat;
     row.classList.toggle('hidden', !show);
+    if (autoSelect) {
+      const cb = row.querySelector('.ef-car-check');
+      if (cb) cb.checked = matchPi && matchCat;
+    }
   });
   efUpdateCount();
 }
@@ -366,7 +384,15 @@ document.getElementById('event-form').addEventListener('submit', function() {
 document.addEventListener('DOMContentLoaded', () => {
   updateCircuitDisplay(document.getElementById('circuit-select'));
   onModeChange(document.getElementById('mode-select').value);
+  efUpdatePiTrack();
+  efApplyFilters(false);
   efUpdateCount();
+  // Pré-remplir la date depuis le calendrier (?date=YYYY-MM-DDTHH:MM)
+  const _urlDate = new URLSearchParams(location.search).get('date');
+  if (_urlDate) {
+    const di = document.querySelector('input[name="date"]');
+    if (di && !di.value) di.value = _urlDate;
+  }
 });
 </script>
 {% endblock %}
