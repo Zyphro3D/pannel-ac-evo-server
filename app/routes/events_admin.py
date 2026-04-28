@@ -47,8 +47,14 @@ def _event_from_form(event, form):
     event.qualifying_minutes = _total_min("qualifying_h", "qualifying_m", 30)
     event.warmup_minutes     = _total_min("warmup_h",     "warmup_m",     10)
     event.race_minutes       = _total_min("race_h",       "race_m",       60)
-    # Voitures autorisées (multi-valeur)
-    event.allowed_cars = json.dumps(form.getlist("allowed_cars"))
+    # Voitures autorisées + réglages ballast/restrictor par voiture
+    allowed_names = form.getlist("allowed_cars")
+    event.allowed_cars = json.dumps(allowed_names)
+    try:
+        event.cars_config = form.get("cars_config_json", "{}")
+        json.loads(event.cars_config)  # valide le JSON
+    except (ValueError, TypeError):
+        event.cars_config = "{}"
     # Visibilité
     event.is_public   = form.get("is_public") == "1"
     # Lancement automatique

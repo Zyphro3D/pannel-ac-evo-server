@@ -808,35 +808,34 @@ body {
 .discord-banner {
   display: flex;
   align-items: center;
-  gap: 12px;
-  background: #404eed1a;
-  border: 1px solid #5865f260;
-  border-radius: var(--radius);
-  padding: 12px 18px;
-  margin-top: 16px;
+  gap: 8px;
+  background: #404eed12;
+  border-bottom: 1px solid #5865f230;
+  padding: 5px 24px;
+  height: 32px;
 }
 .discord-icon {
-  width: 22px;
-  height: 22px;
+  width: 14px;
+  height: 14px;
   color: #5865f2;
   flex-shrink: 0;
 }
 .discord-text {
-  flex: 1;
-  font-size: 13px;
-  color: var(--text);
+  font-size: 12px;
+  color: var(--text-muted);
 }
 .discord-btn {
   background: #5865f2;
   color: #fff;
   border: none;
   border-radius: var(--radius);
-  padding: 6px 16px;
-  font-size: 13px;
+  padding: 2px 10px;
+  font-size: 11px;
   font-weight: 600;
   text-decoration: none;
   white-space: nowrap;
   transition: background .15s;
+  margin-left: 4px;
 }
 .discord-btn:hover { background: #4752c4; }
 

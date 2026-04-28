@@ -63,13 +63,6 @@
     </div>
   </div>
 
-  <!-- ── Tabs nav ── -->
-  <div class="tabs-nav">
-    <button class="tab-btn active" data-tab="tab-server">{{ _('Serveur') }}</button>
-    <button class="tab-btn" data-tab="tab-event">{{ _('Événement & Sessions') }}</button>
-    <button class="tab-btn" data-tab="tab-cars">{{ _('Véhicules') }}</button>
-  </div>
-
   <!-- ── Status bar ── -->
   <div class="status-bar">
     <div class="server-status-large">
@@ -89,11 +82,10 @@
     </div>
   </div>
 
-  <!-- ── Tab: Serveur ── -->
-  <div class="tab-panel active" id="tab-server">
-    <section class="card">
-      <div class="card-header"><h2>{{ _('Informations serveur') }}</h2></div>
-      <form id="form-server" class="panel-form">
+  <!-- ── Informations serveur ── -->
+  <section class="card" style="margin-top:16px">
+    <div class="card-header"><h2>{{ _('Informations serveur') }}</h2></div>
+    <form id="form-server" class="panel-form">
 
         <div class="form-group">
           <label>{{ _('Nom du serveur') }}</label>
@@ -149,15 +141,11 @@
           </div>
         </div>
 
-        <button type="button" class="btn-primary" onclick="saveSection('form-server')">{{ _('Sauvegarder') }}</button>
-      </form>
-    </section>
-  </div>
+    </form>
+  </section>
 
-  <!-- ── Tab: Événement & Sessions ── -->
-  <div class="tab-panel" id="tab-event">
-
-    <section class="card">
+  <!-- ── Événement & Sessions ── -->
+  <section class="card" style="margin-top:16px">
       <div class="card-header"><h2>{{ _('Événement') }}</h2></div>
       <form id="form-event" class="panel-form">
 
@@ -321,14 +309,11 @@
           </div>
 
         </div>
-        <button type="button" class="btn-primary" onclick="saveEventAndSessions()">{{ _('Sauvegarder') }}</button>
-      </form>
-    </section>
-  </div>
+    </form>
+  </section>
 
-  <!-- ── Tab: Véhicules ── -->
-  <div class="tab-panel" id="tab-cars">
-    <section class="card">
+  <!-- ── Véhicules ── -->
+  <section class="card" style="margin-top:16px">
       <div class="card-header">
         <h2>{{ _('Véhicules') }}</h2>
       </div>
@@ -402,9 +387,13 @@
 
       <div class="cars-footer">
         <span id="cars-selected-count">0 {{ _('véhicule(s) sélectionné(s)') }}</span>
-        <button class="btn-primary" onclick="saveCars()">{{ _('Sauvegarder véhicules') }}</button>
       </div>
     </section>
+  </div>
+
+  <!-- ── Bouton unique Sauvegarder tout ── -->
+  <div style="display:flex;justify-content:flex-end;margin-top:20px;padding-bottom:32px">
+    <button class="btn-primary" style="padding:10px 32px;font-size:14px" onclick="saveAll()">{{ _('Sauvegarder tout') }}</button>
   </div>
 
 </div>

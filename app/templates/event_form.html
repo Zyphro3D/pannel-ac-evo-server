@@ -230,6 +230,7 @@
       {% endif %}
     </div>
 
+    <input type="hidden" name="cars_config_json" id="ef-cars-config-json">
     <div class="cars-table-wrapper" style="max-height:320px">
       <table class="cars-table" id="ef-cars-table">
         <thead>
@@ -238,19 +239,24 @@
             <th>{{ _('Véhicule') }}</th>
             <th>PI</th>
             <th>{{ _('Catégories') }}</th>
+            <th>Ballast</th>
+            <th>Restrictor</th>
           </tr>
         </thead>
         <tbody>
           {% set allowed_list = event.allowed_cars | from_json if event and event.allowed_cars else [] %}
+          {% set cars_cfg = event.cars_config | from_json if event and event.cars_config else {} %}
           {% for car in cars %}
           {% set cats = [] %}
           {% if car.property_1_label %}{% set _ = cats.append(car.property_1_label) %}{% endif %}
           {% if car.property_2_label %}{% set _ = cats.append(car.property_2_label) %}{% endif %}
           {% if car.property_3_label %}{% set _ = cats.append(car.property_3_label) %}{% endif %}
+          {% set car_cfg = cars_cfg.get(car.name, {}) if cars_cfg is mapping else {} %}
           <tr class="car-row"
               data-name="{{ car.display_name | lower }}"
               data-pi="{{ car.performance_indicator | default(0) }}"
-              data-cats="{{ cats | join(' ') | lower }}">
+              data-cats="{{ cats | join(' ') | lower }}"
+              data-car="{{ car.name }}">
             <td>
               <input type="checkbox" name="allowed_cars" value="{{ car.name }}" class="ef-car-check"
                      {% if car.name in allowed_list %}checked{% endif %}>
@@ -258,6 +264,8 @@
             <td class="car-name">{{ car.display_name }}</td>
             <td class="car-pi">{{ "%.0f"|format(car.performance_indicator) }}</td>
             <td style="font-size:11px;color:var(--text-muted)">{{ cats | join(' · ') }}</td>
+            <td><input type="number" class="ef-car-ballast" value="{{ car_cfg.get('ballast', 0) }}" min="0" step="1" style="width:60px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);padding:2px 6px;font-size:12px"></td>
+            <td><input type="number" class="ef-car-restrictor" value="{{ car_cfg.get('restrictor', 0) }}" min="0" step="1" style="width:60px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);padding:2px 6px;font-size:12px"></td>
           </tr>
           {% endfor %}
         </tbody>
@@ -341,6 +349,18 @@ function efUpdateCount() {
   if (el) el.textContent = n > 0 ? `(${n} sélectionné${n > 1 ? 's' : ''})` : '';
 }
 document.querySelectorAll('.ef-car-check').forEach(cb => cb.addEventListener('change', efUpdateCount));
+
+// ── Collecte cars_config avant submit ──
+document.getElementById('event-form').addEventListener('submit', function() {
+  const cfg = {};
+  document.querySelectorAll('#ef-cars-table .car-row').forEach(row => {
+    const name      = row.dataset.car;
+    const ballast   = parseFloat(row.querySelector('.ef-car-ballast')?.value || 0);
+    const restrictor = parseFloat(row.querySelector('.ef-car-restrictor')?.value || 0);
+    if (ballast || restrictor) cfg[name] = { ballast, restrictor };
+  });
+  document.getElementById('ef-cars-config-json').value = JSON.stringify(cfg);
+});
 
 // ── Init ──
 document.addEventListener('DOMContentLoaded', () => {

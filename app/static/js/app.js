@@ -122,15 +122,6 @@ document.getElementById('modal-create')?.addEventListener('click', function(e) {
   if (e.target === this) closeModal();
 });
 
-/* ── Tabs ── */
-document.querySelectorAll('.tab-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById(btn.dataset.tab)?.classList.add('active');
-  });
-});
 
 /* ── Toast ── */
 function showToast(msg, type = 'success') {
@@ -185,7 +176,7 @@ function updateStatusUI(running, runningConfig, autoRestart, players) {
   if (sameConfig)   txt = I18N.online;
   if (otherConfig)  txt = `${I18N.online} (${runningConfig})`;
   if (label)  label.textContent  = txt;
-  if (navLbl) navLbl.textContent = txt;
+  if (navLbl) navLbl.textContent = txt; // sera affiné par nav_label si dispo
 
   if (playerEl) {
     playerEl.textContent = (running && players !== null && players !== undefined)
@@ -212,6 +203,8 @@ async function fetchStatus() {
     const r = await fetch('/api/status');
     const d = await r.json();
     updateStatusUI(d.running, d.config, d.auto_restart, d.players);
+    const navLbl = document.getElementById('status-label');
+    if (navLbl && d.running && d.nav_label) navLbl.textContent = d.nav_label;
   } catch (_) {}
 }
 
@@ -260,58 +253,54 @@ async function serverAction(action) {
   }
 }
 
-/* ── Save server / event sections ── */
-async function saveSection(formId) {
-  const form = document.getElementById(formId);
+/* ── Sauvegarder tout (serveur + événement + sessions + véhicules) ── */
+async function saveAll() {
   const data = {};
-  for (const el of form.elements) {
-    if (!el.name) continue;
-    if (el.type === 'checkbox') {
-      data[el.name] = el.checked;
-    } else if (el.type === 'number') {
-      data[el.name] = Number(el.value);
-    } else {
-      data[el.name] = el.value;
+
+  // Section Serveur
+  const formServer = document.getElementById('form-server');
+  if (formServer) {
+    for (const el of formServer.elements) {
+      if (!el.name) continue;
+      data[el.name] = el.type === 'checkbox' ? el.checked : el.type === 'number' ? Number(el.value) : el.value;
     }
   }
-  try {
-    const r = await fetch('/api/config', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
-    const d = await r.json();
-    showToast(d.ok ? I18N.saved : I18N.error, d.ok ? 'success' : 'error');
-  } catch (_) {
-    showToast(I18N.networkError, 'error');
-  }
-}
 
-/* ── Save event + sessions (onglet fusionné) ── */
-async function saveEventAndSessions() {
-  const data = {};
-
-  // Champs événement (flat)
-  for (const el of document.getElementById('form-event').elements) {
-    if (!el.name) continue;
-    data[el.name] = el.type === 'checkbox' ? el.checked
-                  : el.type === 'number'   ? Number(el.value)
-                  : el.value;
+  // Section Événement
+  const formEvent = document.getElementById('form-event');
+  if (formEvent) {
+    for (const el of formEvent.elements) {
+      if (!el.name) continue;
+      data[el.name] = el.type === 'checkbox' ? el.checked : el.type === 'number' ? Number(el.value) : el.value;
+    }
   }
 
-  // Champs sessions (imbriqués)
-  const sessions = {};
-  for (const el of document.getElementById('form-sessions').elements) {
-    if (!el.name) continue;
-    const match = el.name.match(/^(\w+)\[(\w+)\]$/);
-    if (!match) continue;
-    const [, sessKey, field] = match;
-    if (!sessions[sessKey]) sessions[sessKey] = {};
-    sessions[sessKey][field] = el.type === 'checkbox' ? el.checked
-                             : el.type === 'number'   ? Number(el.value)
-                             : el.value;
+  // Section Sessions (champs imbriqués)
+  const formSessions = document.getElementById('form-sessions');
+  if (formSessions) {
+    const sessions = {};
+    for (const el of formSessions.elements) {
+      if (!el.name) continue;
+      const match = el.name.match(/^(\w+)\[(\w+)\]$/);
+      if (!match) continue;
+      const [, sessKey, field] = match;
+      if (!sessions[sessKey]) sessions[sessKey] = {};
+      sessions[sessKey][field] = el.type === 'checkbox' ? el.checked : el.type === 'number' ? Number(el.value) : el.value;
+    }
+    data.Sessions = sessions;
   }
-  data.Sessions = sessions;
+
+  // Section Véhicules
+  const allCars = [];
+  document.querySelectorAll('.car-row').forEach(row => {
+    const name = row.querySelector('.car-check')?.dataset.car;
+    if (!name) return;
+    const isSelected = row.querySelector('.car-check').checked;
+    const ballast    = Number(row.querySelector('.car-ballast')?.value || 0);
+    const restrictor = Number(row.querySelector('.car-restrictor')?.value || 0);
+    allCars.push({ name, IsSelected: isSelected, is_selected: isSelected, Ballast: ballast, ballast, Restrictor: restrictor, restrictor });
+  });
+  if (allCars.length) data.Cars = allCars;
 
   try {
     const r = await fetch('/api/config', {
@@ -440,35 +429,3 @@ updateSelectedCount();
 // Init du slider PI (colore la plage dès le chargement)
 (function () { if (document.getElementById('pi-range-min')) updatePiSlider(); })();
 
-async function saveCars() {
-  const allCars = [];
-  document.querySelectorAll('.car-row').forEach(row => {
-    const name = row.querySelector('.car-check')?.dataset.car;
-    if (!name) return;
-    const isSelected = row.querySelector('.car-check').checked;
-    const ballast    = Number(row.querySelector('.car-ballast')?.value || 0);
-    const restrictor = Number(row.querySelector('.car-restrictor')?.value || 0);
-
-    allCars.push({
-      name,
-      IsSelected: isSelected,
-      is_selected: isSelected,
-      Ballast: ballast,
-      ballast,
-      Restrictor: restrictor,
-      restrictor,
-    });
-  });
-
-  try {
-    const r = await fetch('/api/config', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ Cars: allCars }),
-    });
-    const d = await r.json();
-    showToast(d.ok ? I18N.carsSaved : I18N.error, d.ok ? 'success' : 'error');
-  } catch (_) {
-    showToast(I18N.networkError, 'error');
-  }
-}

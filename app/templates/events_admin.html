@@ -34,10 +34,18 @@
         <td>{{ ev.circuit_display or ev.circuit or '—' }}</td>
         <td>{{ ev.mode_display }}</td>
         <td>{{ ev.confirmed_count }}/{{ ev.max_drivers }}</td>
-        <td><span class="badge badge-{{ ev.status }}">{{ ev.status }}</span></td>
+        <td>
+          <span class="badge badge-{{ ev.status }}">
+            {% if ev.status == 'draft' %}{{ _('Brouillon') }}
+            {% elif ev.status == 'published' %}{{ _('Publié') }}
+            {% else %}{{ _('Terminé') }}{% endif %}
+          </span>
+        </td>
         <td>
           <div class="table-actions">
+            {% if not ev.is_public %}
             <a href="{{ url_for('events_admin.event_registrations', event_id=ev.id) }}" class="btn-secondary" style="font-size:11px">{{ _('Inscrits') }}</a>
+            {% endif %}
             <a href="{{ url_for('events_admin.event_edit', event_id=ev.id) }}" class="btn-secondary" style="font-size:11px">{{ _('Modifier') }}</a>
             {% if ev.status != 'finished' %}
             <form method="post" action="{{ url_for('events_admin.event_publish', event_id=ev.id) }}" style="display:inline">

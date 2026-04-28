@@ -40,6 +40,7 @@ def _migrate_db(db):
         ("event",  "auto_launch",          "INTEGER DEFAULT 0"),
         ("event",  "launched",            "INTEGER DEFAULT 0"),
         ("event",  "discord_notified",    "INTEGER DEFAULT 0"),
+        ("event",  "cars_config",         "TEXT    DEFAULT '{}'"),
     ]
     with engine.connect() as conn:
         for table, col, col_def in cols_to_add:
@@ -91,7 +92,7 @@ def create_app():
     app.jinja_env.globals["get_locale"]  = get_locale
     app.jinja_env.globals["app_version"] = _APP_VERSION
     import json as _json
-    app.jinja_env.filters["from_json"] = lambda s: _json.loads(s or "[]")
+    app.jinja_env.filters["from_json"] = lambda s: _json.loads(s) if s else []
 
     from zoneinfo import ZoneInfo as _ZoneInfo
     from datetime import timezone as _utc_tz

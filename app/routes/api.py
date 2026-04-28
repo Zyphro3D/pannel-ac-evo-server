@@ -8,6 +8,7 @@ from app.services.server_config import (
     load_config, apply_server_patch, load_cars, load_events,
     list_configs, get_active_config_name, set_active_config,
     create_config, delete_config, check_config, repair_config,
+    get_running_server_info,
 )
 
 from app.services.process_manager import start_server, stop_server, get_status, get_server_logs, set_auto_restart, _ensure_race_weekend_file
@@ -24,6 +25,15 @@ def status():
     data = get_status()
     if not (current_user.is_authenticated and current_user.is_admin):
         data = {"running": data.get("running"), "players": data.get("players")}
+    else:
+        if data.get("running"):
+            info = get_running_server_info()
+            if info:
+                if info.get("is_race_weekend"):
+                    dur = f"Q:{info['qualifying_dur']} R:{info['race_dur']}"
+                else:
+                    dur = info["practice_dur"]
+                data["nav_label"] = f"{info['circuit']} — {info['mode']} — {dur}"
     return jsonify(data)
 
 

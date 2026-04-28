@@ -254,13 +254,21 @@ def build_config_from_event(event) -> dict:
 
     # Cars — marquer comme sélectionnées celles dans allowed_cars (ou toutes si liste vide)
     allowed_names = set(_json.loads(event.allowed_cars or "[]"))
+    cars_cfg = {}
+    try:
+        cars_cfg = _json.loads(event.cars_config or "{}")
+    except (ValueError, TypeError):
+        pass
     car_list = []
     for car in load_cars():
         selected = (not allowed_names) or (car["name"] in allowed_names)
+        car_overrides = cars_cfg.get(car["name"], {})
+        ballast    = float(car_overrides.get("ballast", 0))
+        restrictor = float(car_overrides.get("restrictor", 0))
         car_list.append({
             "is_selected": selected,   "IsSelected": selected,
-            "ballast": 0.0,            "Ballast": 0,
-            "restrictor": 0.0,         "Restrictor": 0.0,
+            "ballast": ballast,        "Ballast": ballast,
+            "restrictor": restrictor,  "Restrictor": restrictor,
             "performance_indicator": car["performance_indicator"],
             "PerformanceIndicator":  car["performance_indicator"],
             "property_1": car.get("property_1"), "P1": car.get("property_1"),

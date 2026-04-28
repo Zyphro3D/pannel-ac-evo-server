@@ -111,6 +111,8 @@ class Event(db.Model):
     race_minutes       = db.Column(db.Integer, default=60)
     # Voitures autorisées pour cet événement (JSON list de car.name)
     allowed_cars       = db.Column(db.Text, default="[]")
+    # Réglages par voiture : JSON {car_name: {ballast, restrictor}}
+    cars_config        = db.Column(db.Text, default="{}")
 
     registrations = db.relationship("EventRegistration", back_populates="event",
                                     lazy="dynamic", cascade="all, delete-orphan")
