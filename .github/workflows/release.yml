@@ -1,0 +1,64 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Windows zip
+        run: |
+          find . \
+            -not \( \
+              -path "./.git*" \
+              -o -path "./.venv*" \
+              -o -path "./docker*" \
+              -o -path "./dist*" \
+              -o -path "./logs*" \
+              -o -name "__pycache__" \
+              -o -name "*.pyc" \
+              -o -name "*.db" \
+              -o -name ".server_state" \
+              -o -name ".server_output.log" \
+              -o -name ".env" \
+            \) \
+            -type f \
+          | sed 's|^\./||' \
+          | zip -@ "pannel-ac-evo-windows-${{ github.ref_name }}.zip"
+
+      - name: Build Docker zip
+        run: |
+          find . \
+            -not \( \
+              -path "./.git*" \
+              -o -path "./.venv*" \
+              -o -path "./dist*" \
+              -o -path "./logs*" \
+              -o -name "__pycache__" \
+              -o -name "*.pyc" \
+              -o -name "*.db" \
+              -o -name ".server_state" \
+              -o -name ".server_output.log" \
+              -o -name ".env" \
+              -o -name "install.bat" \
+              -o -name "start.bat" \
+              -o -name "update.bat" \
+            \) \
+            -type f \
+          | sed 's|^\./||' \
+          | zip -@ "pannel-ac-evo-docker-${{ github.ref_name }}.zip"
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            pannel-ac-evo-windows-${{ github.ref_name }}.zip
+            pannel-ac-evo-docker-${{ github.ref_name }}.zip
+          generate_release_notes: true

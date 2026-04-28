@@ -9,6 +9,7 @@
 *.po text eol=lf
 *.txt text eol=lf
 *.cfg text eol=lf
+*.sh text eol=lf
 
 # Binaires
 *.mo binary

@@ -1,9 +1,11 @@
 """
 Start / stop / status of AssettoCorsaEVOServer.exe.
 State file stores PID + config name + launch args for auto-restart watchdog.
+Supports DEPLOY_MODE=native (Windows subprocess) or docker (Wine on Linux).
 """
 import json
 import logging
+import os
 import subprocess
 import threading
 import time
@@ -16,6 +18,7 @@ from flask import current_app
 _STATE_FILE   = Path(__file__).parent.parent.parent / ".server_state"
 _LOG_FILE     = Path(__file__).parent.parent.parent / ".server_output.log"
 _PROCESS_NAME = "AssettoCorsaEVOServer"
+_DEPLOY_MODE  = os.environ.get("DEPLOY_MODE", "native")
 
 _watchdog_thread: threading.Thread | None = None
 _watchdog_stop   = threading.Event()
@@ -61,17 +64,28 @@ def _set_auto_restart(enabled: bool):
 
 # ── Process helpers ──────────────────────────────────────────────────────────
 
+def _proc_matches(proc: psutil.Process) -> bool:
+    """Returns True if proc is the ACE EVO server process."""
+    try:
+        if _DEPLOY_MODE == "docker":
+            # Under Wine, the exe name appears in the cmdline
+            return _PROCESS_NAME in " ".join(proc.cmdline())
+        return proc.is_running() and _PROCESS_NAME in proc.name()
+    except (psutil.AccessDenied, psutil.NoSuchProcess):
+        return False
+
+
 def is_running() -> bool:
     state = _read_state()
     pid = state.get("pid")
     if pid:
         try:
-            proc = psutil.Process(pid)
-            return proc.is_running() and _PROCESS_NAME in proc.name()
+            if _proc_matches(psutil.Process(pid)):
+                return True
         except psutil.NoSuchProcess:
             pass
-    for proc in psutil.process_iter(["name"]):
-        if _PROCESS_NAME in proc.info["name"]:
+    for proc in psutil.process_iter(["name", "cmdline"]):
+        if _proc_matches(proc):
             return True
     return False
 
@@ -91,11 +105,18 @@ def _ensure_race_weekend_file(exe_path: Path) -> bool:
 
 def _launch(exe: Path, sc_b64: str, sd_b64: str) -> "subprocess.Popen | None":
     """Lance le processus serveur et retourne l'objet Popen."""
-    cmd = [str(exe), "-serverconfig", sc_b64, "-seasondefinition", sd_b64]
-    show_console = _show_console()
-    creation_flags = 0 if show_console else subprocess.CREATE_NO_WINDOW
     try:
         log_f = open(_LOG_FILE, "a", encoding="utf-8", errors="replace")
+        if _DEPLOY_MODE == "docker":
+            cmd = ["wine", str(exe), "-serverconfig", sc_b64, "-seasondefinition", sd_b64]
+            return subprocess.Popen(
+                cmd, cwd=str(exe.parent),
+                stdout=log_f, stderr=subprocess.STDOUT,
+            )
+        # Native Windows
+        show_console = _show_console()
+        creation_flags = 0 if show_console else subprocess.CREATE_NO_WINDOW
+        cmd = [str(exe), "-serverconfig", sc_b64, "-seasondefinition", sd_b64]
         return subprocess.Popen(
             cmd, cwd=str(exe.parent),
             stdout=None if show_console else log_f,
@@ -129,8 +150,7 @@ def _watchdog_loop():
         alive = False
         if pid:
             try:
-                proc = psutil.Process(pid)
-                alive = proc.is_running() and _PROCESS_NAME in proc.name()
+                alive = _proc_matches(psutil.Process(pid))
             except psutil.NoSuchProcess:
                 pass
 
@@ -226,8 +246,8 @@ def stop_server() -> dict:
             pass
 
     if not killed:
-        for proc in psutil.process_iter(["name", "pid"]):
-            if _PROCESS_NAME in proc.info["name"]:
+        for proc in psutil.process_iter(["name", "pid", "cmdline"]):
+            if _proc_matches(proc):
                 psutil.Process(proc.info["pid"]).terminate()
                 killed = True
                 break

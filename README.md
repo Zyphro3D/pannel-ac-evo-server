@@ -10,7 +10,8 @@
 </p>
 
 <p align="center">
-  <a href="#installation">Installation</a> •
+  <a href="#installation">Installation Windows</a> •
+  <a href="#installation-docker-linux">Docker</a> •
   <a href="#configuration">Configuration</a> •
   <a href="#mise-à-jour">Mise à jour</a> •
   <a href="#changelog">Changelog</a> •
@@ -156,6 +157,47 @@ Générer une `SECRET_KEY` sécurisée :
 ```bat
 .venv\Scripts\python -c "import secrets; print(secrets.token_hex(32))"
 ```
+
+---
+
+## Installation Docker (Linux)
+
+Le panel et le serveur ACE EVO tournent dans un seul conteneur Docker (Python 3.11 + Wine).  
+Télécharger le zip **Docker** depuis les [Releases GitHub](https://github.com/Zyphro3D/pannel-ac-evo-server/releases).
+
+### Prérequis
+
+- **Docker** et **Docker Compose** installés sur l'hôte Linux
+- Les fichiers serveur ACE EVO (`AssettoCorsaEVOServer.exe`, `cars.json`, `events_practice.json`, `events_race_weekend.json`) fournis par le ServerLauncher officiel
+
+### Étapes
+
+```bash
+cd docker/
+cp .env.example .env
+# Éditer .env (SECRET_KEY, mots de passe, PANEL_URL…)
+
+# Copier les fichiers du serveur ACE EVO dans docker/aceserver/
+# (AssettoCorsaEVOServer.exe, cars.json, events_*.json, content/, …)
+mkdir -p aceserver/configs
+
+docker compose up -d
+```
+
+Le panel est accessible sur `http://localhost:4300`.
+
+Les logs du panel : `docker compose logs -f panel`
+
+### Variables importantes en mode Docker
+
+| Variable | Description | Défaut Docker |
+|---|---|---|
+| `DEPLOY_MODE` | `docker` activé automatiquement dans le conteneur | `docker` |
+| `ACESERVER_EXE_PATH` | Chemin du .exe dans le conteneur | `/aceserver/AssettoCorsaEVOServer.exe` |
+| `CONFIGS_DIR` | Dossier de configurations dans le conteneur | `/aceserver/configs` |
+| `SESSION_COOKIE_SECURE` | `false` si accès HTTP, `true` derrière HTTPS | `false` |
+
+> **Crédits Wine** : approche Docker inspirée de [VandaLpr/acevo-docker-server](https://github.com/VandaLpr/acevo-docker-server).
 
 ---
 

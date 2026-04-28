@@ -63,6 +63,10 @@ class Config:
     # ── Fuseau horaire ────────────────────────────────────────────────────────
     PANEL_TIMEZONE = os.environ.get("PANEL_TIMEZONE", "Europe/Paris")
 
+    # ── Mode de déploiement ───────────────────────────────────────────────────
+    # "native" = Windows subprocess, "docker" = Wine sur Linux
+    DEPLOY_MODE = os.environ.get("DEPLOY_MODE", "native")
+
     # ── Cookies / Session ─────────────────────────────────────────────────────
     SESSION_COOKIE_HTTPONLY  = True
     SESSION_COOKIE_SAMESITE  = "Lax"

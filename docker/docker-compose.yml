@@ -1,0 +1,21 @@
+services:
+  panel:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    ports:
+      - "4300:4300"       # Panel web interface
+      - "8080:8080"       # ACE EVO server HTTP API
+      - "9700:9700/tcp"   # ACE EVO server TCP
+      - "9700:9700/udp"   # ACE EVO server UDP
+    volumes:
+      # Place your ACE EVO server files (exe, cars.json, events_*.json) in ./aceserver/
+      - ./aceserver:/aceserver
+      # Panel database and persistent data
+      - panel_data:/panel/data
+    env_file:
+      - .env
+    restart: unless-stopped
+
+volumes:
+  panel_data:
