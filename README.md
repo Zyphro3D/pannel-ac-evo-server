@@ -194,7 +194,7 @@ Fait un `git pull`, met à jour les dépendances pip et recompile les traduction
 
 ---
 
-### v1.1.0 — *date de release*
+### v1.1.0
 
 **Nouveautés**
 - Protection CSRF sur tous les formulaires HTML (Flask-WTF)
@@ -204,25 +204,6 @@ Fait un `git pull`, met à jour les dépendances pip et recompile les traduction
 - Support multilingue FR / EN / ES / DE / IT
 - Notifications Discord pilotes sur webhook séparé
 - Bannière Discord configurable (`DISCORD_INVITE_URL`)
-
----
-
-## Screenshots — où les placer
-
-Les captures d'écran vont dans le dossier **`docs/`** à la racine du projet :
-
-```
-docs/
-├── banner.png                ← Bannière du projet (1200×300 px recommandé)
-├── screenshot-dashboard.png  ← Dashboard public (vue navigateur, ~1400px de large)
-├── screenshot-server.png     ← Page gestion du serveur
-├── screenshot-events.png     ← Calendrier des événements
-└── screenshot-event-form.png ← Formulaire de création d'événement
-```
-
-Pour les faire apparaître dans le README, exportez vos captures au format `.png`, renommez-les exactement comme ci-dessus et déposez-les dans `docs/`. Elles s'afficheront automatiquement sur GitHub après le prochain `git push`.
-
-> **Conseil taille** : redimensionner à 1400px de large avant export, GitHub les affiche à 700px dans le README — résultat net sans être lourd.
 
 ---
 
