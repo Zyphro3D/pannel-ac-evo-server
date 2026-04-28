@@ -1,772 +1,1142 @@
+
 msgid ""
 msgstr ""
-"Content-Type: text/plain; charset=UTF-8\n"
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-04-28 10:20+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: fr\n"
+"Language-Team: fr <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
 
-msgid "Connexion"
-msgstr "Connexion"
-
-msgid "Déconnexion"
-msgstr "Déconnexion"
-
-msgid "Administration serveur"
-msgstr "Administration serveur"
-
-msgid "Utilisateur"
-msgstr "Utilisateur"
-
-msgid "Mot de passe"
-msgstr "Mot de passe"
-
-msgid "Identifiants incorrects"
-msgstr "Identifiants incorrects"
-
-msgid "Identifiant ou email"
-msgstr "Identifiant ou email"
-
-msgid "S'inscrire"
-msgstr "S'inscrire"
-
-msgid "Se connecter"
-msgstr "Se connecter"
-
-msgid "Mot de passe oublié ?"
-msgstr "Mot de passe oublié ?"
-
-msgid "Pilote ?"
-msgstr "Pilote ?"
-
-msgid "Votre compte est en attente de validation."
-msgstr "Votre compte est en attente de validation."
-
-msgid "Votre compte a été refusé."
-msgstr "Votre compte a été refusé."
-
-msgid "Inscription pilote"
-msgstr "Inscription pilote"
-
-msgid "Nom in-game"
-msgstr "Nom in-game"
-
-msgid "Adresse email"
-msgstr "Adresse email"
-
-msgid "Confirmer le mot de passe"
-msgstr "Confirmer le mot de passe"
-
-msgid "Déjà un compte ?"
-msgstr "Déjà un compte ?"
-
-msgid "Votre compte sera activé par un administrateur."
-msgstr "Votre compte sera activé par un administrateur."
-
-msgid "10 caractères minimum"
-msgstr "10 caractères minimum"
-
-msgid "Une majuscule"
-msgstr "Une majuscule"
-
-msgid "Une minuscule"
-msgstr "Une minuscule"
-
-msgid "Un chiffre"
-msgstr "Un chiffre"
-
-msgid "Un caractère spécial"
-msgstr "Un caractère spécial"
-
-msgid "Mot de passe oublié"
-msgstr "Mot de passe oublié"
-
-msgid "Entrez votre identifiant ou votre adresse email. Si votre compte est approuvé, vous recevrez un lien de réinitialisation valable 1 heure."
-msgstr "Entrez votre identifiant ou votre adresse email. Si votre compte est approuvé, vous recevrez un lien de réinitialisation valable 1 heure."
-
-msgid "Nom in-game ou email"
-msgstr "Nom in-game ou email"
-
-msgid "Envoyer le lien"
-msgstr "Envoyer le lien"
-
-msgid "Retour à la connexion"
-msgstr "Retour à la connexion"
-
-msgid "Nouveau mot de passe"
-msgstr "Nouveau mot de passe"
-
-msgid "Enregistrer le mot de passe"
-msgstr "Enregistrer le mot de passe"
-
-msgid "Contrôle serveur"
-msgstr "Contrôle serveur"
-
-msgid "Vérification..."
-msgstr "Vérification..."
-
-msgid "Démarrer"
-msgstr "Démarrer"
-
-msgid "Arrêter"
-msgstr "Arrêter"
-
-msgid "Redémarrer"
-msgstr "Redémarrer"
-
-msgid "Logs"
-msgstr "Logs"
-
-msgid "Logs serveur"
-msgstr "Logs serveur"
-
-msgid "Chargement..."
-msgstr "Chargement..."
-
-msgid "Fermer"
-msgstr "Fermer"
-
-msgid "Actualiser"
-msgstr "Actualiser"
-
-msgid "Auto-restart"
-msgstr "Auto-restart"
-
-msgid "Relancer automatiquement en cas de crash"
-msgstr "Relancer automatiquement en cas de crash"
-
-msgid "Auto-restart activé"
-msgstr "Auto-restart activé"
-
-msgid "Auto-restart désactivé"
-msgstr "Auto-restart désactivé"
-
-msgid "joueur(s)"
-msgstr "joueur(s)"
-
-msgid "Informations serveur"
-msgstr "Informations serveur"
-
-msgid "Nom du serveur"
-msgstr "Nom du serveur"
-
-msgid "Joueurs max"
-msgstr "Joueurs max"
-
-msgid "Cycle actif"
-msgstr "Cycle actif"
-
-msgid "Type de serveur"
-msgstr "Type de serveur"
-
-msgid "Classé"
-msgstr "Classé"
-
-msgid "Non classé"
-msgstr "Non classé"
-
-msgid "Mot de passe pilote"
-msgstr "Mot de passe pilote"
-
-msgid "Mot de passe admin"
-msgstr "Mot de passe admin"
-
-msgid "Mot de passe spectateur"
-msgstr "Mot de passe spectateur"
-
-msgid "Entry List Path"
-msgstr "Chemin entry list"
-
-msgid "Results Path"
-msgstr "Chemin résultats"
-
-msgid "Sauvegarder"
-msgstr "Sauvegarder"
-
-msgid "Événement"
-msgstr "Événement"
-
-msgid "Événement & Sessions"
-msgstr "Événement & Sessions"
-
-msgid "Type de session"
-msgstr "Type de session"
-
-msgid "Libre"
-msgstr "Libre"
-
-msgid "Race Weekend"
-msgstr "Race Weekend"
-
-msgid "Météo"
-msgstr "Météo"
-
-msgid "Dégagé"
-msgstr "Dégagé"
-
-msgid "Nuageux"
-msgstr "Nuageux"
-
-msgid "Pluie"
-msgstr "Pluie"
-
-msgid "Comportement météo"
-msgstr "Comportement météo"
-
-msgid "Statique"
-msgstr "Statique"
-
-msgid "Dynamique"
-msgstr "Dynamique"
-
-msgid "Adhérence initiale"
-msgstr "Adhérence initiale"
-
-msgid "Vert"
-msgstr "Vert"
-
-msgid "Rapide"
-msgstr "Rapide"
-
-msgid "Optimal"
-msgstr "Optimal"
-
-msgid "Circuit"
-msgstr "Circuit"
-
-msgid "Mode"
-msgstr "Mode"
-
-msgid "Sessions"
-msgstr "Sessions"
-
-msgid "Durée (s)"
-msgstr "Durée (s)"
-
-msgid "Durée"
-msgstr "Durée"
-
-msgid "Heure"
-msgstr "Heure"
-
-msgid "Heure in-game"
-msgstr "Heure in-game"
-
-msgid "Attente max box (s)"
-msgstr "Attente max box (s)"
-
-msgid "Overtime (s)"
-msgstr "Overtime (s)"
-
-msgid "Qualification"
-msgstr "Qualification"
-
-msgid "Chauffe"
-msgstr "Chauffe"
-
-msgid "Course"
-msgstr "Course"
-
-msgid "Sauvegarder sessions"
-msgstr "Sauvegarder sessions"
-
-msgid "(0 = ignoré)"
-msgstr "(0 = ignoré)"
-
-msgid "Qualif"
-msgstr "Qualif"
-
-msgid "Véhicules"
-msgstr "Véhicules"
-
-msgid "Filtrer..."
-msgstr "Filtrer..."
-
-msgid "Rechercher..."
-msgstr "Rechercher..."
-
-msgid "Sélectionnés seulement"
-msgstr "Sélectionnés seulement"
-
-msgid "Tout sélectionner"
-msgstr "Tout sélectionner"
-
-msgid "Tout désélectionner"
-msgstr "Tout désélectionner"
-
-msgid "Véhicule"
-msgstr "Véhicule"
-
-msgid "Sauvegarder véhicules"
-msgstr "Sauvegarder véhicules"
-
-msgid "véhicule(s) sélectionné(s)"
-msgstr "véhicule(s) sélectionné(s)"
-
-msgid "Configuration"
-msgstr "Configuration"
-
-msgid "Nouveau"
-msgstr "Nouveau"
-
-msgid "Dupliquer"
-msgstr "Dupliquer"
-
-msgid "Supprimer"
-msgstr "Supprimer"
-
-msgid "Nouvelle configuration"
-msgstr "Nouvelle configuration"
-
-msgid "Nom du fichier"
-msgstr "Nom du fichier"
-
-msgid "Annuler"
-msgstr "Annuler"
-
-msgid "Créer"
-msgstr "Créer"
-
-msgid "Choisir autre"
-msgstr "Choisir autre"
-
-msgid "Réparer"
-msgstr "Réparer"
-
-msgid "Config réparée"
-msgstr "Configuration réparée"
-
-msgid "Fichier invalide"
-msgstr "Fichier invalide"
-
-msgid "Ce fichier contient des erreurs :"
-msgstr "Ce fichier contient des erreurs :"
-
-msgid "Dupliquer la configuration"
-msgstr "Dupliquer la configuration"
-
-msgid "Serveur"
-msgstr "Serveur"
-
-msgid "En ligne"
-msgstr "En ligne"
-
-msgid "Hors ligne"
-msgstr "Hors ligne"
-
-msgid "Sauvegardé"
-msgstr "Sauvegardé"
-
-msgid "Erreur"
-msgstr "Erreur"
-
-msgid "Erreur réseau"
-msgstr "Erreur réseau"
-
-msgid "Serveur démarré"
-msgstr "Serveur démarré"
-
-msgid "Serveur arrêté"
-msgstr "Serveur arrêté"
-
-msgid "Serveur redémarré"
-msgstr "Serveur redémarré"
-
-msgid "Sessions sauvegardées"
-msgstr "Sessions sauvegardées"
-
-msgid "Véhicules sauvegardés"
-msgstr "Véhicules sauvegardés"
-
-msgid "Nom requis"
-msgstr "Nom requis"
-
-msgid "Statut serveur"
-msgstr "Statut serveur"
-
-msgid "Contrôles"
-msgstr "Contrôles"
-
-msgid "Durée libre"
-msgstr "Durée libre"
-
-msgid "Prochains événements"
-msgstr "Prochains événements"
-
-msgid "Inscrits"
-msgstr "Inscrits"
-
-msgid "Pilotes"
-msgstr "Pilotes"
-
-msgid "Aucun événement à venir."
-msgstr "Aucun événement à venir."
-
-msgid "Aucun pilote en attente."
-msgstr "Aucun pilote en attente."
-
-msgid "Gérer"
-msgstr "Gérer"
-
-msgid "En attente de validation"
-msgstr "En attente de validation"
-
-msgid "pilote(s)"
-msgstr "pilote(s)"
-
-msgid "Email"
-msgstr "Email"
-
-msgid "Inscrit le"
-msgstr "Inscrit le"
-
-msgid "Actions"
-msgstr "Actions"
-
-msgid "Approuver"
-msgstr "Approuver"
-
-msgid "Refuser"
-msgstr "Refuser"
-
-msgid "Pilotes approuvés"
-msgstr "Pilotes approuvés"
-
-msgid "Aucun pilote approuvé."
-msgstr "Aucun pilote approuvé."
-
-msgid "Pilotes refusés"
-msgstr "Pilotes refusés"
-
-msgid "Ré-approuver"
-msgstr "Ré-approuver"
-
-msgid "Supprimer définitivement"
-msgstr "Supprimer définitivement"
-
-msgid "Événements"
-msgstr "Événements"
-
-msgid "Titre"
-msgstr "Titre"
-
-msgid "Date (UTC)"
-msgstr "Date (UTC)"
-
-msgid "Statut"
-msgstr "Statut"
-
-msgid "Modifier"
-msgstr "Modifier"
-
-msgid "Dépublier"
-msgstr "Dépublier"
-
-msgid "Publier"
-msgstr "Publier"
-
-msgid "Terminer"
-msgstr "Terminer"
-
-msgid "Aucun événement."
-msgstr "Aucun événement."
-
-msgid "Créer le premier"
-msgstr "Créer le premier"
-
-msgid "Modifier l'événement"
-msgstr "Modifier l'événement"
-
-msgid "Nouvel événement"
-msgstr "Nouvel événement"
-
-msgid "Retour"
-msgstr "Retour"
-
-msgid "Description"
-msgstr "Description"
-
-msgid "(optionnel)"
-msgstr "(optionnel)"
-
-msgid "Date et heure (UTC)"
-msgstr "Date et heure (UTC)"
-
-msgid "Pilotes max"
-msgstr "Pilotes max"
-
-msgid "Durées de session"
-msgstr "Durées de session"
-
-msgid "Mot de passe serveur"
-msgstr "Mot de passe serveur"
-
-msgid "(vide = public)"
-msgstr "(vide = public)"
-
-msgid "Rappel email"
-msgstr "Rappel email"
-
-msgid "(minutes avant début)"
-msgstr "(minutes avant début)"
-
-msgid "Lancer le serveur automatiquement"
-msgstr "Lancer le serveur automatiquement"
-
-msgid "Serveur lancé automatiquement pour cet événement."
-msgstr "Serveur lancé automatiquement pour cet événement."
-
-msgid "Véhicules autorisés"
-msgstr "Véhicules autorisés"
-
-msgid "Catégories"
-msgstr "Catégories"
-
-msgid "Tous"
-msgstr "Tous"
-
-msgid "Enregistrer"
-msgstr "Enregistrer"
-
-msgid "Générer entry list"
-msgstr "Générer entry list"
-
-msgid "Course privée"
-msgstr "Course privée"
-
-msgid "Pilote"
-msgstr "Pilote"
-
-msgid "Voiture assignée"
-msgstr "Voiture assignée"
-
-msgid "Non assignée"
-msgstr "Non assignée"
-
-msgid "Confirmer"
-msgstr "Confirmer"
-
-msgid "Aucune inscription pour le moment."
-msgstr "Aucune inscription pour le moment."
-
-msgid "Événements disponibles"
-msgstr "Événements disponibles"
-
-msgid "Date"
-msgstr "Date"
-
-msgid "Complet"
-msgstr "Complet"
-
-msgid "Compte en attente"
-msgstr "Compte en attente"
-
-msgid "Mes inscriptions"
-msgstr "Mes inscriptions"
-
-msgid "Voiture"
-msgstr "Voiture"
-
-msgid "En attente"
-msgstr "En attente"
-
-msgid "Confirmé"
-msgstr "Confirmé"
-
-msgid "Vous n'êtes inscrit à aucun événement."
-msgstr "Vous n'êtes inscrit à aucun événement."
-
-msgid "Le serveur est actuellement hors ligne."
-msgstr "Le serveur est actuellement hors ligne."
-
-msgid "Événements à venir"
-msgstr "Événements à venir"
-
-msgid "Aucun événement à venir pour le moment."
-msgstr "Aucun événement à venir pour le moment."
-
-msgid "Rejoindre notre serveur Discord"
-msgstr "Rejoindre notre serveur Discord"
-
-msgid "Administration"
-msgstr "Administration"
-
-msgid "Configuration email"
-msgstr "Configuration email"
-
-msgid "Port"
-msgstr "Port"
-
-msgid "Expéditeur"
-msgstr "Expéditeur"
-
-msgid "Admin(s)"
-msgstr "Admin(s)"
-
-msgid "Envoyer un test"
-msgstr "Envoyer un test"
-
-msgid "Webhook Discord — Serveur"
-msgstr "Webhook Discord — Serveur"
-
-msgid "URL"
-msgstr "URL"
-
-msgid "Message envoyé sur le channel serveur."
-msgstr "Message envoyé sur le channel serveur."
-
-msgid "Envoyer un message de test"
-msgstr "Envoyer un message de test"
-
-msgid "Webhook Discord — Pilotes"
-msgstr "Webhook Discord — Pilotes"
-
-msgid "Message envoyé sur le channel pilotes."
-msgstr "Message envoyé sur le channel pilotes."
-
-msgid "utilise le webhook serveur"
-msgstr "utilise le webhook serveur"
-
-msgid "Inscription reçue ! Votre compte sera validé par un administrateur."
-msgstr "Inscription reçue ! Votre compte sera validé par un administrateur."
-
-msgid "Votre compte doit être validé avant de vous inscrire."
-msgstr "Votre compte doit être validé avant de vous inscrire."
-
-msgid "Cet événement n'est pas disponible."
-msgstr "Cet événement n'est pas disponible."
-
-msgid "Vous êtes déjà inscrit à cet événement."
-msgstr "Vous êtes déjà inscrit à cet événement."
-
-msgid "Cet événement est complet."
-msgstr "Cet événement est complet."
-
-msgid "Inscription envoyée !"
-msgstr "Inscription envoyée !"
-
-msgid "Désinscription effectuée."
-msgstr "Désinscription effectuée."
-
-msgid "Impossible de se désinscrire (inscription confirmée)."
-msgstr "Impossible de se désinscrire (inscription confirmée)."
-
-msgid "Un email de réinitialisation a été envoyé si le compte existe."
-msgstr "Un email de réinitialisation a été envoyé si le compte existe."
-
-msgid "Ce lien est invalide ou a expiré."
-msgstr "Ce lien est invalide ou a expiré."
-
-msgid "Mot de passe mis à jour. Vous pouvez vous connecter."
-msgstr "Mot de passe mis à jour. Vous pouvez vous connecter."
-
+#: app/routes/auth.py:21
 msgid "Le mot de passe doit contenir au moins 10 caractères."
 msgstr "Le mot de passe doit contenir au moins 10 caractères."
 
+#: app/routes/auth.py:23
 msgid "Le mot de passe doit contenir au moins une majuscule."
 msgstr "Le mot de passe doit contenir au moins une majuscule."
 
+#: app/routes/auth.py:25
 msgid "Le mot de passe doit contenir au moins une minuscule."
 msgstr "Le mot de passe doit contenir au moins une minuscule."
 
+#: app/routes/auth.py:27
 msgid "Le mot de passe doit contenir au moins un chiffre."
 msgstr "Le mot de passe doit contenir au moins un chiffre."
 
+#: app/routes/auth.py:29
 msgid "Le mot de passe doit contenir au moins un caractère spécial."
 msgstr "Le mot de passe doit contenir au moins un caractère spécial."
 
+#: app/routes/auth.py:84
+msgid "Un email de réinitialisation a été envoyé si le compte existe."
+msgstr "Un email de réinitialisation a été envoyé si le compte existe."
+
+#: app/routes/auth.py:108
+msgid "Ce lien est invalide ou a expiré."
+msgstr "Ce lien est invalide ou a expiré."
+
+#: app/routes/auth.py:116 app/routes/public.py:77
 msgid "Les mots de passe ne correspondent pas."
 msgstr "Les mots de passe ne correspondent pas."
 
-msgid "Le nom in-game est requis."
-msgstr "Le nom in-game est requis."
+#: app/routes/auth.py:127
+msgid "Mot de passe mis à jour. Vous pouvez vous connecter."
+msgstr "Mot de passe mis à jour. Vous pouvez vous connecter."
 
-msgid "Nom in-game invalide (2–30 caractères)."
-msgstr "Nom in-game invalide (2–30 caractères)."
-
-msgid "Adresse email invalide."
-msgstr "Adresse email invalide."
-
-msgid "Ce nom in-game est déjà utilisé."
-msgstr "Ce nom in-game est déjà utilisé."
-
-msgid "Cet email est déjà utilisé."
-msgstr "Cet email est déjà utilisé."
-
+#: app/routes/events_admin.py:111
 msgid "Événement créé."
 msgstr "Événement créé."
 
+#: app/routes/events_admin.py:128
 msgid "Événement mis à jour."
 msgstr "Événement mis à jour."
 
+#: app/routes/events_admin.py:141
 msgid "Événement supprimé."
 msgstr "Événement supprimé."
 
+#: app/routes/events_admin.py:151
 msgid "Événement publié."
 msgstr "Événement publié."
 
+#: app/routes/events_admin.py:154
 msgid "Événement repassé en brouillon."
 msgstr "Événement repassé en brouillon."
 
+#: app/routes/events_admin.py:156
 msgid "Statut inchangé."
 msgstr "Statut inchangé."
 
+#: app/routes/events_admin.py:168
 msgid "Événement marqué comme terminé."
 msgstr "Événement marqué comme terminé."
 
-msgid "Entry list générée."
-msgstr "Entry list générée."
-
-msgid "Erreur lors de la génération."
-msgstr "Erreur lors de la génération."
-
-msgid "%(name)s approuvé."
-msgstr "%(name)s approuvé."
-
-msgid "%(name)s refusé."
-msgstr "%(name)s refusé."
-
-msgid "%(name)s supprimé."
-msgstr "%(name)s supprimé."
-
-msgid "Se désinscrire ?"
-msgstr "Se désinscrire ?"
-
-msgid "Marquer comme terminé ?"
-msgstr "Marquer comme terminé ?"
-
-msgid "Supprimer cet événement ?"
-msgstr "Supprimer cet événement ?"
-
-msgid "Rejoindre"
-msgstr "Rejoindre"
-
+#: app/routes/events_admin.py:189
+#, python-format
 msgid "%(name)s confirmé(e)."
 msgstr "%(name)s confirmé(e)."
 
-msgid "Destinataire"
-msgstr "Destinataire"
+#: app/routes/events_admin.py:199 app/routes/events_admin.py:256
+#, python-format
+msgid "%(name)s refusé."
+msgstr "%(name)s refusé."
 
+#: app/routes/events_admin.py:221
+msgid "Entry list générée."
+msgstr "Entry list générée."
+
+#: app/routes/events_admin.py:221
+msgid "Erreur lors de la génération."
+msgstr "Erreur lors de la génération."
+
+#: app/routes/events_admin.py:244
+#, python-format
+msgid "%(name)s approuvé."
+msgstr "%(name)s approuvé."
+
+#: app/routes/events_admin.py:267
+#, python-format
+msgid "%(name)s supprimé."
+msgstr "%(name)s supprimé."
+
+#: app/routes/public.py:70
+msgid "Le nom in-game est requis."
+msgstr "Le nom in-game est requis."
+
+#: app/routes/public.py:72
+msgid "Nom in-game invalide (2–30 caractères)."
+msgstr "Nom in-game invalide (2–30 caractères)."
+
+#: app/routes/public.py:74
+msgid "Adresse email invalide."
+msgstr "Adresse email invalide."
+
+#: app/routes/public.py:81
+msgid "Ce nom in-game est déjà utilisé."
+msgstr "Ce nom in-game est déjà utilisé."
+
+#: app/routes/public.py:83
+msgid "Cet email est déjà utilisé."
+msgstr "Cet email est déjà utilisé."
+
+#: app/routes/public.py:93
+msgid "Inscription reçue ! Votre compte sera activé par un administrateur."
+msgstr "Inscription reçue ! Votre compte sera activé par un administrateur."
+
+#: app/routes/public.py:132
+msgid "Votre compte doit être validé avant de vous inscrire."
+msgstr "Votre compte doit être validé avant de vous inscrire."
+
+#: app/routes/public.py:137
+msgid "Cet événement n'est pas disponible."
+msgstr "Cet événement n'est pas disponible."
+
+#: app/routes/public.py:141
+msgid "Vous êtes déjà inscrit à cet événement."
+msgstr "Vous êtes déjà inscrit à cet événement."
+
+#: app/routes/public.py:145
+msgid "Cet événement est complet."
+msgstr "Cet événement est complet."
+
+#: app/routes/public.py:150
+msgid "Inscription envoyée !"
+msgstr "Inscription envoyée !"
+
+#: app/routes/public.py:163
+msgid "Désinscription effectuée."
+msgstr "Désinscription effectuée."
+
+#: app/routes/public.py:165
+msgid "Impossible de se désinscrire (inscription confirmée)."
+msgstr "Impossible de se désinscrire (inscription confirmée)."
+
+#: app/templates/admin_dashboard.html:9
+msgid "Statut serveur"
+msgstr "Statut serveur"
+
+#: app/templates/admin_dashboard.html:10
+msgid "Contrôles"
+msgstr "Contrôles"
+
+#: app/templates/admin_dashboard.html:15 app/templates/server.html:70
+msgid "Vérification..."
+msgstr "Vérification..."
+
+#: app/templates/admin_dashboard.html:23 app/templates/public.html:41
+#: app/templates/server.html:91
+msgid "Nom du serveur"
+msgstr "Nom du serveur"
+
+#: app/templates/admin_dashboard.html:27 app/templates/event_form.html:51
+#: app/templates/events_admin.html:65 app/templates/pilot_dashboard.html:29
+#: app/templates/public.html:45 app/templates/public.html:118
+#: app/templates/server.html:188
+msgid "Circuit"
+msgstr "Circuit"
+
+#: app/templates/admin_dashboard.html:34 app/templates/event_form.html:68
+#: app/templates/events_admin.html:66 app/templates/pilot_dashboard.html:33
+#: app/templates/public.html:52 app/templates/public.html:122
+msgid "Mode"
+msgstr "Mode"
+
+#: app/templates/admin_dashboard.html:38 app/templates/event_form.html:75
+#: app/templates/public.html:56 app/templates/public.html:126
+#: app/templates/server.html:162
+msgid "Météo"
+msgstr "Météo"
+
+#: app/templates/admin_dashboard.html:43 app/templates/public.html:61
+#: app/templates/server.html:219
+msgid "Sessions"
+msgstr "Sessions"
+
+#: app/templates/admin_dashboard.html:45 app/templates/event_form.html:70
+#: app/templates/event_form.html:90 app/templates/event_form.html:106
+#: app/templates/public.html:63 app/templates/server.html:155
+#: app/templates/server.html:225
+msgid "Libre"
+msgstr "Libre"
+
+#: app/templates/admin_dashboard.html:46 app/templates/public.html:64
+msgid "Qualif"
+msgstr "Qualif"
+
+#: app/templates/admin_dashboard.html:47 app/templates/event_form.html:130
+#: app/templates/public.html:65 app/templates/server.html:269
+msgid "Chauffe"
+msgstr "Chauffe"
+
+#: app/templates/admin_dashboard.html:48 app/templates/event_form.html:141
+#: app/templates/public.html:66 app/templates/server.html:291
+msgid "Course"
+msgstr "Course"
+
+#: app/templates/admin_dashboard.html:53 app/templates/public.html:71
+msgid "Durée libre"
+msgstr "Durée libre"
+
+#: app/templates/admin_dashboard.html:59 app/templates/public.html:77
+#: app/templates/server.html:318
+msgid "Véhicules"
+msgstr "Véhicules"
+
+#: app/templates/admin_dashboard.html:79
+msgid "Prochains événements"
+msgstr "Prochains événements"
+
+#: app/templates/admin_dashboard.html:80 app/templates/event_form.html:226
+msgid "Tous"
+msgstr "Tous"
+
+#: app/templates/admin_dashboard.html:97 app/templates/events_admin.html:85
+msgid "Brouillon"
+msgstr "Brouillon"
+
+#: app/templates/admin_dashboard.html:98 app/templates/events_admin.html:86
+msgid "Publié"
+msgstr "Publié"
+
+#: app/templates/admin_dashboard.html:99 app/templates/events_admin.html:87
+msgid "Terminé"
+msgstr "Terminé"
+
+#: app/templates/admin_dashboard.html:104 app/templates/event_detail.html:2
+#: app/templates/events_admin.html:67 app/templates/events_admin.html:93
+msgid "Inscrits"
+msgstr "Inscrits"
+
+#: app/templates/admin_dashboard.html:112
+msgid "Aucun événement à venir."
+msgstr "Aucun événement à venir."
+
+#: app/templates/admin_dashboard.html:119 app/templates/base.html:30
+#: app/templates/drivers.html:2 app/templates/pilot_dashboard.html:37
+#: app/templates/public.html:131
+msgid "Pilotes"
+msgstr "Pilotes"
+
+#: app/templates/admin_dashboard.html:120
+msgid "Gérer"
+msgstr "Gérer"
+
+#: app/templates/admin_dashboard.html:125 app/templates/drivers.html:15
+#: app/templates/drivers.html:57
+msgid "pilote(s)"
+msgstr "pilote(s)"
+
+#: app/templates/admin_dashboard.html:125 app/templates/drivers.html:14
+msgid "En attente de validation"
+msgstr "En attente de validation"
+
+#: app/templates/admin_dashboard.html:128 app/templates/drivers.html:49
+msgid "Aucun pilote en attente."
+msgstr "Aucun pilote en attente."
+
+#: app/templates/administration.html:2 app/templates/administration.html:6
+#: app/templates/base.html:37
+msgid "Administration"
+msgstr "Administration"
+
+#: app/templates/administration.html:11
+msgid "Configuration email"
+msgstr "Configuration email"
+
+#: app/templates/administration.html:15 app/templates/base.html:25
+msgid "Serveur"
+msgstr "Serveur"
+
+#: app/templates/administration.html:16
+msgid "Port"
+msgstr "Port"
+
+#: app/templates/administration.html:17
+msgid "Expéditeur"
+msgstr "Expéditeur"
+
+#: app/templates/administration.html:18
+msgid "Admin(s)"
+msgstr "Admin(s)"
+
+#: app/templates/administration.html:23
 msgid "Email envoyé avec succès"
 msgstr "Email envoyé avec succès"
 
+#: app/templates/administration.html:25
 msgid "Erreur SMTP"
 msgstr "Erreur SMTP"
 
-msgid "Ce site utilise uniquement des cookies techniques nécessaires à son fonctionnement."
-msgstr "Ce site utilise uniquement des cookies techniques nécessaires à son fonctionnement."
+#: app/templates/administration.html:32
+msgid "Destinataire"
+msgstr "Destinataire"
 
-msgid "Public"
-msgstr "Public"
+#: app/templates/administration.html:35
+msgid "Envoyer un test"
+msgstr "Envoyer un test"
 
-msgid "Privé"
-msgstr "Privé"
+#: app/templates/administration.html:42
+msgid "Webhook Discord — Serveur"
+msgstr "Webhook Discord — Serveur"
 
-msgid "Session publique"
-msgstr "Session publique"
+#: app/templates/administration.html:47 app/templates/administration.html:75
+msgid "URL"
+msgstr "URL"
 
-msgid "Inscription non requise"
-msgstr "Inscription non requise"
+#: app/templates/administration.html:54
+msgid "Message envoyé sur le channel serveur."
+msgstr "Message envoyé sur le channel serveur."
 
+#: app/templates/administration.html:56 app/templates/administration.html:84
+#: app/templates/base.html:103
+msgid "Erreur"
+msgstr "Erreur"
+
+#: app/templates/administration.html:63 app/templates/administration.html:91
+msgid "Envoyer un message de test"
+msgstr "Envoyer un message de test"
+
+#: app/templates/administration.html:70
+msgid "Webhook Discord — Pilotes"
+msgstr "Webhook Discord — Pilotes"
+
+#: app/templates/administration.html:76
+msgid "utilise le webhook serveur"
+msgstr "utilise le webhook serveur"
+
+#: app/templates/administration.html:82
+msgid "Message envoyé sur le channel pilotes."
+msgstr "Message envoyé sur le channel pilotes."
+
+#: app/templates/base.html:27 app/templates/base.html:43
+#: app/templates/events_admin.html:2 app/templates/events_admin.html:6
+msgid "Événements"
+msgstr "Événements"
+
+#: app/templates/base.html:45 app/templates/pilot_dashboard.html:2
+#: app/templates/pilot_dashboard.html:62 app/templates/public.html:177
+#: app/templates/public.html:191
+msgid "Mes inscriptions"
+msgstr "Mes inscriptions"
+
+#: app/templates/base.html:76
+msgid "Déconnexion"
+msgstr "Déconnexion"
+
+#: app/templates/base.html:78 app/templates/login.html:2
+#: app/templates/login.html:10 app/templates/login.html:35
+msgid "Connexion"
+msgstr "Connexion"
+
+#: app/templates/base.html:94
+msgid ""
+"Ce site utilise uniquement des cookies techniques nécessaires à son "
+"fonctionnement."
+msgstr ""
+"Ce site utilise uniquement des cookies techniques nécessaires à son "
+"fonctionnement."
+
+#: app/templates/base.html:100 app/templates/public.html:21
+msgid "En ligne"
+msgstr "En ligne"
+
+#: app/templates/base.html:101 app/templates/public.html:26
+msgid "Hors ligne"
+msgstr "Hors ligne"
+
+#: app/templates/base.html:102
+msgid "Sauvegardé"
+msgstr "Sauvegardé"
+
+#: app/templates/base.html:104
+msgid "Erreur réseau"
+msgstr "Erreur réseau"
+
+#: app/templates/base.html:105
+msgid "Serveur démarré"
+msgstr "Serveur démarré"
+
+#: app/templates/base.html:106
+msgid "Serveur arrêté"
+msgstr "Serveur arrêté"
+
+#: app/templates/base.html:107
+msgid "Serveur redémarré"
+msgstr "Serveur redémarré"
+
+#: app/templates/base.html:108
+msgid "Sessions sauvegardées"
+msgstr "Sessions sauvegardées"
+
+#: app/templates/base.html:109
+msgid "Véhicules sauvegardés"
+msgstr "Véhicules sauvegardés"
+
+#: app/templates/base.html:110
+msgid "Nom requis"
+msgstr "Nom requis"
+
+#: app/templates/base.html:111
+msgid "Dupliquer la configuration"
+msgstr "Dupliquer la configuration"
+
+#: app/templates/base.html:112 app/templates/server.html:28
+msgid "Nouvelle configuration"
+msgstr "Nouvelle configuration"
+
+#: app/templates/base.html:113
+msgid "Config réparée"
+msgstr "Configuration réparée"
+
+#: app/templates/base.html:114
+msgid "Auto-restart activé"
+msgstr "Auto-restart activé"
+
+#: app/templates/base.html:115
+msgid "Auto-restart désactivé"
+msgstr "Auto-restart désactivé"
+
+#: app/templates/base.html:116 app/templates/public.html:23
+msgid "joueur(s)"
+msgstr "joueur(s)"
+
+#: app/templates/drivers.html:20 app/templates/drivers.html:62
+#: app/templates/drivers.html:96 app/templates/register.html:21
+msgid "Nom in-game"
+msgstr "Nom in-game"
+
+#: app/templates/drivers.html:20 app/templates/drivers.html:62
+#: app/templates/drivers.html:96 app/templates/event_detail.html:39
+msgid "Email"
+msgstr "Email"
+
+#: app/templates/drivers.html:20 app/templates/drivers.html:62
+msgid "Inscrit le"
+msgstr "Inscrit le"
+
+#: app/templates/drivers.html:20 app/templates/drivers.html:62
+#: app/templates/drivers.html:96 app/templates/event_detail.html:42
+#: app/templates/events_admin.html:69
+msgid "Actions"
+msgstr "Actions"
+
+#: app/templates/drivers.html:32
+msgid "Approuver"
+msgstr "Approuver"
+
+#: app/templates/drivers.html:36 app/templates/event_detail.html:81
+msgid "Refuser"
+msgstr "Refuser"
+
+#: app/templates/drivers.html:40 app/templates/drivers.html:74
+#: app/templates/drivers.html:111
+msgid "Supprimer définitivement"
+msgstr "Supprimer définitivement"
+
+#: app/templates/drivers.html:56
+msgid "Pilotes approuvés"
+msgstr "Pilotes approuvés"
+
+#: app/templates/drivers.html:83
+msgid "Aucun pilote approuvé."
+msgstr "Aucun pilote approuvé."
+
+#: app/templates/drivers.html:91
+msgid "Pilotes refusés"
+msgstr "Pilotes refusés"
+
+#: app/templates/drivers.html:107
+msgid "Ré-approuver"
+msgstr "Ré-approuver"
+
+#: app/templates/event_detail.html:17
+msgid "Générer entry list"
+msgstr "Générer entry list"
+
+#: app/templates/event_detail.html:19 app/templates/event_form.html:12
+msgid "Retour"
+msgstr "Retour"
+
+#: app/templates/event_detail.html:30 app/templates/pilot_dashboard.html:88
+#: app/templates/public.html:144
+msgid "Confirmé"
+msgstr "Confirmé"
+
+#: app/templates/event_detail.html:30 app/templates/pilot_dashboard.html:87
+#: app/templates/public.html:143
+msgid "En attente"
+msgstr "En attente"
+
+#: app/templates/event_detail.html:31
+msgid "Course privée"
+msgstr "Course privée"
+
+#: app/templates/event_detail.html:38
+msgid "Pilote"
+msgstr "Pilote"
+
+#: app/templates/event_detail.html:40
+msgid "Voiture assignée"
+msgstr "Voiture assignée"
+
+#: app/templates/event_detail.html:41 app/templates/events_admin.html:68
+msgid "Statut"
+msgstr "Statut"
+
+#: app/templates/event_detail.html:55
+msgid "Non assignée"
+msgstr "Non assignée"
+
+#: app/templates/event_detail.html:75
+msgid "Confirmer"
+msgstr "Confirmer"
+
+#: app/templates/event_detail.html:91
+msgid "Aucune inscription pour le moment."
+msgstr "Aucune inscription pour le moment."
+
+#: app/templates/event_form.html:2 app/templates/event_form.html:11
+msgid "Modifier l'événement"
+msgstr "Modifier l'événement"
+
+#: app/templates/event_form.html:2 app/templates/event_form.html:11
+msgid "Nouvel événement"
+msgstr "Nouvel événement"
+
+#: app/templates/event_form.html:26 app/templates/events_admin.html:63
+msgid "Titre"
+msgstr "Titre"
+
+#: app/templates/event_form.html:32
+msgid "Description"
+msgstr "Description"
+
+#: app/templates/event_form.html:32
+msgid "optionnel"
+msgstr "optionnel"
+
+#: app/templates/event_form.html:38
+msgid "Date et heure"
+msgstr "Date et heure"
+
+#: app/templates/event_form.html:43
+msgid "Pilotes max"
+msgstr "Pilotes max"
+
+#: app/templates/event_form.html:71 app/templates/server.html:156
+msgid "Race Weekend"
+msgstr "Race Weekend"
+
+#: app/templates/event_form.html:77 app/templates/server.html:164
+msgid "Dégagé"
+msgstr "Dégagé"
+
+#: app/templates/event_form.html:78 app/templates/server.html:165
+msgid "Nuageux"
+msgstr "Nuageux"
+
+#: app/templates/event_form.html:79 app/templates/server.html:166
+msgid "Pluie"
+msgstr "Pluie"
+
+#: app/templates/event_form.html:85
+msgid "Durées de session"
+msgstr "Durées de session"
+
+#: app/templates/event_form.html:117 app/templates/server.html:247
+msgid "Qualification"
+msgstr "Qualification"
+
+#: app/templates/event_form.html:157
+msgid "Mot de passe serveur"
+msgstr "Mot de passe serveur"
+
+#: app/templates/event_form.html:157
+msgid "vide = public"
+msgstr "vide = public"
+
+#: app/templates/event_form.html:162
+msgid "Rappel email"
+msgstr "Rappel email"
+
+#: app/templates/event_form.html:162
+msgid "minutes avant début"
+msgstr "minutes avant début"
+
+#: app/templates/event_form.html:174
 msgid "Événement public (pas d'inscription requise)"
 msgstr "Événement public (pas d'inscription requise)"
 
+#: app/templates/event_form.html:184
+msgid "Lancer le serveur automatiquement"
+msgstr "Lancer le serveur automatiquement"
+
+#: app/templates/event_form.html:187
+msgid "Serveur lancé automatiquement pour cet événement."
+msgstr "Serveur lancé automatiquement pour cet événement."
+
+#: app/templates/event_form.html:194
+msgid "Véhicules autorisés"
+msgstr "Véhicules autorisés"
+
+#: app/templates/event_form.html:201 app/templates/server.html:323
+msgid "Rechercher..."
+msgstr "Rechercher..."
+
+#: app/templates/event_form.html:202 app/templates/server.html:328
+msgid "Tout sélectionner"
+msgstr "Tout sélectionner"
+
+#: app/templates/event_form.html:203 app/templates/server.html:329
+msgid "Tout désélectionner"
+msgstr "Tout désélectionner"
+
+#: app/templates/event_form.html:240 app/templates/server.html:359
+msgid "Véhicule"
+msgstr "Véhicule"
+
+#: app/templates/event_form.html:242
+msgid "Catégories"
+msgstr "Catégories"
+
+#: app/templates/event_form.html:278 app/templates/pilot_dashboard.html:94
+#: app/templates/public.html:150 app/templates/server.html:35
+msgid "Annuler"
+msgstr "Annuler"
+
+#: app/templates/event_form.html:279
+msgid "Enregistrer"
+msgstr "Enregistrer"
+
+#: app/templates/event_form.html:279 app/templates/events_admin.html:12
+#: app/templates/server.html:36
+msgid "Créer"
+msgstr "Créer"
+
+#: app/templates/events_admin.html:9
+msgid "Calendrier"
+msgstr "Calendrier"
+
+#: app/templates/events_admin.html:10
+msgid "Liste"
+msgstr "Liste"
+
+#: app/templates/events_admin.html:29 app/templates/public.html:105
+msgid "Privé"
+msgstr "Privé"
+
+#: app/templates/events_admin.html:30 app/templates/public.html:105
+msgid "Public"
+msgstr "Public"
+
+#: app/templates/events_admin.html:35
+msgid "Lun"
+msgstr "Lun"
+
+#: app/templates/events_admin.html:36
+msgid "Mar"
+msgstr "Mar"
+
+#: app/templates/events_admin.html:37
+msgid "Mer"
+msgstr "Mer"
+
+#: app/templates/events_admin.html:38
+msgid "Jeu"
+msgstr "Jeu"
+
+#: app/templates/events_admin.html:39
+msgid "Ven"
+msgstr "Ven"
+
+#: app/templates/events_admin.html:40
+msgid "Sam"
+msgstr "Sam"
+
+#: app/templates/events_admin.html:41
+msgid "Dim"
+msgstr "Dim"
+
+#: app/templates/events_admin.html:50
+msgid "Créer ce jour"
+msgstr "Créer ce jour"
+
+#: app/templates/events_admin.html:51 app/templates/server.html:60
+msgid "Fermer"
+msgstr "Fermer"
+
+#: app/templates/events_admin.html:64
+msgid "Date → Fin"
+msgstr "Date → Fin"
+
+#: app/templates/events_admin.html:95
+msgid "Modifier"
+msgstr "Modifier"
+
+#: app/templates/events_admin.html:100
+msgid "Dépublier"
+msgstr "Dépublier"
+
+#: app/templates/events_admin.html:100
+msgid "Publier"
+msgstr "Publier"
+
+#: app/templates/events_admin.html:107
+msgid "Marquer comme terminé ?"
+msgstr "Marquer comme terminé ?"
+
+#: app/templates/events_admin.html:107
+msgid "Terminer"
+msgstr "Terminer"
+
+#: app/templates/events_admin.html:112
+msgid "Supprimer cet événement ?"
+msgstr "Supprimer cet événement ?"
+
+#: app/templates/events_admin.html:121
+msgid "Aucun événement."
+msgstr "Aucun événement."
+
+#: app/templates/events_admin.html:121
+msgid "Créer le premier"
+msgstr "Créer le premier"
+
+#: app/templates/forgot_password.html:2 app/templates/forgot_password.html:10
+msgid "Mot de passe oublié"
+msgstr "Mot de passe oublié"
+
+#: app/templates/forgot_password.html:19
+msgid ""
+"Entrez votre identifiant ou votre adresse email. Si votre compte est "
+"approuvé, vous recevrez un lien de réinitialisation valable 1 heure."
+msgstr ""
+"Entrez votre identifiant ou votre adresse email. Si votre compte est "
+"approuvé, vous recevrez un lien de réinitialisation valable 1 heure."
+
+#: app/templates/forgot_password.html:25
+msgid "Nom in-game ou email"
+msgstr "Nom in-game ou email"
+
+#: app/templates/forgot_password.html:28
+msgid "Envoyer le lien"
+msgstr "Envoyer le lien"
+
+#: app/templates/forgot_password.html:32
+msgid "Retour à la connexion"
+msgstr "Retour à la connexion"
+
+#: app/templates/login.html:16
+msgid "Votre compte est en attente de validation."
+msgstr "Votre compte est en attente de validation."
+
+#: app/templates/login.html:18
+msgid "Votre compte a été refusé."
+msgstr "Votre compte a été refusé."
+
+#: app/templates/login.html:20
+msgid "Identifiants incorrects"
+msgstr "Identifiants incorrects"
+
+#: app/templates/login.html:28
+msgid "Identifiant ou email"
+msgstr "Identifiant ou email"
+
+#: app/templates/login.html:32 app/templates/register.html:33
+msgid "Mot de passe"
+msgstr "Mot de passe"
+
+#: app/templates/login.html:39
+msgid "Pilote ?"
+msgstr "Pilote ?"
+
+#: app/templates/login.html:39 app/templates/pilot_dashboard.html:48
+#: app/templates/public.html:33 app/templates/public.html:158
+#: app/templates/register.html:47
+msgid "S'inscrire"
+msgstr "S'inscrire"
+
+#: app/templates/login.html:41
+msgid "Mot de passe oublié ?"
+msgstr "Mot de passe oublié ?"
+
+#: app/templates/pilot_dashboard.html:14
+msgid "Événements disponibles"
+msgstr "Événements disponibles"
+
+#: app/templates/pilot_dashboard.html:25 app/templates/pilot_dashboard.html:74
+#: app/templates/public.html:114
+msgid "Date"
+msgstr "Date"
+
+#: app/templates/pilot_dashboard.html:44 app/templates/public.html:154
+msgid "Complet"
+msgstr "Complet"
+
+#: app/templates/pilot_dashboard.html:51 app/templates/public.html:161
+msgid "Compte en attente"
+msgstr "Compte en attente"
+
+#: app/templates/pilot_dashboard.html:79
+msgid "Voiture"
+msgstr "Voiture"
+
+#: app/templates/pilot_dashboard.html:89 app/templates/public.html:145
+msgid "Refusé"
+msgstr "Refusé"
+
+#: app/templates/pilot_dashboard.html:94 app/templates/public.html:150
+msgid "Se désinscrire ?"
+msgstr "Se désinscrire ?"
+
+#: app/templates/pilot_dashboard.html:102
+msgid "Vous n'êtes inscrit à aucun événement."
+msgstr "Vous n'êtes inscrit à aucun événement."
+
+#: app/templates/public.html:32 app/templates/public.html:164
+#: app/templates/register.html:51
+msgid "Se connecter"
+msgstr "Se connecter"
+
+#: app/templates/public.html:90
+msgid "Le serveur est actuellement hors ligne."
+msgstr "Le serveur est actuellement hors ligne."
+
+#: app/templates/public.html:102
+msgid "En cours"
+msgstr "En cours"
+
+#: app/templates/public.html:175
 msgid "Événement en cours"
 msgstr "Événement en cours"
+
+#: app/templates/public.html:189
+msgid "Événements à venir"
+msgstr "Événements à venir"
+
+#: app/templates/public.html:199
+msgid "Aucun événement à venir pour le moment."
+msgstr "Aucun événement à venir pour le moment."
+
+#: app/templates/register.html:2 app/templates/register.html:10
+msgid "Inscription pilote"
+msgstr "Inscription pilote"
+
+#: app/templates/register.html:28
+msgid "Adresse email"
+msgstr "Adresse email"
+
+#: app/templates/register.html:36 app/templates/register.html:69
+#: app/templates/reset_password.html:24 app/templates/reset_password.html:51
+msgid "10 caractères minimum"
+msgstr "10 caractères minimum"
+
+#: app/templates/register.html:37 app/templates/register.html:70
+#: app/templates/reset_password.html:25 app/templates/reset_password.html:52
+msgid "Une majuscule"
+msgstr "Une majuscule"
+
+#: app/templates/register.html:38 app/templates/register.html:71
+#: app/templates/reset_password.html:26 app/templates/reset_password.html:53
+msgid "Une minuscule"
+msgstr "Une minuscule"
+
+#: app/templates/register.html:39 app/templates/register.html:72
+#: app/templates/reset_password.html:27 app/templates/reset_password.html:54
+msgid "Un chiffre"
+msgstr "Un chiffre"
+
+#: app/templates/register.html:40 app/templates/register.html:73
+#: app/templates/reset_password.html:28 app/templates/reset_password.html:55
+msgid "Un caractère spécial"
+msgstr "Un caractère spécial"
+
+#: app/templates/register.html:44 app/templates/reset_password.html:32
+msgid "Confirmer le mot de passe"
+msgstr "Confirmer le mot de passe"
+
+#: app/templates/register.html:51
+msgid "Déjà un compte ?"
+msgstr "Déjà un compte ?"
+
+#: app/templates/register.html:54
+msgid "Votre compte sera activé par un administrateur."
+msgstr "Votre compte sera activé par un administrateur."
+
+#: app/templates/reset_password.html:2 app/templates/reset_password.html:10
+#: app/templates/reset_password.html:21
+msgid "Nouveau mot de passe"
+msgstr "Nouveau mot de passe"
+
+#: app/templates/reset_password.html:35
+msgid "Enregistrer le mot de passe"
+msgstr "Enregistrer le mot de passe"
+
+#: app/templates/server.html:9
+msgid "Configuration"
+msgstr "Configuration"
+
+#: app/templates/server.html:19
+msgid "Nouveau"
+msgstr "Nouveau"
+
+#: app/templates/server.html:20
+msgid "Dupliquer"
+msgstr "Dupliquer"
+
+#: app/templates/server.html:21
+msgid "Supprimer"
+msgstr "Supprimer"
+
+#: app/templates/server.html:30
+msgid "Nom du fichier"
+msgstr "Nom du fichier"
+
+#: app/templates/server.html:44
+msgid "Fichier invalide"
+msgstr "Fichier invalide"
+
+#: app/templates/server.html:45
+msgid "Ce fichier contient des erreurs :"
+msgstr "Ce fichier contient des erreurs :"
+
+#: app/templates/server.html:48
+msgid "Choisir autre"
+msgstr "Choisir autre"
+
+#: app/templates/server.html:49
+msgid "Réparer"
+msgstr "Réparer"
+
+#: app/templates/server.html:57
+msgid "Logs serveur"
+msgstr "Logs serveur"
+
+#: app/templates/server.html:58
+msgid "Chargement..."
+msgstr "Chargement..."
+
+#: app/templates/server.html:61
+msgid "Actualiser"
+msgstr "Actualiser"
+
+#: app/templates/server.html:74
+msgid "Démarrer"
+msgstr "Démarrer"
+
+#: app/templates/server.html:75
+msgid "Arrêter"
+msgstr "Arrêter"
+
+#: app/templates/server.html:76
+msgid "Redémarrer"
+msgstr "Redémarrer"
+
+#: app/templates/server.html:77
+msgid "Logs"
+msgstr "Logs"
+
+#: app/templates/server.html:78
+msgid "Relancer automatiquement en cas de crash"
+msgstr "Relancer automatiquement en cas de crash"
+
+#: app/templates/server.html:80
+msgid "Auto-restart"
+msgstr "Auto-restart"
+
+#: app/templates/server.html:87
+msgid "Informations serveur"
+msgstr "Informations serveur"
+
+#: app/templates/server.html:110
+msgid "Joueurs max"
+msgstr "Joueurs max"
+
+#: app/templates/server.html:114
+msgid "Cycle actif"
+msgstr "Cycle actif"
+
+#: app/templates/server.html:124
+msgid "Mot de passe pilote"
+msgstr "Mot de passe pilote"
+
+#: app/templates/server.html:128
+msgid "Mot de passe admin"
+msgstr "Mot de passe admin"
+
+#: app/templates/server.html:135
+msgid "Entry List Path"
+msgstr "Chemin entry list"
+
+#: app/templates/server.html:139
+msgid "Results Path"
+msgstr "Chemin résultats"
+
+#: app/templates/server.html:149
+msgid "Événement"
+msgstr "Événement"
+
+#: app/templates/server.html:153
+msgid "Type de session"
+msgstr "Type de session"
+
+#: app/templates/server.html:170
+msgid "Comportement météo"
+msgstr "Comportement météo"
+
+#: app/templates/server.html:172
+msgid "Statique"
+msgstr "Statique"
+
+#: app/templates/server.html:173
+msgid "Dynamique"
+msgstr "Dynamique"
+
+#: app/templates/server.html:179
+msgid "Adhérence initiale"
+msgstr "Adhérence initiale"
+
+#: app/templates/server.html:181
+msgid "Vert"
+msgstr "Vert"
+
+#: app/templates/server.html:182
+msgid "Rapide"
+msgstr "Rapide"
+
+#: app/templates/server.html:183
+msgid "Optimal"
+msgstr "Optimal"
+
+#: app/templates/server.html:208
+msgid "Durée"
+msgstr "Durée"
+
+#: app/templates/server.html:208
+msgid "(0 = ignoré)"
+msgstr "(0 = ignoré)"
+
+#: app/templates/server.html:229 app/templates/server.html:251
+#: app/templates/server.html:273 app/templates/server.html:295
+msgid "Heure in-game"
+msgstr "Heure in-game"
+
+#: app/templates/server.html:235 app/templates/server.html:257
+#: app/templates/server.html:279 app/templates/server.html:301
+msgid "Attente max box (s)"
+msgstr "Attente max box (s)"
+
+#: app/templates/server.html:239 app/templates/server.html:261
+#: app/templates/server.html:283 app/templates/server.html:305
+msgid "Overtime (s)"
+msgstr "Overtime (s)"
+
+#: app/templates/server.html:326
+msgid "Sélectionnés seulement"
+msgstr "Sélectionnés seulement"
+
+#: app/templates/server.html:389
+msgid "véhicule(s) sélectionné(s)"
+msgstr "véhicule(s) sélectionné(s)"
+
+#: app/templates/server.html:396
+msgid "Sauvegarder tout"
+msgstr "Sauvegarder tout"
+
+#~ msgid "Administration serveur"
+#~ msgstr "Administration serveur"
+
+#~ msgid "Contrôle serveur"
+#~ msgstr "Contrôle serveur"
+
+#~ msgid "Type de serveur"
+#~ msgstr "Type de serveur"
+
+#~ msgid "Classé"
+#~ msgstr "Classé"
+
+#~ msgid "Non classé"
+#~ msgstr "Non classé"
+
+#~ msgid "Mot de passe spectateur"
+#~ msgstr "Mot de passe spectateur"
+
+#~ msgid "Événement & Sessions"
+#~ msgstr "Événement & Sessions"
+
+#~ msgid "Durée (s)"
+#~ msgstr "Durée (s)"
+
+#~ msgid "Heure"
+#~ msgstr "Heure"
+
+#~ msgid "Sauvegarder sessions"
+#~ msgstr "Sauvegarder sessions"
+
+#~ msgid "Filtrer..."
+#~ msgstr "Filtrer..."
+
+#~ msgid "Sauvegarder véhicules"
+#~ msgstr "Sauvegarder véhicules"
+
+#~ msgid "Date (UTC)"
+#~ msgstr "Date (UTC)"
+
+#~ msgid "Rejoindre notre serveur Discord"
+#~ msgstr "Rejoindre notre serveur Discord"
+
+#~ msgid "Rejoindre"
+#~ msgstr "Rejoindre"
+
+#~ msgid "Session publique"
+#~ msgstr "Session publique"
+
+#~ msgid "Inscription non requise"
+#~ msgstr "Inscription non requise"
+

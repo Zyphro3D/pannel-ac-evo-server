@@ -1,772 +1,1141 @@
+
 msgid ""
 msgstr ""
-"Content-Type: text/plain; charset=UTF-8\n"
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-04-28 10:20+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: de\n"
+"Language-Team: de <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
 
-msgid "Connexion"
-msgstr "Anmelden"
-
-msgid "Déconnexion"
-msgstr "Abmelden"
-
-msgid "Administration serveur"
-msgstr "Serververwaltung"
-
-msgid "Utilisateur"
-msgstr "Benutzer"
-
-msgid "Mot de passe"
-msgstr "Passwort"
-
-msgid "Identifiants incorrects"
-msgstr "Falsche Anmeldedaten"
-
-msgid "Identifiant ou email"
-msgstr "Benutzername oder E-Mail"
-
-msgid "S'inscrire"
-msgstr "Registrieren"
-
-msgid "Se connecter"
-msgstr "Anmelden"
-
-msgid "Mot de passe oublié ?"
-msgstr "Passwort vergessen?"
-
-msgid "Pilote ?"
-msgstr "Fahrer?"
-
-msgid "Votre compte est en attente de validation."
-msgstr "Ihr Konto wartet auf Bestätigung."
-
-msgid "Votre compte a été refusé."
-msgstr "Ihr Konto wurde abgelehnt."
-
-msgid "Inscription pilote"
-msgstr "Fahreranmeldung"
-
-msgid "Nom in-game"
-msgstr "Spielername"
-
-msgid "Adresse email"
-msgstr "E-Mail-Adresse"
-
-msgid "Confirmer le mot de passe"
-msgstr "Passwort bestätigen"
-
-msgid "Déjà un compte ?"
-msgstr "Schon ein Konto?"
-
-msgid "Votre compte sera activé par un administrateur."
-msgstr "Ihr Konto wird von einem Administrator aktiviert."
-
-msgid "10 caractères minimum"
-msgstr "Mindestens 10 Zeichen"
-
-msgid "Une majuscule"
-msgstr "Ein Großbuchstabe"
-
-msgid "Une minuscule"
-msgstr "Ein Kleinbuchstabe"
-
-msgid "Un chiffre"
-msgstr "Eine Ziffer"
-
-msgid "Un caractère spécial"
-msgstr "Ein Sonderzeichen"
-
-msgid "Mot de passe oublié"
-msgstr "Passwort vergessen"
-
-msgid "Entrez votre identifiant ou votre adresse email. Si votre compte est approuvé, vous recevrez un lien de réinitialisation valable 1 heure."
-msgstr "Geben Sie Ihren Benutzernamen oder Ihre E-Mail-Adresse ein. Wenn Ihr Konto genehmigt ist, erhalten Sie einen Reset-Link, der 1 Stunde gültig ist."
-
-msgid "Nom in-game ou email"
-msgstr "Spielername oder E-Mail"
-
-msgid "Envoyer le lien"
-msgstr "Link senden"
-
-msgid "Retour à la connexion"
-msgstr "Zurück zur Anmeldung"
-
-msgid "Nouveau mot de passe"
-msgstr "Neues Passwort"
-
-msgid "Enregistrer le mot de passe"
-msgstr "Passwort speichern"
-
-msgid "Contrôle serveur"
-msgstr "Serversteuerung"
-
-msgid "Vérification..."
-msgstr "Überprüfung..."
-
-msgid "Démarrer"
-msgstr "Starten"
-
-msgid "Arrêter"
-msgstr "Stoppen"
-
-msgid "Redémarrer"
-msgstr "Neustart"
-
-msgid "Logs"
-msgstr "Protokolle"
-
-msgid "Logs serveur"
-msgstr "Server-Protokolle"
-
-msgid "Chargement..."
-msgstr "Laden..."
-
-msgid "Fermer"
-msgstr "Schließen"
-
-msgid "Actualiser"
-msgstr "Aktualisieren"
-
-msgid "Auto-restart"
-msgstr "Auto-Neustart"
-
-msgid "Relancer automatiquement en cas de crash"
-msgstr "Automatischer Neustart bei Absturz"
-
-msgid "Auto-restart activé"
-msgstr "Auto-Neustart aktiviert"
-
-msgid "Auto-restart désactivé"
-msgstr "Auto-Neustart deaktiviert"
-
-msgid "joueur(s)"
-msgstr "Spieler"
-
-msgid "Informations serveur"
-msgstr "Serverinformationen"
-
-msgid "Nom du serveur"
-msgstr "Servername"
-
-msgid "Joueurs max"
-msgstr "Max. Spieler"
-
-msgid "Cycle actif"
-msgstr "Aktiver Zyklus"
-
-msgid "Type de serveur"
-msgstr "Servertyp"
-
-msgid "Classé"
-msgstr "Gerankt"
-
-msgid "Non classé"
-msgstr "Ungerankt"
-
-msgid "Mot de passe pilote"
-msgstr "Fahrer-Passwort"
-
-msgid "Mot de passe admin"
-msgstr "Admin-Passwort"
-
-msgid "Mot de passe spectateur"
-msgstr "Zuschauer-Passwort"
-
-msgid "Entry List Path"
-msgstr "Entry-List-Pfad"
-
-msgid "Results Path"
-msgstr "Ergebnispfad"
-
-msgid "Sauvegarder"
-msgstr "Speichern"
-
-msgid "Événement"
-msgstr "Veranstaltung"
-
-msgid "Événement & Sessions"
-msgstr "Veranstaltung & Sitzungen"
-
-msgid "Type de session"
-msgstr "Sitzungstyp"
-
-msgid "Libre"
-msgstr "Freies Training"
-
-msgid "Race Weekend"
-msgstr "Rennwochenende"
-
-msgid "Météo"
-msgstr "Wetter"
-
-msgid "Dégagé"
-msgstr "Klar"
-
-msgid "Nuageux"
-msgstr "Bewölkt"
-
-msgid "Pluie"
-msgstr "Regen"
-
-msgid "Comportement météo"
-msgstr "Wetterverhalten"
-
-msgid "Statique"
-msgstr "Statisch"
-
-msgid "Dynamique"
-msgstr "Dynamisch"
-
-msgid "Adhérence initiale"
-msgstr "Anfangshaftung"
-
-msgid "Vert"
-msgstr "Grün"
-
-msgid "Rapide"
-msgstr "Schnell"
-
-msgid "Optimal"
-msgstr "Optimal"
-
-msgid "Circuit"
-msgstr "Strecke"
-
-msgid "Mode"
-msgstr "Modus"
-
-msgid "Sessions"
-msgstr "Sitzungen"
-
-msgid "Durée (s)"
-msgstr "Dauer (s)"
-
-msgid "Durée"
-msgstr "Dauer"
-
-msgid "Heure"
-msgstr "Zeit"
-
-msgid "Heure in-game"
-msgstr "Spielzeit"
-
-msgid "Attente max box (s)"
-msgstr "Max. Box-Wartezeit (s)"
-
-msgid "Overtime (s)"
-msgstr "Overtime (s)"
-
-msgid "Qualification"
-msgstr "Qualifikation"
-
-msgid "Chauffe"
-msgstr "Aufwärmen"
-
-msgid "Course"
-msgstr "Rennen"
-
-msgid "Sauvegarder sessions"
-msgstr "Sitzungen speichern"
-
-msgid "(0 = ignoré)"
-msgstr "(0 = ignoriert)"
-
-msgid "Qualif"
-msgstr "Quali"
-
-msgid "Véhicules"
-msgstr "Fahrzeuge"
-
-msgid "Filtrer..."
-msgstr "Filtern..."
-
-msgid "Rechercher..."
-msgstr "Suchen..."
-
-msgid "Sélectionnés seulement"
-msgstr "Nur ausgewählte"
-
-msgid "Tout sélectionner"
-msgstr "Alle auswählen"
-
-msgid "Tout désélectionner"
-msgstr "Alle abwählen"
-
-msgid "Véhicule"
-msgstr "Fahrzeug"
-
-msgid "Sauvegarder véhicules"
-msgstr "Fahrzeuge speichern"
-
-msgid "véhicule(s) sélectionné(s)"
-msgstr "Fahrzeug(e) ausgewählt"
-
-msgid "Configuration"
-msgstr "Konfiguration"
-
-msgid "Nouveau"
-msgstr "Neu"
-
-msgid "Dupliquer"
-msgstr "Duplizieren"
-
-msgid "Supprimer"
-msgstr "Löschen"
-
-msgid "Nouvelle configuration"
-msgstr "Neue Konfiguration"
-
-msgid "Nom du fichier"
-msgstr "Dateiname"
-
-msgid "Annuler"
-msgstr "Abbrechen"
-
-msgid "Créer"
-msgstr "Erstellen"
-
-msgid "Choisir autre"
-msgstr "Andere wählen"
-
-msgid "Réparer"
-msgstr "Reparieren"
-
-msgid "Config réparée"
-msgstr "Konfiguration repariert"
-
-msgid "Fichier invalide"
-msgstr "Ungültige Datei"
-
-msgid "Ce fichier contient des erreurs :"
-msgstr "Diese Datei enthält Fehler:"
-
-msgid "Dupliquer la configuration"
-msgstr "Konfiguration duplizieren"
-
-msgid "Serveur"
-msgstr "Server"
-
-msgid "En ligne"
-msgstr "Online"
-
-msgid "Hors ligne"
-msgstr "Offline"
-
-msgid "Sauvegardé"
-msgstr "Gespeichert"
-
-msgid "Erreur"
-msgstr "Fehler"
-
-msgid "Erreur réseau"
-msgstr "Netzwerkfehler"
-
-msgid "Serveur démarré"
-msgstr "Server gestartet"
-
-msgid "Serveur arrêté"
-msgstr "Server gestoppt"
-
-msgid "Serveur redémarré"
-msgstr "Server neu gestartet"
-
-msgid "Sessions sauvegardées"
-msgstr "Sitzungen gespeichert"
-
-msgid "Véhicules sauvegardés"
-msgstr "Fahrzeuge gespeichert"
-
-msgid "Nom requis"
-msgstr "Name erforderlich"
-
-msgid "Statut serveur"
-msgstr "Serverstatus"
-
-msgid "Contrôles"
-msgstr "Steuerung"
-
-msgid "Durée libre"
-msgstr "Freitraining-Dauer"
-
-msgid "Prochains événements"
-msgstr "Nächste Veranstaltungen"
-
-msgid "Inscrits"
-msgstr "Angemeldet"
-
-msgid "Pilotes"
-msgstr "Fahrer"
-
-msgid "Aucun événement à venir."
-msgstr "Keine bevorstehenden Veranstaltungen."
-
-msgid "Aucun pilote en attente."
-msgstr "Keine ausstehenden Fahrer."
-
-msgid "Gérer"
-msgstr "Verwalten"
-
-msgid "En attente de validation"
-msgstr "Warten auf Bestätigung"
-
-msgid "pilote(s)"
-msgstr "Fahrer"
-
-msgid "Email"
-msgstr "E-Mail"
-
-msgid "Inscrit le"
-msgstr "Angemeldet am"
-
-msgid "Actions"
-msgstr "Aktionen"
-
-msgid "Approuver"
-msgstr "Genehmigen"
-
-msgid "Refuser"
-msgstr "Ablehnen"
-
-msgid "Pilotes approuvés"
-msgstr "Genehmigte Fahrer"
-
-msgid "Aucun pilote approuvé."
-msgstr "Keine genehmigten Fahrer."
-
-msgid "Pilotes refusés"
-msgstr "Abgelehnte Fahrer"
-
-msgid "Ré-approuver"
-msgstr "Erneut genehmigen"
-
-msgid "Supprimer définitivement"
-msgstr "Endgültig löschen"
-
-msgid "Événements"
-msgstr "Veranstaltungen"
-
-msgid "Titre"
-msgstr "Titel"
-
-msgid "Date (UTC)"
-msgstr "Datum (UTC)"
-
-msgid "Statut"
-msgstr "Status"
-
-msgid "Modifier"
-msgstr "Bearbeiten"
-
-msgid "Dépublier"
-msgstr "Zurückziehen"
-
-msgid "Publier"
-msgstr "Veröffentlichen"
-
-msgid "Terminer"
-msgstr "Beenden"
-
-msgid "Aucun événement."
-msgstr "Keine Veranstaltungen."
-
-msgid "Créer le premier"
-msgstr "Das erste erstellen"
-
-msgid "Modifier l'événement"
-msgstr "Veranstaltung bearbeiten"
-
-msgid "Nouvel événement"
-msgstr "Neue Veranstaltung"
-
-msgid "Retour"
-msgstr "Zurück"
-
-msgid "Description"
-msgstr "Beschreibung"
-
-msgid "(optionnel)"
-msgstr "(optional)"
-
-msgid "Date et heure (UTC)"
-msgstr "Datum und Uhrzeit (UTC)"
-
-msgid "Pilotes max"
-msgstr "Max. Fahrer"
-
-msgid "Durées de session"
-msgstr "Sitzungsdauer"
-
-msgid "Mot de passe serveur"
-msgstr "Server-Passwort"
-
-msgid "(vide = public)"
-msgstr "(leer = öffentlich)"
-
-msgid "Rappel email"
-msgstr "E-Mail-Erinnerung"
-
-msgid "(minutes avant début)"
-msgstr "(Minuten vor Beginn)"
-
-msgid "Lancer le serveur automatiquement"
-msgstr "Server automatisch starten"
-
-msgid "Serveur lancé automatiquement pour cet événement."
-msgstr "Server wurde für diese Veranstaltung automatisch gestartet."
-
-msgid "Véhicules autorisés"
-msgstr "Erlaubte Fahrzeuge"
-
-msgid "Catégories"
-msgstr "Kategorien"
-
-msgid "Tous"
-msgstr "Alle"
-
-msgid "Enregistrer"
-msgstr "Speichern"
-
-msgid "Générer entry list"
-msgstr "Entry-List generieren"
-
-msgid "Course privée"
-msgstr "Privates Rennen"
-
-msgid "Pilote"
-msgstr "Fahrer"
-
-msgid "Voiture assignée"
-msgstr "Zugewiesenes Fahrzeug"
-
-msgid "Non assignée"
-msgstr "Nicht zugewiesen"
-
-msgid "Confirmer"
-msgstr "Bestätigen"
-
-msgid "Aucune inscription pour le moment."
-msgstr "Noch keine Anmeldungen."
-
-msgid "Événements disponibles"
-msgstr "Verfügbare Veranstaltungen"
-
-msgid "Date"
-msgstr "Datum"
-
-msgid "Complet"
-msgstr "Voll"
-
-msgid "Compte en attente"
-msgstr "Konto ausstehend"
-
-msgid "Mes inscriptions"
-msgstr "Meine Anmeldungen"
-
-msgid "Voiture"
-msgstr "Fahrzeug"
-
-msgid "En attente"
-msgstr "Ausstehend"
-
-msgid "Confirmé"
-msgstr "Bestätigt"
-
-msgid "Vous n'êtes inscrit à aucun événement."
-msgstr "Sie sind für keine Veranstaltung angemeldet."
-
-msgid "Le serveur est actuellement hors ligne."
-msgstr "Der Server ist derzeit offline."
-
-msgid "Événements à venir"
-msgstr "Bevorstehende Veranstaltungen"
-
-msgid "Aucun événement à venir pour le moment."
-msgstr "Derzeit keine bevorstehenden Veranstaltungen."
-
-msgid "Rejoindre notre serveur Discord"
-msgstr "Unserem Discord-Server beitreten"
-
-msgid "Administration"
-msgstr "Administration"
-
-msgid "Configuration email"
-msgstr "E-Mail-Konfiguration"
-
-msgid "Port"
-msgstr "Port"
-
-msgid "Expéditeur"
-msgstr "Absender"
-
-msgid "Admin(s)"
-msgstr "Admin(s)"
-
-msgid "Envoyer un test"
-msgstr "Test senden"
-
-msgid "Webhook Discord — Serveur"
-msgstr "Discord-Webhook — Server"
-
-msgid "URL"
-msgstr "URL"
-
-msgid "Message envoyé sur le channel serveur."
-msgstr "Nachricht an Server-Kanal gesendet."
-
-msgid "Envoyer un message de test"
-msgstr "Testnachricht senden"
-
-msgid "Webhook Discord — Pilotes"
-msgstr "Discord-Webhook — Fahrer"
-
-msgid "Message envoyé sur le channel pilotes."
-msgstr "Nachricht an Fahrer-Kanal gesendet."
-
-msgid "utilise le webhook serveur"
-msgstr "verwendet den Server-Webhook"
-
-msgid "Inscription reçue ! Votre compte sera validé par un administrateur."
-msgstr "Anmeldung erhalten! Ihr Konto wird von einem Administrator bestätigt."
-
-msgid "Votre compte doit être validé avant de vous inscrire."
-msgstr "Ihr Konto muss bestätigt werden, bevor Sie sich anmelden können."
-
-msgid "Cet événement n'est pas disponible."
-msgstr "Diese Veranstaltung ist nicht verfügbar."
-
-msgid "Vous êtes déjà inscrit à cet événement."
-msgstr "Sie sind bereits für diese Veranstaltung angemeldet."
-
-msgid "Cet événement est complet."
-msgstr "Diese Veranstaltung ist voll."
-
-msgid "Inscription envoyée !"
-msgstr "Anmeldung gesendet!"
-
-msgid "Désinscription effectuée."
-msgstr "Abmeldung erfolgreich."
-
-msgid "Impossible de se désinscrire (inscription confirmée)."
-msgstr "Abmeldung nicht möglich (Anmeldung bestätigt)."
-
-msgid "Un email de réinitialisation a été envoyé si le compte existe."
-msgstr "Eine Reset-E-Mail wurde gesendet, falls das Konto existiert."
-
-msgid "Ce lien est invalide ou a expiré."
-msgstr "Dieser Link ist ungültig oder abgelaufen."
-
-msgid "Mot de passe mis à jour. Vous pouvez vous connecter."
-msgstr "Passwort aktualisiert. Sie können sich jetzt anmelden."
-
+#: app/routes/auth.py:21
 msgid "Le mot de passe doit contenir au moins 10 caractères."
 msgstr "Das Passwort muss mindestens 10 Zeichen enthalten."
 
+#: app/routes/auth.py:23
 msgid "Le mot de passe doit contenir au moins une majuscule."
 msgstr "Das Passwort muss mindestens einen Großbuchstaben enthalten."
 
+#: app/routes/auth.py:25
 msgid "Le mot de passe doit contenir au moins une minuscule."
 msgstr "Das Passwort muss mindestens einen Kleinbuchstaben enthalten."
 
+#: app/routes/auth.py:27
 msgid "Le mot de passe doit contenir au moins un chiffre."
 msgstr "Das Passwort muss mindestens eine Ziffer enthalten."
 
+#: app/routes/auth.py:29
 msgid "Le mot de passe doit contenir au moins un caractère spécial."
 msgstr "Das Passwort muss mindestens ein Sonderzeichen enthalten."
 
+#: app/routes/auth.py:84
+msgid "Un email de réinitialisation a été envoyé si le compte existe."
+msgstr "Eine Reset-E-Mail wurde gesendet, falls das Konto existiert."
+
+#: app/routes/auth.py:108
+msgid "Ce lien est invalide ou a expiré."
+msgstr "Dieser Link ist ungültig oder abgelaufen."
+
+#: app/routes/auth.py:116 app/routes/public.py:77
 msgid "Les mots de passe ne correspondent pas."
 msgstr "Die Passwörter stimmen nicht überein."
 
-msgid "Le nom in-game est requis."
-msgstr "Der Spielername ist erforderlich."
+#: app/routes/auth.py:127
+msgid "Mot de passe mis à jour. Vous pouvez vous connecter."
+msgstr "Passwort aktualisiert. Sie können sich jetzt anmelden."
 
-msgid "Nom in-game invalide (2–30 caractères)."
-msgstr "Ungültiger Spielername (2–30 Zeichen)."
-
-msgid "Adresse email invalide."
-msgstr "Ungültige E-Mail-Adresse."
-
-msgid "Ce nom in-game est déjà utilisé."
-msgstr "Dieser Spielername ist bereits vergeben."
-
-msgid "Cet email est déjà utilisé."
-msgstr "Diese E-Mail-Adresse wird bereits verwendet."
-
+#: app/routes/events_admin.py:111
 msgid "Événement créé."
 msgstr "Veranstaltung erstellt."
 
+#: app/routes/events_admin.py:128
 msgid "Événement mis à jour."
 msgstr "Veranstaltung aktualisiert."
 
+#: app/routes/events_admin.py:141
 msgid "Événement supprimé."
 msgstr "Veranstaltung gelöscht."
 
+#: app/routes/events_admin.py:151
 msgid "Événement publié."
 msgstr "Veranstaltung veröffentlicht."
 
+#: app/routes/events_admin.py:154
 msgid "Événement repassé en brouillon."
 msgstr "Veranstaltung zurück in Entwurf gesetzt."
 
+#: app/routes/events_admin.py:156
 msgid "Statut inchangé."
 msgstr "Status unverändert."
 
+#: app/routes/events_admin.py:168
 msgid "Événement marqué comme terminé."
 msgstr "Veranstaltung als beendet markiert."
 
-msgid "Entry list générée."
-msgstr "Entry-List generiert."
-
-msgid "Erreur lors de la génération."
-msgstr "Fehler bei der Generierung."
-
-msgid "%(name)s approuvé."
-msgstr "%(name)s genehmigt."
-
-msgid "%(name)s refusé."
-msgstr "%(name)s abgelehnt."
-
-msgid "%(name)s supprimé."
-msgstr "%(name)s gelöscht."
-
-msgid "Se désinscrire ?"
-msgstr "Abmelden?"
-
-msgid "Marquer comme terminé ?"
-msgstr "Als beendet markieren?"
-
-msgid "Supprimer cet événement ?"
-msgstr "Diese Veranstaltung löschen?"
-
-msgid "Rejoindre"
-msgstr "Beitreten"
-
+#: app/routes/events_admin.py:189
+#, python-format
 msgid "%(name)s confirmé(e)."
 msgstr "%(name)s bestätigt."
 
-msgid "Destinataire"
-msgstr "Empfänger"
+#: app/routes/events_admin.py:199 app/routes/events_admin.py:256
+#, python-format
+msgid "%(name)s refusé."
+msgstr "%(name)s abgelehnt."
 
+#: app/routes/events_admin.py:221
+msgid "Entry list générée."
+msgstr "Entry-List generiert."
+
+#: app/routes/events_admin.py:221
+msgid "Erreur lors de la génération."
+msgstr "Fehler bei der Generierung."
+
+#: app/routes/events_admin.py:244
+#, python-format
+msgid "%(name)s approuvé."
+msgstr "%(name)s genehmigt."
+
+#: app/routes/events_admin.py:267
+#, python-format
+msgid "%(name)s supprimé."
+msgstr "%(name)s gelöscht."
+
+#: app/routes/public.py:70
+msgid "Le nom in-game est requis."
+msgstr "Der Spielername ist erforderlich."
+
+#: app/routes/public.py:72
+msgid "Nom in-game invalide (2–30 caractères)."
+msgstr "Ungültiger Spielername (2–30 Zeichen)."
+
+#: app/routes/public.py:74
+msgid "Adresse email invalide."
+msgstr "Ungültige E-Mail-Adresse."
+
+#: app/routes/public.py:81
+msgid "Ce nom in-game est déjà utilisé."
+msgstr "Dieser Spielername ist bereits vergeben."
+
+#: app/routes/public.py:83
+msgid "Cet email est déjà utilisé."
+msgstr "Diese E-Mail-Adresse wird bereits verwendet."
+
+#: app/routes/public.py:93
+msgid "Inscription reçue ! Votre compte sera activé par un administrateur."
+msgstr "Anmeldung erhalten! Ihr Konto wird von einem Administrator aktiviert."
+
+#: app/routes/public.py:132
+msgid "Votre compte doit être validé avant de vous inscrire."
+msgstr "Ihr Konto muss bestätigt werden, bevor Sie sich anmelden können."
+
+#: app/routes/public.py:137
+msgid "Cet événement n'est pas disponible."
+msgstr "Diese Veranstaltung ist nicht verfügbar."
+
+#: app/routes/public.py:141
+msgid "Vous êtes déjà inscrit à cet événement."
+msgstr "Sie sind bereits für diese Veranstaltung angemeldet."
+
+#: app/routes/public.py:145
+msgid "Cet événement est complet."
+msgstr "Diese Veranstaltung ist voll."
+
+#: app/routes/public.py:150
+msgid "Inscription envoyée !"
+msgstr "Anmeldung gesendet!"
+
+#: app/routes/public.py:163
+msgid "Désinscription effectuée."
+msgstr "Abmeldung erfolgreich."
+
+#: app/routes/public.py:165
+msgid "Impossible de se désinscrire (inscription confirmée)."
+msgstr "Abmeldung nicht möglich (Anmeldung bestätigt)."
+
+#: app/templates/admin_dashboard.html:9
+msgid "Statut serveur"
+msgstr "Serverstatus"
+
+#: app/templates/admin_dashboard.html:10
+msgid "Contrôles"
+msgstr "Steuerung"
+
+#: app/templates/admin_dashboard.html:15 app/templates/server.html:70
+msgid "Vérification..."
+msgstr "Überprüfung..."
+
+#: app/templates/admin_dashboard.html:23 app/templates/public.html:41
+#: app/templates/server.html:91
+msgid "Nom du serveur"
+msgstr "Servername"
+
+#: app/templates/admin_dashboard.html:27 app/templates/event_form.html:51
+#: app/templates/events_admin.html:65 app/templates/pilot_dashboard.html:29
+#: app/templates/public.html:45 app/templates/public.html:118
+#: app/templates/server.html:188
+msgid "Circuit"
+msgstr "Strecke"
+
+#: app/templates/admin_dashboard.html:34 app/templates/event_form.html:68
+#: app/templates/events_admin.html:66 app/templates/pilot_dashboard.html:33
+#: app/templates/public.html:52 app/templates/public.html:122
+msgid "Mode"
+msgstr "Modus"
+
+#: app/templates/admin_dashboard.html:38 app/templates/event_form.html:75
+#: app/templates/public.html:56 app/templates/public.html:126
+#: app/templates/server.html:162
+msgid "Météo"
+msgstr "Wetter"
+
+#: app/templates/admin_dashboard.html:43 app/templates/public.html:61
+#: app/templates/server.html:219
+msgid "Sessions"
+msgstr "Sitzungen"
+
+#: app/templates/admin_dashboard.html:45 app/templates/event_form.html:70
+#: app/templates/event_form.html:90 app/templates/event_form.html:106
+#: app/templates/public.html:63 app/templates/server.html:155
+#: app/templates/server.html:225
+msgid "Libre"
+msgstr "Freies Training"
+
+#: app/templates/admin_dashboard.html:46 app/templates/public.html:64
+msgid "Qualif"
+msgstr "Quali"
+
+#: app/templates/admin_dashboard.html:47 app/templates/event_form.html:130
+#: app/templates/public.html:65 app/templates/server.html:269
+msgid "Chauffe"
+msgstr "Aufwärmen"
+
+#: app/templates/admin_dashboard.html:48 app/templates/event_form.html:141
+#: app/templates/public.html:66 app/templates/server.html:291
+msgid "Course"
+msgstr "Rennen"
+
+#: app/templates/admin_dashboard.html:53 app/templates/public.html:71
+msgid "Durée libre"
+msgstr "Freitraining-Dauer"
+
+#: app/templates/admin_dashboard.html:59 app/templates/public.html:77
+#: app/templates/server.html:318
+msgid "Véhicules"
+msgstr "Fahrzeuge"
+
+#: app/templates/admin_dashboard.html:79
+msgid "Prochains événements"
+msgstr "Nächste Veranstaltungen"
+
+#: app/templates/admin_dashboard.html:80 app/templates/event_form.html:226
+msgid "Tous"
+msgstr "Alle"
+
+#: app/templates/admin_dashboard.html:97 app/templates/events_admin.html:85
+msgid "Brouillon"
+msgstr "Entwurf"
+
+#: app/templates/admin_dashboard.html:98 app/templates/events_admin.html:86
+msgid "Publié"
+msgstr "Veröffentlicht"
+
+#: app/templates/admin_dashboard.html:99 app/templates/events_admin.html:87
+msgid "Terminé"
+msgstr "Abgeschlossen"
+
+#: app/templates/admin_dashboard.html:104 app/templates/event_detail.html:2
+#: app/templates/events_admin.html:67 app/templates/events_admin.html:93
+msgid "Inscrits"
+msgstr "Angemeldet"
+
+#: app/templates/admin_dashboard.html:112
+msgid "Aucun événement à venir."
+msgstr "Keine bevorstehenden Veranstaltungen."
+
+#: app/templates/admin_dashboard.html:119 app/templates/base.html:30
+#: app/templates/drivers.html:2 app/templates/pilot_dashboard.html:37
+#: app/templates/public.html:131
+msgid "Pilotes"
+msgstr "Fahrer"
+
+#: app/templates/admin_dashboard.html:120
+msgid "Gérer"
+msgstr "Verwalten"
+
+#: app/templates/admin_dashboard.html:125 app/templates/drivers.html:15
+#: app/templates/drivers.html:57
+msgid "pilote(s)"
+msgstr "Fahrer"
+
+#: app/templates/admin_dashboard.html:125 app/templates/drivers.html:14
+msgid "En attente de validation"
+msgstr "Warten auf Bestätigung"
+
+#: app/templates/admin_dashboard.html:128 app/templates/drivers.html:49
+msgid "Aucun pilote en attente."
+msgstr "Keine ausstehenden Fahrer."
+
+#: app/templates/administration.html:2 app/templates/administration.html:6
+#: app/templates/base.html:37
+msgid "Administration"
+msgstr "Administration"
+
+#: app/templates/administration.html:11
+msgid "Configuration email"
+msgstr "E-Mail-Konfiguration"
+
+#: app/templates/administration.html:15 app/templates/base.html:25
+msgid "Serveur"
+msgstr "Server"
+
+#: app/templates/administration.html:16
+msgid "Port"
+msgstr "Port"
+
+#: app/templates/administration.html:17
+msgid "Expéditeur"
+msgstr "Absender"
+
+#: app/templates/administration.html:18
+msgid "Admin(s)"
+msgstr "Admin(s)"
+
+#: app/templates/administration.html:23
 msgid "Email envoyé avec succès"
 msgstr "E-Mail erfolgreich gesendet"
 
+#: app/templates/administration.html:25
 msgid "Erreur SMTP"
 msgstr "SMTP-Fehler"
 
-msgid "Ce site utilise uniquement des cookies techniques nécessaires à son fonctionnement."
+#: app/templates/administration.html:32
+msgid "Destinataire"
+msgstr "Empfänger"
+
+#: app/templates/administration.html:35
+msgid "Envoyer un test"
+msgstr "Test senden"
+
+#: app/templates/administration.html:42
+msgid "Webhook Discord — Serveur"
+msgstr "Discord-Webhook — Server"
+
+#: app/templates/administration.html:47 app/templates/administration.html:75
+msgid "URL"
+msgstr "URL"
+
+#: app/templates/administration.html:54
+msgid "Message envoyé sur le channel serveur."
+msgstr "Nachricht an Server-Kanal gesendet."
+
+#: app/templates/administration.html:56 app/templates/administration.html:84
+#: app/templates/base.html:103
+msgid "Erreur"
+msgstr "Fehler"
+
+#: app/templates/administration.html:63 app/templates/administration.html:91
+msgid "Envoyer un message de test"
+msgstr "Testnachricht senden"
+
+#: app/templates/administration.html:70
+msgid "Webhook Discord — Pilotes"
+msgstr "Discord-Webhook — Fahrer"
+
+#: app/templates/administration.html:76
+msgid "utilise le webhook serveur"
+msgstr "verwendet den Server-Webhook"
+
+#: app/templates/administration.html:82
+msgid "Message envoyé sur le channel pilotes."
+msgstr "Nachricht an Fahrer-Kanal gesendet."
+
+#: app/templates/base.html:27 app/templates/base.html:43
+#: app/templates/events_admin.html:2 app/templates/events_admin.html:6
+msgid "Événements"
+msgstr "Veranstaltungen"
+
+#: app/templates/base.html:45 app/templates/pilot_dashboard.html:2
+#: app/templates/pilot_dashboard.html:62 app/templates/public.html:177
+#: app/templates/public.html:191
+msgid "Mes inscriptions"
+msgstr "Meine Anmeldungen"
+
+#: app/templates/base.html:76
+msgid "Déconnexion"
+msgstr "Abmelden"
+
+#: app/templates/base.html:78 app/templates/login.html:2
+#: app/templates/login.html:10 app/templates/login.html:35
+msgid "Connexion"
+msgstr "Anmelden"
+
+#: app/templates/base.html:94
+msgid ""
+"Ce site utilise uniquement des cookies techniques nécessaires à son "
+"fonctionnement."
 msgstr "Diese Website verwendet nur technisch notwendige Cookies."
 
-msgid "Public"
-msgstr "Öffentlich"
+#: app/templates/base.html:100 app/templates/public.html:21
+msgid "En ligne"
+msgstr "Online"
 
-msgid "Privé"
-msgstr "Privat"
+#: app/templates/base.html:101 app/templates/public.html:26
+msgid "Hors ligne"
+msgstr "Offline"
 
-msgid "Session publique"
-msgstr "Öffentliche Session"
+#: app/templates/base.html:102
+msgid "Sauvegardé"
+msgstr "Gespeichert"
 
-msgid "Inscription non requise"
-msgstr "Keine Anmeldung erforderlich"
+#: app/templates/base.html:104
+msgid "Erreur réseau"
+msgstr "Netzwerkfehler"
 
+#: app/templates/base.html:105
+msgid "Serveur démarré"
+msgstr "Server gestartet"
+
+#: app/templates/base.html:106
+msgid "Serveur arrêté"
+msgstr "Server gestoppt"
+
+#: app/templates/base.html:107
+msgid "Serveur redémarré"
+msgstr "Server neu gestartet"
+
+#: app/templates/base.html:108
+msgid "Sessions sauvegardées"
+msgstr "Sitzungen gespeichert"
+
+#: app/templates/base.html:109
+msgid "Véhicules sauvegardés"
+msgstr "Fahrzeuge gespeichert"
+
+#: app/templates/base.html:110
+msgid "Nom requis"
+msgstr "Name erforderlich"
+
+#: app/templates/base.html:111
+msgid "Dupliquer la configuration"
+msgstr "Konfiguration duplizieren"
+
+#: app/templates/base.html:112 app/templates/server.html:28
+msgid "Nouvelle configuration"
+msgstr "Neue Konfiguration"
+
+#: app/templates/base.html:113
+msgid "Config réparée"
+msgstr "Konfiguration repariert"
+
+#: app/templates/base.html:114
+msgid "Auto-restart activé"
+msgstr "Auto-Neustart aktiviert"
+
+#: app/templates/base.html:115
+msgid "Auto-restart désactivé"
+msgstr "Auto-Neustart deaktiviert"
+
+#: app/templates/base.html:116 app/templates/public.html:23
+msgid "joueur(s)"
+msgstr "Spieler"
+
+#: app/templates/drivers.html:20 app/templates/drivers.html:62
+#: app/templates/drivers.html:96 app/templates/register.html:21
+msgid "Nom in-game"
+msgstr "Spielername"
+
+#: app/templates/drivers.html:20 app/templates/drivers.html:62
+#: app/templates/drivers.html:96 app/templates/event_detail.html:39
+msgid "Email"
+msgstr "E-Mail"
+
+#: app/templates/drivers.html:20 app/templates/drivers.html:62
+msgid "Inscrit le"
+msgstr "Angemeldet am"
+
+#: app/templates/drivers.html:20 app/templates/drivers.html:62
+#: app/templates/drivers.html:96 app/templates/event_detail.html:42
+#: app/templates/events_admin.html:69
+msgid "Actions"
+msgstr "Aktionen"
+
+#: app/templates/drivers.html:32
+msgid "Approuver"
+msgstr "Genehmigen"
+
+#: app/templates/drivers.html:36 app/templates/event_detail.html:81
+msgid "Refuser"
+msgstr "Ablehnen"
+
+#: app/templates/drivers.html:40 app/templates/drivers.html:74
+#: app/templates/drivers.html:111
+msgid "Supprimer définitivement"
+msgstr "Endgültig löschen"
+
+#: app/templates/drivers.html:56
+msgid "Pilotes approuvés"
+msgstr "Genehmigte Fahrer"
+
+#: app/templates/drivers.html:83
+msgid "Aucun pilote approuvé."
+msgstr "Keine genehmigten Fahrer."
+
+#: app/templates/drivers.html:91
+msgid "Pilotes refusés"
+msgstr "Abgelehnte Fahrer"
+
+#: app/templates/drivers.html:107
+msgid "Ré-approuver"
+msgstr "Erneut genehmigen"
+
+#: app/templates/event_detail.html:17
+msgid "Générer entry list"
+msgstr "Entry-List generieren"
+
+#: app/templates/event_detail.html:19 app/templates/event_form.html:12
+msgid "Retour"
+msgstr "Zurück"
+
+#: app/templates/event_detail.html:30 app/templates/pilot_dashboard.html:88
+#: app/templates/public.html:144
+msgid "Confirmé"
+msgstr "Bestätigt"
+
+#: app/templates/event_detail.html:30 app/templates/pilot_dashboard.html:87
+#: app/templates/public.html:143
+msgid "En attente"
+msgstr "Ausstehend"
+
+#: app/templates/event_detail.html:31
+msgid "Course privée"
+msgstr "Privates Rennen"
+
+#: app/templates/event_detail.html:38
+msgid "Pilote"
+msgstr "Fahrer"
+
+#: app/templates/event_detail.html:40
+msgid "Voiture assignée"
+msgstr "Zugewiesenes Fahrzeug"
+
+#: app/templates/event_detail.html:41 app/templates/events_admin.html:68
+msgid "Statut"
+msgstr "Status"
+
+#: app/templates/event_detail.html:55
+msgid "Non assignée"
+msgstr "Nicht zugewiesen"
+
+#: app/templates/event_detail.html:75
+msgid "Confirmer"
+msgstr "Bestätigen"
+
+#: app/templates/event_detail.html:91
+msgid "Aucune inscription pour le moment."
+msgstr "Noch keine Anmeldungen."
+
+#: app/templates/event_form.html:2 app/templates/event_form.html:11
+msgid "Modifier l'événement"
+msgstr "Veranstaltung bearbeiten"
+
+#: app/templates/event_form.html:2 app/templates/event_form.html:11
+msgid "Nouvel événement"
+msgstr "Neue Veranstaltung"
+
+#: app/templates/event_form.html:26 app/templates/events_admin.html:63
+msgid "Titre"
+msgstr "Titel"
+
+#: app/templates/event_form.html:32
+msgid "Description"
+msgstr "Beschreibung"
+
+#: app/templates/event_form.html:32
+msgid "optionnel"
+msgstr "optional"
+
+#: app/templates/event_form.html:38
+msgid "Date et heure"
+msgstr "Datum und Uhrzeit"
+
+#: app/templates/event_form.html:43
+msgid "Pilotes max"
+msgstr "Max. Fahrer"
+
+#: app/templates/event_form.html:71 app/templates/server.html:156
+msgid "Race Weekend"
+msgstr "Rennwochenende"
+
+#: app/templates/event_form.html:77 app/templates/server.html:164
+msgid "Dégagé"
+msgstr "Klar"
+
+#: app/templates/event_form.html:78 app/templates/server.html:165
+msgid "Nuageux"
+msgstr "Bewölkt"
+
+#: app/templates/event_form.html:79 app/templates/server.html:166
+msgid "Pluie"
+msgstr "Regen"
+
+#: app/templates/event_form.html:85
+msgid "Durées de session"
+msgstr "Sitzungsdauer"
+
+#: app/templates/event_form.html:117 app/templates/server.html:247
+msgid "Qualification"
+msgstr "Qualifikation"
+
+#: app/templates/event_form.html:157
+msgid "Mot de passe serveur"
+msgstr "Server-Passwort"
+
+#: app/templates/event_form.html:157
+msgid "vide = public"
+msgstr "leer = öffentlich"
+
+#: app/templates/event_form.html:162
+msgid "Rappel email"
+msgstr "E-Mail-Erinnerung"
+
+#: app/templates/event_form.html:162
+msgid "minutes avant début"
+msgstr "Minuten vor Beginn"
+
+#: app/templates/event_form.html:174
 msgid "Événement public (pas d'inscription requise)"
 msgstr "Öffentliches Event (keine Anmeldung)"
 
+#: app/templates/event_form.html:184
+msgid "Lancer le serveur automatiquement"
+msgstr "Server automatisch starten"
+
+#: app/templates/event_form.html:187
+msgid "Serveur lancé automatiquement pour cet événement."
+msgstr "Server wurde für diese Veranstaltung automatisch gestartet."
+
+#: app/templates/event_form.html:194
+msgid "Véhicules autorisés"
+msgstr "Erlaubte Fahrzeuge"
+
+#: app/templates/event_form.html:201 app/templates/server.html:323
+msgid "Rechercher..."
+msgstr "Suchen..."
+
+#: app/templates/event_form.html:202 app/templates/server.html:328
+msgid "Tout sélectionner"
+msgstr "Alle auswählen"
+
+#: app/templates/event_form.html:203 app/templates/server.html:329
+msgid "Tout désélectionner"
+msgstr "Alle abwählen"
+
+#: app/templates/event_form.html:240 app/templates/server.html:359
+msgid "Véhicule"
+msgstr "Fahrzeug"
+
+#: app/templates/event_form.html:242
+msgid "Catégories"
+msgstr "Kategorien"
+
+#: app/templates/event_form.html:278 app/templates/pilot_dashboard.html:94
+#: app/templates/public.html:150 app/templates/server.html:35
+msgid "Annuler"
+msgstr "Abbrechen"
+
+#: app/templates/event_form.html:279
+msgid "Enregistrer"
+msgstr "Speichern"
+
+#: app/templates/event_form.html:279 app/templates/events_admin.html:12
+#: app/templates/server.html:36
+msgid "Créer"
+msgstr "Erstellen"
+
+#: app/templates/events_admin.html:9
+msgid "Calendrier"
+msgstr "Kalender"
+
+#: app/templates/events_admin.html:10
+msgid "Liste"
+msgstr "Liste"
+
+#: app/templates/events_admin.html:29 app/templates/public.html:105
+msgid "Privé"
+msgstr "Privat"
+
+#: app/templates/events_admin.html:30 app/templates/public.html:105
+msgid "Public"
+msgstr "Öffentlich"
+
+#: app/templates/events_admin.html:35
+msgid "Lun"
+msgstr "Mo"
+
+#: app/templates/events_admin.html:36
+msgid "Mar"
+msgstr "Di"
+
+#: app/templates/events_admin.html:37
+msgid "Mer"
+msgstr "Mi"
+
+#: app/templates/events_admin.html:38
+msgid "Jeu"
+msgstr "Do"
+
+#: app/templates/events_admin.html:39
+msgid "Ven"
+msgstr "Fr"
+
+#: app/templates/events_admin.html:40
+msgid "Sam"
+msgstr "Sa"
+
+#: app/templates/events_admin.html:41
+msgid "Dim"
+msgstr "So"
+
+#: app/templates/events_admin.html:50
+msgid "Créer ce jour"
+msgstr "An diesem Tag erstellen"
+
+#: app/templates/events_admin.html:51 app/templates/server.html:60
+msgid "Fermer"
+msgstr "Schließen"
+
+#: app/templates/events_admin.html:64
+msgid "Date → Fin"
+msgstr "Datum → Ende"
+
+#: app/templates/events_admin.html:95
+msgid "Modifier"
+msgstr "Bearbeiten"
+
+#: app/templates/events_admin.html:100
+msgid "Dépublier"
+msgstr "Zurückziehen"
+
+#: app/templates/events_admin.html:100
+msgid "Publier"
+msgstr "Veröffentlichen"
+
+#: app/templates/events_admin.html:107
+msgid "Marquer comme terminé ?"
+msgstr "Als beendet markieren?"
+
+#: app/templates/events_admin.html:107
+msgid "Terminer"
+msgstr "Beenden"
+
+#: app/templates/events_admin.html:112
+msgid "Supprimer cet événement ?"
+msgstr "Diese Veranstaltung löschen?"
+
+#: app/templates/events_admin.html:121
+msgid "Aucun événement."
+msgstr "Keine Veranstaltungen."
+
+#: app/templates/events_admin.html:121
+msgid "Créer le premier"
+msgstr "Das erste erstellen"
+
+#: app/templates/forgot_password.html:2 app/templates/forgot_password.html:10
+msgid "Mot de passe oublié"
+msgstr "Passwort vergessen"
+
+#: app/templates/forgot_password.html:19
+msgid ""
+"Entrez votre identifiant ou votre adresse email. Si votre compte est "
+"approuvé, vous recevrez un lien de réinitialisation valable 1 heure."
+msgstr ""
+"Geben Sie Ihren Benutzernamen oder Ihre E-Mail-Adresse ein. Wenn Ihr "
+"Konto genehmigt ist, erhalten Sie einen Reset-Link, der 1 Stunde gültig "
+"ist."
+
+#: app/templates/forgot_password.html:25
+msgid "Nom in-game ou email"
+msgstr "Spielername oder E-Mail"
+
+#: app/templates/forgot_password.html:28
+msgid "Envoyer le lien"
+msgstr "Link senden"
+
+#: app/templates/forgot_password.html:32
+msgid "Retour à la connexion"
+msgstr "Zurück zur Anmeldung"
+
+#: app/templates/login.html:16
+msgid "Votre compte est en attente de validation."
+msgstr "Ihr Konto wartet auf Bestätigung."
+
+#: app/templates/login.html:18
+msgid "Votre compte a été refusé."
+msgstr "Ihr Konto wurde abgelehnt."
+
+#: app/templates/login.html:20
+msgid "Identifiants incorrects"
+msgstr "Falsche Anmeldedaten"
+
+#: app/templates/login.html:28
+msgid "Identifiant ou email"
+msgstr "Benutzername oder E-Mail"
+
+#: app/templates/login.html:32 app/templates/register.html:33
+msgid "Mot de passe"
+msgstr "Passwort"
+
+#: app/templates/login.html:39
+msgid "Pilote ?"
+msgstr "Fahrer?"
+
+#: app/templates/login.html:39 app/templates/pilot_dashboard.html:48
+#: app/templates/public.html:33 app/templates/public.html:158
+#: app/templates/register.html:47
+msgid "S'inscrire"
+msgstr "Registrieren"
+
+#: app/templates/login.html:41
+msgid "Mot de passe oublié ?"
+msgstr "Passwort vergessen?"
+
+#: app/templates/pilot_dashboard.html:14
+msgid "Événements disponibles"
+msgstr "Verfügbare Veranstaltungen"
+
+#: app/templates/pilot_dashboard.html:25 app/templates/pilot_dashboard.html:74
+#: app/templates/public.html:114
+msgid "Date"
+msgstr "Datum"
+
+#: app/templates/pilot_dashboard.html:44 app/templates/public.html:154
+msgid "Complet"
+msgstr "Voll"
+
+#: app/templates/pilot_dashboard.html:51 app/templates/public.html:161
+msgid "Compte en attente"
+msgstr "Konto ausstehend"
+
+#: app/templates/pilot_dashboard.html:79
+msgid "Voiture"
+msgstr "Fahrzeug"
+
+#: app/templates/pilot_dashboard.html:89 app/templates/public.html:145
+msgid "Refusé"
+msgstr "Abgelehnt"
+
+#: app/templates/pilot_dashboard.html:94 app/templates/public.html:150
+msgid "Se désinscrire ?"
+msgstr "Abmelden?"
+
+#: app/templates/pilot_dashboard.html:102
+msgid "Vous n'êtes inscrit à aucun événement."
+msgstr "Sie sind für keine Veranstaltung angemeldet."
+
+#: app/templates/public.html:32 app/templates/public.html:164
+#: app/templates/register.html:51
+msgid "Se connecter"
+msgstr "Anmelden"
+
+#: app/templates/public.html:90
+msgid "Le serveur est actuellement hors ligne."
+msgstr "Der Server ist derzeit offline."
+
+#: app/templates/public.html:102
+msgid "En cours"
+msgstr "Laufend"
+
+#: app/templates/public.html:175
 msgid "Événement en cours"
 msgstr "Laufendes Event"
+
+#: app/templates/public.html:189
+msgid "Événements à venir"
+msgstr "Bevorstehende Veranstaltungen"
+
+#: app/templates/public.html:199
+msgid "Aucun événement à venir pour le moment."
+msgstr "Derzeit keine bevorstehenden Veranstaltungen."
+
+#: app/templates/register.html:2 app/templates/register.html:10
+msgid "Inscription pilote"
+msgstr "Fahreranmeldung"
+
+#: app/templates/register.html:28
+msgid "Adresse email"
+msgstr "E-Mail-Adresse"
+
+#: app/templates/register.html:36 app/templates/register.html:69
+#: app/templates/reset_password.html:24 app/templates/reset_password.html:51
+msgid "10 caractères minimum"
+msgstr "Mindestens 10 Zeichen"
+
+#: app/templates/register.html:37 app/templates/register.html:70
+#: app/templates/reset_password.html:25 app/templates/reset_password.html:52
+msgid "Une majuscule"
+msgstr "Ein Großbuchstabe"
+
+#: app/templates/register.html:38 app/templates/register.html:71
+#: app/templates/reset_password.html:26 app/templates/reset_password.html:53
+msgid "Une minuscule"
+msgstr "Ein Kleinbuchstabe"
+
+#: app/templates/register.html:39 app/templates/register.html:72
+#: app/templates/reset_password.html:27 app/templates/reset_password.html:54
+msgid "Un chiffre"
+msgstr "Eine Ziffer"
+
+#: app/templates/register.html:40 app/templates/register.html:73
+#: app/templates/reset_password.html:28 app/templates/reset_password.html:55
+msgid "Un caractère spécial"
+msgstr "Ein Sonderzeichen"
+
+#: app/templates/register.html:44 app/templates/reset_password.html:32
+msgid "Confirmer le mot de passe"
+msgstr "Passwort bestätigen"
+
+#: app/templates/register.html:51
+msgid "Déjà un compte ?"
+msgstr "Schon ein Konto?"
+
+#: app/templates/register.html:54
+msgid "Votre compte sera activé par un administrateur."
+msgstr "Ihr Konto wird von einem Administrator aktiviert."
+
+#: app/templates/reset_password.html:2 app/templates/reset_password.html:10
+#: app/templates/reset_password.html:21
+msgid "Nouveau mot de passe"
+msgstr "Neues Passwort"
+
+#: app/templates/reset_password.html:35
+msgid "Enregistrer le mot de passe"
+msgstr "Passwort speichern"
+
+#: app/templates/server.html:9
+msgid "Configuration"
+msgstr "Konfiguration"
+
+#: app/templates/server.html:19
+msgid "Nouveau"
+msgstr "Neu"
+
+#: app/templates/server.html:20
+msgid "Dupliquer"
+msgstr "Duplizieren"
+
+#: app/templates/server.html:21
+msgid "Supprimer"
+msgstr "Löschen"
+
+#: app/templates/server.html:30
+msgid "Nom du fichier"
+msgstr "Dateiname"
+
+#: app/templates/server.html:44
+msgid "Fichier invalide"
+msgstr "Ungültige Datei"
+
+#: app/templates/server.html:45
+msgid "Ce fichier contient des erreurs :"
+msgstr "Diese Datei enthält Fehler:"
+
+#: app/templates/server.html:48
+msgid "Choisir autre"
+msgstr "Andere wählen"
+
+#: app/templates/server.html:49
+msgid "Réparer"
+msgstr "Reparieren"
+
+#: app/templates/server.html:57
+msgid "Logs serveur"
+msgstr "Server-Protokolle"
+
+#: app/templates/server.html:58
+msgid "Chargement..."
+msgstr "Laden..."
+
+#: app/templates/server.html:61
+msgid "Actualiser"
+msgstr "Aktualisieren"
+
+#: app/templates/server.html:74
+msgid "Démarrer"
+msgstr "Starten"
+
+#: app/templates/server.html:75
+msgid "Arrêter"
+msgstr "Stoppen"
+
+#: app/templates/server.html:76
+msgid "Redémarrer"
+msgstr "Neustart"
+
+#: app/templates/server.html:77
+msgid "Logs"
+msgstr "Protokolle"
+
+#: app/templates/server.html:78
+msgid "Relancer automatiquement en cas de crash"
+msgstr "Automatischer Neustart bei Absturz"
+
+#: app/templates/server.html:80
+msgid "Auto-restart"
+msgstr "Auto-Neustart"
+
+#: app/templates/server.html:87
+msgid "Informations serveur"
+msgstr "Serverinformationen"
+
+#: app/templates/server.html:110
+msgid "Joueurs max"
+msgstr "Max. Spieler"
+
+#: app/templates/server.html:114
+msgid "Cycle actif"
+msgstr "Aktiver Zyklus"
+
+#: app/templates/server.html:124
+msgid "Mot de passe pilote"
+msgstr "Fahrer-Passwort"
+
+#: app/templates/server.html:128
+msgid "Mot de passe admin"
+msgstr "Admin-Passwort"
+
+#: app/templates/server.html:135
+msgid "Entry List Path"
+msgstr "Entry-List-Pfad"
+
+#: app/templates/server.html:139
+msgid "Results Path"
+msgstr "Ergebnispfad"
+
+#: app/templates/server.html:149
+msgid "Événement"
+msgstr "Veranstaltung"
+
+#: app/templates/server.html:153
+msgid "Type de session"
+msgstr "Sitzungstyp"
+
+#: app/templates/server.html:170
+msgid "Comportement météo"
+msgstr "Wetterverhalten"
+
+#: app/templates/server.html:172
+msgid "Statique"
+msgstr "Statisch"
+
+#: app/templates/server.html:173
+msgid "Dynamique"
+msgstr "Dynamisch"
+
+#: app/templates/server.html:179
+msgid "Adhérence initiale"
+msgstr "Anfangshaftung"
+
+#: app/templates/server.html:181
+msgid "Vert"
+msgstr "Grün"
+
+#: app/templates/server.html:182
+msgid "Rapide"
+msgstr "Schnell"
+
+#: app/templates/server.html:183
+msgid "Optimal"
+msgstr "Optimal"
+
+#: app/templates/server.html:208
+msgid "Durée"
+msgstr "Dauer"
+
+#: app/templates/server.html:208
+msgid "(0 = ignoré)"
+msgstr "(0 = ignoriert)"
+
+#: app/templates/server.html:229 app/templates/server.html:251
+#: app/templates/server.html:273 app/templates/server.html:295
+msgid "Heure in-game"
+msgstr "Spielzeit"
+
+#: app/templates/server.html:235 app/templates/server.html:257
+#: app/templates/server.html:279 app/templates/server.html:301
+msgid "Attente max box (s)"
+msgstr "Max. Box-Wartezeit (s)"
+
+#: app/templates/server.html:239 app/templates/server.html:261
+#: app/templates/server.html:283 app/templates/server.html:305
+msgid "Overtime (s)"
+msgstr "Overtime (s)"
+
+#: app/templates/server.html:326
+msgid "Sélectionnés seulement"
+msgstr "Nur ausgewählte"
+
+#: app/templates/server.html:389
+msgid "véhicule(s) sélectionné(s)"
+msgstr "Fahrzeug(e) ausgewählt"
+
+#: app/templates/server.html:396
+msgid "Sauvegarder tout"
+msgstr "Alles speichern"
+
+#~ msgid "Administration serveur"
+#~ msgstr "Serververwaltung"
+
+#~ msgid "Contrôle serveur"
+#~ msgstr "Serversteuerung"
+
+#~ msgid "Type de serveur"
+#~ msgstr "Servertyp"
+
+#~ msgid "Classé"
+#~ msgstr "Gerankt"
+
+#~ msgid "Non classé"
+#~ msgstr "Ungerankt"
+
+#~ msgid "Mot de passe spectateur"
+#~ msgstr "Zuschauer-Passwort"
+
+#~ msgid "Événement & Sessions"
+#~ msgstr "Veranstaltung & Sitzungen"
+
+#~ msgid "Durée (s)"
+#~ msgstr "Dauer (s)"
+
+#~ msgid "Heure"
+#~ msgstr "Zeit"
+
+#~ msgid "Sauvegarder sessions"
+#~ msgstr "Sitzungen speichern"
+
+#~ msgid "Filtrer..."
+#~ msgstr "Filtern..."
+
+#~ msgid "Sauvegarder véhicules"
+#~ msgstr "Fahrzeuge speichern"
+
+#~ msgid "Date (UTC)"
+#~ msgstr "Datum (UTC)"
+
+#~ msgid "Rejoindre notre serveur Discord"
+#~ msgstr "Unserem Discord-Server beitreten"
+
+#~ msgid "Rejoindre"
+#~ msgstr "Beitreten"
+
+#~ msgid "Session publique"
+#~ msgstr "Öffentliche Session"
+
+#~ msgid "Inscription non requise"
+#~ msgstr "Keine Anmeldung erforderlich"
+
