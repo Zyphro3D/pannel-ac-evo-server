@@ -14,9 +14,9 @@ RUN dpkg --add-architecture i386 \
  && apt-get install -y winehq-stable \
  && rm -rf /var/lib/apt/lists/*
 
-# Pre-initialize Wine prefix at build time — avoids rpcss/OLE errors at runtime
-RUN WINEARCH=win64 WINEPREFIX=/root/.wine WINEDEBUG=-all \
-    xvfb-run wine64 wineboot --init && \
+# Pre-initialize Wine prefix at build time (WoW64 mode — handles both 32 and 64-bit exes)
+RUN WINEPREFIX=/root/.wine WINEDEBUG=-all \
+    xvfb-run wine wineboot --init && \
     WINEPREFIX=/root/.wine wineserver -w
 
 WORKDIR /panel
@@ -33,7 +33,6 @@ ENV DEPLOY_MODE=docker \
     CONFIGS_DIR=/aceserver/configs \
     DATABASE_URL=sqlite:////panel/data/ace_evo.db \
     SESSION_COOKIE_SECURE=false \
-    WINEARCH=win64 \
     WINEPREFIX=/root/.wine \
     WINEDEBUG=-all \
     DISPLAY=:99
