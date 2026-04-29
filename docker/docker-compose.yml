@@ -17,6 +17,8 @@ services:
       - wine_prefix:/root/.wine
     env_file:
       - .env
+    security_opt:
+      - seccomp:unconfined   # Wine needs personality() syscall (PER_LINUX32) for WoW64
     restart: unless-stopped
 
 volumes:
