@@ -87,7 +87,13 @@ git clone https://github.com/Zyphro3D/pannel-ac-evo-server.git
 cd pannel-ac-evo-server
 ```
 
-Lancer **`install.bat`** (double-clic ou terminal). Le script crée l'environnement virtuel, installe les dépendances et pose quelques questions pour générer le `.env` :
+Copier le fichier d'exemple et le renommer :
+
+```bat
+copy .env.example.windows .env
+```
+
+Ou lancer **`install.bat`** (double-clic ou terminal) qui pose les questions et génère le `.env` automatiquement :
 
 - Chemin d'installation du serveur ACE EVO
 - Chemin du dossier de configurations
@@ -163,39 +169,78 @@ Générer une `SECRET_KEY` sécurisée :
 ## Installation Docker (Linux)
 
 Le panel et le serveur ACE EVO tournent dans un seul conteneur Docker (Python 3.11 + Wine).  
-Télécharger le zip **Docker** depuis les [Releases GitHub](https://github.com/Zyphro3D/pannel-ac-evo-server/releases).
+Testé sur **Debian 13**. Docker et Docker Compose requis.
 
-### Prérequis
+### 1. Télécharger le serveur ACE EVO via SteamCMD
 
-- **Docker** et **Docker Compose** installés sur l'hôte Linux
-- Les fichiers serveur ACE EVO (`AssettoCorsaEVOServer.exe`, `cars.json`, `events_practice.json`, `events_race_weekend.json`) fournis par le ServerLauncher officiel
-
-### Étapes
+Le paquet `steamcmd` n'existe pas sous Debian 13 — installation manuelle :
 
 ```bash
-cd docker/
+sudo dpkg --add-architecture i386
+sudo apt update
+sudo apt install -y lib32gcc-s1
+
+mkdir -p /opt/steamcmd && cd /opt/steamcmd
+curl -fsSL https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz | tar xz
+
+/opt/steamcmd/steamcmd.sh \
+  +@sSteamCmdForcePlatformType windows \
+  +login TON_COMPTE_STEAM \
+  +force_install_dir /opt/aceserver \
+  +app_update 4564210 validate \
+  +quit
+```
+
+> SteamCMD télécharge la version **Windows** du serveur (`.exe`), qui sera exécutée via Wine dans Docker.
+
+### 2. Cloner le panel et copier les fichiers serveur
+
+```bash
+git clone https://github.com/Zyphro3D/pannel-ac-evo-server.git /opt/pannel-ac-evo-server
+
+mkdir -p /opt/pannel-ac-evo-server/docker/aceserver/configs
+cp -r /opt/aceserver/* /opt/pannel-ac-evo-server/docker/aceserver/
+```
+
+### 3. Configurer
+
+```bash
+cd /opt/pannel-ac-evo-server/docker
 cp .env.example .env
-# Éditer .env (SECRET_KEY, mots de passe, PANEL_URL…)
+nano .env   # remplir SECRET_KEY, ADMIN_PASSWORD, SUPERADMIN_PASSWORD, PANEL_URL
+```
 
-# Copier les fichiers du serveur ACE EVO dans docker/aceserver/
-# (AssettoCorsaEVOServer.exe, cars.json, events_*.json, content/, …)
-mkdir -p aceserver/configs
+Variables minimales à renseigner :
 
+```env
+SECRET_KEY=           # générer : python3 -c "import secrets; print(secrets.token_hex(32))"
+ADMIN_PASSWORD=       # mot de passe admin
+SUPERADMIN_PASSWORD=  # mot de passe superadmin
+PANEL_URL=            # ex : http://IP_DE_TA_VM:4300
+```
+
+### 4. Lancer
+
+```bash
 docker compose up -d
 ```
 
-Le panel est accessible sur `http://localhost:4300`.
+Premier démarrage : ~10 min (build de l'image + installation Wine).
 
-Les logs du panel : `docker compose logs -f panel`
+```bash
+docker compose logs -f panel   # suivre les logs
+```
+
+Le panel est accessible sur `http://IP_VM:4300`.
 
 ### Variables importantes en mode Docker
 
 | Variable | Description | Défaut Docker |
 |---|---|---|
-| `DEPLOY_MODE` | `docker` activé automatiquement dans le conteneur | `docker` |
+| `DEPLOY_MODE` | Activé automatiquement dans le conteneur | `docker` |
 | `ACESERVER_EXE_PATH` | Chemin du .exe dans le conteneur | `/aceserver/AssettoCorsaEVOServer.exe` |
 | `CONFIGS_DIR` | Dossier de configurations dans le conteneur | `/aceserver/configs` |
-| `SESSION_COOKIE_SECURE` | `false` si accès HTTP, `true` derrière HTTPS | `false` |
+| `SESSION_COOKIE_SECURE` | `false` si HTTP, `true` derrière HTTPS | `false` |
 
 > **Crédits Wine** : approche Docker inspirée de [VandaLpr/acevo-docker-server](https://github.com/VandaLpr/acevo-docker-server).
 
