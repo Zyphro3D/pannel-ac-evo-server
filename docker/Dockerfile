@@ -14,11 +14,6 @@ RUN dpkg --add-architecture i386 \
  && apt-get install -y winehq-stable \
  && rm -rf /var/lib/apt/lists/*
 
-# Pre-initialize Wine prefix at build time (WoW64 mode — handles both 32 and 64-bit exes)
-RUN WINEPREFIX=/root/.wine WINEDEBUG=-all \
-    xvfb-run wine wineboot --init && \
-    WINEPREFIX=/root/.wine wineserver -w
-
 WORKDIR /panel
 
 COPY requirements.txt .

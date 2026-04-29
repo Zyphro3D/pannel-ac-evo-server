@@ -13,9 +13,12 @@ services:
       - ./aceserver:/aceserver
       # Panel database and persistent data
       - panel_data:/panel/data
+      # Wine prefix — persists between restarts so Wine only initializes once
+      - wine_prefix:/root/.wine
     env_file:
       - .env
     restart: unless-stopped
 
 volumes:
   panel_data:
+  wine_prefix:
