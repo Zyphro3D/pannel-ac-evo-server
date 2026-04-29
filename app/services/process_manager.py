@@ -23,6 +23,7 @@ _DEPLOY_MODE  = os.environ.get("DEPLOY_MODE", "native")
 _watchdog_thread: threading.Thread | None = None
 _watchdog_stop   = threading.Event()
 _exe_path: str   = ""   # set once at app startup
+_wine_ready      = threading.Event()   # set once wineboot completes (docker mode only)
 
 log = logging.getLogger(__name__)
 
@@ -103,19 +104,50 @@ def _ensure_race_weekend_file(exe_path: Path) -> bool:
     return True
 
 
+def _prewarm_wine():
+    """Initialise le prefix Wine en arrière-plan au démarrage du panel.
+    WINEDLLOVERRIDES=winemenubuilder.exe=d empêche setupapi de bloquer."""
+    log.info("Wine prefix pre-warm starting…")
+    try:
+        subprocess.run(
+            ["wine", "wineboot"],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+            timeout=180,
+        )
+    except Exception as e:
+        log.warning("Wine pre-warm ended: %s", e)
+    finally:
+        _wine_ready.set()
+        log.info("Wine prefix ready")
+
+
+def _wait_for_wineboot(timeout: int = 90):
+    """Attend que tous les processus wineboot.exe aient terminé."""
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        running = False
+        for proc in psutil.process_iter(["cmdline"]):
+            try:
+                if "wineboot" in " ".join(proc.cmdline()):
+                    running = True
+                    break
+            except (psutil.AccessDenied, psutil.NoSuchProcess):
+                pass
+        if not running:
+            return
+        time.sleep(3)
+    log.warning("wineboot didn't finish within %ds, launching anyway", timeout)
+
+
 def _launch(exe: Path, sc_b64: str, sd_b64: str) -> "subprocess.Popen | None":
     """Lance le processus serveur et retourne l'objet Popen."""
     try:
         log_f = open(_LOG_FILE, "a", encoding="utf-8", errors="replace")
         if _DEPLOY_MODE == "docker":
-            # Ensure rpcss (OLE/COM service) is running before launching the exe.
-            # Wine's start_rpcss requires services.exe (SCM) to be active; starting
-            # svchost -k rpcss explicitly avoids "Failed to open RpcSs service" errors.
-            subprocess.Popen(
-                ["wine", "svchost.exe", "-k", "rpcss"],
-                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-            )
-            time.sleep(3)
+            # Wait for the background wine prefix init to complete before launching.
+            # Without this, the server exe gets "run_wineboot boot event wait timed out".
+            _wine_ready.wait(timeout=180)
+            _wait_for_wineboot(timeout=30)
             cmd = ["wine", str(exe), "-serverconfig", sc_b64, "-seasondefinition", sd_b64]
             return subprocess.Popen(
                 cmd, cwd=str(exe.parent),
@@ -206,6 +238,10 @@ def init_watchdog(exe_path: str):
     """Appelé au démarrage de l'app Flask pour enregistrer le chemin de l'exe."""
     global _exe_path
     _exe_path = exe_path
+    if _DEPLOY_MODE == "docker":
+        threading.Thread(target=_prewarm_wine, daemon=True, name="wine-prewarm").start()
+    else:
+        _wine_ready.set()
     _start_watchdog()
 
 
