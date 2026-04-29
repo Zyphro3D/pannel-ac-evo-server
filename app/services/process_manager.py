@@ -144,10 +144,6 @@ def _launch(exe: Path, sc_b64: str, sd_b64: str) -> "subprocess.Popen | None":
     try:
         log_f = open(_LOG_FILE, "a", encoding="utf-8", errors="replace")
         if _DEPLOY_MODE == "docker":
-            # Wait for the background wine prefix init to complete before launching.
-            # Without this, the server exe gets "run_wineboot boot event wait timed out".
-            _wine_ready.wait(timeout=180)
-            _wait_for_wineboot(timeout=30)
             cmd = ["wine", str(exe), "-serverconfig", sc_b64, "-seasondefinition", sd_b64]
             return subprocess.Popen(
                 cmd, cwd=str(exe.parent),
