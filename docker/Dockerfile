@@ -16,7 +16,7 @@ RUN dpkg --add-architecture i386 \
 
 # Pre-initialize Wine prefix at build time — avoids rpcss/OLE errors at runtime
 RUN WINEARCH=win64 WINEPREFIX=/root/.wine WINEDEBUG=-all \
-    xvfb-run wine wineboot --init && \
+    xvfb-run wine64 wineboot --init && \
     WINEPREFIX=/root/.wine wineserver -w
 
 WORKDIR /panel
