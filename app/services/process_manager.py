@@ -108,6 +108,14 @@ def _launch(exe: Path, sc_b64: str, sd_b64: str) -> "subprocess.Popen | None":
     try:
         log_f = open(_LOG_FILE, "a", encoding="utf-8", errors="replace")
         if _DEPLOY_MODE == "docker":
+            # Ensure rpcss (OLE/COM service) is running before launching the exe.
+            # Wine's start_rpcss requires services.exe (SCM) to be active; starting
+            # svchost -k rpcss explicitly avoids "Failed to open RpcSs service" errors.
+            subprocess.Popen(
+                ["wine", "svchost.exe", "-k", "rpcss"],
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+            )
+            time.sleep(3)
             cmd = ["wine", str(exe), "-serverconfig", sc_b64, "-seasondefinition", sd_b64]
             return subprocess.Popen(
                 cmd, cwd=str(exe.parent),
