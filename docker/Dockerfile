@@ -11,7 +11,7 @@ RUN dpkg --add-architecture i386 \
  && echo "deb [arch=amd64,i386 signed-by=/etc/apt/keyrings/winehq-archive.key] https://dl.winehq.org/wine-builds/debian/ bookworm main" \
     > /etc/apt/sources.list.d/winehq.list \
  && apt-get update \
- && apt-get install -y --no-install-recommends winehq-stable \
+ && apt-get install -y winehq-stable \
  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /panel
@@ -28,6 +28,7 @@ ENV DEPLOY_MODE=docker \
     CONFIGS_DIR=/aceserver/configs \
     DATABASE_URL=sqlite:////panel/data/ace_evo.db \
     SESSION_COOKIE_SECURE=false \
+    WINEARCH=win64 \
     WINEPREFIX=/root/.wine \
     WINEDEBUG=-all \
     DISPLAY=:99
