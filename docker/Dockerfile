@@ -23,7 +23,7 @@ ENV DEPLOY_MODE=docker \
     SESSION_COOKIE_SECURE=false \
     WINEPREFIX=/root/.wine \
     WINEDEBUG=-all \
-    WINEDLLOVERRIDES="winemenubuilder.exe=d;setupapi=b" \
+    WINEDLLOVERRIDES="winemenubuilder.exe=d;setupapi=b;mscoree=d;mshtml=d" \
     WINEARCH=win64 \
     DISPLAY=:99 \
     PATH=/panel/venv/bin:$PATH
