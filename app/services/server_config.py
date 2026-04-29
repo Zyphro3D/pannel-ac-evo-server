@@ -410,7 +410,7 @@ def _default_config() -> dict:
             "SelectedWeatherTypeValue": "GameModeSelectionWeatherType_CLEAR",
             "SelectedWeatherBehaviorValue": "GameModeSelectionWeatherBehaviour_STATIC",
             "SelectedInitialGripValue": "InitialGrip_GREEN",
-            "SelectedTrackValue": "",
+            "SelectedTrackValue": "brands_hatch|GP|GP Time Attack|3916",
             "Cars": [],
             "ShowOnlySelected": False,
         },

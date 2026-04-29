@@ -163,6 +163,19 @@ def create_app():
     from app.services.process_manager import init_watchdog
     init_watchdog(app.config["ACESERVER_EXE_PATH"])
 
+    # Crée default.json si le dossier de configs est vide (premier démarrage)
+    _configs_dir = Path(app.config["CONFIGS_DIR"])
+    _configs_dir.mkdir(parents=True, exist_ok=True)
+    if not any(_configs_dir.glob("*.json")):
+        import json as _json2
+        from app.services.server_config import _default_config
+        _default_path = _configs_dir / "default.json"
+        _default_path.write_text(
+            _json2.dumps(_default_config(), indent=2, ensure_ascii=False),
+            encoding="utf-8",
+        )
+        _logging.getLogger(__name__).info("Config initiale créée : %s", _default_path)
+
     from app.services import discord_notifier
     discord_notifier.init(
         app.config.get("DISCORD_WEBHOOK_URL", ""),
