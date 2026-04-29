@@ -51,6 +51,7 @@ jobs:
               -o -name "install.bat" \
               -o -name "start.bat" \
               -o -name "update.bat" \
+              -o -path "./.env.example" \
             \) \
             -type f \
           | sed 's|^\./||' \
