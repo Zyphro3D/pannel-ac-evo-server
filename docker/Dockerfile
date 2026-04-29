@@ -1,23 +1,16 @@
-FROM python:3.11-slim
+FROM ich777/winehq-baseimage
 
-# Wine installation for running AssettoCorsaEVOServer.exe on Linux
-# Approach inspired by VandaLpr/acevo-docker-server (https://github.com/VandaLpr/acevo-docker-server)
-RUN dpkg --add-architecture i386 \
- && apt-get update \
+# Python 3 + virtual display (Wine already provided and configured by base image)
+RUN apt-get update \
  && apt-get install -y --no-install-recommends \
-      wget gnupg ca-certificates xvfb xauth \
- && mkdir -pm755 /etc/apt/keyrings \
- && wget -qO /etc/apt/keyrings/winehq-archive.key https://dl.winehq.org/wine-builds/winehq.key \
- && echo "deb [arch=amd64,i386 signed-by=/etc/apt/keyrings/winehq-archive.key] https://dl.winehq.org/wine-builds/debian/ bookworm main" \
-    > /etc/apt/sources.list.d/winehq.list \
- && apt-get update \
- && apt-get install -y winehq-stable \
+      python3 python3-venv xvfb xauth \
  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /panel
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN python3 -m venv /panel/venv \
+ && /panel/venv/bin/pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
@@ -31,7 +24,9 @@ ENV DEPLOY_MODE=docker \
     WINEPREFIX=/root/.wine \
     WINEDEBUG=-all \
     WINEDLLOVERRIDES=winemenubuilder.exe=d \
-    DISPLAY=:99
+    WINEARCH=win64 \
+    DISPLAY=:99 \
+    PATH=/panel/venv/bin:$PATH
 
 EXPOSE 4300
 
