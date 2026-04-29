@@ -5,7 +5,7 @@ FROM python:3.11-slim
 RUN dpkg --add-architecture i386 \
  && apt-get update \
  && apt-get install -y --no-install-recommends \
-      wget gnupg ca-certificates xvfb \
+      wget gnupg ca-certificates xvfb xauth \
  && mkdir -pm755 /etc/apt/keyrings \
  && wget -qO /etc/apt/keyrings/winehq-archive.key https://dl.winehq.org/wine-builds/winehq.key \
  && echo "deb [arch=amd64,i386 signed-by=/etc/apt/keyrings/winehq-archive.key] https://dl.winehq.org/wine-builds/debian/ bookworm main" \
