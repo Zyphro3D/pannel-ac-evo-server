@@ -103,13 +103,18 @@ def test_webhook():
 @admin_bp.route("/server")
 @_admin_required
 def server():
-    config         = load_config()
-    cars           = load_cars()
+    configs       = list_configs()
+    active_config = get_active_config_name()
+    if not configs:
+        flash(_("Aucun fichier de configuration trouvé dans CONFIGS_DIR. Créez-en un via le bouton ci-dessous."), "warning")
+        return render_template("server.html", config=None, cars=[], events_practice=[], events_race=[],
+                               status=get_status(), configs=[], active_config="",
+                               car_categories=[], pi_min=0.0, pi_max=999.0)
+    config          = load_config()
+    cars            = load_cars()
     events_practice = load_events("practice")
-    events_race    = load_events("race")
-    status         = get_status()
-    configs        = list_configs()
-    active_config  = get_active_config_name()
+    events_race     = load_events("race")
+    status          = get_status()
 
     present: set[str] = set()
     for car in cars:
