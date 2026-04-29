@@ -5,18 +5,29 @@
 <h1 align="center">AC EVO Server Panel</h1>
 
 <p align="center">
-  Interface web pour gérer un serveur dédié Assetto Corsa EVO sous Windows.<br>
-  Déployable en local ou derrière un reverse proxy (Caddy, Nginx…).
+  Interface web pour gérer un serveur dédié Assetto Corsa EVO.<br>
+  Disponible en deux modes : <strong>Windows natif</strong> ou <strong>Docker (Linux)</strong>.
 </p>
 
 <p align="center">
-  <a href="#installation">Installation Windows</a> •
-  <a href="#installation-docker-linux">Docker</a> •
+  <a href="#-windows">🖥️ Windows</a> •
+  <a href="#-docker-linux">🐧 Docker</a> •
   <a href="#configuration">Configuration</a> •
   <a href="#mise-à-jour">Mise à jour</a> •
   <a href="#changelog">Changelog</a> •
   <a href="https://ko-fi.com/zyphro3d">☕ Soutenir</a>
 </p>
+
+---
+
+## Choisir votre installation
+
+| | 🖥️ Windows | 🐧 Docker (Linux) |
+|---|---|---|
+| **OS** | Windows 10/11 ou Windows Server | Debian, Ubuntu, tout Linux avec Docker |
+| **Prérequis** | Python 3.11+, Git | Docker + Docker Compose |
+| **Serveur ACE** | Installé nativement via Steam/SteamCMD | Téléchargé via SteamCMD, lancé via Wine |
+| **Démarrage** | `start.bat` | `docker compose up -d` |
 
 ---
 
@@ -72,7 +83,7 @@ Circuit, mode, météo, durées de session, sélection des voitures avec ballast
 
 ---
 
-## Installation
+## 🖥️ Windows
 
 ### Prérequis
 
@@ -87,18 +98,18 @@ git clone https://github.com/Zyphro3D/pannel-ac-evo-server.git
 cd pannel-ac-evo-server
 ```
 
-Copier le fichier d'exemple et le renommer :
-
-```bat
-copy .env.example.windows .env
-```
-
-Ou lancer **`install.bat`** (double-clic ou terminal) qui pose les questions et génère le `.env` automatiquement :
+Lancer **`install.bat`** (double-clic ou terminal) — il pose toutes les questions et génère le `.env` automatiquement :
 
 - Chemin d'installation du serveur ACE EVO
 - Chemin du dossier de configurations
 - Mots de passe admin et superadmin
 - URL publique du panel
+
+Ou copier manuellement le fichier d'exemple :
+
+```bat
+copy .env.example .env
+```
 
 Puis démarrer :
 
@@ -106,69 +117,13 @@ Puis démarrer :
 start.bat
 ```
 
-Le panel est accessible sur `http://localhost:4300` (port modifiable dans `.env`).
+Le panel est accessible sur `http://localhost:4300`.
 
 ---
 
-## Configuration
+## 🐧 Docker (Linux)
 
-Le fichier `.env` contient toute la configuration. Les variables sont décrites ci-dessous.
-
-### Général
-
-| Variable | Description | Défaut |
-|---|---|---|
-| `SECRET_KEY` | Clé secrète Flask — **à changer en production** | — |
-| `ADMIN_USERNAME` / `ADMIN_PASSWORD` | Compte admin standard | `admin` / `admin` |
-| `SUPERADMIN_USERNAME` / `SUPERADMIN_PASSWORD` | Compte superadmin (ports réseau visibles) | `superadmin` / `superadmin` |
-| `PANEL_URL` | URL publique du panel (utilisée dans les emails) | `http://localhost:4300` |
-| `PANEL_TIMEZONE` | Fuseau horaire pour la saisie et l'affichage des dates | `Europe/Paris` |
-| `DEFAULT_LOCALE` | Langue par défaut (`fr` / `en` / `es` / `de` / `it`) | `fr` |
-| `SESSION_COOKIE_SECURE` | `true` derrière HTTPS, `false` en HTTP local | `true` |
-
-### Serveur ACE
-
-| Variable | Description | Défaut |
-|---|---|---|
-| `ACESERVER_DIR` | Dossier d'installation du serveur ACE EVO | `C:\aceserver` |
-| `CONFIGS_DIR` | Dossier contenant vos `.json` de configuration | — |
-| `ACESERVER_HTTP_PORT` | Port HTTP de l'API du jeu | `8080` |
-| `SERVER_SHOW_CONSOLE` | Afficher la fenêtre console du serveur | `false` |
-| `DATABASE_URL` | URL SQLAlchemy | `sqlite:///ace_evo.db` |
-
-### Discord
-
-| Variable | Description |
-|---|---|
-| `DISCORD_WEBHOOK_URL` | Webhook principal (démarrage / arrêt / crash) |
-| `DISCORD_PILOTS_WEBHOOK_URL` | Webhook pilotes (inscriptions, rappels) — fallback sur le principal si vide |
-| `DISCORD_INVITE_URL` | Lien d'invitation affiché dans la navbar — laisser vide pour masquer |
-
-### Emails *(optionnel)*
-
-| Variable | Description | Défaut |
-|---|---|---|
-| `MAIL_SERVER` | Serveur SMTP (ex : `smtp.gmail.com`) | — |
-| `MAIL_PORT` | Port SMTP | `587` |
-| `MAIL_USE_TLS` | STARTTLS | `true` |
-| `MAIL_USERNAME` | Identifiant SMTP | — |
-| `MAIL_PASSWORD` | Mot de passe SMTP | — |
-| `MAIL_FROM` | Adresse expéditeur | — |
-| `MAIL_ADMIN` | Adresse(s) admin pour les notifications (virgule pour séparer) | — |
-
-> Si `MAIL_SERVER` est vide, aucun email n'est envoyé.
-
-Générer une `SECRET_KEY` sécurisée :
-
-```bat
-.venv\Scripts\python -c "import secrets; print(secrets.token_hex(32))"
-```
-
----
-
-## Installation Docker (Linux)
-
-Le panel et le serveur ACE EVO tournent dans un seul conteneur Docker (Python 3.11 + Wine).  
+Le panel et le serveur ACE EVO tournent dans un seul conteneur (Python 3 + Wine).  
 Testé sur **Debian 13**. Docker et Docker Compose requis.
 
 ### 1. Télécharger le serveur ACE EVO via SteamCMD
@@ -191,7 +146,7 @@ curl -fsSL https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.g
   +quit
 ```
 
-> SteamCMD télécharge la version **Windows** du serveur (`.exe`), qui sera exécutée via Wine dans Docker.
+> SteamCMD télécharge la version **Windows** du serveur (`.exe`), exécutée via Wine dans le conteneur.
 
 ### 2. Cloner le panel et copier les fichiers serveur
 
@@ -207,7 +162,7 @@ cp -r /opt/aceserver/* /opt/pannel-ac-evo-server/docker/aceserver/
 ```bash
 cd /opt/pannel-ac-evo-server/docker
 cp .env.example .env
-nano .env   # remplir SECRET_KEY, ADMIN_PASSWORD, SUPERADMIN_PASSWORD, PANEL_URL
+nano .env
 ```
 
 Variables minimales à renseigner :
@@ -216,7 +171,8 @@ Variables minimales à renseigner :
 SECRET_KEY=           # générer : python3 -c "import secrets; print(secrets.token_hex(32))"
 ADMIN_PASSWORD=       # mot de passe admin
 SUPERADMIN_PASSWORD=  # mot de passe superadmin
-PANEL_URL=            # ex : http://IP_DE_TA_VM:4300
+PANEL_URL=            # ex : https://votre-domaine.fr ou http://IP_VM:4300
+SESSION_COOKIE_SECURE=true   # false si HTTP direct (sans reverse proxy)
 ```
 
 ### 4. Lancer
@@ -225,57 +181,134 @@ PANEL_URL=            # ex : http://IP_DE_TA_VM:4300
 docker compose up -d
 ```
 
-Premier démarrage : ~10 min (build de l'image + installation Wine).
+Premier démarrage : ~5 min (build de l'image + initialisation Wine au premier lancement du serveur).
 
 ```bash
-docker compose logs -f panel   # suivre les logs
+docker compose logs -f   # suivre les logs
 ```
 
 Le panel est accessible sur `http://IP_VM:4300`.
 
-### Variables importantes en mode Docker
+### Variables Docker (référence)
 
-| Variable | Description | Défaut Docker |
-|---|---|---|
-| `DEPLOY_MODE` | Activé automatiquement dans le conteneur | `docker` |
-| `ACESERVER_EXE_PATH` | Chemin du .exe dans le conteneur | `/aceserver/AssettoCorsaEVOServer.exe` |
-| `CONFIGS_DIR` | Dossier de configurations dans le conteneur | `/aceserver/configs` |
-| `SESSION_COOKIE_SECURE` | `false` si HTTP, `true` derrière HTTPS | `false` |
+Les variables de chemins et de mode sont déjà fixées dans le Dockerfile. Ne les ajoutez pas dans votre `.env`.
+
+| Variable | Valeur dans le conteneur |
+|---|---|
+| `DEPLOY_MODE` | `docker` (automatique) |
+| `ACESERVER_DIR` | `/aceserver` |
+| `CONFIGS_DIR` | `/aceserver/configs` |
+| `DATABASE_URL` | `sqlite:////panel/data/ace_evo.db` |
 
 > **Crédits Wine** : approche Docker inspirée de [VandaLpr/acevo-docker-server](https://github.com/VandaLpr/acevo-docker-server).
 
 ---
 
+## Configuration
+
+Le fichier `.env` contient toute la configuration. Référence complète des variables :
+
+### Général
+
+| Variable | Description | Défaut |
+|---|---|---|
+| `SECRET_KEY` | Clé secrète Flask — **à changer en production** | — |
+| `ADMIN_USERNAME` / `ADMIN_PASSWORD` | Compte admin standard | `admin` / `admin` |
+| `SUPERADMIN_USERNAME` / `SUPERADMIN_PASSWORD` | Compte superadmin (ports réseau visibles) | `superadmin` / `superadmin` |
+| `PANEL_URL` | URL publique du panel (utilisée dans les emails) | `http://localhost:4300` |
+| `PANEL_TIMEZONE` | Fuseau horaire pour la saisie et l'affichage des dates | `Europe/Paris` |
+| `DEFAULT_LOCALE` | Langue par défaut (`fr` / `en` / `es` / `de` / `it`) | `fr` |
+| `SESSION_COOKIE_SECURE` | `true` derrière HTTPS, `false` en HTTP local | `true` |
+
+### Serveur ACE *(Windows uniquement)*
+
+| Variable | Description | Défaut |
+|---|---|---|
+| `ACESERVER_DIR` | Dossier d'installation du serveur ACE EVO | `C:\aceserver` |
+| `CONFIGS_DIR` | Dossier contenant vos `.json` de configuration | — |
+| `ACESERVER_HTTP_PORT` | Port HTTP de l'API du jeu | `8080` |
+| `SERVER_SHOW_CONSOLE` | Afficher la fenêtre console du serveur | `false` |
+| `DATABASE_URL` | URL SQLAlchemy | `sqlite:///ace_evo.db` |
+
+### Discord
+
+| Variable | Description |
+|---|---|
+| `DISCORD_WEBHOOK_URL` | Webhook principal (démarrage / arrêt / crash) |
+| `DISCORD_PILOTS_WEBHOOK_URL` | Webhook pilotes (inscriptions, rappels) — fallback sur le principal si vide |
+| `DISCORD_INVITE_URL` | Lien d'invitation affiché dans la navbar — laisser vide pour masquer |
+
+### Emails *(optionnel)*
+
+| Variable | Description | Défaut |
+|---|---|---|
+| `MAIL_SERVER` | Serveur SMTP (ex : `smtp.gmail.com`) — laisser vide pour désactiver | — |
+| `MAIL_PORT` | Port SMTP | `587` |
+| `MAIL_USE_TLS` | STARTTLS | `true` |
+| `MAIL_USERNAME` | Identifiant SMTP | — |
+| `MAIL_PASSWORD` | Mot de passe SMTP | — |
+| `MAIL_FROM` | Adresse expéditeur | — |
+| `MAIL_ADMIN` | Adresse(s) admin pour les notifications (virgule pour séparer) | — |
+
+Générer une `SECRET_KEY` sécurisée :
+
+```bash
+# Windows
+.venv\Scripts\python -c "import secrets; print(secrets.token_hex(32))"
+
+# Linux / Docker
+python3 -c "import secrets; print(secrets.token_hex(32))"
+```
+
+---
+
 ## Mise à jour
+
+**Windows :**
 
 ```bat
 update.bat
 ```
 
-Fait un `git pull`, met à jour les dépendances pip et recompile les traductions. Le `.env` et la base de données ne sont jamais modifiés. Les migrations de base s'appliquent automatiquement au démarrage. Fonctionne même en sautant plusieurs versions.
+Fait un `git pull`, met à jour les dépendances pip et recompile les traductions. Le `.env` et la base de données ne sont jamais modifiés. Les migrations de base s'appliquent automatiquement au démarrage.
+
+**Docker :**
+
+```bash
+cd /opt/pannel-ac-evo-server
+git pull
+docker compose up -d --build
+```
 
 ---
 
 ## Changelog
 
-### v1.2.0 — 28/04/2026
+### v1.2.0 — 29/04/2026
+
+**Support Docker (Linux)**
+- Déploiement via Docker avec Wine pour exécuter le serveur Windows sur Linux
+- Image basée sur `ich777/winehq-baseimage` (Wine stable, Debian)
+- Initialisation Wine en arrière-plan au démarrage du panel
+- Configuration automatique (`WINEDLLOVERRIDES`) pour éviter les blocages Wine en mode headless
+- Volume persistant pour le prefix Wine (pas de réinitialisation au restart)
+- Configuration par défaut avec Brands Hatch GP pré-remplie (évite le crash "gamemode not found" au premier lancement)
+- Création automatique de `default.json` au premier démarrage si aucune config n'existe
 
 **Nouveautés**
 - Calendrier des événements : vue mensuelle avec chips colorés (privé/public/statut)
 - Vue journée avec timeline horaire (00h–23h), clic sur un créneau → création pré-remplie
 - Ballast et Restrictor par voiture dans les événements et le serveur
 - Lancement automatique = publication automatique de l'événement
-- Fin automatique des événements 1h après la durée prévue (sans action manuelle)
-- Fuseau horaire appliqué à la saisie des dates (plus seulement à l'affichage)
-- Affichage début → fin de chaque événement pour faciliter la planification
-- Bouton Discord intégré directement dans la navbar
+- Fin automatique des événements 1h après la durée prévue
+- Fuseau horaire appliqué à la saisie des dates
+- Bouton Discord intégré dans la navbar
 - Page serveur en défilement unique avec un seul bouton « Sauvegarder tout »
-- Slider PI mémorisé entre les rechargements de page
 - `update.bat` pour la mise à jour sans toucher au `.env` ni à la base
 
 **Corrections**
-- Checkboxes « Événement public » et « Lancement automatique » ignorées à l'édition (bug `form.get` vs `form.getlist`)
-- Slider PI dans le formulaire d'événement non visible et sans auto-sélection (track div manquant)
+- Checkboxes « Événement public » et « Lancement automatique » ignorées à l'édition
+- Slider PI dans le formulaire d'événement non visible et sans auto-sélection
 - Statut serveur affichait le nom du fichier de config au lieu de « En ligne / Hors ligne »
 - Badges de statut en anglais dans les listes d'événements
 

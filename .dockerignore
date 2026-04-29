@@ -3,6 +3,7 @@
 *.db
 .server_state
 .server_output.log
+.server_pid
 .env
 logs/
 dist/
@@ -10,3 +11,5 @@ __pycache__/
 *.pyc
 *.pyo
 docs/
+serverConfig/
+system/

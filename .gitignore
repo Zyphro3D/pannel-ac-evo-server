@@ -4,6 +4,9 @@
 !.env.example
 !.env.example.*
 
+# Babel — fichier source régénéré automatiquement
+messages.pot
+
 # Base de données (runtime)
 instance/
 
