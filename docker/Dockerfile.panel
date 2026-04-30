@@ -1,0 +1,26 @@
+FROM python:3.11-slim
+
+WORKDIR /panel
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+RUN mkdir -p /panel/data /panel/logs /aceserver/configs
+
+ENV DEPLOY_MODE=docker_split \
+    ACESERVER_DIR=/aceserver \
+    CONFIGS_DIR=/aceserver/configs \
+    DATABASE_URL=sqlite:////panel/data/ace_evo.db \
+    SESSION_COOKIE_SECURE=false \
+    ACESERVER_CONTAINER_NAME=ace-server \
+    ACESERVER_HOST=aceserver \
+    PYTHONUNBUFFERED=1
+
+EXPOSE 4300
+
+COPY docker/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]

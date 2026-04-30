@@ -1,0 +1,16 @@
+FROM ich777/winehq-baseimage
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends xvfb xauth python3 \
+ && rm -rf /var/lib/apt/lists/*
+
+ENV WINEPREFIX=/root/.wine \
+    WINEDEBUG=-all \
+    WINEDLLOVERRIDES="winemenubuilder.exe=d;setupapi=b;mscoree=d;mshtml=d" \
+    WINEARCH=win64 \
+    DISPLAY=:99
+
+COPY entrypoint.aceserver.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]

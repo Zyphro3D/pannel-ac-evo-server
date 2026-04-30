@@ -36,6 +36,8 @@
         <a href="{{ url_for('admin.administration') }}"
            class="nav-link {% if request.endpoint == 'admin.administration' %}active{% endif %}">{{ _('Administration') }}</a>
         {% endif %}
+        <a href="{{ url_for('public.results') }}"
+           class="nav-link {% if request.endpoint and request.endpoint.startswith('public.result') %}active{% endif %}">{{ _('Résultats') }}</a>
       </div>
       {% elif current_user.is_pilot %}
       <div class="navbar-nav">
@@ -43,18 +45,17 @@
            class="nav-link {% if request.endpoint == 'public.index' %}active{% endif %}">{{ _('Événements') }}</a>
         <a href="{{ url_for('public.pilot_dashboard') }}"
            class="nav-link {% if request.endpoint == 'public.pilot_dashboard' %}active{% endif %}">{{ _('Mes inscriptions') }}</a>
+        <a href="{{ url_for('public.results') }}"
+           class="nav-link {% if request.endpoint and request.endpoint.startswith('public.result') %}active{% endif %}">{{ _('Résultats') }}</a>
       </div>
       {% endif %}
     {% endif %}
 
-    <div class="navbar-center">
-      <a href="{{ url_for('public.results') }}"
-         class="nav-link {% if request.endpoint and request.endpoint.startswith('public.result') %}active{% endif %}">
-        {{ _('Résultats') }}
-      </a>
-    </div>
-
     <div class="navbar-right">
+      {% if not current_user.is_authenticated %}
+      <a href="{{ url_for('public.results') }}"
+         class="nav-link {% if request.endpoint and request.endpoint.startswith('public.result') %}active{% endif %}">{{ _('Résultats') }}</a>
+      {% endif %}
       {% if current_user.is_authenticated and current_user.is_admin %}
       <div class="server-badge" id="nav-status">
         <span class="dot" id="status-dot"></span>
