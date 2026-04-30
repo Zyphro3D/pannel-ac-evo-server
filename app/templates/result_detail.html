@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% block title %}{{ parsed.track or '—' }} — AC EVO Panel{% endblock %}
+{% block content %}
+
+<div style="margin-top:24px">
+
+  <a href="{{ url_for('public.results') }}" class="rd-back">&#8592; {{ _('Retour aux résultats') }}</a>
+
+  <div class="rd-meta">
+    <span class="rd-track">{{ parsed.track or '—' }}</span>
+    {% if parsed.layout %}<span class="rd-layout">{{ parsed.layout }}</span>{% endif %}
+    <span class="badge badge-session">{{ parsed.session_type or '—' }}</span>
+  </div>
+  <div class="rd-sub">
+    {% if parsed.server_name %}<strong>{{ parsed.server_name }}</strong> &nbsp;·&nbsp; {% endif %}
+    {{ result.received_at | local_dt }}
+    &nbsp;·&nbsp; {{ parsed.standings|length }} {{ _('pilote(s)') }}
+  </div>
+
+  {% if parsed.standings %}
+  <div class="card" style="padding:0;overflow:hidden">
+    <table class="rd-table">
+      <thead>
+        <tr>
+          <th style="width:36px;text-align:center">#</th>
+          <th>{{ _('Pilote') }}</th>
+          <th>{{ _('Véhicule') }}</th>
+          <th class="mono">{{ _('Meilleur tour') }}</th>
+          <th class="mono" style="color:var(--text-muted)">S1</th>
+          <th class="mono" style="color:var(--text-muted)">S2</th>
+          <th class="mono" style="color:var(--text-muted)">S3</th>
+          <th style="width:48px;text-align:center">{{ _('Tours') }}</th>
+          <th style="width:36px"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for drv in parsed.standings %}
+        {% set row_id = "drv-" ~ loop.index %}
+        <tr class="driver-row {% if drv.all_laps %}expandable{% endif %}" data-target="{{ row_id }}"
+            onclick="toggleLaps(this)">
+          <td class="rd-pos">
+            <span class="{% if drv.position == 1 %}medal-1{% elif drv.position == 2 %}medal-2{% elif drv.position == 3 %}medal-3{% endif %}">
+              {{ drv.position }}
+            </span>
+          </td>
+          <td>
+            <span class="rd-nickname">{{ drv.nickname }}</span>
+            {% if drv.nation %}<span class="rd-nation">{{ drv.nation }}</span>{% endif %}
+            {% if drv.full_name and drv.full_name != drv.nickname %}
+            <div style="font-size:11px;color:var(--text-muted);margin-top:1px">{{ drv.full_name }}</div>
+            {% endif %}
+          </td>
+          <td class="rd-car">{{ drv.car or '—' }}</td>
+          <td class="mono rd-best">{{ drv.best_lap }}</td>
+          {% set s = drv.splits %}
+          <td class="mono" style="font-size:12px">{{ s[0] if s|length > 0 else '—' }}</td>
+          <td class="mono" style="font-size:12px">{{ s[1] if s|length > 1 else '—' }}</td>
+          <td class="mono" style="font-size:12px">{{ s[2] if s|length > 2 else '—' }}</td>
+          <td style="text-align:center;color:var(--text-muted)">{{ drv.laps_count }}</td>
+          <td>
+            {% if drv.all_laps %}
+            <button class="rd-expand-btn" title="{{ _('Voir tous les tours') }}">&#9654;</button>
+            {% endif %}
+          </td>
+        </tr>
+
+        {% if drv.all_laps %}
+        <tr class="laps-row" id="{{ row_id }}">
+          <td colspan="9">
+            <div class="laps-container">
+              <div class="laps-title">{{ _('Tous les tours') }} — {{ drv.nickname }}</div>
+              <table class="laps-table">
+                <thead>
+                  <tr>
+                    <th>{{ _('Tour') }}</th>
+                    <th class="mono">{{ _('Temps') }}</th>
+                    <th class="mono">S1</th>
+                    <th class="mono">S2</th>
+                    <th class="mono">S3</th>
+                    <th>{{ _('Écart') }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for lap in drv.all_laps %}
+                  {% set is_best = (lap.time_ms == drv.best_lap_ms and drv.best_lap_ms > 0) %}
+                  {% set is_invalid = (lap.flags != 0) %}
+                  {% set delta_ms = lap.time_ms - drv.best_lap_ms if drv.best_lap_ms > 0 and lap.time_ms > 0 else 0 %}
+                  <tr class="{% if is_best %}lap-best{% endif %}{% if is_invalid %} lap-invalid{% endif %}">
+                    <td>
+                      {{ lap.lap }}
+                      {% if is_best %}<span style="font-size:10px;color:var(--accent);margin-left:4px">★</span>{% endif %}
+                      {% if is_invalid %}<span style="font-size:10px;color:var(--text-muted);margin-left:4px">(inv.)</span>{% endif %}
+                    </td>
+                    <td class="mono">{{ lap.time }}</td>
+                    {% set sp = lap.splits %}
+                    <td class="mono" style="font-size:11px">{{ sp[0] if sp|length > 0 else '—' }}</td>
+                    <td class="mono" style="font-size:11px">{{ sp[1] if sp|length > 1 else '—' }}</td>
+                    <td class="mono" style="font-size:11px">{{ sp[2] if sp|length > 2 else '—' }}</td>
+                    <td>
+                      {% if is_best %}
+                        <span class="lap-delta" style="color:var(--accent)">référence</span>
+                      {% elif delta_ms > 0 %}
+                        {% set _dm = delta_ms // 60000 %}
+                        {% set _ds = (delta_ms % 60000) // 1000 %}
+                        {% set _dms = delta_ms % 1000 %}
+                        <span class="lap-delta slower">+{% if _dm > 0 %}{{ _dm }}:{{ "%02d" | format(_ds) }}{% else %}{{ _ds }}{% endif %}.{{ "%03d" | format(_dms) }}</span>
+                      {% else %}
+                        <span class="lap-delta">—</span>
+                      {% endif %}
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </td>
+        </tr>
+        {% endif %}
+
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% else %}
+  <div class="card">
+    <p class="text-muted">{{ _('Aucun pilote enregistré dans cette session.') }}</p>
+  </div>
+  {% endif %}
+
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function toggleLaps(row) {
+  if (!row.classList.contains('expandable')) return;
+  const targetId = row.dataset.target;
+  const lapsRow  = document.getElementById(targetId);
+  const btn      = row.querySelector('.rd-expand-btn');
+  const isOpen   = lapsRow.classList.contains('open');
+
+  lapsRow.classList.toggle('open', !isOpen);
+  if (btn) btn.classList.toggle('open', !isOpen);
+  row.classList.toggle('expanded', !isOpen);
+}
+</script>
+{% endblock %}

@@ -73,12 +73,13 @@ def parse_result_file(data: dict) -> dict:
             "splits":       [_ms_to_laptime(s) for s in best_splits],
             "all_laps":     [
                 {
+                    "lap":    i + 1,
                     "time":   _ms_to_laptime(l["time"]),
                     "time_ms": l["time"],
                     "splits": [_ms_to_laptime(s) for s in l.get("split", [])],
                     "flags":  l.get("flags", 0),
                 }
-                for l in sorted(laps, key=lambda x: x["time"])
+                for i, l in enumerate(laps)  # ordre chronologique
             ],
         })
 

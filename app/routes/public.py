@@ -151,6 +151,35 @@ def pilot_register(event_id):
     return redirect(url_for("public.pilot_dashboard"))
 
 
+@public_bp.route("/results")
+def results():
+    import json as _json
+    from app.models import SessionResult
+    from app.services.results_parser import parse_result_file
+    rows = (SessionResult.query
+            .order_by(SessionResult.received_at.desc())
+            .limit(50).all())
+    sessions = []
+    for r in rows:
+        try:
+            parsed = parse_result_file(_json.loads(r.raw_json))
+        except Exception:
+            parsed = {}
+        sessions.append({"id": r.id, "received_at": r.received_at,
+                         "source": r.source, "parsed": parsed})
+    return render_template("results.html", sessions=sessions)
+
+
+@public_bp.route("/results/<int:result_id>")
+def result_detail(result_id):
+    import json as _json
+    from app.models import SessionResult
+    from app.services.results_parser import parse_result_file
+    r = SessionResult.query.get_or_404(result_id)
+    parsed = parse_result_file(_json.loads(r.raw_json))
+    return render_template("result_detail.html", result=r, parsed=parsed)
+
+
 @public_bp.route("/pilot/events/<int:event_id>/unregister", methods=["POST"])
 def pilot_unregister(event_id):
     if not current_user.is_authenticated or not current_user.is_pilot:
