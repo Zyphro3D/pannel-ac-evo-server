@@ -206,45 +206,71 @@ def get_events(mode):
 def results_ingest():
     """Reçoit le JSON de résultats posté par AssettoCorsaEVOServer en fin de session."""
     import json as _json
+    from app.models import SessionResult
+    from app.services.database import db
+    from app.services.results_parser import parse_result_file
+
     data = request.get_json(force=True, silent=True)
     if not data:
         log.warning("results/ingest: payload vide ou non-JSON")
         return jsonify({"ok": False, "error": "empty_payload"}), 400
 
-    from app.models import SessionResult
-    from app.services.database import db
-
-    # Tentative de parsing des champs connus (format non documenté — on stocke tout)
-    track = (data.get("track_name") or data.get("track") or
-             data.get("TrackName") or data.get("Track") or "")
-    session_type = (data.get("type") or data.get("session_type") or
-                    data.get("Type") or data.get("SessionType") or "")
-
+    parsed = parse_result_file(data)
     result = SessionResult(
         raw_json=_json.dumps(data),
-        track=str(track)[:200],
-        session_type=str(session_type)[:60],
+        source="webhook",
+        track=parsed["track"][:200],
+        session_type=parsed["session_type"][:60],
     )
     db.session.add(result)
     db.session.commit()
-    log.info("Résultats reçus : track=%r type=%r id=%d", track, session_type, result.id)
+    log.info("Résultats reçus via webhook : track=%r type=%r id=%d",
+             parsed["track"], parsed["session_type"], result.id)
     return jsonify({"ok": True, "id": result.id})
 
 
 @api_bp.route("/results")
 @login_required
 def get_results():
-    """Retourne les 100 derniers résultats de session."""
+    """Retourne les 50 dernières sessions avec classement parsé."""
     import json as _json
     from app.models import SessionResult
+    from app.services.results_parser import parse_result_file
+
     rows = (SessionResult.query
             .order_by(SessionResult.received_at.desc())
-            .limit(100).all())
-    return jsonify([{
+            .limit(50).all())
+    out = []
+    for r in rows:
+        try:
+            parsed = parse_result_file(_json.loads(r.raw_json))
+        except Exception:
+            parsed = {}
+        out.append({
+            "id":           r.id,
+            "received_at":  r.received_at.isoformat(),
+            "source":       r.source,
+            "track":        r.track,
+            "session_type": r.session_type,
+            "parsed":       parsed,
+        })
+    return jsonify(out)
+
+
+@api_bp.route("/results/<int:result_id>")
+@login_required
+def get_result(result_id):
+    """Retourne le détail complet d'une session."""
+    import json as _json
+    from app.models import SessionResult
+    from app.services.results_parser import parse_result_file
+
+    r = SessionResult.query.get_or_404(result_id)
+    parsed = parse_result_file(_json.loads(r.raw_json))
+    return jsonify({
         "id":           r.id,
         "received_at":  r.received_at.isoformat(),
         "source":       r.source,
-        "track":        r.track,
-        "session_type": r.session_type,
-        "data":         _json.loads(r.raw_json),
-    } for r in rows])
+        "parsed":       parsed,
+        "raw":          _json.loads(r.raw_json),
+    })

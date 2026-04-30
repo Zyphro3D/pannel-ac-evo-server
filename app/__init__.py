@@ -176,6 +176,13 @@ def create_app():
         )
         _logging.getLogger(__name__).info("Config initiale créée : %s", _default_path)
 
+    # Importe les fichiers de résultats existants (sessions passées hors panel)
+    try:
+        from app.services.results_parser import scan_and_import
+        scan_and_import(app.config["ACESERVER_DIR"])
+    except Exception as _e:
+        _logging.getLogger(__name__).warning("scan_and_import ignoré : %s", _e)
+
     from app.services import discord_notifier
     discord_notifier.init(
         app.config.get("DISCORD_WEBHOOK_URL", ""),

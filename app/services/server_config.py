@@ -405,7 +405,7 @@ def _default_config() -> dict:
             "EntryListUrl": "",
             "ResultsPostUrl": f"http://127.0.0.1:{_port}/api/results/ingest",
             "EntryListPath": "",
-            "ResultsPath": "",
+            "ResultsPath": "",   # laisser vide : le serveur concatène sans slash
         },
         "Event": {
             "SelectedSessionTypeValue": "GameModeType_PRACTICE",
