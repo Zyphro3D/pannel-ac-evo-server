@@ -387,6 +387,8 @@ def load_events(mode: str = "practice") -> list:
 # ── Template config vide ─────────────────────────────────────────────────────
 
 def _default_config() -> dict:
+    import os as _os
+    _port = _os.environ.get("PANEL_PORT", "4300")
     return {
         "Server": {
             "SelectedServerTypeValue": "MultiplayerServerListSessionType_RANKED",
@@ -401,7 +403,7 @@ def _default_config() -> dict:
             "SpectatorPassword": "",
             "AdminPassword": "",
             "EntryListUrl": "",
-            "ResultsPostUrl": "",
+            "ResultsPostUrl": f"http://127.0.0.1:{_port}/api/results/ingest",
             "EntryListPath": "",
             "ResultsPath": "",
         },

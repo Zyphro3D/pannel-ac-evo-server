@@ -198,3 +198,53 @@ def get_events(mode):
     if mode not in ("practice", "race"):
         return jsonify({"error": "invalid mode"}), 400
     return jsonify(load_events(mode))
+
+
+# ── Résultats de session ──────────────────────────────────────────────────────
+
+@api_bp.route("/results/ingest", methods=["POST"])
+def results_ingest():
+    """Reçoit le JSON de résultats posté par AssettoCorsaEVOServer en fin de session."""
+    import json as _json
+    data = request.get_json(force=True, silent=True)
+    if not data:
+        log.warning("results/ingest: payload vide ou non-JSON")
+        return jsonify({"ok": False, "error": "empty_payload"}), 400
+
+    from app.models import SessionResult
+    from app.services.database import db
+
+    # Tentative de parsing des champs connus (format non documenté — on stocke tout)
+    track = (data.get("track_name") or data.get("track") or
+             data.get("TrackName") or data.get("Track") or "")
+    session_type = (data.get("type") or data.get("session_type") or
+                    data.get("Type") or data.get("SessionType") or "")
+
+    result = SessionResult(
+        raw_json=_json.dumps(data),
+        track=str(track)[:200],
+        session_type=str(session_type)[:60],
+    )
+    db.session.add(result)
+    db.session.commit()
+    log.info("Résultats reçus : track=%r type=%r id=%d", track, session_type, result.id)
+    return jsonify({"ok": True, "id": result.id})
+
+
+@api_bp.route("/results")
+@login_required
+def get_results():
+    """Retourne les 100 derniers résultats de session."""
+    import json as _json
+    from app.models import SessionResult
+    rows = (SessionResult.query
+            .order_by(SessionResult.received_at.desc())
+            .limit(100).all())
+    return jsonify([{
+        "id":           r.id,
+        "received_at":  r.received_at.isoformat(),
+        "source":       r.source,
+        "track":        r.track,
+        "session_type": r.session_type,
+        "data":         _json.loads(r.raw_json),
+    } for r in rows])

@@ -177,6 +177,19 @@ class EventRegistration(db.Model):
     __table_args__ = (db.UniqueConstraint("event_id", "driver_id"),)
 
 
+# ── SessionResult ─────────────────────────────────────────────────────────────
+
+class SessionResult(db.Model):
+    __tablename__ = "session_result"
+
+    id           = db.Column(db.Integer,  primary_key=True)
+    received_at  = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    source       = db.Column(db.String(20),  default="webhook")   # "webhook" | "file"
+    track        = db.Column(db.String(200), default="")
+    session_type = db.Column(db.String(60),  default="")
+    raw_json     = db.Column(db.Text, nullable=False)
+
+
 # ── Flask-Login user_loader ───────────────────────────────────────────────────
 
 from app import login_manager

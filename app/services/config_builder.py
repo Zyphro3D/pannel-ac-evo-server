@@ -49,6 +49,7 @@ def build_launch_args(config: dict) -> tuple[str, str]:
         "type": server.get("SelectedServerTypeValue", "MultiplayerServerListSessionType_RANKED"),
         "entry_list_path": server.get("EntryListPath", ""),
         "results_path": server.get("ResultsPath", ""),
+        "results_post_url": server.get("ResultsPostUrl", ""),
     }
 
     # ── seasondefinition ─────────────────────────────────────────────────────
