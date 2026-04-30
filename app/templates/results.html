@@ -2,54 +2,62 @@
 {% block title %}{{ _('Résultats') }} — AC EVO Panel{% endblock %}
 {% block content %}
 
-<div class="card" style="margin-top:24px">
-  <div class="card-header">
-    <h2>{{ _('Résultats des sessions') }}</h2>
-    <span class="text-muted" style="font-size:12px">{{ sessions|length }} session(s)</span>
+<div style="margin-top:24px">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <div>
+      <h1 style="font-size:22px;font-weight:700;margin:0">{{ _('Résultats des sessions') }}</h1>
+      <p class="text-muted" style="margin:4px 0 0;font-size:13px">{{ sessions|length }} session(s) enregistrée(s)</p>
+    </div>
   </div>
 
   {% if sessions %}
-  <div class="results-session-list">
+  <div class="results-grid">
     {% for s in sessions %}
     {% set p = s.parsed %}
-    {% set best = p.standings[0] if p.standings else none %}
-    <a href="{{ url_for('public.result_detail', result_id=s.id) }}" class="result-session-card">
-      <div class="rsc-left">
-        <div class="rsc-track">{{ p.track or '—' }}</div>
-        <div class="rsc-layout">{{ p.layout or '' }}{% if p.layout %} &nbsp;·&nbsp;{% endif %}
-          <span class="badge badge-session">{{ p.session_type or '—' }}</span>
-        </div>
+    <a href="{{ url_for('public.result_detail', result_id=s.id) }}" class="res-card">
+
+      <!-- Header: session type + date -->
+      <div class="res-card-head">
+        <span class="badge-session">{{ p.session_type or '—' }}</span>
+        <span class="res-date">{{ s.received_at | local_dt_short }}</span>
       </div>
-      <div class="rsc-center">
-        {% if p.standings %}
-        <div class="rsc-podium">
-          {% for drv in p.standings[:3] %}
-          <div class="rsc-podium-entry pos-{{ loop.index }}">
-            <span class="rsc-pos">{{ loop.index }}</span>
-            <span class="rsc-nick">{{ drv.nickname }}</span>
-            <span class="rsc-time">{{ drv.best_lap }}</span>
-          </div>
-          {% endfor %}
+
+      <!-- Track -->
+      <div class="res-track">{{ p.track or '—' }}</div>
+      {% if p.layout %}<div class="res-layout">{{ p.layout }}</div>{% endif %}
+
+      <!-- Podium -->
+      {% if p.standings %}
+      <div class="res-podium">
+        {% for drv in p.standings[:3] %}
+        <div class="res-podium-row pos-{{ loop.index }}">
+          <span class="res-medal">{% if loop.index == 1 %}🥇{% elif loop.index == 2 %}🥈{% else %}🥉{% endif %}</span>
+          <span class="res-pname">{{ drv.nickname }}</span>
+          <span class="mono res-ptime">{{ drv.best_lap }}</span>
         </div>
-        {% else %}
-        <span class="text-muted" style="font-size:12px">Aucun pilote</span>
-        {% endif %}
+        {% endfor %}
       </div>
-      <div class="rsc-right">
-        <div class="rsc-date">{{ s.received_at | local_dt }}</div>
-        <div class="rsc-drivers text-muted">
-          {{ p.standings|length }} pilote(s)
-          {% if s.source == 'file' %}<span class="badge" style="font-size:10px;margin-left:4px">fichier</span>{% endif %}
-        </div>
+      {% else %}
+      <div class="res-empty">{{ _('Aucun pilote') }}</div>
+      {% endif %}
+
+      <!-- Footer -->
+      <div class="res-card-foot">
+        <span>{{ p.standings|length }} {{ _('pilote(s)') }}</span>
+        {% if s.source == 'file' %}<span class="badge" style="font-size:10px">fichier</span>{% endif %}
+        <span class="res-arrow">→</span>
       </div>
+
     </a>
     {% endfor %}
   </div>
 
   {% else %}
-  <p class="text-muted" style="padding:16px 0">
-    {{ _('Aucun résultat disponible pour le moment. Les résultats apparaissent ici à la fin de chaque session.') }}
-  </p>
+  <div class="card">
+    <p class="text-muted" style="padding:8px 0">
+      {{ _('Aucun résultat disponible pour le moment. Les résultats apparaissent ici à la fin de chaque session.') }}
+    </p>
+  </div>
   {% endif %}
 </div>
 

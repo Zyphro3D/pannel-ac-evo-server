@@ -122,7 +122,7 @@
       {% if pending_count > 0 %}
       <div class="pending-alert">
         <span class="pending-badge">{{ pending_count }}</span>
-        {{ _('pilote(s)') }} {{ _('En attente de validation') }}
+        {{ _('pilote(s)') }} {{ _('en attente de validation') }}
       </div>
       {% else %}
       <p class="text-muted">{{ _('Aucun pilote en attente.') }}</p>
@@ -130,6 +130,58 @@
     </section>
 
   </div>
+
+  <!-- ── Derniers résultats ── -->
+  <section class="card" style="margin-top:20px">
+    <div class="card-header">
+      <h2>{{ _('Derniers résultats') }}</h2>
+      <a href="{{ url_for('public.results') }}" class="btn-secondary">{{ _('Voir tous') }} →</a>
+    </div>
+
+    {% if recent_results %}
+    <div class="dash-results-grid">
+      {% for s in recent_results %}
+      {% set p = s.parsed %}
+      {% set winner = p.standings[0] if p.standings else none %}
+      <a href="{{ url_for('public.result_detail', result_id=s.id) }}" class="dash-result-card">
+        <div class="drc-header">
+          <span class="badge-session">{{ p.session_type or '—' }}</span>
+          <span class="drc-date">{{ s.received_at | local_dt_short }}</span>
+        </div>
+        <div class="drc-track">{{ p.track or '—' }}</div>
+        {% if p.layout %}<div class="drc-layout">{{ p.layout }}</div>{% endif %}
+        <div class="drc-divider"></div>
+        {% if winner %}
+        <div class="drc-winner">
+          <span class="drc-pos">1</span>
+          <div class="drc-winner-info">
+            <span class="drc-nick">{{ winner.nickname }}</span>
+            <span class="drc-car">{{ winner.car or '' }}</span>
+          </div>
+          <span class="drc-time mono">{{ winner.best_lap }}</span>
+        </div>
+        {% if p.standings|length > 1 %}
+        {% set p2 = p.standings[1] %}
+        <div class="drc-other">
+          <span class="drc-pos drc-pos-2">2</span>
+          <span class="drc-nick-sm">{{ p2.nickname }}</span>
+          <span class="drc-time-sm mono">{{ p2.best_lap }}</span>
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="drc-empty">{{ _('Aucun pilote') }}</div>
+        {% endif %}
+        <div class="drc-footer">
+          {{ p.standings|length }} {{ _('pilote(s)') }}
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-muted">{{ _('Aucun résultat pour le moment.') }}</p>
+    {% endif %}
+  </section>
+
 </div>
 
 <div class="toast" id="toast"></div>

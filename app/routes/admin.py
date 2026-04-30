@@ -32,7 +32,9 @@ def _admin_required(f):
 @admin_bp.route("/dashboard")
 @_admin_required
 def dashboard():
-    from app.models import Event, Driver
+    import json as _json
+    from app.models import Event, Driver, SessionResult
+    from app.services.results_parser import parse_result_file
     now            = datetime.now(timezone.utc).replace(tzinfo=None)
     status         = get_status()
     server_info    = get_running_server_info()
@@ -43,11 +45,19 @@ def dashboard():
                       .limit(5)
                       .all())
     pending_count  = Driver.query.filter_by(status="pending").count()
+    recent_results = []
+    for r in SessionResult.query.order_by(SessionResult.received_at.desc()).limit(4).all():
+        try:
+            p = parse_result_file(_json.loads(r.raw_json))
+        except Exception:
+            p = {}
+        recent_results.append({"id": r.id, "received_at": r.received_at, "parsed": p})
     return render_template("admin_dashboard.html",
                            status=status,
                            server_info=server_info,
                            upcoming=upcoming,
-                           pending_count=pending_count)
+                           pending_count=pending_count,
+                           recent_results=recent_results)
 
 
 @admin_bp.route("/administration")
