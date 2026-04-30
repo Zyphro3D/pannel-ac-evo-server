@@ -1,4 +1,5 @@
 import logging
+import os
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
@@ -25,7 +26,7 @@ if __name__ == "__main__":
     import socket
 
     host = "0.0.0.0"
-    port = 4300
+    port = int(os.environ.get("PANEL_PORT", 4300))
 
     local_ip = socket.gethostbyname(socket.gethostname())
 
