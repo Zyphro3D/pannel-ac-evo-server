@@ -1509,16 +1509,26 @@ body {
   border: none;
   color: var(--text-muted);
   cursor: pointer;
-  font-size: 18px;
-  line-height: 1;
-  padding: 2px 4px;
+  padding: 4px 6px;
   border-radius: 3px;
   transition: color .1s, transform .15s;
   display: block;
   margin: 0 auto;
+  font-size: 0; /* masque le contenu texte vide */
+}
+/* Flèche CSS pure — pas d'emoji */
+.rd-expand-btn::before {
+  content: '';
+  display: inline-block;
+  width: 0; height: 0;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 7px solid currentColor;
+  transition: transform .15s;
 }
 .rd-expand-btn:hover { color: var(--accent); }
-.rd-expand-btn.open  { transform: rotate(90deg); color: var(--accent); }
+.rd-expand-btn.open  { color: var(--accent); }
+.rd-expand-btn.open::before { transform: rotate(90deg); }
 
 /* Expanded laps sub-table */
 .laps-row      { display: none; }
@@ -1571,9 +1581,18 @@ body {
 .delta-slower { color: #e08a00; }
 .muted        { color: var(--text-muted) !important; opacity: .6; }
 
-.flag-icon       { font-size: 12px; }
-.flag-invalid    { color: #ef4444; }
-.flag-noted      { color: #e08a00; font-size: 10px; }
+.flag-icon       { font-size: 10px; font-weight: 700; border-radius: 3px; padding: 0 3px; line-height: 1.4; }
+.flag-invalid    { color: #ef4444; background: rgba(239,68,68,.15); }
+.flag-noted      { color: #e08a00; background: rgba(224,138,0,.12); }
+
+/* Badge meilleur tour en course */
+.fl-badge {
+  font-size: 9px; font-weight: 800; letter-spacing: .5px;
+  color: #a78bfa; background: rgba(167,139,250,.15);
+  border: 1px solid rgba(167,139,250,.35);
+  border-radius: 3px; padding: 1px 4px;
+  margin-left: 4px; vertical-align: middle;
+}
 
 /* Legend */
 .rd-legend {

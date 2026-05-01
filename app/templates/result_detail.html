@@ -18,7 +18,7 @@
     <div class="rd-header-meta">
       <span class="badge badge-session">{{ parsed.session_type or '—' }}</span>
       {% if parsed.session_duration_ms %}
-        <span class="rd-meta-chip">&#9201; {{ (parsed.session_duration_ms // 60000) }}min</span>
+        <span class="rd-meta-chip">{{ (parsed.session_duration_ms // 60000) }}min</span>
       {% endif %}
       <span class="rd-meta-chip">{{ parsed.standings|length }} {{ _('pilote(s)') }}</span>
       {% if result.received_at %}
@@ -129,7 +129,7 @@
             </td>
             <td class="col-best mono {% if drv.is_fastest_lap %}time-fastest{% endif %}">
               {{ drv.fastest_lap or '—' }}
-              {% if drv.is_fastest_lap %}<span class="lap-icon" title="{{ _('Meilleur tour course') }}">&#9889;</span>{% endif %}
+              {% if drv.is_fastest_lap %}<span class="fl-badge" title="{{ _('Meilleur tour course') }}">FL</span>{% endif %}
             </td>
           {% else %}
             <td class="col-best mono {% if drv.is_session_fastest %}time-fastest{% endif %}">
@@ -178,7 +178,7 @@
           {# Expand #}
           <td class="col-expand">
             {% if drv.all_laps %}
-              <button class="rd-expand-btn" title="{{ _('Voir tous les tours') }}">&#9654;</button>
+              <button class="rd-expand-btn" title="{{ _('Voir tous les tours') }}"></button>
             {% endif %}
           </td>
         </tr>
@@ -245,8 +245,8 @@
                       {% endif %}
                     </td>
                     <td class="lap-flags">
-                      {% if lap.is_invalid %}<span class="flag-icon flag-invalid" title="flags={{ lap.flags }}">&#9888;</span>
-                      {% elif not lap.is_clean %}<span class="flag-icon flag-noted" title="flags={{ lap.flags }}">&#9900;</span>
+                      {% if lap.is_invalid %}<span class="flag-icon flag-invalid" title="flags={{ lap.flags }}">!</span>
+                      {% elif not lap.is_clean %}<span class="flag-icon flag-noted" title="flags={{ lap.flags }}">~</span>
                       {% endif %}
                     </td>
                   </tr>
@@ -268,8 +268,8 @@
     <span class="legend-item"><span class="legend-dot dot-fastest"></span> {{ _('Meilleur tour session') }}</span>
     <span class="legend-item"><span class="legend-dot dot-drvbest"></span> {{ _('Best perso') }}</span>
     <span class="legend-item"><span class="legend-dot dot-sect"></span> {{ _('Meilleur secteur session') }}</span>
-    <span class="legend-item"><span class="legend-dot dot-noted">&#9900;</span> {{ _('Tour noté') }}</span>
-    <span class="legend-item"><span class="legend-dot dot-invalid">&#9888;</span> {{ _('Tour invalide / out-lap') }}</span>
+    <span class="legend-item"><span class="legend-dot dot-noted">~</span> {{ _('Tour noté') }}</span>
+    <span class="legend-item"><span class="legend-dot dot-invalid">!</span> {{ _('Tour invalide / out-lap') }}</span>
   </div>
 
   {% else %}
