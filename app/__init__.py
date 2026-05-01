@@ -179,7 +179,8 @@ def create_app():
     # Importe les fichiers de résultats existants (sessions passées hors panel)
     try:
         from app.services.results_parser import scan_and_import
-        scan_and_import(app.config["ACESERVER_DIR"])
+        with app.app_context():
+            scan_and_import(app.config["ACESERVER_DIR"])
     except Exception as _e:
         _logging.getLogger(__name__).warning("scan_and_import ignoré : %s", _e)
 

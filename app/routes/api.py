@@ -204,29 +204,44 @@ def get_events(mode):
 
 @api_bp.route("/results/ingest", methods=["POST"])
 def results_ingest():
-    """Reçoit le JSON de résultats posté par AssettoCorsaEVOServer en fin de session."""
+    """Reçoit la notification de fin de session d'AssettoCorsaEVOServer.
+
+    ACE EVO poste soit le JSON de résultats directement, soit un body vide (signal
+    uniquement). Dans les deux cas on tente d'abord de parser le body, puis on
+    scanne le dossier aceserver pour importer les fichiers non encore traités.
+    """
     import json as _json
     from app.models import SessionResult
     from app.services.database import db
-    from app.services.results_parser import parse_result_file
+    from app.services.results_parser import parse_result_file, scan_and_import
 
+    imported = 0
     data = request.get_json(force=True, silent=True)
-    if not data:
-        log.warning("results/ingest: payload vide ou non-JSON")
-        return jsonify({"ok": False, "error": "empty_payload"}), 400
 
-    parsed = parse_result_file(data)
-    result = SessionResult(
-        raw_json=_json.dumps(data),
-        source="webhook",
-        track=parsed["track"][:200],
-        session_type=parsed["session_type"][:60],
-    )
-    db.session.add(result)
-    db.session.commit()
-    log.info("Résultats reçus via webhook : track=%r type=%r id=%d",
-             parsed["track"], parsed["session_type"], result.id)
-    return jsonify({"ok": True, "id": result.id})
+    if data:
+        # ACE EVO a envoyé le JSON directement dans le body
+        parsed = parse_result_file(data)
+        result = SessionResult(
+            raw_json=_json.dumps(data),
+            source="webhook",
+            track=parsed["track"][:200],
+            session_type=parsed["session_type"][:60],
+        )
+        db.session.add(result)
+        db.session.commit()
+        log.info("Résultats reçus via webhook (JSON body) : track=%r type=%r id=%d",
+                 parsed["track"], parsed["session_type"], result.id)
+        imported = 1
+    else:
+        # Body vide ou non-JSON — ACE EVO envoie juste un signal de fin de session
+        # → on scanne le dossier pour récupérer les nouveaux fichiers de résultats
+        log.info("results/ingest: body vide, scan du dossier aceserver")
+        aceserver_dir = current_app.config.get("ACESERVER_DIR", "/aceserver")
+        imported = scan_and_import(aceserver_dir)
+        if not imported:
+            log.warning("results/ingest: aucun nouveau fichier trouvé après scan")
+
+    return jsonify({"ok": True, "imported": imported})
 
 
 @api_bp.route("/results")

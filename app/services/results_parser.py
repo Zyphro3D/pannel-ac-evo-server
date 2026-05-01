@@ -281,7 +281,7 @@ def scan_and_import(aceserver_dir: str):
     """Scanne le dossier aceserver pour des fichiers de résultats non encore importés."""
     base     = Path(aceserver_dir)
     imported = 0
-    for f in sorted(base.rglob("results_*.json")):
+    for f in sorted(base.rglob("result*.json")):
         if import_result_file(f, source="file"):
             imported += 1
     if imported:
