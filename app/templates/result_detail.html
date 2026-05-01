@@ -30,11 +30,13 @@
     {% endif %}
     {% if parsed.session_best %}
       <div class="rd-session-best">
-        <span class="rd-session-best-label">{{ _('Meilleur tour session') }}</span>
+        <span class="rd-session-best-label">
+          {% if parsed.is_race %}{{ _('Meilleur tour en course') }}{% else %}{{ _('Meilleur tour session') }}{% endif %}
+        </span>
         <span class="rd-session-best-time mono">{{ parsed.session_best }}</span>
         {% if parsed.standings %}
           {% for drv in parsed.standings %}
-            {% if drv.is_session_fastest %}
+            {% if (parsed.is_race and drv.is_fastest_lap) or (not parsed.is_race and drv.is_session_fastest) %}
               <span class="rd-session-best-drv">— {{ drv.nickname }}</span>
             {% endif %}
           {% endfor %}
@@ -47,18 +49,25 @@
   {% if parsed.standings %}
   <div class="card" style="padding:0;overflow:hidden;margin-top:16px">
     <table class="rd-table">
-      {% set is_race = parsed.session_type and 'race' in parsed.session_type|lower %}
+      {% set is_race = parsed.is_race %}
       <thead>
         <tr>
           <th class="col-pos">#</th>
           {% if is_race %}<th class="col-grid" title="{{ _('Position de départ') }}">{{ _('Grille') }}</th>{% endif %}
           <th class="col-driver">{{ _('Pilote') }}</th>
           <th class="col-car">{{ _('Voiture') }}</th>
-          <th class="col-best mono">{{ _('Best') }}</th>
+          {% if is_race %}
+            <th class="col-best mono">{{ _('Temps course') }}</th>
+            <th class="col-best mono">{{ _('Meilleur tour') }}</th>
+          {% else %}
+            <th class="col-best mono">{{ _('Best') }}</th>
+          {% endif %}
           <th class="col-gap mono">{{ _('Gap') }}</th>
+          {% if not is_race %}
           <th class="col-split mono">S1</th>
           <th class="col-split mono">S2</th>
           <th class="col-split mono">S3</th>
+          {% endif %}
           <th class="col-laps">{{ _('Tours') }}</th>
           <th class="col-expand"></th>
         </tr>
@@ -113,21 +122,34 @@
             {{ drv.car or '—' }}
           </td>
 
-          {# Best lap #}
-          <td class="col-best mono {% if drv.is_session_fastest %}time-fastest{% endif %}">
-            {{ drv.best_lap }}
-          </td>
+          {# Temps / Best lap #}
+          {% if is_race %}
+            <td class="col-best mono {% if not drv.race_time_ms %}muted{% endif %}">
+              {{ drv.race_time or '—' }}
+            </td>
+            <td class="col-best mono {% if drv.is_fastest_lap %}time-fastest{% endif %}">
+              {{ drv.fastest_lap or '—' }}
+              {% if drv.is_fastest_lap %}<span class="lap-icon" title="{{ _('Meilleur tour course') }}">&#9889;</span>{% endif %}
+            </td>
+          {% else %}
+            <td class="col-best mono {% if drv.is_session_fastest %}time-fastest{% endif %}">
+              {{ drv.best_lap }}
+            </td>
+          {% endif %}
 
           {# Gap #}
           <td class="col-gap mono rd-gap">
             {% if drv.position == 1 %}
               <span style="color:var(--accent)">REF</span>
+            {% elif drv.gap_laps %}
+              <span class="gap-laps">{{ drv.gap }}</span>
             {% else %}
               {{ drv.gap or '—' }}
             {% endif %}
           </td>
 
-          {# Secteurs du meilleur tour #}
+          {# Secteurs (hors course) #}
+          {% if not is_race %}
           {% set bs = drv.best_splits %}
           {% set bsms = drv.best_splits_ms %}
           {% set ssms = parsed.session_best_splits_ms %}
@@ -139,12 +161,17 @@
               {{ s_time }}
             </td>
           {% endfor %}
+          {% endif %}
 
           {# Tours #}
           <td class="col-laps">
-            <span class="laps-count">{{ drv.clean_laps_count }}</span>
-            {% if drv.laps_count != drv.clean_laps_count %}
-              <span class="laps-total">/{{ drv.laps_count }}</span>
+            {% if is_race %}
+              <span class="laps-count">{{ drv.race_laps_count }}</span>
+            {% else %}
+              <span class="laps-count">{{ drv.clean_laps_count }}</span>
+              {% if drv.laps_count != drv.clean_laps_count %}
+                <span class="laps-total">/{{ drv.laps_count }}</span>
+              {% endif %}
             {% endif %}
           </td>
 
@@ -159,7 +186,7 @@
         {# ── Détail tours par pilote ── #}
         {% if drv.all_laps %}
         <tr class="laps-row" id="{{ row_id }}">
-          <td colspan="{{ 11 if is_race else 10 }}">
+          <td colspan="{{ 9 if is_race else 10 }}">
             <div class="laps-container">
               <div class="laps-header">
                 <span class="laps-title">{{ drv.nickname }}</span>

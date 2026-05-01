@@ -98,8 +98,16 @@ def _lap_is_invalid(flags: int) -> bool:
     return flags >= 64
 
 
+def _lap_is_formation(flags: int) -> bool:
+    """Tour de formation / tour de mise en grille (bit 7 = 128 activé)."""
+    return bool(flags & 128)
+
+
 def parse_result_file(data: dict) -> dict:
     """Transforme le JSON brut ACE EVO en dict structuré prêt à afficher."""
+    session_type = data.get("session_type", "")
+    is_race      = session_type.lower() == "race"
+
     driver_map  = {_guid_key(d["guid"]): d for d in data.get("drivers", [])}
     car_map     = {_guid_key(c["car_id"]): c for c in data.get("cars", [])}
     car_standings_map = {
@@ -114,22 +122,28 @@ def parse_result_file(data: dict) -> dict:
         driver_laps[dk].append(lap)
 
     # ── Stats de session globales ─────────────────────────────────────────────
-    # Tous les tours propres (flags==2) pour calculer les meilleurs secteurs de session
-    all_clean_laps = [
-        lap for lap in data.get("laps", [])
-        if _lap_is_clean(lap.get("flags", 0)) and lap.get("time", 0) > 0
-    ]
-    session_best_ms = (
-        min(l["time"] for l in all_clean_laps) if all_clean_laps else 0
-    )
+    # Tours de référence pour les stats de session :
+    # • Practice/Qualify/WarmUp : tours propres (flags==2)
+    # • Race : tous tours de course hors formation (flags bit7==0), time > 0
+    if is_race:
+        all_ref_laps = [
+            lap for lap in data.get("laps", [])
+            if not _lap_is_formation(lap.get("flags", 0)) and lap.get("time", 0) > 0
+        ]
+    else:
+        all_ref_laps = [
+            lap for lap in data.get("laps", [])
+            if _lap_is_clean(lap.get("flags", 0)) and lap.get("time", 0) > 0
+        ]
 
-    # Meilleurs secteurs individuels de la session (sur tours propres uniquement)
+    session_best_ms = min((l["time"] for l in all_ref_laps), default=0)
+
     session_best_splits_ms: list[int] = []
-    if all_clean_laps:
-        n_splits = max((len(l.get("split", [])) for l in all_clean_laps), default=0)
+    if all_ref_laps:
+        n_splits = max((len(l.get("split", [])) for l in all_ref_laps), default=0)
         for s in range(n_splits):
             candidates = [
-                l["split"][s] for l in all_clean_laps
+                l["split"][s] for l in all_ref_laps
                 if len(l.get("split", [])) > s and l["split"][s] > 0
             ]
             session_best_splits_ms.append(min(candidates) if candidates else 0)
@@ -141,79 +155,93 @@ def parse_result_file(data: dict) -> dict:
         driver = driver_map.get(dk, {})
         laps   = driver_laps.get(dk, [])
 
-        # Meilleur temps officiel depuis time_standings
-        time_std = data.get("time_standings", [])
-        best_ms  = time_std[idx] if idx < len(time_std) else 0
-        if not best_ms and laps:
-            clean = [l["time"] for l in laps if _lap_is_clean(l.get("flags", 0)) and l["time"] > 0]
-            best_ms = min(clean) if clean else 0
+        time_std    = data.get("time_standings", [])
+        time_std_ms = time_std[idx] if idx < len(time_std) else 0
 
-        # Tour correspondant au meilleur temps
-        best_lap_obj = next(
-            (l for l in laps if l["time"] == best_ms and best_ms > 0), None
-        )
-        best_splits_ms = best_lap_obj["split"] if best_lap_obj else []
+        if is_race:
+            # En course : time_standings = temps total de course
+            race_time_ms   = time_std_ms
+            race_laps      = [l for l in laps if not _lap_is_formation(l.get("flags", 0)) and l["time"] > 0]
+            fastest_lap_ms = min((l["time"] for l in race_laps), default=0)
+            fastest_lap_obj = next((l for l in race_laps if l["time"] == fastest_lap_ms and fastest_lap_ms > 0), None)
+            best_splits_ms = fastest_lap_obj["split"] if fastest_lap_obj else []
+            # best_ms sert à la détection is_drv_best dans les tours
+            best_ms        = fastest_lap_ms
+        else:
+            # Practice/Qualify/WarmUp : time_standings = best lap
+            race_time_ms   = 0
+            race_laps      = []
+            best_ms        = time_std_ms
+            if not best_ms and laps:
+                clean = [l["time"] for l in laps if _lap_is_clean(l.get("flags", 0)) and l["time"] > 0]
+                best_ms = min(clean) if clean else 0
+            best_lap_obj   = next((l for l in laps if l["time"] == best_ms and best_ms > 0), None)
+            best_splits_ms = best_lap_obj["split"] if best_lap_obj else []
+            fastest_lap_ms = best_ms
 
-        # Voiture associée au meilleur tour
+        # Voiture depuis le meilleur tour (ou fallback par index)
         car = {}
         car_stats = {}
-        if best_lap_obj:
-            ck = _guid_key(best_lap_obj["car_key"])
+        ref_lap = (fastest_lap_obj if is_race else None) or next(
+            (l for l in laps if l["time"] == best_ms and best_ms > 0), None
+        )
+        if ref_lap:
+            ck        = _guid_key(ref_lap["car_key"])
             car       = car_map.get(ck, {})
             car_stats = car_standings_map.get(ck, {})
-        # Fallback : car_standings est ordonné comme driver_standings
         if not car_stats and idx < len(data.get("car_standings", [])):
             car_stats = data["car_standings"][idx]
             if not car and car_stats:
                 ck2 = _guid_key(car_stats.get("car_id", {}))
                 car = car_map.get(ck2, {})
 
-        # Meilleurs secteurs personnels du pilote (sur tous ses tours propres)
+        # Tours propres (pour stats hors course) et secteurs perso
         driver_clean_laps = [l for l in laps if _lap_is_clean(l.get("flags", 0)) and l["time"] > 0]
+        ref_laps_for_splits = race_laps if is_race else driver_clean_laps
         driver_best_splits_ms: list[int] = []
-        if driver_clean_laps:
-            n_s = max((len(l.get("split", [])) for l in driver_clean_laps), default=0)
+        if ref_laps_for_splits:
+            n_s = max((len(l.get("split", [])) for l in ref_laps_for_splits), default=0)
             for s in range(n_s):
                 cands = [
-                    l["split"][s] for l in driver_clean_laps
+                    l["split"][s] for l in ref_laps_for_splits
                     if len(l.get("split", [])) > s and l["split"][s] > 0
                 ]
                 driver_best_splits_ms.append(min(cands) if cands else 0)
 
-        # Constance : écart-type sur tours propres
+        # Constance : écart-type sur tours de référence (min 2 tours)
         consistency_ms = 0
-        if len(driver_clean_laps) >= 2:
-            times = [l["time"] for l in driver_clean_laps]
-            avg   = sum(times) / len(times)
+        if len(ref_laps_for_splits) >= 2:
+            times    = [l["time"] for l in ref_laps_for_splits]
+            avg      = sum(times) / len(times)
             variance = sum((t - avg) ** 2 for t in times) / len(times)
             consistency_ms = int(variance ** 0.5)
 
-        # Tous les tours du pilote avec enrichissement
+        # Tous les tours enrichis
         all_laps_enriched = []
         for i, l in enumerate(laps):
-            flags      = l.get("flags", 0)
-            lap_ms     = l["time"]
-            splits_ms  = l.get("split", [])
-            is_clean   = _lap_is_clean(flags)
-            is_invalid = _lap_is_invalid(flags)
-            is_drv_best = (lap_ms == best_ms and best_ms > 0)
-            is_sess_best = (lap_ms == session_best_ms and session_best_ms > 0 and is_clean)
+            flags       = l.get("flags", 0)
+            lap_ms      = l["time"]
+            splits_ms   = l.get("split", [])
+            is_clean    = _lap_is_clean(flags)
+            is_invalid  = _lap_is_invalid(flags)
+            is_formation = _lap_is_formation(flags)
+            is_drv_best  = (lap_ms == best_ms and best_ms > 0 and not is_formation)
+            is_sess_best = (lap_ms == session_best_ms and session_best_ms > 0
+                            and (is_clean if not is_race else not is_formation))
 
-            # Secteurs : meilleur du pilote et meilleur de la session
             splits_enriched = []
             for s_idx, s_ms in enumerate(splits_ms):
-                drv_best_s   = driver_best_splits_ms[s_idx] if s_idx < len(driver_best_splits_ms) else 0
-                sess_best_s  = session_best_splits_ms[s_idx] if s_idx < len(session_best_splits_ms) else 0
-                is_drv_best_s  = drv_best_s > 0 and s_ms == drv_best_s
-                is_sess_best_s = sess_best_s > 0 and s_ms == sess_best_s
+                drv_best_s  = driver_best_splits_ms[s_idx] if s_idx < len(driver_best_splits_ms) else 0
+                sess_best_s = session_best_splits_ms[s_idx] if s_idx < len(session_best_splits_ms) else 0
                 splits_enriched.append({
-                    "time":          _ms_to_laptime(s_ms),
-                    "time_ms":       s_ms,
-                    "is_drv_best":   is_drv_best_s,
-                    "is_sess_best":  is_sess_best_s,
+                    "time":         _ms_to_laptime(s_ms),
+                    "time_ms":      s_ms,
+                    "is_drv_best":  drv_best_s > 0 and s_ms == drv_best_s,
+                    "is_sess_best": sess_best_s > 0 and s_ms == sess_best_s,
                 })
 
-            delta_ms = (lap_ms - best_ms) if (best_ms > 0 and lap_ms > 0 and not is_invalid) else 0
+            delta_ms = (lap_ms - best_ms) if (best_ms > 0 and lap_ms > 0
+                                               and not is_invalid and not is_formation) else 0
             all_laps_enriched.append({
                 "lap":          i + 1,
                 "time":         _ms_to_laptime(lap_ms),
@@ -222,52 +250,83 @@ def parse_result_file(data: dict) -> dict:
                 "flags":        flags,
                 "is_clean":     is_clean,
                 "is_invalid":   is_invalid,
+                "is_formation": is_formation,
                 "is_drv_best":  is_drv_best,
                 "is_sess_best": is_sess_best,
                 "delta":        _ms_to_delta(delta_ms) if not is_drv_best else "ref",
                 "delta_ms":     delta_ms,
             })
 
-        # Gap au leader (P1) — calculé après avoir tout le classement, mis à jour après
         nation_code = driver.get("nation", "")
         standings.append({
-            "position":             idx + 1,
-            "nickname":             driver.get("nickname") or f"{driver.get('first_name','')} {driver.get('last_name','')}".strip(),
-            "full_name":            f"{driver.get('first_name','')} {driver.get('last_name','')}".strip(),
-            "nation":               nation_code,
-            "nation_flag":          _nation_flag(nation_code),
-            "player_id":            driver.get("player_id", ""),
-            "starting_position":    car_stats.get("starting_position", 0),
-            "car":                  car.get("model_displayname", ""),
-            "race_number":          car.get("race_number", 0),
-            "laps_count":           len(laps),
-            "clean_laps_count":     len(driver_clean_laps),
-            "best_lap_ms":          best_ms,
-            "best_lap":             _ms_to_laptime(best_ms),
-            "best_splits_ms":       best_splits_ms,
-            "best_splits":          [_ms_to_laptime(s) for s in best_splits_ms],
+            "position":              idx + 1,
+            "nickname":              driver.get("nickname") or f"{driver.get('first_name','')} {driver.get('last_name','')}".strip(),
+            "full_name":             f"{driver.get('first_name','')} {driver.get('last_name','')}".strip(),
+            "nation":                nation_code,
+            "nation_flag":           _nation_flag(nation_code),
+            "player_id":             driver.get("player_id", ""),
+            "starting_position":     car_stats.get("starting_position", 0),
+            "car":                   car.get("model_displayname", ""),
+            "race_number":           car.get("race_number", 0),
+            # Course
+            "race_time_ms":          race_time_ms,
+            "race_time":             _ms_to_laptime(race_time_ms) if race_time_ms else "—",
+            "race_laps_count":       len(race_laps),
+            "fastest_lap_ms":        fastest_lap_ms,
+            "fastest_lap":           _ms_to_laptime(fastest_lap_ms),
+            "is_fastest_lap":        fastest_lap_ms > 0 and fastest_lap_ms == session_best_ms,
+            # Practice/Qualify (et fastest lap en course)
+            "laps_count":            len(laps),
+            "clean_laps_count":      len(driver_clean_laps),
+            "best_lap_ms":           best_ms,
+            "best_lap":              _ms_to_laptime(best_ms),
+            "best_splits_ms":        best_splits_ms,
+            "best_splits":           [_ms_to_laptime(s) for s in best_splits_ms],
             "driver_best_splits_ms": driver_best_splits_ms,
-            "is_session_fastest":   (best_ms == session_best_ms and session_best_ms > 0),
-            "consistency_ms":       consistency_ms,
-            "consistency":          _ms_to_laptime(consistency_ms) if consistency_ms else "—",
-            "total_km":             car_stats.get("total_km", 0),
-            "gap_ms":               0,   # rempli ci-dessous
-            "gap":                  "—", # rempli ci-dessous
-            "all_laps":             all_laps_enriched,
+            "is_session_fastest":    (best_ms == session_best_ms and session_best_ms > 0),
+            "consistency_ms":        consistency_ms,
+            "consistency":           _ms_to_laptime(consistency_ms) if consistency_ms else "—",
+            "total_km":              car_stats.get("total_km", 0),
+            "gap_ms":                0,
+            "gap":                   "—",
+            "gap_laps":              0,
+            "all_laps":              all_laps_enriched,
         })
 
-    # Calculer les gaps au leader (P1 best)
-    p1_best = standings[0]["best_lap_ms"] if standings else 0
-    for drv in standings:
-        if drv["position"] == 1 or not p1_best or not drv["best_lap_ms"]:
-            drv["gap_ms"] = 0
-            drv["gap"]    = "—"
+    # ── Gaps ─────────────────────────────────────────────────────────────────
+    if standings:
+        p1 = standings[0]
+        if is_race:
+            p1_laps = p1["race_laps_count"]
+            p1_time = p1["race_time_ms"]
+            for drv in standings:
+                if drv["position"] == 1:
+                    drv["gap_ms"] = 0
+                    drv["gap"]    = "—"
+                    drv["gap_laps"] = 0
+                elif not drv["race_time_ms"]:
+                    drv["gap"] = "—"
+                else:
+                    laps_diff = p1_laps - drv["race_laps_count"]
+                    if laps_diff > 0:
+                        drv["gap_laps"] = laps_diff
+                        drv["gap"]      = f"+{laps_diff} tour{'s' if laps_diff > 1 else ''}"
+                    else:
+                        gap_ms         = drv["race_time_ms"] - p1_time
+                        drv["gap_ms"]  = gap_ms
+                        drv["gap"]     = _ms_to_delta(gap_ms) if gap_ms > 0 else "—"
         else:
-            gap_ms     = drv["best_lap_ms"] - p1_best
-            drv["gap_ms"] = gap_ms
-            drv["gap"]    = _ms_to_delta(gap_ms)
+            p1_best = p1["best_lap_ms"]
+            for drv in standings:
+                if drv["position"] == 1 or not p1_best or not drv["best_lap_ms"]:
+                    drv["gap_ms"] = 0
+                    drv["gap"]    = "—"
+                else:
+                    gap_ms        = drv["best_lap_ms"] - p1_best
+                    drv["gap_ms"] = gap_ms
+                    drv["gap"]    = _ms_to_delta(gap_ms)
 
-    # Durée de session depuis specialization
+    # Durée de session
     session_duration_ms = 0
     try:
         session_duration_ms = (
@@ -279,17 +338,18 @@ def parse_result_file(data: dict) -> dict:
         pass
 
     return {
-        "track":               data.get("track_name", ""),
-        "layout":              data.get("track_layout_name", ""),
-        "session_type":        data.get("session_type", ""),
-        "server_name":         data.get("server_name", "").strip(),
-        "is_completed":        data.get("is_completed", False),
-        "session_duration_ms": session_duration_ms,
-        "session_duration":    _ms_to_laptime(session_duration_ms) if session_duration_ms else "—",
-        "session_best_ms":     session_best_ms,
-        "session_best":        _ms_to_laptime(session_best_ms),
+        "track":                  data.get("track_name", ""),
+        "layout":                 data.get("track_layout_name", ""),
+        "session_type":           session_type,
+        "is_race":                is_race,
+        "server_name":            data.get("server_name", "").strip(),
+        "is_completed":           data.get("is_completed", False),
+        "session_duration_ms":    session_duration_ms,
+        "session_duration":       _ms_to_laptime(session_duration_ms) if session_duration_ms else "—",
+        "session_best_ms":        session_best_ms,
+        "session_best":           _ms_to_laptime(session_best_ms),
         "session_best_splits_ms": session_best_splits_ms,
-        "standings":           standings,
+        "standings":              standings,
     }
 
 
