@@ -388,7 +388,11 @@ def load_events(mode: str = "practice") -> list:
 
 def _default_config() -> dict:
     import os as _os
-    _port = _os.environ.get("PANEL_PORT", "4300")
+    _port       = _os.environ.get("PANEL_PORT", "4300")
+    _deploy     = _os.environ.get("DEPLOY_MODE", "native")
+    # En docker_split, ace-server et ace-panel sont sur le même réseau Docker.
+    # Le serveur de jeu doit joindre le panel via son service name, pas 127.0.0.1.
+    _panel_host = "panel" if _deploy == "docker_split" else "127.0.0.1"
     return {
         "Server": {
             "SelectedServerTypeValue": "MultiplayerServerListSessionType_RANKED",
@@ -403,7 +407,7 @@ def _default_config() -> dict:
             "SpectatorPassword": "",
             "AdminPassword": "",
             "EntryListUrl": "",
-            "ResultsPostUrl": f"http://127.0.0.1:{_port}/api/results/ingest",
+            "ResultsPostUrl": f"http://{_panel_host}:{_port}/api/results/ingest",
             "EntryListPath": "",
             "ResultsPath": "",   # laisser vide : le serveur concatène sans slash
         },

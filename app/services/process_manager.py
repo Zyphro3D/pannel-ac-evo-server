@@ -18,10 +18,15 @@ from pathlib import Path
 import psutil
 from flask import current_app
 
-_STATE_FILE   = Path(__file__).parent.parent.parent / ".server_state"
-_LOG_FILE     = Path(__file__).parent.parent.parent / ".server_output.log"
 _PROCESS_NAME = "AssettoCorsaEVOServer"
 _DEPLOY_MODE  = os.environ.get("DEPLOY_MODE", "native")
+
+# En docker_split, le state est sur le volume partagé (/aceserver) pour survivre aux rebuilds du panel
+if _DEPLOY_MODE == "docker_split":
+    _STATE_FILE = Path(os.environ.get("ACESERVER_DIR", "/aceserver")) / ".panel_state.json"
+else:
+    _STATE_FILE = Path(__file__).parent.parent.parent / ".server_state"
+_LOG_FILE = Path(__file__).parent.parent.parent / ".server_output.log"
 
 # docker_split — nom du container aceserver (défini dans docker-compose container_name)
 _DOCKER_CONTAINER_NAME = os.environ.get("ACESERVER_CONTAINER_NAME", "ace-server")

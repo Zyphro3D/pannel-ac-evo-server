@@ -38,6 +38,20 @@ env/
 serverConfig/
 system/
 
+# docker/aceserver — binaires du jeu (installés via SteamCMD, pas versionnés)
+docker/aceserver/*.exe
+docker/aceserver/*.dll
+docker/aceserver/*.kspkg
+docker/aceserver/*.ico
+docker/aceserver/*.json
+docker/aceserver/steamapps/
+docker/aceserver/_CommonRedist/
+docker/aceserver/content/
+docker/aceserver/results/
+# Garder les fichiers de config et exemples
+!docker/aceserver/configs/
+!docker/aceserver/configs/*.json
+
 # IDE
 .vscode/
 .idea/

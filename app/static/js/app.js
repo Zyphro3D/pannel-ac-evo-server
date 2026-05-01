@@ -186,11 +186,15 @@ function updateStatusUI(running, runningConfig, autoRestart, players) {
   const btnStop    = document.getElementById('btn-stop');
   const btnRestart = document.getElementById('btn-restart');
 
-  // Start : visible si serveur OFF ou si c'est une autre config qui tourne
-  if (btnStart)   { btnStart.disabled   = sameConfig;  btnStart.style.display   = sameConfig  ? 'none' : ''; }
-  // Stop + Restart : visibles uniquement si CE config tourne
-  if (btnStop)    { btnStop.disabled    = !sameConfig; btnStop.style.display    = sameConfig  ? ''     : 'none'; }
-  if (btnRestart) { btnRestart.disabled = !sameConfig; btnRestart.style.display = sameConfig  ? ''     : 'none'; }
+  // Réactiver tous les boutons (ils sont désactivés pendant l'action)
+  [btnStart, btnStop, btnRestart].forEach(b => { if (b) b.disabled = false; });
+
+  // Start : visible uniquement si serveur OFF
+  if (btnStart)   { btnStart.style.display   = running ? 'none' : ''; }
+  // Stop : visible dès que le serveur tourne
+  if (btnStop)    { btnStop.style.display     = running ? ''     : 'none'; }
+  // Restart : visible si le serveur tourne (on fait confiance à l'opérateur)
+  if (btnRestart) { btnRestart.style.display  = running ? ''     : 'none'; }
 
   const chk = document.getElementById('chk-auto-restart');
   if (chk) chk.checked = !!autoRestart;
@@ -237,15 +241,16 @@ async function serverAction(action) {
     const d = await r.json();
     if (d.ok) {
       showToast(labels[action] || 'OK', 'success');
-      setTimeout(fetchStatus, 1500);
+      // Polls successifs : le container Docker met quelques secondes à démarrer/s'arrêter
+      [1000, 3000, 6000, 10000].forEach(ms => setTimeout(fetchStatus, ms));
     } else {
       const msg = d.detail || d.error || I18N.error;
       showToast(msg, 'error');
-      setTimeout(fetchStatus, 500);
+      setTimeout(fetchStatus, 800);
     }
   } catch (e) {
     showToast('Erreur réseau', 'error');
-    setTimeout(fetchStatus, 500);
+    setTimeout(fetchStatus, 800);
   }
 }
 
