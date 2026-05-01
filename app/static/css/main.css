@@ -1473,9 +1473,17 @@ body {
 .rd-nation    { font-size: 10px; font-weight: 600; color: var(--text-muted);
                 background: var(--surface2); border-radius: 3px; padding: 1px 5px;
                 letter-spacing: .4px; flex-shrink: 0; }
+.rd-flag      { font-size: 16px; line-height: 1; flex-shrink: 0; }
 
 .race-number  { font-size: 11px; font-weight: 700; color: var(--accent); margin-right: 4px; }
 .rd-gap       { font-size: 12px; }
+
+/* Grille de départ (course) */
+.col-grid     { width: 70px; text-align: center; }
+.rd-grid      { text-align: center; font-size: 12px; }
+.grid-badge   { color: var(--text-muted); font-size: 11px; }
+.grid-gain    { color: #4ade80; font-size: 10px; font-weight: 700; margin-left: 3px; }
+.grid-loss    { color: var(--red); font-size: 10px; font-weight: 700; margin-left: 3px; }
 
 /* Session best crown icon */
 .sess-best-crown { color: #a78bfa; font-size: 14px; }

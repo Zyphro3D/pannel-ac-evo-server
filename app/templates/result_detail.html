@@ -47,9 +47,11 @@
   {% if parsed.standings %}
   <div class="card" style="padding:0;overflow:hidden;margin-top:16px">
     <table class="rd-table">
+      {% set is_race = parsed.session_type and 'race' in parsed.session_type|lower %}
       <thead>
         <tr>
           <th class="col-pos">#</th>
+          {% if is_race %}<th class="col-grid" title="{{ _('Position de départ') }}">{{ _('Grille') }}</th>{% endif %}
           <th class="col-driver">{{ _('Pilote') }}</th>
           <th class="col-car">{{ _('Voiture') }}</th>
           <th class="col-best mono">{{ _('Best') }}</th>
@@ -75,10 +77,28 @@
             </span>
           </td>
 
+          {# Grille de départ (course uniquement) #}
+          {% if is_race %}
+          <td class="col-grid rd-grid">
+            {% if drv.starting_position %}
+              <span class="grid-badge">P{{ drv.starting_position }}</span>
+              {% if drv.starting_position > drv.position %}
+                <span class="grid-gain" title="{{ _('Positions gagnées') }}">▲{{ drv.starting_position - drv.position }}</span>
+              {% elif drv.starting_position < drv.position %}
+                <span class="grid-loss" title="{{ _('Positions perdues') }}">▼{{ drv.position - drv.starting_position }}</span>
+              {% endif %}
+            {% else %}—{% endif %}
+          </td>
+          {% endif %}
+
           {# Pilote #}
           <td class="col-driver">
             <div class="drv-name-row">
-              {% if drv.nation %}<span class="rd-nation">{{ drv.nation }}</span>{% endif %}
+              {% if drv.nation_flag %}
+                <span class="rd-flag" title="{{ drv.nation }}">{{ drv.nation_flag }}</span>
+              {% elif drv.nation %}
+                <span class="rd-nation">{{ drv.nation }}</span>
+              {% endif %}
               <span class="rd-nickname">{{ drv.nickname }}</span>
               {% if drv.is_session_fastest %}<span class="sess-best-crown" title="{{ _('Meilleur tour session') }}">&#9813;</span>{% endif %}
             </div>
@@ -139,7 +159,7 @@
         {# ── Détail tours par pilote ── #}
         {% if drv.all_laps %}
         <tr class="laps-row" id="{{ row_id }}">
-          <td colspan="10">
+          <td colspan="{{ 11 if is_race else 10 }}">
             <div class="laps-container">
               <div class="laps-header">
                 <span class="laps-title">{{ drv.nickname }}</span>

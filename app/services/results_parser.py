@@ -22,6 +22,48 @@ from pathlib import Path
 
 log = logging.getLogger(__name__)
 
+# ISO 3166-1 alpha-3 → alpha-2 pour les codes nation ACE EVO
+_NATION3_TO_2 = {
+    "AFG":"AF","ALB":"AL","ALG":"DZ","AND":"AD","AGO":"AO","ARG":"AR","ARM":"AM",
+    "AUS":"AU","AUT":"AT","AZE":"AZ","BHR":"BH","BAN":"BD","BLR":"BY","BEL":"BE",
+    "BLZ":"BZ","BEN":"BJ","BTN":"BT","BOL":"BO","BIH":"BA","BWA":"BW","BRA":"BR",
+    "BRN":"BN","BUL":"BG","BFA":"BF","BDI":"BI","CPV":"CV","CAM":"KH","CMR":"CM",
+    "CAN":"CA","CAF":"CF","CHA":"TD","CHI":"CL","CHN":"CN","COL":"CO","COM":"KM",
+    "COD":"CD","COG":"CG","CRC":"CR","CIV":"CI","CRO":"HR","CUB":"CU","CYP":"CY",
+    "CZE":"CZ","DEN":"DK","DJI":"DJ","DOM":"DO","ECU":"EC","EGY":"EG","ESA":"SV",
+    "GEQ":"GQ","ERI":"ER","EST":"EE","ETH":"ET","FIJ":"FJ","FIN":"FI","FRA":"FR",
+    "GAB":"GA","GAM":"GM","GEO":"GE","GER":"DE","DEU":"DE","GHA":"GH","GRE":"GR",
+    "GRN":"GD","GUA":"GT","GUI":"GN","GBS":"GW","GUY":"GY","HAI":"HT","HON":"HN",
+    "HKG":"HK","HUN":"HU","ISL":"IS","IND":"IN","INA":"ID","IRN":"IR","IRQ":"IQ",
+    "IRL":"IE","ISR":"IL","ITA":"IT","JAM":"JM","JPN":"JP","JOR":"JO","KAZ":"KZ",
+    "KEN":"KE","PRK":"KP","KOR":"KR","KUW":"KW","KGZ":"KG","LAO":"LA","LAT":"LV",
+    "LIB":"LB","LES":"LS","LBR":"LR","LBA":"LY","LIE":"LI","LTU":"LT","LUX":"LU",
+    "MAD":"MG","MAW":"MW","MAS":"MY","MDV":"MV","MLI":"ML","MLT":"MT","MTN":"MR",
+    "MRI":"MU","MEX":"MX","MDA":"MD","MON":"MC","MNG":"MN","MNE":"ME","MAR":"MA",
+    "MOZ":"MZ","MYA":"MM","NAM":"NA","NEP":"NP","NED":"NL","NLD":"NL","NZL":"NZ","NCA":"NI",
+    "NIG":"NE","NGR":"NG","MKD":"MK","NOR":"NO","OMA":"OM","PAK":"PK","PLE":"PS",
+    "PAN":"PA","PNG":"PG","PAR":"PY","PER":"PE","PHI":"PH","POL":"PL","POR":"PT",
+    "PRT":"PT","PUR":"PR","QAT":"QA","ROU":"RO","RUS":"RU","RWA":"RW","SKN":"KN",
+    "LCA":"LC","VIN":"VC","SAM":"WS","SMR":"SM","STP":"ST","KSA":"SA","SEN":"SN",
+    "SRB":"RS","SEY":"SC","SLE":"SL","SGP":"SG","SVK":"SK","SLO":"SI","SVN":"SI",
+    "SOL":"SB","SOM":"SO","RSA":"ZA","ZAF":"ZA","SSD":"SS","ESP":"ES","SRI":"LK",
+    "SUD":"SD","SUR":"SR","SWZ":"SZ","SWE":"SE","SUI":"CH","CHE":"CH","SYR":"SY",
+    "TPE":"TW","TJK":"TJ","TAN":"TZ","THA":"TH","TLS":"TL","TOG":"TG","TGA":"TO",
+    "TRI":"TT","TUN":"TN","TUR":"TR","TKM":"TM","UGA":"UG","UKR":"UA","UAE":"AE",
+    "GBR":"GB","USA":"US","URU":"UY","UZB":"UZ","VAN":"VU","VEN":"VE","VIE":"VN",
+    "YEM":"YE","ZAM":"ZM","ZIM":"ZW",
+}
+
+
+def _nation_flag(code3: str) -> str:
+    """Convertit un code nation 3 lettres en emoji drapeau (ex: FRA → 🇫🇷)."""
+    if not code3:
+        return ""
+    code2 = _NATION3_TO_2.get(code3.upper(), "")
+    if not code2 or len(code2) != 2:
+        return ""
+    return chr(0x1F1E6 + ord(code2[0]) - ord("A")) + chr(0x1F1E6 + ord(code2[1]) - ord("A"))
+
 
 def _ms_to_laptime(ms: int) -> str:
     if not ms:
@@ -119,6 +161,12 @@ def parse_result_file(data: dict) -> dict:
             ck = _guid_key(best_lap_obj["car_key"])
             car       = car_map.get(ck, {})
             car_stats = car_standings_map.get(ck, {})
+        # Fallback : car_standings est ordonné comme driver_standings
+        if not car_stats and idx < len(data.get("car_standings", [])):
+            car_stats = data["car_standings"][idx]
+            if not car and car_stats:
+                ck2 = _guid_key(car_stats.get("car_id", {}))
+                car = car_map.get(ck2, {})
 
         # Meilleurs secteurs personnels du pilote (sur tous ses tours propres)
         driver_clean_laps = [l for l in laps if _lap_is_clean(l.get("flags", 0)) and l["time"] > 0]
@@ -181,12 +229,15 @@ def parse_result_file(data: dict) -> dict:
             })
 
         # Gap au leader (P1) — calculé après avoir tout le classement, mis à jour après
+        nation_code = driver.get("nation", "")
         standings.append({
             "position":             idx + 1,
             "nickname":             driver.get("nickname") or f"{driver.get('first_name','')} {driver.get('last_name','')}".strip(),
             "full_name":            f"{driver.get('first_name','')} {driver.get('last_name','')}".strip(),
-            "nation":               driver.get("nation", ""),
+            "nation":               nation_code,
+            "nation_flag":          _nation_flag(nation_code),
             "player_id":            driver.get("player_id", ""),
+            "starting_position":    car_stats.get("starting_position", 0),
             "car":                  car.get("model_displayname", ""),
             "race_number":          car.get("race_number", 0),
             "laps_count":           len(laps),
