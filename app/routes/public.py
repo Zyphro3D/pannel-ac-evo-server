@@ -26,6 +26,10 @@ def index():
     if current_user.is_authenticated and current_user.is_admin:
         return redirect(url_for("admin.dashboard"))
 
+    import json as _json
+    from app.models import SessionResult
+    from app.services.results_parser import parse_result_file
+
     status      = get_status()
     server_info = get_running_server_info() if status["running"] else None
     now = _now_utc()
@@ -45,12 +49,25 @@ def index():
         for reg in EventRegistration.query.filter_by(driver_id=current_user.id).all():
             my_regs[reg.event_id] = reg
 
+    recent_rows = (SessionResult.query
+                   .order_by(SessionResult.received_at.desc())
+                   .limit(4).all())
+    recent_sessions = []
+    for r in recent_rows:
+        try:
+            parsed = parse_result_file(_json.loads(r.raw_json))
+        except Exception:
+            parsed = {}
+        recent_sessions.append({"id": r.id, "received_at": r.received_at,
+                                 "source": r.source, "parsed": parsed})
+
     return render_template("public.html",
                            status=status,
                            server_info=server_info,
                            ongoing=ongoing,
                            upcoming=upcoming,
-                           my_regs=my_regs)
+                           my_regs=my_regs,
+                           recent_sessions=recent_sessions)
 
 
 @public_bp.route("/register", methods=["GET", "POST"])
