@@ -1474,6 +1474,7 @@ body {
                 background: var(--surface2); border-radius: 3px; padding: 1px 5px;
                 letter-spacing: .4px; flex-shrink: 0; }
 .rd-flag      { font-size: 16px; line-height: 1; flex-shrink: 0; }
+.rd-flag img  { width: 20px; height: 20px; vertical-align: middle; }
 
 .race-number  { font-size: 11px; font-weight: 700; color: var(--accent); margin-right: 4px; }
 .rd-gap       { font-size: 12px; }
