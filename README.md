@@ -45,13 +45,29 @@ Vue mensuelle avec chips colorés. Clic sur un créneau vide → formulaire pré
   <img src="docs/screenshot-events.png" alt="Calendrier" width="700">
 </p>
 
+### Résultats de session
+
+Historique complet des sessions avec podium, meilleurs tours et classement. Visible directement sur la page d'accueil publique (4 dernières sessions).
+
+<p align="center">
+  <img src="docs/page_resultat.png" alt="Page résultats" width="700">
+</p>
+
+### Détail d'une session
+
+Classement complet avec drapeaux nationaux, voiture, meilleur tour, secteurs color-codés (violet = meilleur session, vert = meilleur perso), gap au leader, consistance pilote et détail tour par tour dépliable. En mode **Race** : temps total de course, meilleur tour individuel (badge **FL**), gap en nombre de tours et grille de départ.
+
+<p align="center">
+  <img src="docs/race_details.png" alt="Détail session Race" width="700">
+</p>
+
 ---
 
 ## Fonctionnalités
 
 **Serveur** — Modes Practice et Race Weekend. Auto-restart watchdog. Nombre de joueurs en temps réel. Logs consultables depuis l'interface. Notifications Discord (démarrage, arrêt, crash).
 
-**Résultats** — Réception automatique des résultats de fin de session (webhook). Classement avec meilleurs tours, secteurs colorés (meilleur session en violet, meilleur perso en vert), gap au leader. Historique complet avec détail tour par tour.
+**Résultats** — Réception automatique via webhook en fin de session. Affichage sur la page d'accueil (4 dernières sessions) et page dédiée. Classement avec drapeaux nationaux, voiture, meilleurs tours, secteurs color-codés (violet = meilleur session, vert = meilleur perso), gap au leader, consistance pilote. Mode Race : temps total, meilleur tour individuel (badge FL), gap en nombre de tours, grille de départ. Détail tour par tour dépliable.
 
 **Pilotes** — Inscription publique avec validation manuelle. Emails transactionnels (approbation, rejet, rappel). Génération automatique de l'`entry_list.json`.
 
@@ -217,6 +233,28 @@ Le `.env` et la base de données ne sont jamais modifiés. Les migrations s'appl
 ---
 
 ## Changelog
+
+### v1.4.0 — 01/05/2026
+
+**Résultats — import et affichage**
+- Import automatique corrigé : glob `result*.json` pour matcher les fichiers `resultsresults_*.json` d'ACE EVO
+- Endpoint `/api/results/ingest` gère le body vide d'ACE EVO (signal de fin de session → scan du dossier)
+- Scan au démarrage exécuté dans le bon contexte Flask (fix "Working outside of application context")
+- 4 derniers résultats affichés sur la page d'accueil publique avec lien "Voir tout →"
+
+**Résultats — mode Race**
+- `time_standings` en course = temps total de course (pas un best lap)
+- Colonnes dédiées : **Temps course** + **Meilleur tour individuel** (badge FL)
+- Tours de formation exclus du comptage (flags bit 7 = 128)
+- Gap en nombre de tours (`+X tours`) si décalage, sinon écart temps
+- Colonne **Grille** (position de départ) visible uniquement en Race
+
+**Résultats — enrichissements visuels**
+- Drapeaux nationaux emoji cross-platform via Twemoji (🇫🇷 🇮🇹 🇩🇪…)
+- Table de correspondance ISO 3166 alpha-3 → alpha-2 (50+ pays)
+- Icônes et emojis remplacés par des éléments CSS purs (⚡⏱⚠▶ → FL badge, flèche CSS, !)
+
+---
 
 ### v1.3.0 — 30/04/2026
 
