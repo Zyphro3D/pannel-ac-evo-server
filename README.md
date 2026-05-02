@@ -234,6 +234,26 @@ Le `.env` et la base de données ne sont jamais modifiés. Les migrations s'appl
 
 ## Changelog
 
+### v1.5.0 — 02/05/2026
+
+**Groupement des résultats par run**
+- `run_id` unique (uuid4) généré à chaque démarrage du serveur — toutes les sessions du même run (Practice, Qualification, Warmup, Course) sont liées de façon certaine, sans heuristique temporelle
+- Le watchdog conserve le même `run_id` en cas de crash/restart automatique
+- Page résultats : les sessions sont regroupées sous un en-tête coloré (Race Weekend ou Practice), avec les badges PRACTICE / QUALIFYING / WARMUP / RACE colorés
+- Page d'accueil : bordure colorée sur chaque carte selon le groupe d'appartenance
+- Fallback anchor-on-Race pour les anciens résultats sans `run_id`
+
+**Interface — icônes CSS pures**
+- Tous les emojis interceptés par Twemoji remplacés par des icônes CSS : poubelle (×5), page logs, triangle warning, engrenage, triangle play
+- Médailles podium 🥇🥈🥉 remplacées par des cercles numérotés CSS (or/argent/bronze)
+- Modal logs : largeur 360px → `min(960px, 92vw)`, police 11 → 12px, hauteur max 400 → 520px
+
+**Traductions**
+- 39 clés manquantes ajoutées dans les 5 langues (FR / EN / ES / DE / IT) : pages résultats/course complètes, cookie banner, reset password, etc.
+- `pybabel compile` intégré dans le `Dockerfile.panel` — les `.mo` sont toujours recompilés au build
+
+---
+
 ### v1.4.0 — 01/05/2026
 
 **Résultats — import et affichage**
