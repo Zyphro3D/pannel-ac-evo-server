@@ -42,6 +42,7 @@ def _migrate_db(db):
         ("event",  "discord_notified",    "INTEGER DEFAULT 0"),
         ("event",  "cars_config",         "TEXT    DEFAULT '{}'"),
         ("session_result", "config_name", "TEXT"),
+        ("session_result", "run_id",      "TEXT"),
     ]
     with engine.connect() as conn:
         for table, col, col_def in cols_to_add:

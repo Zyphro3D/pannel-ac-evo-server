@@ -13,6 +13,7 @@ import subprocess
 import threading
 import time
 import urllib.request
+import uuid
 from pathlib import Path
 
 import psutil
@@ -53,7 +54,7 @@ def _read_state() -> dict:
 
 
 def _write_state(pid: int, config_name: str, sc_b64: str, sd_b64: str,
-                 auto_restart: bool, http_port: int = 8080):
+                 auto_restart: bool, http_port: int = 8080, run_id: str = ""):
     _STATE_FILE.write_text(json.dumps({
         "pid":          pid,
         "config":       config_name,
@@ -61,6 +62,7 @@ def _write_state(pid: int, config_name: str, sc_b64: str, sd_b64: str,
         "sd":           sd_b64,
         "auto_restart": auto_restart,
         "http_port":    http_port,
+        "run_id":       run_id,
     }))
 
 
@@ -224,11 +226,12 @@ def _watchdog_loop():
             except psutil.NoSuchProcess:
                 pass
         if not alive:
-            exe         = Path(_exe_path)
-            sc          = state.get("sc", "")
-            sd          = state.get("sd", "")
-            config_name = state.get("config", "")
+            exe          = Path(_exe_path)
+            sc           = state.get("sc", "")
+            sd           = state.get("sd", "")
+            config_name  = state.get("config", "")
             auto_restart = state.get("auto_restart", True)
+            run_id       = state.get("run_id", "")   # même run_id : c'est le même run qui repart
             log.warning("Watchdog: server crashed, restarting…")
             try:
                 from app.services import discord_notifier
@@ -242,7 +245,7 @@ def _watchdog_loop():
                 pass
             proc = _launch(exe, sc, sd)
             if proc:
-                _write_state(proc.pid, config_name, sc, sd, auto_restart)
+                _write_state(proc.pid, config_name, sc, sd, auto_restart, run_id=run_id)
                 log.info("Watchdog: restarted with PID %d", proc.pid)
             else:
                 log.error("Watchdog: restart failed")
@@ -323,8 +326,11 @@ def start_server(serverconfig_b64: str, seasondefinition_b64: str,
     if is_running():
         return {"ok": False, "error": "server_already_running"}
 
+    # Identifiant unique pour ce run — toutes les sessions de ce démarrage partageront ce run_id.
+    # Généré ici (démarrage explicite admin/scheduler), jamais recalculé par le watchdog.
+    run_id = uuid.uuid4().hex
+
     if _DEPLOY_MODE == "docker_split":
-        # Écrire la config de lancement pour que l'entrypoint aceserver la lise au démarrage
         lcp = _launch_config_path()
         lcp.write_text(json.dumps({
             "serverconfig":    serverconfig_b64,
@@ -342,8 +348,8 @@ def start_server(serverconfig_b64: str, seasondefinition_b64: str,
                 container.start()
             http_port = int(os.environ.get("ACESERVER_HTTP_PORT", "8080"))
             _write_state(0, config_name, serverconfig_b64, seasondefinition_b64,
-                         auto_restart, http_port)
-            return {"ok": True, "pid": 0, "config": config_name}
+                         auto_restart, http_port, run_id=run_id)
+            return {"ok": True, "pid": 0, "config": config_name, "run_id": run_id}
         except Exception as e:
             lcp.unlink(missing_ok=True)
             return {"ok": False, "error": str(e)}
@@ -355,8 +361,8 @@ def start_server(serverconfig_b64: str, seasondefinition_b64: str,
     if not proc:
         return {"ok": False, "error": "launch_failed"}
     _write_state(proc.pid, config_name, serverconfig_b64, seasondefinition_b64,
-                 auto_restart, http_port)
-    return {"ok": True, "pid": proc.pid, "config": config_name}
+                 auto_restart, http_port, run_id=run_id)
+    return {"ok": True, "pid": proc.pid, "config": config_name, "run_id": run_id}
 
 
 def stop_server() -> dict:
@@ -432,6 +438,7 @@ def get_status() -> dict:
         "running":      running,
         "pid":          state.get("pid") if running else None,
         "config":       state.get("config") if running else None,
+        "run_id":       state.get("run_id") if running else None,
         "auto_restart": state.get("auto_restart", False),
         "players":      players,
     }

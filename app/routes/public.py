@@ -35,17 +35,10 @@ _MAX_INTRA_GAP = timedelta(hours=2)
 
 def _group_sessions(sessions):
     """
-    Groupe les sessions en Race Weekends et pratiques isolées.
+    Groupe les sessions par run_id (identifiant unique généré à chaque start_server).
 
-    Passe 1 — sessions avec config_name (résultats récents) :
-      Même config_name + gap ≤ _MAX_INTRA_GAP = même run.
-      Fiable car le config_name est capturé au moment de la réception,
-      quand le serveur tourne encore avec le même fichier de configuration.
-
-    Passe 2 — sessions sans config_name (anciens résultats) :
-      Fallback : ancrage sur la session Race, remontée en arrière
-      session par session tant que le gap consécutif ≤ _MAX_INTRA_GAP
-      et que le circuit correspond.
+    Passe 1 — sessions avec run_id : regroupement exact, sans heuristique.
+    Passe 2 — sessions sans run_id (anciens résultats) : fallback anchor-on-Race.
 
     Retourne (sessions_annotées, groupes_triés_plus_récent_en_premier).
     """
@@ -57,68 +50,57 @@ def _group_sessions(sessions):
     used    = set()
     raw_groups: list[dict] = []
 
-    # ── Passe 1 : groupement par config_name ──────────────────────────────
-    # On parcourt chronologiquement; on cherche à attacher chaque session
-    # au dernier groupe ouvert avec le même config_name si le gap le permet.
-    open_by_config: dict[str, dict] = {}   # config_name -> groupe en cours
-
+    # ── Passe 1 : run_id (fiable) ─────────────────────────────────────────
+    by_run: dict[str, dict] = {}
     for s in chrono:
-        cfg = s.get("config_name") or ""
-        if not cfg:
+        rid = s.get("run_id") or ""
+        if not rid:
             continue
-        t = s["received_at"]
-        g = open_by_config.get(cfg)
-        if g and (t - g["last_time"]) <= _MAX_INTRA_GAP:
-            g["session_ids"].append(s["id"])
-            g["last_time"] = t
-        else:
-            g = {"session_ids": [s["id"]], "last_time": t, "config_name": cfg}
-            open_by_config[cfg] = g
+        if rid not in by_run:
+            g = {"session_ids": [], "run_id": rid,
+                 "config_name": s.get("config_name") or ""}
+            by_run[rid] = g
             raw_groups.append(g)
+        by_run[rid]["session_ids"].append(s["id"])
         used.add(s["id"])
 
-    # ── Passe 2 : fallback anchor-on-Race pour les sessions sans config_name ─
+    # ── Passe 2 : fallback anchor-on-Race (anciens résultats sans run_id) ─
     remaining = [s for s in chrono if s["id"] not in used]
-
     for i, s in enumerate(remaining):
         if s["id"] in used:
             continue
-        stype = (s["parsed"].get("session_type") or "").lower()
-        if stype != "race":
+        if (s["parsed"].get("session_type") or "").lower() != "race":
             continue
 
-        track        = (s["parsed"].get("track") or "").strip()
-        weekend_ids  = [s["id"]]
+        track       = (s["parsed"].get("track") or "").strip()
+        group_ids   = [s["id"]]
         used.add(s["id"])
-        frontier_t   = s["received_at"]
+        frontier_t  = s["received_at"]
 
         for j in range(i - 1, -1, -1):
             prev = remaining[j]
             if prev["id"] in used:
                 continue
-            prev_track = (prev["parsed"].get("track") or "").strip()
-            prev_type  = (prev["parsed"].get("session_type") or "").lower()
-            if prev_track != track:
+            if (prev["parsed"].get("track") or "").strip() != track:
                 break
             if (frontier_t - prev["received_at"]) > _MAX_INTRA_GAP:
                 break
-            if prev_type not in {"practice", "qualifying", "warmup", "race"}:
+            if (prev["parsed"].get("session_type") or "").lower() not in \
+                    {"practice", "qualifying", "warmup", "race"}:
                 break
-            weekend_ids.insert(0, prev["id"])
+            group_ids.insert(0, prev["id"])
             used.add(prev["id"])
             frontier_t = prev["received_at"]
 
-        raw_groups.append({"session_ids": weekend_ids, "config_name": None,
-                           "last_time": id_to_s[weekend_ids[-1]]["received_at"]})
+        raw_groups.append({"session_ids": group_ids, "run_id": None, "config_name": None})
 
-    # Sessions restantes = pratiques isolées (chacune son propre groupe)
+    # Sessions restantes sans run_id = standalone
     for s in chrono:
         if s["id"] not in used:
-            raw_groups.append({"session_ids": [s["id"]], "config_name": None,
-                               "last_time": s["received_at"]})
+            raw_groups.append({"session_ids": [s["id"]], "run_id": None, "config_name": None})
             used.add(s["id"])
 
-    # ── Détermination weekend / couleur ───────────────────────────────────
+    # ── Couleurs ──────────────────────────────────────────────────────────
     color_idx = 0
     for g in raw_groups:
         types = {
@@ -134,20 +116,19 @@ def _group_sessions(sessions):
         else:
             g["color"] = _PRACTICE_COLOR
 
-    # ── Tri décroissant par session la plus récente ───────────────────────
+    # ── Tri : groupe le plus récent en premier ────────────────────────────
     raw_groups.sort(
         key=lambda g: max(id_to_s[sid]["received_at"] for sid in g["session_ids"]),
         reverse=True,
     )
 
-    # ── Annotation des sessions ───────────────────────────────────────────
+    # ── Annotation + construction template ───────────────────────────────
     id_to_group = {sid: g for g in raw_groups for sid in g["session_ids"]}
     for s in sessions:
         g = id_to_group.get(s["id"], {})
         s["wkd_color"]  = g.get("color", _PRACTICE_COLOR)
         s["is_weekend"] = g.get("is_weekend", False)
 
-    # ── Construction des groupes pour le template ─────────────────────────
     ordered_groups = []
     for g in raw_groups:
         group_sessions = sorted(
@@ -216,7 +197,8 @@ def index():
             parsed = {}
         recent_sessions.append({"id": r.id, "received_at": r.received_at,
                                  "source": r.source, "parsed": parsed,
-                                 "config_name": r.config_name})
+                                 "config_name": r.config_name,
+                                 "run_id": r.run_id})
     recent_sessions, _ = _group_sessions(recent_sessions)
 
     return render_template("public.html",
@@ -342,7 +324,8 @@ def results():
             parsed = {}
         sessions.append({"id": r.id, "received_at": r.received_at,
                          "source": r.source, "parsed": parsed,
-                         "config_name": r.config_name})
+                         "config_name": r.config_name,
+                         "run_id": r.run_id})
     sessions, groups = _group_sessions(sessions)
     return render_template("results.html", sessions=sessions, groups=groups)
 

@@ -188,6 +188,7 @@ class SessionResult(db.Model):
     track        = db.Column(db.String(200), default="")
     session_type = db.Column(db.String(60),  default="")
     config_name  = db.Column(db.String(200), nullable=True)       # config JSON actif au moment de la réception
+    run_id       = db.Column(db.String(40),  nullable=True)       # uuid du démarrage serveur (groupement fiable)
     raw_json     = db.Column(db.Text, nullable=False)
 
 

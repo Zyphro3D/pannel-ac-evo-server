@@ -215,9 +215,11 @@ def results_ingest():
     from app.services.database import db
     from app.services.results_parser import parse_result_file, scan_and_import
 
-    # Le serveur tourne encore quand ACE EVO envoie la notification de fin de session
-    # → on capture le nom du fichier config actif pour grouper les sessions entre elles
-    current_config = get_status().get("config") or None
+    # Le serveur tourne encore quand ACE EVO envoie la notification de fin de session.
+    # On capture run_id (unique par démarrage) et config_name pour grouper les sessions.
+    _st = get_status()
+    current_config = _st.get("config") or None
+    current_run_id = _st.get("run_id") or None
 
     imported = 0
     data = request.get_json(force=True, silent=True)
@@ -231,18 +233,18 @@ def results_ingest():
             track=parsed["track"][:200],
             session_type=parsed["session_type"][:60],
             config_name=current_config,
+            run_id=current_run_id,
         )
         db.session.add(result)
         db.session.commit()
-        log.info("Résultats reçus via webhook (JSON body) : track=%r type=%r config=%r id=%d",
-                 parsed["track"], parsed["session_type"], current_config, result.id)
+        log.info("Résultats reçus via webhook : track=%r type=%r config=%r run=%r id=%d",
+                 parsed["track"], parsed["session_type"], current_config, current_run_id, result.id)
         imported = 1
     else:
-        # Body vide ou non-JSON — ACE EVO envoie juste un signal de fin de session
-        # → on scanne le dossier pour récupérer les nouveaux fichiers de résultats
-        log.info("results/ingest: body vide, scan du dossier aceserver (config=%r)", current_config)
+        log.info("results/ingest: body vide, scan du dossier aceserver (run=%r)", current_run_id)
         aceserver_dir = current_app.config.get("ACESERVER_DIR", "/aceserver")
-        imported = scan_and_import(aceserver_dir, config_name=current_config)
+        imported = scan_and_import(aceserver_dir, config_name=current_config,
+                                   run_id=current_run_id)
         if not imported:
             log.warning("results/ingest: aucun nouveau fichier trouvé après scan")
 
