@@ -35,96 +35,121 @@ _MAX_INTRA_GAP = timedelta(hours=2)
 
 def _group_sessions(sessions):
     """
-    Group sessions into Race Weekends and standalone sessions.
+    Groupe les sessions en Race Weekends et pratiques isolées.
 
-    Strategy:
-    - Anchor on each Race session and walk backward, collecting
-      Practice/Qualifying/Warmup sessions on the same track as long as
-      the gap between consecutive sessions stays within _MAX_INTRA_GAP.
-    - Sessions not attached to any Race anchor = standalone groups
-      (also clustered by track + _MAX_INTRA_GAP for back-to-back practices).
+    Passe 1 — sessions avec config_name (résultats récents) :
+      Même config_name + gap ≤ _MAX_INTRA_GAP = même run.
+      Fiable car le config_name est capturé au moment de la réception,
+      quand le serveur tourne encore avec le même fichier de configuration.
 
-    Returns (sessions_with_color, ordered_groups) newest-first.
+    Passe 2 — sessions sans config_name (anciens résultats) :
+      Fallback : ancrage sur la session Race, remontée en arrière
+      session par session tant que le gap consécutif ≤ _MAX_INTRA_GAP
+      et que le circuit correspond.
+
+    Retourne (sessions_annotées, groupes_triés_plus_récent_en_premier).
     """
     if not sessions:
         return sessions, []
 
-    chrono = sorted(sessions, key=lambda s: s["received_at"])
+    chrono  = sorted(sessions, key=lambda s: s["received_at"])
     id_to_s = {s["id"]: s for s in sessions}
-    used = set()
-    race_groups = []  # list of session-id lists, in chrono order
+    used    = set()
+    raw_groups: list[dict] = []
 
-    for i, s in enumerate(chrono):
+    # ── Passe 1 : groupement par config_name ──────────────────────────────
+    # On parcourt chronologiquement; on cherche à attacher chaque session
+    # au dernier groupe ouvert avec le même config_name si le gap le permet.
+    open_by_config: dict[str, dict] = {}   # config_name -> groupe en cours
+
+    for s in chrono:
+        cfg = s.get("config_name") or ""
+        if not cfg:
+            continue
+        t = s["received_at"]
+        g = open_by_config.get(cfg)
+        if g and (t - g["last_time"]) <= _MAX_INTRA_GAP:
+            g["session_ids"].append(s["id"])
+            g["last_time"] = t
+        else:
+            g = {"session_ids": [s["id"]], "last_time": t, "config_name": cfg}
+            open_by_config[cfg] = g
+            raw_groups.append(g)
+        used.add(s["id"])
+
+    # ── Passe 2 : fallback anchor-on-Race pour les sessions sans config_name ─
+    remaining = [s for s in chrono if s["id"] not in used]
+
+    for i, s in enumerate(remaining):
+        if s["id"] in used:
+            continue
         stype = (s["parsed"].get("session_type") or "").lower()
-        if stype != "race" or s["id"] in used:
+        if stype != "race":
             continue
 
-        track = (s["parsed"].get("track") or "").strip()
-        weekend_ids = [s["id"]]
+        track        = (s["parsed"].get("track") or "").strip()
+        weekend_ids  = [s["id"]]
         used.add(s["id"])
-        frontier_time = s["received_at"]
+        frontier_t   = s["received_at"]
 
-        # Walk backward, linking sessions that form an unbroken chain
         for j in range(i - 1, -1, -1):
-            prev = chrono[j]
+            prev = remaining[j]
             if prev["id"] in used:
                 continue
             prev_track = (prev["parsed"].get("track") or "").strip()
             prev_type  = (prev["parsed"].get("session_type") or "").lower()
-
             if prev_track != track:
                 break
-            if (frontier_time - prev["received_at"]) > _MAX_INTRA_GAP:
+            if (frontier_t - prev["received_at"]) > _MAX_INTRA_GAP:
                 break
             if prev_type not in {"practice", "qualifying", "warmup", "race"}:
                 break
-
             weekend_ids.insert(0, prev["id"])
             used.add(prev["id"])
-            frontier_time = prev["received_at"]
+            frontier_t = prev["received_at"]
 
-        race_groups.append(weekend_ids)
+        raw_groups.append({"session_ids": weekend_ids, "config_name": None,
+                           "last_time": id_to_s[weekend_ids[-1]]["received_at"]})
 
-    # Remaining sessions = standalone; cluster consecutive same-track ones
-    standalone_groups = []
+    # Sessions restantes = pratiques isolées (chacune son propre groupe)
     for s in chrono:
-        if s["id"] in used:
-            continue
-        track = (s["parsed"].get("track") or "").strip()
-        t = s["received_at"]
-        if (standalone_groups
-                and standalone_groups[-1]["track"] == track
-                and (t - standalone_groups[-1]["last_time"]) <= _MAX_INTRA_GAP):
-            standalone_groups[-1]["ids"].append(s["id"])
-            standalone_groups[-1]["last_time"] = t
-        else:
-            standalone_groups.append({"ids": [s["id"]], "track": track, "last_time": t})
+        if s["id"] not in used:
+            raw_groups.append({"session_ids": [s["id"]], "config_name": None,
+                               "last_time": s["received_at"]})
+            used.add(s["id"])
 
-    # Assign colors
+    # ── Détermination weekend / couleur ───────────────────────────────────
     color_idx = 0
-    all_groups = []
-    for ids in race_groups:
-        color = _WEEKEND_PALETTE[color_idx % len(_WEEKEND_PALETTE)]
-        color_idx += 1
-        all_groups.append({"session_ids": ids, "is_weekend": True, "color": color})
-    for g in standalone_groups:
-        all_groups.append({"session_ids": g["ids"], "is_weekend": False, "color": _PRACTICE_COLOR})
+    for g in raw_groups:
+        types = {
+            (id_to_s[sid]["parsed"].get("session_type") or "").lower()
+            for sid in g["session_ids"]
+        } - {""}
+        is_weekend = "race" in types or len(types) > 1
+        g["types"]      = types
+        g["is_weekend"] = is_weekend
+        if is_weekend:
+            g["color"] = _WEEKEND_PALETTE[color_idx % len(_WEEKEND_PALETTE)]
+            color_idx += 1
+        else:
+            g["color"] = _PRACTICE_COLOR
 
-    # Sort by most recent session descending
-    def _latest(g):
-        return max(id_to_s[sid]["received_at"] for sid in g["session_ids"])
-    all_groups.sort(key=_latest, reverse=True)
+    # ── Tri décroissant par session la plus récente ───────────────────────
+    raw_groups.sort(
+        key=lambda g: max(id_to_s[sid]["received_at"] for sid in g["session_ids"]),
+        reverse=True,
+    )
 
-    # Annotate session dicts
-    id_to_group = {sid: g for g in all_groups for sid in g["session_ids"]}
+    # ── Annotation des sessions ───────────────────────────────────────────
+    id_to_group = {sid: g for g in raw_groups for sid in g["session_ids"]}
     for s in sessions:
         g = id_to_group.get(s["id"], {})
         s["wkd_color"]  = g.get("color", _PRACTICE_COLOR)
         s["is_weekend"] = g.get("is_weekend", False)
 
-    # Build ordered groups for template
+    # ── Construction des groupes pour le template ─────────────────────────
     ordered_groups = []
-    for g in all_groups:
+    for g in raw_groups:
         group_sessions = sorted(
             [id_to_s[sid] for sid in g["session_ids"]],
             key=lambda s: s["received_at"],
@@ -137,11 +162,12 @@ def _group_sessions(sessions):
         }
         track = (group_sessions[0]["parsed"].get("track") or "").strip() if group_sessions else ""
         ordered_groups.append({
-            "color":      g["color"],
-            "is_weekend": g["is_weekend"],
-            "track":      track,
-            "types":      types,
-            "sessions":   group_sessions,
+            "color":       g["color"],
+            "is_weekend":  g["is_weekend"],
+            "track":       track,
+            "types":       types,
+            "sessions":    group_sessions,
+            "config_name": g.get("config_name"),
         })
 
     return sessions, ordered_groups
@@ -189,7 +215,8 @@ def index():
         except Exception:
             parsed = {}
         recent_sessions.append({"id": r.id, "received_at": r.received_at,
-                                 "source": r.source, "parsed": parsed})
+                                 "source": r.source, "parsed": parsed,
+                                 "config_name": r.config_name})
     recent_sessions, _ = _group_sessions(recent_sessions)
 
     return render_template("public.html",
@@ -314,7 +341,8 @@ def results():
         except Exception:
             parsed = {}
         sessions.append({"id": r.id, "received_at": r.received_at,
-                         "source": r.source, "parsed": parsed})
+                         "source": r.source, "parsed": parsed,
+                         "config_name": r.config_name})
     sessions, groups = _group_sessions(sessions)
     return render_template("results.html", sessions=sessions, groups=groups)
 

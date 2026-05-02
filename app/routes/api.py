@@ -215,6 +215,10 @@ def results_ingest():
     from app.services.database import db
     from app.services.results_parser import parse_result_file, scan_and_import
 
+    # Le serveur tourne encore quand ACE EVO envoie la notification de fin de session
+    # → on capture le nom du fichier config actif pour grouper les sessions entre elles
+    current_config = get_status().get("config") or None
+
     imported = 0
     data = request.get_json(force=True, silent=True)
 
@@ -226,18 +230,19 @@ def results_ingest():
             source="webhook",
             track=parsed["track"][:200],
             session_type=parsed["session_type"][:60],
+            config_name=current_config,
         )
         db.session.add(result)
         db.session.commit()
-        log.info("Résultats reçus via webhook (JSON body) : track=%r type=%r id=%d",
-                 parsed["track"], parsed["session_type"], result.id)
+        log.info("Résultats reçus via webhook (JSON body) : track=%r type=%r config=%r id=%d",
+                 parsed["track"], parsed["session_type"], current_config, result.id)
         imported = 1
     else:
         # Body vide ou non-JSON — ACE EVO envoie juste un signal de fin de session
         # → on scanne le dossier pour récupérer les nouveaux fichiers de résultats
-        log.info("results/ingest: body vide, scan du dossier aceserver")
+        log.info("results/ingest: body vide, scan du dossier aceserver (config=%r)", current_config)
         aceserver_dir = current_app.config.get("ACESERVER_DIR", "/aceserver")
-        imported = scan_and_import(aceserver_dir)
+        imported = scan_and_import(aceserver_dir, config_name=current_config)
         if not imported:
             log.warning("results/ingest: aucun nouveau fichier trouvé après scan")
 

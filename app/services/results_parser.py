@@ -353,7 +353,8 @@ def parse_result_file(data: dict) -> dict:
     }
 
 
-def import_result_file(path: Path, source: str = "file") -> bool:
+def import_result_file(path: Path, source: str = "file",
+                       config_name: str | None = None) -> bool:
     """Importe un fichier de résultats en base. Retourne True si importé."""
     from app.services.database import db
     from app.models import SessionResult
@@ -381,19 +382,20 @@ def import_result_file(path: Path, source: str = "file") -> bool:
         source=source,
         track=parsed["track"][:200],
         session_type=parsed["session_type"][:60],
+        config_name=config_name,
     )
     db.session.add(result)
     db.session.commit()
-    log.info("Résultats importés depuis %s (track=%s)", path.name, parsed["track"])
+    log.info("Résultats importés depuis %s (track=%s, config=%r)", path.name, parsed["track"], config_name)
     return True
 
 
-def scan_and_import(aceserver_dir: str):
+def scan_and_import(aceserver_dir: str, config_name: str | None = None) -> int:
     """Scanne le dossier aceserver pour des fichiers de résultats non encore importés."""
     base     = Path(aceserver_dir)
     imported = 0
     for f in sorted(base.rglob("result*.json")):
-        if import_result_file(f, source="file"):
+        if import_result_file(f, source="file", config_name=config_name):
             imported += 1
     if imported:
         log.info("scan_and_import : %d nouveau(x) fichier(s) importé(s)", imported)

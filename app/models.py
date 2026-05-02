@@ -187,6 +187,7 @@ class SessionResult(db.Model):
     source       = db.Column(db.String(20),  default="webhook")   # "webhook" | "file"
     track        = db.Column(db.String(200), default="")
     session_type = db.Column(db.String(60),  default="")
+    config_name  = db.Column(db.String(200), nullable=True)       # config JSON actif au moment de la réception
     raw_json     = db.Column(db.Text, nullable=False)
 
 
