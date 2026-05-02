@@ -180,20 +180,95 @@ body {
 }
 .toggle-label:has(input:checked) { border-color: var(--accent); color: var(--accent); }
 
-.modal-logs-box { width: 700px; max-width: 95vw; }
+.modal-box.modal-logs-box { width: min(960px, 92vw); max-width: 92vw; }
 .logs-pre {
   background: #0a0a0a;
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 12px;
-  font-size: 11px;
-  line-height: 1.5;
-  max-height: 400px;
+  padding: 14px 16px;
+  font-size: 12px;
+  line-height: 1.6;
+  max-height: 520px;
   overflow-y: auto;
   white-space: pre-wrap;
-  word-break: break-all;
-  color: #ccc;
+  word-break: break-word;
+  color: #d0d0d0;
   margin: 8px 0 16px;
+}
+
+/* Warning triangle icon */
+.icon-warn {
+  display: inline-block;
+  width: 0; height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 10px solid currentColor;
+  vertical-align: middle;
+  margin-bottom: 2px;
+  position: relative;
+}
+.icon-warn::after {
+  content: '!';
+  position: absolute;
+  bottom: -9px; left: -2px;
+  font-size: 7px; font-weight: 900;
+  color: var(--surface);
+  width: 4px; text-align: center;
+}
+
+/* Gear/settings icon */
+.icon-gear {
+  display: inline-block;
+  width: 10px; height: 10px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  vertical-align: middle;
+  margin-bottom: 2px;
+  position: relative;
+  box-shadow:
+    0 -5px 0 -2px currentColor,
+    0  5px 0 -2px currentColor,
+   -5px 0  0 -2px currentColor,
+    5px 0  0 -2px currentColor;
+}
+
+/* Play/run triangle icon */
+.icon-run {
+  display: inline-block;
+  width: 0; height: 0;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 8px solid currentColor;
+  vertical-align: middle;
+  margin-bottom: 1px;
+}
+
+/* Terminal/logs icon */
+.icon-logs {
+  display: inline-block;
+  width: 12px; height: 12px;
+  border: 1.5px solid currentColor;
+  border-radius: 1px;
+  position: relative;
+  vertical-align: middle;
+  margin-bottom: 2px;
+}
+.icon-logs::before {
+  content: '';
+  position: absolute;
+  top: 2px; left: 2px;
+  width: 5px; height: 1.5px;
+  background: currentColor;
+  border-radius: 1px;
+  box-shadow: 0 3px 0 currentColor;
+}
+.icon-logs::after {
+  content: '';
+  position: absolute;
+  bottom: 2px; left: 2px;
+  width: 8px; height: 1.5px;
+  background: currentColor;
+  border-radius: 1px;
 }
 
 .btn-warn {
@@ -1193,6 +1268,7 @@ body {
   gap: 0;
   background: var(--surface);
   border: 1px solid var(--border);
+  border-top: 3px solid var(--wkd-color, var(--border));
   border-radius: var(--radius);
   text-decoration: none;
   color: var(--text);
@@ -1201,7 +1277,7 @@ body {
   padding: 0;
 }
 .res-card:hover {
-  border-color: var(--accent);
+  border-color: var(--wkd-color, var(--accent));
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(0,0,0,.35);
 }
@@ -1242,6 +1318,25 @@ body {
   font-size: 13px;
 }
 .res-medal { font-size: 14px; flex-shrink: 0; }
+
+/* CSS-only position medals (replaces emoji to avoid Twemoji) */
+.res-medal-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: 800;
+  flex-shrink: 0;
+  background: var(--surface2);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+.res-medal-num.pos-1 { background: #b45309; color: #fef3c7; border-color: #d97706; }
+.res-medal-num.pos-2 { background: #475569; color: #e2e8f0; border-color: #94a3b8; }
+.res-medal-num.pos-3 { background: #78350f; color: #fef3c7; border-color: #b45309; }
+
 .res-pname { flex: 1; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .res-ptime { font-size: 12px; color: var(--text-muted); flex-shrink: 0; }
 .res-podium-row.pos-1 .res-pname { color: var(--text); font-weight: 700; }
@@ -1278,6 +1373,45 @@ body {
   font-weight: 700;
   letter-spacing: .5px;
   text-transform: uppercase;
+}
+/* Per-type session badge colors */
+.badge-stype-practice   { border-color: #64748b; color: #94a3b8; }
+.badge-stype-qualifying { border-color: #f59e0b; color: #f59e0b; background: rgba(245,158,11,.08); }
+.badge-stype-warmup     { border-color: #10b981; color: #10b981; background: rgba(16,185,129,.08); }
+.badge-stype-race       { border-color: #ef4444; color: #ef4444; background: rgba(239,68,68,.08); }
+
+/* ── Result group (results.html) ── */
+.res-group { margin-bottom: 32px; }
+
+.res-group-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding: 7px 12px;
+  border-left: 3px solid var(--wkd-color, var(--border));
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: color-mix(in srgb, var(--wkd-color, transparent) 8%, var(--surface));
+}
+.res-group-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--wkd-color, var(--border));
+  flex-shrink: 0;
+}
+.res-group-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--wkd-color, var(--text));
+}
+.res-group-track {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.res-group-badges {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
 }
 
 /* ── Dashboard results widget ── */
@@ -1592,6 +1726,35 @@ body {
   border: 1px solid rgba(167,139,250,.35);
   border-radius: 3px; padding: 1px 4px;
   margin-left: 4px; vertical-align: middle;
+}
+
+/* Trash icon (CSS-only, replaces emoji to avoid Twemoji enlargement) */
+.icon-trash {
+  display: inline-block;
+  width: 10px; height: 9px;
+  border: 1.5px solid currentColor;
+  border-top: none;
+  border-radius: 0 0 2px 2px;
+  position: relative;
+  vertical-align: middle;
+  margin-bottom: 1px;
+}
+.icon-trash::before {
+  content: '';
+  position: absolute;
+  top: -4px; left: -3px;
+  width: 16px; height: 2px;
+  background: currentColor;
+  border-radius: 1px;
+}
+.icon-trash::after {
+  content: '';
+  position: absolute;
+  top: -7px; left: 1px;
+  width: 6px; height: 3px;
+  border: 1.5px solid currentColor;
+  border-bottom: none;
+  border-radius: 2px 2px 0 0;
 }
 
 /* Legend */

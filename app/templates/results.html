@@ -10,47 +10,68 @@
     </div>
   </div>
 
-  {% if sessions %}
-  <div class="results-grid">
-    {% for s in sessions %}
-    {% set p = s.parsed %}
-    <a href="{{ url_for('public.result_detail', result_id=s.id) }}" class="res-card">
+  {% if groups %}
+  {% for g in groups %}
+  <div class="res-group" style="--wkd-color: {{ g.color }}">
 
-      <!-- Header: session type + date -->
-      <div class="res-card-head">
-        <span class="badge-session">{{ p.session_type or '—' }}</span>
-        <span class="res-date">{{ s.received_at | local_dt_short }}</span>
-      </div>
-
-      <!-- Track -->
-      <div class="res-track">{{ p.track or '—' }}</div>
-      {% if p.layout %}<div class="res-layout">{{ p.layout }}</div>{% endif %}
-
-      <!-- Podium -->
-      {% if p.standings %}
-      <div class="res-podium">
-        {% for drv in p.standings[:3] %}
-        <div class="res-podium-row pos-{{ loop.index }}">
-          <span class="res-medal">{% if loop.index == 1 %}🥇{% elif loop.index == 2 %}🥈{% else %}🥉{% endif %}</span>
-          <span class="res-pname">{{ drv.nickname }}</span>
-          <span class="mono res-ptime">{{ drv.best_lap }}</span>
-        </div>
+    {# ── En-tête de groupe ── #}
+    <div class="res-group-header">
+      <span class="res-group-dot"></span>
+      <span class="res-group-label">
+        {% if g.is_weekend %}Race Weekend{% else %}{{ _('Practice') }}{% endif %}
+      </span>
+      {% if g.track %}<span class="res-group-track">· {{ g.track }}</span>{% endif %}
+      <div class="res-group-badges">
+        {% for stype in ['practice', 'qualifying', 'warmup', 'race'] %}
+          {% if stype in g.types %}
+            <span class="badge-session badge-stype-{{ stype }}">{{ stype|upper }}</span>
+          {% endif %}
         {% endfor %}
       </div>
-      {% else %}
-      <div class="res-empty">{{ _('Aucun pilote') }}</div>
-      {% endif %}
+    </div>
 
-      <!-- Footer -->
-      <div class="res-card-foot">
-        <span>{{ p.standings|length }} {{ _('pilote(s)') }}</span>
-        {% if s.source == 'file' %}<span class="badge" style="font-size:10px">fichier</span>{% endif %}
-        <span class="res-arrow">→</span>
-      </div>
+    {# ── Cartes de sessions du groupe ── #}
+    <div class="results-grid">
+      {% for s in g.sessions %}
+      {% set p = s.parsed %}
+      <a href="{{ url_for('public.result_detail', result_id=s.id) }}"
+         class="res-card" style="--wkd-color: {{ s.wkd_color }}">
 
-    </a>
-    {% endfor %}
+        <div class="res-card-head">
+          <span class="badge-session badge-stype-{{ (p.session_type or '') | lower }}">{{ p.session_type or '—' }}</span>
+          <span class="res-date">{{ s.received_at | local_dt_short }}</span>
+        </div>
+
+        <div class="res-track">{{ p.track or '—' }}</div>
+        {% if p.layout %}<div class="res-layout">{{ p.layout }}</div>{% endif %}
+
+        {% if p.standings %}
+        <div class="res-podium">
+          {% for drv in p.standings[:3] %}
+          <div class="res-podium-row pos-{{ loop.index }}">
+            <span class="res-medal-num pos-{{ loop.index }}">{{ loop.index }}</span>
+            <span class="res-pname">{{ drv.nickname }}</span>
+            <span class="mono res-ptime">
+              {% if p.is_race %}{{ drv.race_time or drv.best_lap }}{% else %}{{ drv.best_lap }}{% endif %}
+            </span>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="res-empty">{{ _('Aucun pilote') }}</div>
+        {% endif %}
+
+        <div class="res-card-foot">
+          <span>{{ p.standings|length }} {{ _('pilote(s)') }}</span>
+          {% if s.source == 'file' %}<span class="badge" style="font-size:10px">fichier</span>{% endif %}
+          <span class="res-arrow">→</span>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+
   </div>
+  {% endfor %}
 
   {% else %}
   <div class="card">

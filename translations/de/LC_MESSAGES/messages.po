@@ -1088,6 +1088,125 @@ msgstr "Fahrzeug(e) ausgewählt"
 msgid "Sauvegarder tout"
 msgstr "Alles speichern"
 
+msgid "Aucun fichier de configuration trouvé dans CONFIGS_DIR. Créez-en un via le bouton ci-dessous."
+msgstr "Keine Konfigurationsdatei in CONFIGS_DIR gefunden. Erstellen Sie eine über die Schaltfläche unten."
+
+# Result/Race page translations
+
+msgid "Aucun pilote"
+msgstr "Kein Fahrer"
+
+msgid "Aucun pilote enregistré dans cette session."
+msgstr "Kein Fahrer in dieser Sitzung registriert."
+
+msgid "Aucun résultat disponible pour le moment."
+msgstr "Noch keine Ergebnisse verfügbar."
+
+msgid "Aucun résultat disponible pour le moment. Les résultats apparaissent ici à la fin de chaque session."
+msgstr "Noch keine Ergebnisse verfügbar. Ergebnisse erscheinen hier am Ende jeder Sitzung."
+
+msgid "Aucun résultat pour le moment."
+msgstr "Noch keine Ergebnisse."
+
+msgid "Best"
+msgstr "Beste"
+
+msgid "Best perso"
+msgstr "Persönliche Bestzeit"
+
+msgid "Ce site utilise uniquement des cookies techniques nécessaires à son fonctionnement."
+msgstr "Diese Website verwendet nur technisch notwendige Cookies."
+
+msgid "Derniers résultats"
+msgstr "Letzte Ergebnisse"
+
+msgid "Écart"
+msgstr "Abstand"
+
+msgid "Écart-type"
+msgstr "Standardabweichung"
+
+msgid "en attente de validation"
+msgstr "wartet auf Freigabe"
+
+msgid "Entrez votre identifiant ou votre adresse email. Si votre compte est approuvé, vous recevrez un lien de réinitialisation valable 1 heure."
+msgstr "Geben Sie Ihren Benutzernamen oder Ihre E-Mail-Adresse ein. Bei einem genehmigten Konto erhalten Sie einen 1 Stunde gültigen Reset-Link."
+
+msgid "Événement public (pas d\\'inscription requise)"
+msgstr "Öffentliche Veranstaltung (keine Anmeldung erforderlich)"
+
+msgid "Gap"
+msgstr "Rückstand"
+
+msgid "Grille"
+msgstr "Startaufstellung"
+
+msgid "Meilleur secteur session"
+msgstr "Bestes Sektorszeit der Sitzung"
+
+msgid "Meilleur tour"
+msgstr "Beste Runde"
+
+msgid "Meilleur tour course"
+msgstr "Schnellste Rennrunde"
+
+msgid "Meilleur tour en course"
+msgstr "Schnellste Runde im Rennen"
+
+msgid "Meilleur tour session"
+msgstr "Beste Rundenzeit der Sitzung"
+
+msgid "Modifier l\\'événement"
+msgstr "Ereignis bearbeiten"
+
+msgid "Position de départ"
+msgstr "Startposition"
+
+msgid "Positions gagnées"
+msgstr "Positionen gewonnen"
+
+msgid "Positions perdues"
+msgstr "Positionen verloren"
+
+msgid "Résultats"
+msgstr "Ergebnisse"
+
+msgid "Résultats des sessions"
+msgstr "Sitzungsergebnisse"
+
+msgid "Temps"
+msgstr "Zeit"
+
+msgid "Temps course"
+msgstr "Rennzeit"
+
+msgid "Tour"
+msgstr "Runde"
+
+msgid "Tour invalide / out-lap"
+msgstr "Ungültige Runde / Out-Lap"
+
+msgid "Tour noté"
+msgstr "Markierte Runde"
+
+msgid "Tours"
+msgstr "Runden"
+
+msgid "tour(s) propre(s)"
+msgstr "saubere Runde(n)"
+
+msgid "Voir tous"
+msgstr "Alle anzeigen"
+
+msgid "Voir tous les tours"
+msgstr "Alle Runden anzeigen"
+
+msgid "Voir tout"
+msgstr "Alles anzeigen"
+
+msgid "Vous n\\'êtes inscrit à aucun événement."
+msgstr "Sie sind für keine Veranstaltung angemeldet."
+
 #~ msgid "Administration serveur"
 #~ msgstr "Serververwaltung"
 

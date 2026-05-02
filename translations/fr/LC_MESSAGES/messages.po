@@ -1089,6 +1089,125 @@ msgstr "véhicule(s) sélectionné(s)"
 msgid "Sauvegarder tout"
 msgstr "Sauvegarder tout"
 
+msgid "Aucun fichier de configuration trouvé dans CONFIGS_DIR. Créez-en un via le bouton ci-dessous."
+msgstr "Aucun fichier de configuration trouvé dans CONFIGS_DIR. Créez-en un via le bouton ci-dessous."
+
+# Result/Race page translations
+
+msgid "Aucun pilote"
+msgstr "Aucun pilote"
+
+msgid "Aucun pilote enregistré dans cette session."
+msgstr "Aucun pilote enregistré dans cette session."
+
+msgid "Aucun résultat disponible pour le moment."
+msgstr "Aucun résultat disponible pour le moment."
+
+msgid "Aucun résultat disponible pour le moment. Les résultats apparaissent ici à la fin de chaque session."
+msgstr "Aucun résultat disponible pour le moment. Les résultats apparaissent ici à la fin de chaque session."
+
+msgid "Aucun résultat pour le moment."
+msgstr "Aucun résultat pour le moment."
+
+msgid "Best"
+msgstr "Best"
+
+msgid "Best perso"
+msgstr "Best perso"
+
+msgid "Ce site utilise uniquement des cookies techniques nécessaires à son fonctionnement."
+msgstr "Ce site utilise uniquement des cookies techniques nécessaires à son fonctionnement."
+
+msgid "Derniers résultats"
+msgstr "Derniers résultats"
+
+msgid "Écart"
+msgstr "Écart"
+
+msgid "Écart-type"
+msgstr "Écart-type"
+
+msgid "en attente de validation"
+msgstr "en attente de validation"
+
+msgid "Entrez votre identifiant ou votre adresse email. Si votre compte est approuvé, vous recevrez un lien de réinitialisation valable 1 heure."
+msgstr "Entrez votre identifiant ou votre adresse email. Si votre compte est approuvé, vous recevrez un lien de réinitialisation valable 1 heure."
+
+msgid "Événement public (pas d\\'inscription requise)"
+msgstr "Événement public (pas d'inscription requise)"
+
+msgid "Gap"
+msgstr "Gap"
+
+msgid "Grille"
+msgstr "Grille"
+
+msgid "Meilleur secteur session"
+msgstr "Meilleur secteur session"
+
+msgid "Meilleur tour"
+msgstr "Meilleur tour"
+
+msgid "Meilleur tour course"
+msgstr "Meilleur tour course"
+
+msgid "Meilleur tour en course"
+msgstr "Meilleur tour en course"
+
+msgid "Meilleur tour session"
+msgstr "Meilleur tour session"
+
+msgid "Modifier l\\'événement"
+msgstr "Modifier l'événement"
+
+msgid "Position de départ"
+msgstr "Position de départ"
+
+msgid "Positions gagnées"
+msgstr "Positions gagnées"
+
+msgid "Positions perdues"
+msgstr "Positions perdues"
+
+msgid "Résultats"
+msgstr "Résultats"
+
+msgid "Résultats des sessions"
+msgstr "Résultats des sessions"
+
+msgid "Temps"
+msgstr "Temps"
+
+msgid "Temps course"
+msgstr "Temps course"
+
+msgid "Tour"
+msgstr "Tour"
+
+msgid "Tour invalide / out-lap"
+msgstr "Tour invalide / out-lap"
+
+msgid "Tour noté"
+msgstr "Tour noté"
+
+msgid "Tours"
+msgstr "Tours"
+
+msgid "tour(s) propre(s)"
+msgstr "tour(s) propre(s)"
+
+msgid "Voir tous"
+msgstr "Voir tous"
+
+msgid "Voir tous les tours"
+msgstr "Voir tous les tours"
+
+msgid "Voir tout"
+msgstr "Voir tout"
+
+msgid "Vous n\\'êtes inscrit à aucun événement."
+msgstr "Vous n'êtes inscrit à aucun événement."
+
 #~ msgid "Administration serveur"
 #~ msgstr "Administration serveur"
 

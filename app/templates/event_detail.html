@@ -14,7 +14,7 @@
     <div style="display:flex;gap:8px;align-items:center">
       <form method="post" action="{{ url_for('events_admin.event_entry_list', event_id=event.id) }}">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <button class="btn-secondary" style="font-size:12px">&#9654; {{ _('Générer entry list') }}</button>
+        <button class="btn-secondary" style="font-size:12px"><span class="icon-run"></span> {{ _('Générer entry list') }}</button>
       </form>
       <a href="{{ url_for('events_admin.events_list') }}" class="btn-secondary" style="font-size:12px">← {{ _('Retour') }}</a>
     </div>

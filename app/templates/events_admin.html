@@ -109,7 +109,7 @@
               {% endif %}
               <form method="post" action="{{ url_for('events_admin.event_delete', event_id=ev.id) }}" style="display:inline">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button class="btn-danger" style="font-size:11px;padding:5px 10px" onclick="return confirm('{{ _("Supprimer cet événement ?") }}')">&#128465;</button>
+                <button class="btn-danger" style="font-size:11px;padding:5px 10px" onclick="return confirm('{{ _("Supprimer cet événement ?") }}')"><span class="icon-trash"></span></button>
               </form>
             </div>
           </td>

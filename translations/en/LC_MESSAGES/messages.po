@@ -1087,6 +1087,125 @@ msgstr "vehicle(s) selected"
 msgid "Sauvegarder tout"
 msgstr "Save all"
 
+msgid "Aucun fichier de configuration trouvé dans CONFIGS_DIR. Créez-en un via le bouton ci-dessous."
+msgstr "No configuration file found in CONFIGS_DIR. Create one using the button below."
+
+# Result/Race page translations
+
+msgid "Aucun pilote"
+msgstr "No driver"
+
+msgid "Aucun pilote enregistré dans cette session."
+msgstr "No driver registered in this session."
+
+msgid "Aucun résultat disponible pour le moment."
+msgstr "No results available yet."
+
+msgid "Aucun résultat disponible pour le moment. Les résultats apparaissent ici à la fin de chaque session."
+msgstr "No results available yet. Results appear here at the end of each session."
+
+msgid "Aucun résultat pour le moment."
+msgstr "No results yet."
+
+msgid "Best"
+msgstr "Best"
+
+msgid "Best perso"
+msgstr "Personal best"
+
+msgid "Ce site utilise uniquement des cookies techniques nécessaires à son fonctionnement."
+msgstr "This site only uses technical cookies necessary for its operation."
+
+msgid "Derniers résultats"
+msgstr "Latest results"
+
+msgid "Écart"
+msgstr "Gap"
+
+msgid "Écart-type"
+msgstr "Std. dev."
+
+msgid "en attente de validation"
+msgstr "awaiting validation"
+
+msgid "Entrez votre identifiant ou votre adresse email. Si votre compte est approuvé, vous recevrez un lien de réinitialisation valable 1 heure."
+msgstr "Enter your username or email address. If your account is approved, you will receive a reset link valid for 1 hour."
+
+msgid "Événement public (pas d\\'inscription requise)"
+msgstr "Public event (no registration required)"
+
+msgid "Gap"
+msgstr "Gap"
+
+msgid "Grille"
+msgstr "Grid"
+
+msgid "Meilleur secteur session"
+msgstr "Session best sector"
+
+msgid "Meilleur tour"
+msgstr "Best lap"
+
+msgid "Meilleur tour course"
+msgstr "Race fastest lap"
+
+msgid "Meilleur tour en course"
+msgstr "Fastest lap in race"
+
+msgid "Meilleur tour session"
+msgstr "Session best lap"
+
+msgid "Modifier l\\'événement"
+msgstr "Edit event"
+
+msgid "Position de départ"
+msgstr "Starting position"
+
+msgid "Positions gagnées"
+msgstr "Positions gained"
+
+msgid "Positions perdues"
+msgstr "Positions lost"
+
+msgid "Résultats"
+msgstr "Results"
+
+msgid "Résultats des sessions"
+msgstr "Session results"
+
+msgid "Temps"
+msgstr "Time"
+
+msgid "Temps course"
+msgstr "Race time"
+
+msgid "Tour"
+msgstr "Lap"
+
+msgid "Tour invalide / out-lap"
+msgstr "Invalid lap / out-lap"
+
+msgid "Tour noté"
+msgstr "Noted lap"
+
+msgid "Tours"
+msgstr "Laps"
+
+msgid "tour(s) propre(s)"
+msgstr "clean lap(s)"
+
+msgid "Voir tous"
+msgstr "See all"
+
+msgid "Voir tous les tours"
+msgstr "See all laps"
+
+msgid "Voir tout"
+msgstr "See all"
+
+msgid "Vous n\\'êtes inscrit à aucun événement."
+msgstr "You are not registered for any event."
+
 #~ msgid "Administration serveur"
 #~ msgstr "Server administration"
 

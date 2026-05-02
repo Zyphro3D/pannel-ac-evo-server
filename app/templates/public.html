@@ -211,9 +211,10 @@
   <div class="results-grid" style="padding:4px 0">
     {% for s in recent_sessions %}
     {% set p = s.parsed %}
-    <a href="{{ url_for('public.result_detail', result_id=s.id) }}" class="res-card">
+    <a href="{{ url_for('public.result_detail', result_id=s.id) }}"
+       class="res-card" style="--wkd-color: {{ s.wkd_color }}">
       <div class="res-card-head">
-        <span class="badge-session">{{ p.session_type or '—' }}</span>
+        <span class="badge-session badge-stype-{{ (p.session_type or '') | lower }}">{{ p.session_type or '—' }}</span>
         <span class="res-date">{{ s.received_at | local_dt_short }}</span>
       </div>
       <div class="res-track">{{ p.track or '—' }}</div>
@@ -222,9 +223,11 @@
       <div class="res-podium">
         {% for drv in p.standings[:3] %}
         <div class="res-podium-row pos-{{ loop.index }}">
-          <span class="res-medal">{% if loop.index == 1 %}🥇{% elif loop.index == 2 %}🥈{% else %}🥉{% endif %}</span>
+          <span class="res-medal-num pos-{{ loop.index }}">{{ loop.index }}</span>
           <span class="res-pname">{{ drv.nickname }}</span>
-          <span class="mono res-ptime">{{ drv.best_lap }}</span>
+          <span class="mono res-ptime">
+            {% if p.is_race %}{{ drv.race_time or drv.best_lap }}{% else %}{{ drv.best_lap }}{% endif %}
+          </span>
         </div>
         {% endfor %}
       </div>

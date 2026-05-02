@@ -1,5 +1,6 @@
 import re
-from datetime import datetime, timezone
+import json as _json
+from datetime import datetime, timezone, timedelta
 
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_babel import _
@@ -16,6 +17,135 @@ public_bp = Blueprint("public", __name__)
 
 _INGAME_RE = re.compile(r'^[A-Za-z0-9_\-.\s]{2,30}$')
 
+_WEEKEND_PALETTE = [
+    "#6366f1",  # indigo
+    "#10b981",  # emerald
+    "#f59e0b",  # amber
+    "#ef4444",  # red
+    "#8b5cf6",  # violet
+    "#06b6d4",  # cyan
+    "#ec4899",  # pink
+]
+_PRACTICE_COLOR = "#64748b"
+# Max gap between two consecutive sessions to be considered part of the same race weekend.
+# In ACE EVO, Race Weekend sessions run back-to-back automatically; 2h covers restarts/pauses
+# without accidentally pulling in a standalone practice done hours earlier.
+_MAX_INTRA_GAP = timedelta(hours=2)
+
+
+def _group_sessions(sessions):
+    """
+    Group sessions into Race Weekends and standalone sessions.
+
+    Strategy:
+    - Anchor on each Race session and walk backward, collecting
+      Practice/Qualifying/Warmup sessions on the same track as long as
+      the gap between consecutive sessions stays within _MAX_INTRA_GAP.
+    - Sessions not attached to any Race anchor = standalone groups
+      (also clustered by track + _MAX_INTRA_GAP for back-to-back practices).
+
+    Returns (sessions_with_color, ordered_groups) newest-first.
+    """
+    if not sessions:
+        return sessions, []
+
+    chrono = sorted(sessions, key=lambda s: s["received_at"])
+    id_to_s = {s["id"]: s for s in sessions}
+    used = set()
+    race_groups = []  # list of session-id lists, in chrono order
+
+    for i, s in enumerate(chrono):
+        stype = (s["parsed"].get("session_type") or "").lower()
+        if stype != "race" or s["id"] in used:
+            continue
+
+        track = (s["parsed"].get("track") or "").strip()
+        weekend_ids = [s["id"]]
+        used.add(s["id"])
+        frontier_time = s["received_at"]
+
+        # Walk backward, linking sessions that form an unbroken chain
+        for j in range(i - 1, -1, -1):
+            prev = chrono[j]
+            if prev["id"] in used:
+                continue
+            prev_track = (prev["parsed"].get("track") or "").strip()
+            prev_type  = (prev["parsed"].get("session_type") or "").lower()
+
+            if prev_track != track:
+                break
+            if (frontier_time - prev["received_at"]) > _MAX_INTRA_GAP:
+                break
+            if prev_type not in {"practice", "qualifying", "warmup", "race"}:
+                break
+
+            weekend_ids.insert(0, prev["id"])
+            used.add(prev["id"])
+            frontier_time = prev["received_at"]
+
+        race_groups.append(weekend_ids)
+
+    # Remaining sessions = standalone; cluster consecutive same-track ones
+    standalone_groups = []
+    for s in chrono:
+        if s["id"] in used:
+            continue
+        track = (s["parsed"].get("track") or "").strip()
+        t = s["received_at"]
+        if (standalone_groups
+                and standalone_groups[-1]["track"] == track
+                and (t - standalone_groups[-1]["last_time"]) <= _MAX_INTRA_GAP):
+            standalone_groups[-1]["ids"].append(s["id"])
+            standalone_groups[-1]["last_time"] = t
+        else:
+            standalone_groups.append({"ids": [s["id"]], "track": track, "last_time": t})
+
+    # Assign colors
+    color_idx = 0
+    all_groups = []
+    for ids in race_groups:
+        color = _WEEKEND_PALETTE[color_idx % len(_WEEKEND_PALETTE)]
+        color_idx += 1
+        all_groups.append({"session_ids": ids, "is_weekend": True, "color": color})
+    for g in standalone_groups:
+        all_groups.append({"session_ids": g["ids"], "is_weekend": False, "color": _PRACTICE_COLOR})
+
+    # Sort by most recent session descending
+    def _latest(g):
+        return max(id_to_s[sid]["received_at"] for sid in g["session_ids"])
+    all_groups.sort(key=_latest, reverse=True)
+
+    # Annotate session dicts
+    id_to_group = {sid: g for g in all_groups for sid in g["session_ids"]}
+    for s in sessions:
+        g = id_to_group.get(s["id"], {})
+        s["wkd_color"]  = g.get("color", _PRACTICE_COLOR)
+        s["is_weekend"] = g.get("is_weekend", False)
+
+    # Build ordered groups for template
+    ordered_groups = []
+    for g in all_groups:
+        group_sessions = sorted(
+            [id_to_s[sid] for sid in g["session_ids"]],
+            key=lambda s: s["received_at"],
+            reverse=True,
+        )
+        types = {
+            (s["parsed"].get("session_type") or "").lower()
+            for s in group_sessions
+            if s["parsed"].get("session_type")
+        }
+        track = (group_sessions[0]["parsed"].get("track") or "").strip() if group_sessions else ""
+        ordered_groups.append({
+            "color":      g["color"],
+            "is_weekend": g["is_weekend"],
+            "track":      track,
+            "types":      types,
+            "sessions":   group_sessions,
+        })
+
+    return sessions, ordered_groups
+
 
 def _now_utc():
     return datetime.now(timezone.utc).replace(tzinfo=None)
@@ -26,7 +156,7 @@ def index():
     if current_user.is_authenticated and current_user.is_admin:
         return redirect(url_for("admin.dashboard"))
 
-    import json as _json
+
     from app.models import SessionResult
     from app.services.results_parser import parse_result_file
 
@@ -60,6 +190,7 @@ def index():
             parsed = {}
         recent_sessions.append({"id": r.id, "received_at": r.received_at,
                                  "source": r.source, "parsed": parsed})
+    recent_sessions, _ = _group_sessions(recent_sessions)
 
     return render_template("public.html",
                            status=status,
@@ -170,7 +301,7 @@ def pilot_register(event_id):
 
 @public_bp.route("/results")
 def results():
-    import json as _json
+
     from app.models import SessionResult
     from app.services.results_parser import parse_result_file
     rows = (SessionResult.query
@@ -184,12 +315,13 @@ def results():
             parsed = {}
         sessions.append({"id": r.id, "received_at": r.received_at,
                          "source": r.source, "parsed": parsed})
-    return render_template("results.html", sessions=sessions)
+    sessions, groups = _group_sessions(sessions)
+    return render_template("results.html", sessions=sessions, groups=groups)
 
 
 @public_bp.route("/results/<int:result_id>")
 def result_detail(result_id):
-    import json as _json
+
     from app.models import SessionResult
     from app.services.results_parser import parse_result_file
     r = SessionResult.query.get_or_404(result_id)

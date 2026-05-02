@@ -37,7 +37,7 @@
             </form>
             <form method="post" action="{{ url_for('events_admin.driver_delete', driver_id=d.id) }}" style="display:inline">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-              <button class="btn-danger" style="font-size:12px" onclick="return confirm('{{ _("Supprimer définitivement") }} {{ d.ingame_name }} ?')">🗑</button>
+              <button class="btn-danger" style="font-size:12px" onclick="return confirm('{{ _("Supprimer définitivement") }} {{ d.ingame_name }} ?')"><span class="icon-trash"></span></button>
             </form>
           </div>
         </td>
@@ -71,7 +71,7 @@
           <div class="table-actions" style="justify-content:flex-end">
             <form method="post" action="{{ url_for('events_admin.driver_delete', driver_id=d.id) }}" style="display:inline">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-              <button class="btn-danger" style="font-size:12px" onclick="return confirm('{{ _("Supprimer définitivement") }} {{ d.ingame_name }} ?')">🗑 {{ _('Supprimer définitivement') }}</button>
+              <button class="btn-danger" style="font-size:12px" onclick="return confirm('{{ _("Supprimer définitivement") }} {{ d.ingame_name }} ?')"><span class="icon-trash"></span> {{ _('Supprimer définitivement') }}</button>
             </form>
           </div>
         </td>
@@ -108,7 +108,7 @@
             </form>
             <form method="post" action="{{ url_for('events_admin.driver_delete', driver_id=d.id) }}" style="display:inline">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-              <button class="btn-danger" style="font-size:11px" onclick="return confirm('{{ _("Supprimer définitivement") }} {{ d.ingame_name }} ?')">🗑 {{ _('Supprimer définitivement') }}</button>
+              <button class="btn-danger" style="font-size:11px" onclick="return confirm('{{ _("Supprimer définitivement") }} {{ d.ingame_name }} ?')"><span class="icon-trash"></span> {{ _('Supprimer définitivement') }}</button>
             </form>
           </div>
         </td>

@@ -7,7 +7,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-RUN mkdir -p /panel/data /panel/logs /aceserver/configs
+RUN mkdir -p /panel/data /panel/logs /aceserver/configs && \
+    pybabel compile -d /panel/translations
 
 ENV DEPLOY_MODE=docker_split \
     ACESERVER_DIR=/aceserver \
