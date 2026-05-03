@@ -11,7 +11,7 @@ from app.services.server_config import (
     get_running_server_info,
 )
 
-from app.services.process_manager import start_server, stop_server, get_status, get_server_logs, set_auto_restart, _ensure_race_weekend_file
+from app.services.process_manager import start_server, stop_server, get_status, get_server_logs, set_auto_restart, _ensure_race_weekend_file, try_rotation_advance
 from pathlib import Path
 from app.services import config_builder
 
@@ -162,6 +162,18 @@ def create_config_route():
     return jsonify(create_config(name, copy_from))
 
 
+@api_bp.route("/configs/<name>", methods=["GET"])
+@login_required
+def get_config_by_name(name):
+    from app.services.server_config import load_config_by_name, list_configs
+    if name not in list_configs():
+        return jsonify({"error": "not_found"}), 404
+    data = load_config_by_name(name)
+    if data is None:
+        return jsonify({"error": "read_error"}), 500
+    return jsonify(data)
+
+
 @api_bp.route("/configs/delete", methods=["POST"])
 @login_required
 def delete_config_route():
@@ -224,6 +236,8 @@ def results_ingest():
     imported = 0
     data = request.get_json(force=True, silent=True)
 
+    final_session_type = ""
+
     if data:
         # ACE EVO a envoyé le JSON directement dans le body
         parsed = parse_result_file(data)
@@ -240,6 +254,7 @@ def results_ingest():
         log.info("Résultats reçus via webhook : track=%r type=%r config=%r run=%r id=%d",
                  parsed["track"], parsed["session_type"], current_config, current_run_id, result.id)
         imported = 1
+        final_session_type = parsed["session_type"]
     else:
         log.info("results/ingest: body vide, scan du dossier aceserver (run=%r)", current_run_id)
         aceserver_dir = current_app.config.get("ACESERVER_DIR", "/aceserver")
@@ -247,6 +262,18 @@ def results_ingest():
                                    run_id=current_run_id)
         if not imported:
             log.warning("results/ingest: aucun nouveau fichier trouvé après scan")
+        else:
+            # Récupérer le type de la dernière session importée pour ce run
+            last_r = (SessionResult.query
+                      .filter_by(run_id=current_run_id)
+                      .order_by(SessionResult.received_at.desc())
+                      .first())
+            if last_r:
+                final_session_type = last_r.session_type or ""
+
+    # Rotation : si le roulement est actif, vérifier si on doit passer à la config suivante
+    if imported and current_config:
+        try_rotation_advance(final_session_type, current_config)
 
     return jsonify({"ok": True, "imported": imported})
 
@@ -277,6 +304,67 @@ def get_results():
             "parsed":       parsed,
         })
     return jsonify(out)
+
+
+# ── Rotation de configs ───────────────────────────────────────────────────────
+
+@api_bp.route("/rotation/start", methods=["POST"])
+@login_required
+def rotation_start():
+    """Démarre le serveur sur le premier fichier du roulement."""
+    from app.services.rotation_manager import get_rotation
+    from app.services.server_config import load_config_by_name
+
+    rot = get_rotation()
+    if not rot.get("enabled") or not rot.get("configs"):
+        return jsonify({"ok": False, "error": "rotation_disabled_or_empty"}), 400
+
+    first_cfg = rot["configs"][0]
+    cfg_data  = load_config_by_name(first_cfg)
+    if cfg_data is None:
+        return jsonify({"ok": False, "error": "config_not_found", "name": first_cfg}), 404
+
+    # Cycle interne off — le watchdog gère l'enchaînement entre configs
+    cfg_data.setdefault("Server", {})["IsCycleEnabled"] = False
+
+    # Arrêt préalable si serveur déjà en cours
+    if get_status()["running"]:
+        stop_server()
+
+    if cfg_data.get("Event", {}).get("SelectedSessionTypeValue") == "GameModeType_RACE_WEEKEND":
+        try:
+            exe = Path(current_app.config["ACESERVER_EXE_PATH"])
+            _ensure_race_weekend_file(exe)
+        except Exception:
+            pass
+
+    sc, sd = config_builder.build_launch_args(cfg_data)
+    result  = start_server(sc, sd, first_cfg, auto_restart=False)
+
+    if result.get("ok"):
+        try:
+            from app.services import discord_notifier
+            discord_notifier.notify_rotation_start(rot["configs"], bool(rot.get("cycle")))
+        except Exception:
+            pass
+
+    return jsonify(result)
+
+
+@api_bp.route("/rotation", methods=["GET"])
+@login_required
+def get_rotation_route():
+    from app.services.rotation_manager import get_rotation
+    return jsonify(get_rotation())
+
+
+@api_bp.route("/rotation", methods=["POST"])
+@login_required
+def post_rotation_route():
+    from app.services.rotation_manager import save_rotation
+    data = request.get_json(force=True) or {}
+    save_rotation(data)
+    return jsonify({"ok": True})
 
 
 @api_bp.route("/results/<int:result_id>")

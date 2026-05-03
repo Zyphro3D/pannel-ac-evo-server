@@ -65,13 +65,15 @@ Classement complet avec drapeaux nationaux, voiture, meilleur tour, secteurs col
 
 ## Fonctionnalités
 
-**Serveur** — Modes Practice et Race Weekend. Auto-restart watchdog. Nombre de joueurs en temps réel. Logs consultables depuis l'interface. Notifications Discord (démarrage, arrêt, crash).
+**Serveur** — Modes Practice et Race Weekend. Auto-restart watchdog. Nombre de joueurs en temps réel. Logs consultables depuis l'interface. Notifications Discord (démarrage, arrêt, crash, roulement).
+
+**Roulement de configs** — Enchaînement automatique de fichiers de configuration à la fin de chaque session. Option cycle (retour au premier après le dernier). Déclenchement via webhook de fin de session. Suivi en temps réel dans l'interface (config active en surbrillance, pill de statut, boutons Lancer/Arrêter). Notifications Discord à chaque changement de config.
 
 **Résultats** — Réception automatique via webhook en fin de session. Affichage sur la page d'accueil (4 dernières sessions) et page dédiée. Classement avec drapeaux nationaux, voiture, meilleurs tours, secteurs color-codés (violet = meilleur session, vert = meilleur perso), gap au leader, consistance pilote. Mode Race : temps total, meilleur tour individuel (badge FL), gap en nombre de tours, grille de départ. Détail tour par tour dépliable.
 
 **Pilotes** — Inscription publique avec validation manuelle. Emails transactionnels (approbation, rejet, rappel). Génération automatique de l'`entry_list.json`.
 
-**Événements** — Publics ou privés, brouillon/publié/terminé. Lancement auto du serveur à l'heure prévue. Fin automatique après la dernière session + 1h de grâce.
+**Événements** — Publics ou privés, brouillon/publié/terminé. Lancement auto du serveur à l'heure prévue. Fin automatique après la dernière session + 1h de grâce. Import depuis un fichier de config existant (pré-remplissage du formulaire).
 
 **Interface** — Multilingue (FR / EN / ES / DE / IT). Statut serveur rafraîchi toutes les 5s. Fuseau horaire configurable.
 
@@ -233,6 +235,21 @@ Le `.env` et la base de données ne sont jamais modifiés. Les migrations s'appl
 ---
 
 ## Changelog
+
+### v1.6.0 — 03/05/2026
+
+**Roulement de configs**
+- File d'attente de fichiers de configuration dans l'onglet Serveur : glisser-déposer pour réordonner, case Cycle (retour au premier après le dernier)
+- Bouton **Lancer le cycle** : démarre le serveur sur la première config du roulement, `IsCycleEnabled` forcé à `false` en mémoire pour laisser le panel gérer l'enchaînement
+- Déclenchement via webhook `POST /api/results/ingest` à la fin de chaque session (Practice → toujours final ; Race Weekend → avance uniquement après la session "race")
+- Suivi en temps réel : pill verte (config en cours → suivante), config active en surbrillance, bouton **Arrêter le cycle**
+- Watchdog comme filet de sécurité (crash), webhook comme déclencheur principal
+- Anti-doublon : le thread webhook vérifie que le watchdog n'a pas déjà avancé avant d'agir
+- Notifications Discord : **Cycle lancé** (liste complète de la file + cycle activé/non) et **Changement de config** (config précédente → nouvelle, mode, circuit, durées)
+
+**Événements — import depuis une config**
+- Menu déroulant en haut du formulaire de création/édition d'événement pour importer un fichier de config existant
+- Pré-remplit automatiquement le circuit, le mode, la météo, les durées de session (secondes → h/min) et les véhicules (sélection, ballast, restrictor)
 
 ### v1.5.0 — 02/05/2026
 

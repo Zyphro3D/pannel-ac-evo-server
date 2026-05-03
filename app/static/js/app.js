@@ -159,6 +159,9 @@ async function toggleAutoRestart(enabled) {
 }
 
 function updateStatusUI(running, runningConfig, autoRestart, players) {
+  _rotIsRunning  = !!running;
+  _rotRunningCfg = runningConfig || '';
+  updateRotationStatus();
   const sameConfig  = running && runningConfig === _activeConfig;
   const otherConfig = running && runningConfig !== _activeConfig;
 
@@ -441,4 +444,167 @@ updateSelectedCount();
   if (savedMax !== null) maxR.value = savedMax;
   updatePiSlider(false);
 })();
+
+/* ── Roulement de configurations ── */
+let _rotConfigs    = [];
+let _rotIsRunning  = false;
+let _rotRunningCfg = '';
+
+function updateRotationStatus() {
+  const enabled     = document.getElementById('rot-enabled')?.checked || false;
+  const hasCycle    = document.getElementById('rot-cycle')?.checked   || false;
+  const cycleActive = _rotIsRunning && _rotConfigs.includes(_rotRunningCfg);
+
+  // Surligner le fichier en cours dans la liste
+  document.querySelectorAll('#rot-list .rot-item').forEach((item, idx) => {
+    item.classList.toggle('rot-item-active', cycleActive && _rotConfigs[idx] === _rotRunningCfg);
+  });
+
+  // Pilule de statut "en cours → suivant"
+  const pill = document.getElementById('rot-status-pill');
+  const txt  = document.getElementById('rot-status-text');
+  if (pill) pill.style.display = cycleActive ? '' : 'none';
+  if (txt && cycleActive) {
+    const curIdx  = _rotConfigs.indexOf(_rotRunningCfg);
+    const nextIdx = curIdx + 1;
+    const nextCfg = nextIdx < _rotConfigs.length
+      ? _rotConfigs[nextIdx]
+      : (hasCycle ? _rotConfigs[0] : null);
+    txt.textContent = _rotRunningCfg + (nextCfg ? '  →  ' + nextCfg : '  (dernier)');
+  }
+
+  // Boutons Start / Stop cycle
+  const btnStart = document.getElementById('btn-start-cycle');
+  const btnStop  = document.getElementById('btn-stop-cycle');
+  if (btnStart) btnStart.style.display = (!cycleActive && enabled && _rotConfigs.length > 0) ? '' : 'none';
+  if (btnStop)  btnStop.style.display  = cycleActive ? '' : 'none';
+}
+
+async function loadRotation() {
+  try {
+    const r = await fetch('/api/rotation');
+    const d = await r.json();
+    _rotConfigs = d.configs || [];
+    const chkEnabled = document.getElementById('rot-enabled');
+    const chkCycle   = document.getElementById('rot-cycle');
+    if (chkEnabled) chkEnabled.checked = !!d.enabled;
+    if (chkCycle)   chkCycle.checked   = !!d.cycle;
+    renderRotList();
+    updateRotationStatus();
+  } catch (_) {}
+}
+
+function onRotEnabledChange() {
+  saveRotation();
+  updateRotationStatus();
+}
+
+function renderRotList() {
+  const list = document.getElementById('rot-list');
+  if (!list) return;
+  list.innerHTML = '';
+  if (_rotConfigs.length === 0) {
+    const p = document.createElement('p');
+    p.className = 'rot-empty';
+    p.textContent = 'Aucune configuration dans le roulement.';
+    list.appendChild(p);
+    updateRotationStatus();
+    return;
+  }
+  _rotConfigs.forEach((cfg, idx) => {
+    const isActive = _rotIsRunning && cfg === _rotRunningCfg;
+    const item = document.createElement('div');
+    item.className = 'rot-item' + (isActive ? ' rot-item-active' : '');
+    item.innerHTML =
+      `<span class="rot-item-pos">${idx + 1}</span>` +
+      `<span class="rot-item-name">${cfg}</span>` +
+      `<div class="rot-item-actions">` +
+        `<button class="rot-btn" onclick="rotMove(${idx},-1)" ${idx === 0 ? 'disabled' : ''}>↑</button>` +
+        `<button class="rot-btn" onclick="rotMove(${idx},1)" ${idx === _rotConfigs.length - 1 ? 'disabled' : ''}>↓</button>` +
+        `<button class="rot-btn rot-btn-del" onclick="rotRemove(${idx})"><span class="icon-trash"></span></button>` +
+      `</div>`;
+    list.appendChild(item);
+  });
+  updateRotationStatus();
+}
+
+function rotAddConfig() {
+  const sel = document.getElementById('rot-add-select');
+  if (!sel || !sel.value) return;
+  _rotConfigs.push(sel.value);
+  renderRotList();
+  saveRotation();
+}
+
+function rotMove(idx, dir) {
+  const newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= _rotConfigs.length) return;
+  [_rotConfigs[idx], _rotConfigs[newIdx]] = [_rotConfigs[newIdx], _rotConfigs[idx]];
+  renderRotList();
+  saveRotation();
+}
+
+function rotRemove(idx) {
+  _rotConfigs.splice(idx, 1);
+  renderRotList();
+  saveRotation();
+}
+
+async function startRotationCycle() {
+  const btn = document.getElementById('btn-start-cycle');
+  if (btn) btn.disabled = true;
+  _serverBtns().forEach(b => { if (b) b.disabled = true; });
+  try {
+    const r = await fetch('/api/rotation/start', { method: 'POST', headers: _csrfHeaders() });
+    const d = await r.json();
+    if (d.ok) {
+      showToast(I18N.serverStarted || 'Cycle démarré', 'success');
+      [1000, 3000, 6000, 10000].forEach(ms => setTimeout(fetchStatus, ms));
+    } else {
+      showToast(d.error || I18N.error, 'error');
+      setTimeout(fetchStatus, 800);
+    }
+  } catch (_) {
+    showToast(I18N.networkError || 'Erreur réseau', 'error');
+    setTimeout(fetchStatus, 800);
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+async function saveRotation() {
+  const enabled = document.getElementById('rot-enabled')?.checked || false;
+  const cycle   = document.getElementById('rot-cycle')?.checked   || false;
+  try {
+    await fetch('/api/rotation', {
+      method: 'POST',
+      headers: _csrfHeaders(),
+      body: JSON.stringify({ enabled, cycle, configs: _rotConfigs }),
+    });
+  } catch (_) {}
+}
+
+async function stopRotationCycle() {
+  const btn = document.getElementById('btn-stop-cycle');
+  if (btn) btn.disabled = true;
+  _serverBtns().forEach(b => { if (b) b.disabled = true; });
+  try {
+    const r = await fetch('/api/server/stop', { method: 'POST', headers: _csrfHeaders() });
+    const d = await r.json();
+    if (d.ok) {
+      showToast(I18N.serverStopped || 'Cycle arrêté', 'success');
+      [1000, 3000].forEach(ms => setTimeout(fetchStatus, ms));
+    } else {
+      showToast(d.error || I18N.error, 'error');
+      setTimeout(fetchStatus, 800);
+    }
+  } catch (_) {
+    showToast(I18N.networkError || 'Erreur réseau', 'error');
+    setTimeout(fetchStatus, 800);
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+if (document.getElementById('rot-enabled')) loadRotation();
 

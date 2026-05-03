@@ -183,6 +183,164 @@ def _show_console() -> bool:
         return False
 
 
+# ── Rotation helpers ─────────────────────────────────────────────────────────
+
+def _rotation_next(config_name: str) -> str | None:
+    try:
+        from app.services.rotation_manager import get_next_config
+        return get_next_config(config_name)
+    except Exception as e:
+        log.error("rotation_manager error: %s", e)
+        return None
+
+
+def _watchdog_rotate_docker(container, next_cfg: str, auto_restart: bool, from_cfg: str = ""):
+    """Passe à la prochaine config du roulement (container en cours ou arrêté)."""
+    configs_dir = Path(os.environ.get("CONFIGS_DIR", "/aceserver/configs"))
+    try:
+        cfg_data = json.loads((configs_dir / next_cfg).read_text())
+    except Exception as e:
+        log.error("Rotation: cannot load config %r: %s", next_cfg, e)
+        return
+    cfg_data.setdefault("Server", {})["IsCycleEnabled"] = False
+    try:
+        from app.services import config_builder
+        sc_b64, sd_b64 = config_builder.build_launch_args(cfg_data)
+    except Exception as e:
+        log.error("Rotation: build_launch_args failed for %r: %s", next_cfg, e)
+        return
+
+    new_run_id = uuid.uuid4().hex
+    lcp = _launch_config_path()
+    lcp.write_text(json.dumps({
+        "serverconfig":     sc_b64,
+        "seasondefinition": sd_b64,
+    }))
+    try:
+        container.reload()
+        # Restart si en cours (rotation déclenchée par webhook), start si arrêté (watchdog)
+        if container.status == "running":
+            container.restart(timeout=10)
+        else:
+            container.start()
+        http_port = int(os.environ.get("ACESERVER_HTTP_PORT", "8080"))
+        _write_state(0, next_cfg, sc_b64, sd_b64, auto_restart, http_port, run_id=new_run_id)
+        log.info("Rotation: started %r (run=%s)", next_cfg, new_run_id)
+        try:
+            from app.services import discord_notifier
+            discord_notifier.notify_rotation_advance(from_cfg, next_cfg, cfg_data)
+        except Exception:
+            pass
+    except Exception as e:
+        log.error("Rotation: failed to start container for %r: %s", next_cfg, e)
+        lcp.unlink(missing_ok=True)
+
+
+def _watchdog_rotate_native(exe: Path, next_cfg: str, auto_restart: bool, from_cfg: str = ""):
+    """Lance le serveur natif avec la prochaine config du roulement."""
+    configs_dir = Path(os.environ.get(
+        "CONFIGS_DIR",
+        str(exe.parent / "configs"),
+    ))
+    try:
+        cfg_data = json.loads((configs_dir / next_cfg).read_text())
+    except Exception as e:
+        log.error("Rotation: cannot load config %r: %s", next_cfg, e)
+        return
+    cfg_data.setdefault("Server", {})["IsCycleEnabled"] = False
+    try:
+        from app.services import config_builder
+        sc_b64, sd_b64 = config_builder.build_launch_args(cfg_data)
+    except Exception as e:
+        log.error("Rotation: build_launch_args failed for %r: %s", next_cfg, e)
+        return
+
+    new_run_id = uuid.uuid4().hex
+    if cfg_data.get("Event", {}).get("SelectedSessionTypeValue") == "GameModeType_RACE_WEEKEND":
+        _ensure_race_weekend_file(exe)
+    try:
+        with open(_LOG_FILE, "a", encoding="utf-8") as lf:
+            lf.write(f"\n[rotation] Starting next config: {next_cfg}\n")
+    except Exception:
+        pass
+    proc = _launch(exe, sc_b64, sd_b64)
+    if proc:
+        _write_state(proc.pid, next_cfg, sc_b64, sd_b64, auto_restart, run_id=new_run_id)
+        log.info("Rotation: started %r (PID=%d)", next_cfg, proc.pid)
+        try:
+            from app.services import discord_notifier
+            discord_notifier.notify_rotation_advance(from_cfg, next_cfg, cfg_data)
+        except Exception:
+            pass
+    else:
+        log.error("Rotation: failed to launch %r", next_cfg)
+
+
+# ── Rotation webhook-driven ──────────────────────────────────────────────────
+
+def try_rotation_advance(session_type: str, config_name: str):
+    """
+    Appelé depuis le webhook de fin de session (results_ingest).
+    ACE EVO garde son processus en vie après une session — le container ne s'arrête
+    pas forcément. On déclenche donc la rotation ici, sans attendre la mort du process.
+
+    Règle "dernière session" :
+      - Config Practice  → toujours la dernière (une seule session par run)
+      - Config Race Weekend → uniquement après la session "Race"
+    """
+    import threading, time
+
+    try:
+        from app.services.rotation_manager import get_rotation, get_next_config
+        rot = get_rotation()
+        if not rot.get("enabled"):
+            return
+
+        next_cfg = get_next_config(config_name)
+        if next_cfg is None:
+            return
+
+        # Charger la config courante pour déterminer son mode (sans contexte Flask)
+        configs_dir = Path(os.environ.get("CONFIGS_DIR", "/aceserver/configs"))
+        try:
+            cfg_data  = json.loads((configs_dir / config_name).read_text())
+            game_mode = cfg_data.get("Event", {}).get("SelectedSessionTypeValue", "")
+        except Exception:
+            game_mode = ""
+
+        is_race_weekend = (game_mode == "GameModeType_RACE_WEEKEND")
+        is_last_session = (not is_race_weekend) or (session_type.lower() == "race")
+
+        if not is_last_session:
+            log.debug("Rotation: session %r pas finale pour %r, skip", session_type, config_name)
+            return
+
+        state        = _read_state()
+        auto_restart = state.get("auto_restart", False)
+        log.info("Rotation (webhook): %r → %r (session=%r)", config_name, next_cfg, session_type)
+
+    except Exception as e:
+        log.error("try_rotation_advance: %s", e)
+        return
+
+    def _rotate():
+        time.sleep(3)  # Laisse ACE EVO finir d'écrire ses fichiers résultats
+        # Évite la double rotation si le watchdog a déjà avancé la config
+        current = _read_state()
+        if current.get("config") != config_name:
+            log.info("Rotation (webhook): state déjà avancé par watchdog, skip")
+            return
+        if _DEPLOY_MODE == "docker_split":
+            container = _get_aceserver_container()
+            if not container:
+                return
+            _watchdog_rotate_docker(container, next_cfg, auto_restart, from_cfg=config_name)
+        elif _exe_path:
+            _watchdog_rotate_native(Path(_exe_path), next_cfg, auto_restart, from_cfg=config_name)
+
+    threading.Thread(target=_rotate, daemon=True, name="rotation-webhook").start()
+
+
 # ── Watchdog ─────────────────────────────────────────────────────────────────
 
 def _watchdog_loop():
@@ -190,11 +348,18 @@ def _watchdog_loop():
     log.info("Watchdog started (mode=%s)", _DEPLOY_MODE)
     while not _watchdog_stop.wait(timeout=10):
         state = _read_state()
-        if not state or not state.get("auto_restart"):
+        if not state:
+            continue
+
+        auto_restart = state.get("auto_restart", False)
+        config_name  = state.get("config", "")
+        next_cfg     = _rotation_next(config_name)
+
+        # Rien à faire si ni auto_restart ni rotation active
+        if not auto_restart and next_cfg is None:
             continue
 
         if _DEPLOY_MODE == "docker_split":
-            # Container stopped unexpectedly → redémarre-le
             container = _get_aceserver_container()
             if not container:
                 continue
@@ -202,8 +367,13 @@ def _watchdog_loop():
                 container.reload()
             except Exception:
                 continue
-            if container.status not in ("running",):
-                config_name = state.get("config", "")
+            if container.status == "running":
+                continue
+
+            # Container stoppé — rotation ou auto_restart
+            if next_cfg is not None:
+                _watchdog_rotate_docker(container, next_cfg, auto_restart, from_cfg=config_name)
+            else:
                 log.warning("Watchdog: container aceserver stoppé, redémarrage…")
                 try:
                     from app.services import discord_notifier
@@ -225,13 +395,17 @@ def _watchdog_loop():
                 alive = _proc_matches(psutil.Process(pid))
             except psutil.NoSuchProcess:
                 pass
-        if not alive:
-            exe          = Path(_exe_path)
-            sc           = state.get("sc", "")
-            sd           = state.get("sd", "")
-            config_name  = state.get("config", "")
-            auto_restart = state.get("auto_restart", True)
-            run_id       = state.get("run_id", "")   # même run_id : c'est le même run qui repart
+        if alive:
+            continue
+
+        exe    = Path(_exe_path)
+        run_id = state.get("run_id", "")
+
+        if next_cfg is not None:
+            _watchdog_rotate_native(exe, next_cfg, auto_restart, from_cfg=config_name)
+        else:
+            sc = state.get("sc", "")
+            sd = state.get("sd", "")
             log.warning("Watchdog: server crashed, restarting…")
             try:
                 from app.services import discord_notifier

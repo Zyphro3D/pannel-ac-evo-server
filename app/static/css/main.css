@@ -1773,3 +1773,130 @@ body {
 .dot-sect     { color: #a78bfa; font-size: 13px; font-weight: 700; width: auto; }
 .dot-noted    { color: #e08a00; }
 .dot-invalid  { color: #ef4444; }
+
+/* ── Import config dans event_form ── */
+.cfg-import-block { display: flex; flex-direction: column; gap: 6px; }
+.cfg-import-label { font-size: 13px; font-weight: 600; color: var(--text-muted); }
+.cfg-import-row   { display: flex; gap: 8px; align-items: center; }
+.cfg-import-sep   { border: none; border-top: 1px solid var(--border); margin: 6px 0 2px; }
+
+/* ── Roulement de configurations ── */
+.rotation-body { padding: 16px 20px; }
+.rotation-hint { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; }
+
+.rot-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 28px;
+  margin-bottom: 10px;
+}
+.rot-empty {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 4px 0;
+}
+
+.rot-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px 10px;
+}
+.rot-item-pos {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.rot-item-name {
+  flex: 1;
+  font-size: 13px;
+  font-family: monospace;
+  color: var(--text);
+}
+.rot-item-actions { display: flex; gap: 4px; }
+
+.rot-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 2px 8px;
+  font-size: 12px;
+  line-height: 1.5;
+  transition: border-color .15s, color .15s;
+}
+.rot-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--text); }
+.rot-btn:disabled { opacity: .3; cursor: default; }
+.rot-btn-del:hover:not(:disabled) { border-color: var(--red); }
+
+.rot-add-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 4px;
+}
+.rot-add-select {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  padding: 6px 10px;
+  font-size: 13px;
+  font-family: inherit;
+}
+.rot-add-select:focus { outline: none; border-color: var(--accent); }
+
+.rot-cycle-row { margin-top: 14px; }
+
+.rot-item-active {
+  border-color: var(--green) !important;
+  background: rgba(34,197,94,0.07) !important;
+}
+.rot-item-active .rot-item-pos {
+  background: var(--green);
+}
+.rot-item-active .rot-item-name {
+  color: var(--green);
+  font-weight: 600;
+}
+
+.rot-status-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--green);
+  background: rgba(34,197,94,0.1);
+  border: 1px solid rgba(34,197,94,0.3);
+  border-radius: 999px;
+  padding: 3px 10px;
+  white-space: nowrap;
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rot-status-pill .dot { flex-shrink: 0; }
+
+.btn-cycle {
+  font-size: 12px;
+  padding: 5px 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}

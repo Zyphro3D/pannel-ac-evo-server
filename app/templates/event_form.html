@@ -21,6 +21,23 @@
   <form method="post" class="panel-form" id="event-form">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
+    <!-- ── Import depuis une config existante ── -->
+    {% if configs %}
+    <div class="cfg-import-block">
+      <label class="cfg-import-label">{{ _('Importer depuis une config') }} <span class="label-hint">({{ _('pré-remplit le formulaire') }})</span></label>
+      <div class="cfg-import-row">
+        <select id="import-config-select" class="rot-add-select">
+          <option value="">— {{ _('Choisir un fichier de config') }} —</option>
+          {% for cfg in configs %}
+          <option value="{{ cfg }}">{{ cfg }}</option>
+          {% endfor %}
+        </select>
+        <button type="button" class="btn-secondary" onclick="importFromConfig()">{{ _('Importer') }} ↵</button>
+      </div>
+    </div>
+    <hr class="cfg-import-sep">
+    {% endif %}
+
     <!-- ── Infos générales ── -->
     <div class="form-group">
       <label>{{ _('Titre') }}</label>
@@ -379,6 +396,66 @@ document.getElementById('event-form').addEventListener('submit', function() {
   });
   document.getElementById('ef-cars-config-json').value = JSON.stringify(cfg);
 });
+
+// ── Import depuis une config ──
+async function importFromConfig() {
+  const sel = document.getElementById('import-config-select');
+  if (!sel || !sel.value) return;
+
+  let cfg;
+  try {
+    const r = await fetch('/api/configs/' + encodeURIComponent(sel.value));
+    if (!r.ok) { alert('Erreur : config introuvable.'); return; }
+    cfg = await r.json();
+  } catch (_) { alert('Erreur réseau.'); return; }
+
+  // Circuit
+  const circSel = document.getElementById('circuit-select');
+  const trackVal = cfg.Event?.SelectedTrackValue || '';
+  if (circSel && trackVal) {
+    circSel.value = trackVal;
+    updateCircuitDisplay(circSel);
+  }
+
+  // Mode
+  const modeSel = document.getElementById('mode-select');
+  if (modeSel) {
+    modeSel.value = cfg.Event?.SelectedSessionTypeValue || 'GameModeType_PRACTICE';
+    onModeChange(modeSel.value);
+  }
+
+  // Météo
+  const wSel = document.querySelector('select[name="weather"]');
+  if (wSel) wSel.value = cfg.Event?.SelectedWeatherTypeValue || '';
+
+  // Durées (secondes → h / min)
+  const setDur = (hName, mName, seconds) => {
+    const s = seconds || 0;
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    document.querySelectorAll(`input[name="${hName}"]`).forEach(el => el.value = h);
+    document.querySelectorAll(`input[name="${mName}"]`).forEach(el => el.value = m);
+  };
+  setDur('practice_h',   'practice_m',   cfg.Sessions?.PracticeSession?.Length);
+  setDur('qualifying_h', 'qualifying_m', cfg.Sessions?.QualifyingSession?.Length);
+  setDur('warmup_h',     'warmup_m',     cfg.Sessions?.WarmupSession?.Length);
+  setDur('race_h',       'race_m',       cfg.Sessions?.RaceSession?.Length);
+
+  // Véhicules — décocher tout, puis cocher les sélectionnés dans la config
+  document.querySelectorAll('.ef-car-check').forEach(cb => cb.checked = false);
+  (cfg.Event?.Cars || []).forEach(c => {
+    if (!(c.IsSelected || c.is_selected)) return;
+    const row = document.querySelector(`#ef-cars-table .car-row[data-car="${c.name}"]`);
+    if (!row) return;
+    const cb = row.querySelector('.ef-car-check');
+    if (cb) cb.checked = true;
+    const bl = row.querySelector('.ef-car-ballast');
+    if (bl) bl.value = c.Ballast ?? c.ballast ?? 0;
+    const rs = row.querySelector('.ef-car-restrictor');
+    if (rs) rs.value = c.Restrictor ?? c.restrictor ?? 0;
+  });
+  efUpdateCount();
+}
 
 // ── Init ──
 document.addEventListener('DOMContentLoaded', () => {

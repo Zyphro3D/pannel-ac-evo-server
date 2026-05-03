@@ -9,7 +9,7 @@ from flask_login import current_user
 
 from app.models import Event, EventRegistration, Driver
 from app.services.database import db
-from app.services.server_config import load_events as load_tracks, load_cars
+from app.services.server_config import load_events as load_tracks, load_cars, list_configs
 
 events_admin_bp = Blueprint("events_admin", __name__)
 
@@ -112,7 +112,8 @@ def event_create():
         return redirect(url_for("events_admin.events_list"))
     return render_template("event_form.html", event=None, action="create",
                            tracks=tracks, cars=cars,
-                           car_categories=car_categories, pi_min=pi_min, pi_max=pi_max)
+                           car_categories=car_categories, pi_min=pi_min, pi_max=pi_max,
+                           configs=list_configs())
 
 
 @events_admin_bp.route("/events/<int:event_id>/edit", methods=["GET", "POST"])
@@ -129,7 +130,8 @@ def event_edit(event_id):
         return redirect(url_for("events_admin.events_list"))
     return render_template("event_form.html", event=event, action="edit",
                            tracks=tracks, cars=cars,
-                           car_categories=car_categories, pi_min=pi_min, pi_max=pi_max)
+                           car_categories=car_categories, pi_min=pi_min, pi_max=pi_max,
+                           configs=list_configs())
 
 
 @events_admin_bp.route("/events/<int:event_id>/delete", methods=["POST"])

@@ -312,6 +312,50 @@
     </form>
   </section>
 
+  <!-- ── Roulement de configurations ── -->
+  <section class="card" style="margin-top:16px">
+    <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <h2>{{ _('Roulement de configs') }}</h2>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span id="rot-status-pill" class="rot-status-pill" style="display:none">
+          <span class="dot online"></span>
+          <span id="rot-status-text"></span>
+        </span>
+        <button id="btn-start-cycle" class="btn-start btn-cycle" onclick="startRotationCycle()" style="display:none">
+          <span class="icon-run"></span> {{ _('Lancer le cycle') }}
+        </button>
+        <button id="btn-stop-cycle" class="btn-stop btn-cycle" onclick="stopRotationCycle()" style="display:none">
+          {{ _('Arrêter le cycle') }}
+        </button>
+        <label class="toggle-label" style="margin:0">
+          <input type="checkbox" id="rot-enabled" onchange="onRotEnabledChange()">
+          <span>{{ _('Activé') }}</span>
+        </label>
+      </div>
+    </div>
+    <div class="rotation-body panel-form">
+      <p class="rotation-hint">{{ _('Quand le serveur s\'arrête, il démarre la configuration suivante de la liste automatiquement.') }}</p>
+
+      <div id="rot-list" class="rot-list"></div>
+
+      <div class="rot-add-row">
+        <select id="rot-add-select" class="rot-add-select">
+          {% for cfg in configs %}
+          <option value="{{ cfg }}">{{ cfg }}</option>
+          {% endfor %}
+        </select>
+        <button class="btn-secondary" onclick="rotAddConfig()">+ {{ _('Ajouter') }}</button>
+      </div>
+
+      <div class="rot-cycle-row">
+        <label class="toggle-label">
+          <input type="checkbox" id="rot-cycle" onchange="saveRotation()">
+          <span>{{ _('Cycle — recommencer depuis le début après le dernier') }}</span>
+        </label>
+      </div>
+    </div>
+  </section>
+
   <!-- ── Véhicules ── -->
   <section class="card" style="margin-top:16px">
       <div class="card-header">

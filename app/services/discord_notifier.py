@@ -146,6 +146,63 @@ def notify_start(config: dict, config_name: str):
     }]})
 
 
+def notify_rotation_start(configs: list, cycle: bool):
+    queue = "\n".join(f"{i+1}. {c}" for i, c in enumerate(configs)) or "—"
+    cycle_txt = "Oui — retour au début après le dernier" if cycle else "Non — s'arrête après le dernier"
+    _send({"embeds": [{
+        "title":  "🔄 Cycle de roulement lancé",
+        "color":  _COLOR_GREEN,
+        "fields": [
+            {"name": "File d'attente",   "value": queue,     "inline": False},
+            {"name": "Cycle activé",     "value": cycle_txt, "inline": False},
+        ],
+        "footer": {"text": _local_now()},
+    }]})
+
+
+def notify_rotation_advance(from_cfg: str, next_cfg: str, next_config_data: dict):
+    event    = next_config_data.get("Event", {})
+    sessions = next_config_data.get("Sessions", {})
+
+    mode     = event.get("SelectedSessionTypeValue", "GameModeType_PRACTICE")
+    mode_lbl = _MODE_LABELS.get(mode, mode)
+
+    track_val = event.get("SelectedTrackValue", "")
+    parts     = track_val.split("|")
+    track     = parts[0] if parts[0] else "Inconnu"
+    layout    = parts[1] if len(parts) > 1 else ""
+    circuit   = f"{track} — {layout}" if layout else (track or "—")
+
+    fields = [
+        {"name": "Config précédente", "value": from_cfg  or "—", "inline": True},
+        {"name": "Nouvelle config",   "value": next_cfg  or "—", "inline": True},
+        {"name": "​",            "value": "​",          "inline": True},
+        {"name": "Mode",    "value": mode_lbl or "—", "inline": True},
+        {"name": "Circuit", "value": circuit  or "—", "inline": True},
+    ]
+
+    if mode == "GameModeType_RACE_WEEKEND":
+        sess_map = {
+            "Practice":   sessions.get("PracticeSession", {}),
+            "Qualifying": sessions.get("QualifyingSession", {}),
+            "Warmup":     sessions.get("WarmupSession", {}),
+            "Race":       sessions.get("RaceSession", {}),
+        }
+        for name, sess in sess_map.items():
+            fields.append({"name": name, "value": _fmt_duration(sess.get("Length", 0)), "inline": True})
+    else:
+        sess_key = "PracticeSession" if mode == "GameModeType_PRACTICE" else "QualifyingSession"
+        sess = sessions.get(sess_key, {})
+        fields.append({"name": "Durée", "value": _fmt_duration(sess.get("Length", 300)), "inline": True})
+
+    _send({"embeds": [{
+        "title":  "⏭️ Changement de config",
+        "color":  _COLOR_GREEN,
+        "fields": fields,
+        "footer": {"text": _local_now()},
+    }]})
+
+
 def notify_stop(config_name: str):
     _send({"embeds": [{
         "title":  "Serveur arrêté",
