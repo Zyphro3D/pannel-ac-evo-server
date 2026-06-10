@@ -1,0 +1,86 @@
+{
+  "Server": {
+    "SelectedServerTypeValue": "MultiplayerServerListSessionType_RANKED",
+    "ServerName": "New Server",
+    "MaxPlayers": 8,
+    "MaxPlayersLimit": 32,
+    "TcpPort": 9700,
+    "UdpPort": 9700,
+    "HttpPort": 8080,
+    "IsCycleEnabled": true,
+    "DriverPassword": "",
+    "SpectatorPassword": "",
+    "AdminPassword": "",
+    "EntryListUrl": "",
+    "ResultsPostUrl": "http://panel:4300/api/results/ingest",
+    "EntryListPath": "",
+    "ResultsPath": ""
+  },
+  "Event": {
+    "SelectedSessionTypeValue": "GameModeType_PRACTICE",
+    "SelectedWeatherTypeValue": "GameModeSelectionWeatherType_CLEAR",
+    "SelectedWeatherBehaviorValue": "GameModeSelectionWeatherBehaviour_STATIC",
+    "SelectedInitialGripValue": "InitialGrip_GREEN",
+    "SelectedTrackValue": "brands_hatch|GP|GP Time Attack|3916",
+    "Cars": [],
+    "ShowOnlySelected": false
+  },
+  "Sessions": {
+    "PracticeSession": {
+      "forceTimeDuration": true,
+      "TimeMultiplier": 1,
+      "IsVisible": true,
+      "Name": "Practice",
+      "Duration": 0,
+      "Length": 300,
+      "Hour": 16,
+      "Minute": 0,
+      "MaxWaitToBox": 10,
+      "OvertimeWaitingNextSession": 10,
+      "MinWaitingForPlayers": 10,
+      "MaxWaitingForPlayers": 30
+    },
+    "QualifyingSession": {
+      "forceTimeDuration": true,
+      "TimeMultiplier": 1,
+      "IsVisible": false,
+      "Name": "Qualify",
+      "Duration": 0,
+      "Length": 300,
+      "Hour": 16,
+      "Minute": 0,
+      "MaxWaitToBox": 10,
+      "OvertimeWaitingNextSession": 10,
+      "MinWaitingForPlayers": 10,
+      "MaxWaitingForPlayers": 30
+    },
+    "WarmupSession": {
+      "forceTimeDuration": true,
+      "TimeMultiplier": 1,
+      "IsVisible": false,
+      "Name": "Warmup",
+      "Duration": 0,
+      "Length": 300,
+      "Hour": 16,
+      "Minute": 0,
+      "MaxWaitToBox": 10,
+      "OvertimeWaitingNextSession": 10,
+      "MinWaitingForPlayers": 10,
+      "MaxWaitingForPlayers": 30
+    },
+    "RaceSession": {
+      "forceTimeDuration": false,
+      "TimeMultiplier": 1,
+      "IsVisible": false,
+      "Name": "Race",
+      "Duration": 0,
+      "Length": 300,
+      "Hour": 16,
+      "Minute": 0,
+      "MaxWaitToBox": 10,
+      "OvertimeWaitingNextSession": 10,
+      "MinWaitingForPlayers": 10,
+      "MaxWaitingForPlayers": 30
+    }
+  }
+}

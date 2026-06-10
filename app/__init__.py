@@ -11,6 +11,12 @@ from config import Config
 _TRANSLATIONS_DIR = str(Path(__file__).parent.parent / "translations")
 _VERSION_FILE     = Path(__file__).parent.parent / "VERSION"
 _APP_VERSION      = _VERSION_FILE.read_text().strip() if _VERSION_FILE.exists() else "?"
+_STATIC_DIR       = Path(__file__).parent / "static"
+_STATIC_VERSION   = _APP_VERSION
+try:
+    _STATIC_VERSION = f"{_APP_VERSION}.{max((_STATIC_DIR / 'css' / 'main.css').stat().st_mtime_ns, (_STATIC_DIR / 'js' / 'app.js').stat().st_mtime_ns)}"
+except OSError:
+    pass
 
 login_manager = LoginManager()
 babel         = Babel()
@@ -24,10 +30,41 @@ def get_locale():
     return request.accept_languages.best_match(Config.BABEL_SUPPORTED_LOCALES, Config.BABEL_DEFAULT_LOCALE)
 
 
+def _seed_admin_accounts(db, cfg):
+    """Au 1er démarrage, crée les comptes admin depuis les variables d'environnement."""
+    from app.models import AdminAccount
+    if AdminAccount.query.count() > 0:
+        return
+    import logging
+    log = logging.getLogger(__name__)
+    su_user = cfg.get("SUPERADMIN_USERNAME", "superadmin")
+    su_pass = cfg.get("SUPERADMIN_PASSWORD", "")
+    ad_user = cfg.get("ADMIN_USERNAME", "admin")
+    ad_pass = cfg.get("ADMIN_PASSWORD", "")
+    if su_pass:
+        sa = AdminAccount(username=su_user, display_name="Super Admin", role="superadmin")
+        sa.set_password(su_pass)
+        db.session.add(sa)
+        log.info("Compte superadmin '%s' migré vers la base de données.", su_user)
+    if ad_pass and ad_user != su_user:
+        a = AdminAccount(username=ad_user, display_name="Administrateur", role="admin")
+        a.set_password(ad_pass)
+        db.session.add(a)
+        log.info("Compte admin '%s' migré vers la base de données.", ad_user)
+    db.session.commit()
+
+
 def _migrate_db(db):
     """Applique les ALTER TABLE manquants sur SQLite sans casser les données existantes."""
     import sqlalchemy as sa
     engine = db.engine
+    allowed_tables = {"event", "driver", "session_result"}
+    allowed_columns = {
+        "practice_minutes", "qualifying_minutes", "warmup_minutes", "race_minutes",
+        "allowed_cars", "reset_token", "reset_token_expires", "is_public",
+        "auto_launch", "launched", "discord_notified", "cars_config",
+        "config_name", "run_id",
+    }
     cols_to_add = [
         ("event",  "practice_minutes",    "INTEGER DEFAULT 60"),
         ("event",  "qualifying_minutes",  "INTEGER DEFAULT 30"),
@@ -47,6 +84,8 @@ def _migrate_db(db):
     with engine.connect() as conn:
         for table, col, col_def in cols_to_add:
             try:
+                if table not in allowed_tables or col not in allowed_columns:
+                    raise ValueError(f"Migration non whitelistée: {table}.{col}")
                 existing = [r[1] for r in conn.execute(sa.text(f"PRAGMA table_info({table})"))]
                 if col not in existing:
                     conn.execute(sa.text(f"ALTER TABLE {table} ADD COLUMN {col} {col_def}"))
@@ -68,6 +107,7 @@ def create_app():
         from . import models  # noqa: F401 — enregistre les modèles
         db.create_all()
         _migrate_db(db)
+        _seed_admin_accounts(db, app.config)
 
     # ── Extensions Flask ──────────────────────────────────────────────────────
     babel.init_app(app, locale_selector=get_locale, default_translation_directories=_TRANSLATIONS_DIR)
@@ -80,21 +120,37 @@ def create_app():
     # ── Blueprints ────────────────────────────────────────────────────────────
     from app.routes.auth         import auth_bp
     from app.routes.admin        import admin_bp
-    from app.routes.api          import api_bp
+    from app.routes.api          import api_bp, results_ingest
     from app.routes.public       import public_bp
     from app.routes.events_admin import events_admin_bp
+    from app.routes.leaderboard  import leaderboard_bp
+    from app.routes.live         import live_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(api_bp,          url_prefix="/api")
     app.register_blueprint(public_bp)
     app.register_blueprint(events_admin_bp)
-    csrf.exempt(api_bp)  # API JSON : CSRF géré via X-CSRFToken dans app.js
+    app.register_blueprint(leaderboard_bp)
+    app.register_blueprint(live_bp)
+    csrf.exempt(live_bp)
+    csrf.exempt(results_ingest)  # Webhook externe protégé par HMAC/réseau privé.
 
     app.jinja_env.globals["get_locale"]  = get_locale
     app.jinja_env.globals["app_version"] = _APP_VERSION
+    app.jinja_env.globals["static_version"] = _STATIC_VERSION
+    app.jinja_env.globals["panel_title"]       = Config.PANEL_TITLE
+    app.jinja_env.globals["panel_banner_img"]  = Config.PANEL_BANNER_IMG
+    app.jinja_env.globals["panel_logo_img"]    = Config.PANEL_LOGO_IMG
     import json as _json
     app.jinja_env.filters["from_json"] = lambda s: _json.loads(s) if s else []
+
+    # ── Servir le dossier media/ ─────────────────────────────────────────────
+    _media_dir = Path(__file__).parent.parent / "media"
+    from flask import send_from_directory
+    @app.route("/media/<path:filename>")
+    def serve_media(filename):
+        return send_from_directory(str(_media_dir), filename)
 
     from zoneinfo import ZoneInfo as _ZoneInfo
     from datetime import timezone as _utc_tz
@@ -161,6 +217,8 @@ def create_app():
         _sec.warning("ADMIN_PASSWORD utilise la valeur par défaut 'admin' — changez-la dans .env")
     if Config.SUPERADMIN_PASSWORD == "superadmin":
         _sec.warning("SUPERADMIN_PASSWORD utilise la valeur par défaut 'superadmin' — changez-la dans .env")
+    if not Config.RESULTS_INGEST_SECRET:
+        _sec.warning("RESULTS_INGEST_SECRET non défini — /api/results/ingest accepte seulement les réseaux privés/locaux")
 
     from app.services.process_manager import init_watchdog
     init_watchdog(app.config["ACESERVER_EXE_PATH"])
@@ -201,5 +259,27 @@ def create_app():
 
     from app.services.event_scheduler import init as init_scheduler
     init_scheduler(app)
+
+    # ── Client TCP ACE EVO (chat in-game + leaderboard temps réel) ───────────
+    _bot_steam_id = app.config.get("ACE_BOT_STEAM_ID", "")
+    if _bot_steam_id:
+        from app.services import ace_tcp_client
+        _tcp_host = app.config.get("ACESERVER_TCP_HOST", "127.0.0.1")
+        _tcp_port = app.config.get("ACESERVER_TCP_PORT", 9700)
+        _car_model = app.config.get("ACE_BOT_CAR_MODEL", "preset_190_evo_ii")
+        from app.services.process_manager import _LOG_FILE, _DEPLOY_MODE, _DOCKER_CONTAINER_NAME
+        ace_tcp_client.start(
+            host=_tcp_host,
+            port=_tcp_port,
+            steam_id=_bot_steam_id,
+            car_model=_car_model,
+            display_name=app.config.get("ACE_BOT_DISPLAY_NAME", ""),
+            admin_password=app.config.get("ACE_BOT_ADMIN_PASSWORD", ""),
+            discord_url=app.config.get("DISCORD_INVITE_URL", ""),
+            site_url=app.config.get("PANEL_URL", ""),
+            deploy_mode=_DEPLOY_MODE,
+            log_file=str(_LOG_FILE),
+            container_name=_DOCKER_CONTAINER_NAME,
+        )
 
     return app

@@ -1,17 +1,31 @@
-import hmac
 from datetime import datetime
-from flask import current_app
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from app.services.database import db
 
 
-# ── Admin / Superadmin (in-memory, no DB) ────────────────────────────────────
+# ── AdminAccount (admin/superadmin stockés en DB) ────────────────────────────
 
-class AdminUser(UserMixin):
-    def __init__(self, role: str = "admin"):
-        self.id   = role
-        self.role = role
+class AdminAccount(UserMixin, db.Model):
+    __tablename__ = "admin_account"
+
+    id           = db.Column(db.Integer, primary_key=True)
+    username     = db.Column(db.String(50), unique=True, nullable=False)
+    display_name = db.Column(db.String(100), default="")
+    _pw_hash     = db.Column("password_hash", db.String(256), nullable=False, default="")
+    role         = db.Column(db.String(20), default="admin")   # "admin" | "superadmin"
+    is_active    = db.Column(db.Boolean, default=True)
+    created_at   = db.Column(db.DateTime, default=datetime.utcnow)
+    last_login   = db.Column(db.DateTime, nullable=True)
+
+    def get_id(self) -> str:
+        return f"aa_{self.id}"
+
+    def set_password(self, password: str):
+        self._pw_hash = generate_password_hash(password)
+
+    def check_password(self, password: str) -> bool:
+        return check_password_hash(self._pw_hash, password) if self._pw_hash else False
 
     @property
     def is_superadmin(self) -> bool:
@@ -25,16 +39,9 @@ class AdminUser(UserMixin):
     def is_pilot(self) -> bool:
         return False
 
-    @staticmethod
-    def check_credentials(username: str, password: str) -> str | None:
-        cfg = current_app.config
-        def _eq(a: str, b: str) -> bool:
-            return hmac.compare_digest(a.encode(), b.encode())
-        if _eq(username, cfg.get("SUPERADMIN_USERNAME", "")) and _eq(password, cfg.get("SUPERADMIN_PASSWORD", "")):
-            return "superadmin"
-        if _eq(username, cfg.get("ADMIN_USERNAME", "")) and _eq(password, cfg.get("ADMIN_PASSWORD", "")):
-            return "admin"
-        return None
+    @property
+    def display(self) -> str:
+        return self.display_name or self.username
 
 
 # ── Driver (pilote, stocké en DB) ─────────────────────────────────────────────
@@ -198,8 +205,12 @@ from app import login_manager
 
 @login_manager.user_loader
 def load_user(user_id: str):
-    if user_id in ("admin", "superadmin"):
-        return AdminUser(role=user_id)
+    if user_id.startswith("aa_"):
+        acc = db.session.get(AdminAccount, int(user_id[3:]))
+        return acc if (acc and acc.is_active) else None
     if user_id.startswith("d_"):
         return db.session.get(Driver, int(user_id[2:]))
+    # Sessions legacy (avant migration) — tente de retrouver par rôle
+    if user_id in ("admin", "superadmin"):
+        return AdminAccount.query.filter_by(role=user_id, is_active=True).first()
     return None

@@ -280,3 +280,11 @@ def notify_new_registration(driver):
         ],
         "footer": {"text": _local_now()},
     }]})
+
+
+def safe_notify(fn, *args, **kwargs):
+    """Appelle un notifier Discord en loggant l'erreur sans propager l'exception."""
+    try:
+        fn(*args, **kwargs)
+    except Exception as e:
+        log.warning("Discord notification skipped (%s): %s", fn.__name__, e)

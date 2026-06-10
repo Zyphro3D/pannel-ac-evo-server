@@ -4,12 +4,20 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
+def _required_env(name: str) -> str:
+    value = os.environ.get(name, "").strip()
+    if not value:
+        raise RuntimeError(f"{name} doit être défini dans l'environnement ou dans .env")
+    return value
+
+
 class Config:
-    SECRET_KEY          = os.environ.get("SECRET_KEY", "dev-secret-key")
+    SECRET_KEY          = _required_env("SECRET_KEY")
     ADMIN_USERNAME      = os.environ.get("ADMIN_USERNAME", "admin")
-    ADMIN_PASSWORD      = os.environ.get("ADMIN_PASSWORD", "admin")
+    ADMIN_PASSWORD      = _required_env("ADMIN_PASSWORD")
     SUPERADMIN_USERNAME = os.environ.get("SUPERADMIN_USERNAME", "superadmin")
-    SUPERADMIN_PASSWORD = os.environ.get("SUPERADMIN_PASSWORD", "superadmin")
+    SUPERADMIN_PASSWORD = _required_env("SUPERADMIN_PASSWORD")
 
     # Dossier contenant les fichiers de config JSON du panel
     CONFIGS_DIR = os.environ.get("CONFIGS_DIR", r"C:\Users\Administrateur\Documents\ACE")
@@ -35,9 +43,19 @@ class Config:
     )
 
     ACESERVER_HTTP_PORT = int(os.environ.get("ACESERVER_HTTP_PORT", 8080))
+    ACESERVER_TCP_HOST  = os.environ.get("ACESERVER_TCP_HOST", "127.0.0.1")
+    ACESERVER_TCP_PORT  = int(os.environ.get("ACESERVER_TCP_PORT",  9700))
+
+    # ── Client TCP (chat in-game + leaderboard temps réel) ────────────────────
+    # Steam ID du "bot" qui se connecte au serveur (laisser vide pour désactiver)
+    ACE_BOT_STEAM_ID       = os.environ.get("ACE_BOT_STEAM_ID",       "")
+    ACE_BOT_CAR_MODEL      = os.environ.get("ACE_BOT_CAR_MODEL",      "preset_190e_mech_1")
+    ACE_BOT_DISPLAY_NAME   = os.environ.get("ACE_BOT_DISPLAY_NAME",   "")
+    ACE_BOT_ADMIN_PASSWORD = os.environ.get("ACE_BOT_ADMIN_PASSWORD", "")
     DISCORD_WEBHOOK_URL        = os.environ.get("DISCORD_WEBHOOK_URL", "")
     DISCORD_PILOTS_WEBHOOK_URL = os.environ.get("DISCORD_PILOTS_WEBHOOK_URL", "")
     DISCORD_INVITE_URL         = os.environ.get("DISCORD_INVITE_URL", "")
+    RESULTS_INGEST_SECRET      = os.environ.get("RESULTS_INGEST_SECRET", "")
     SERVER_SHOW_CONSOLE = os.environ.get("SERVER_SHOW_CONSOLE", "true").lower() == "true"
 
     # ── Base de données ───────────────────────────────────────────────────────
@@ -63,6 +81,11 @@ class Config:
     # ── Fuseau horaire ────────────────────────────────────────────────────────
     PANEL_TIMEZONE = os.environ.get("PANEL_TIMEZONE", "Europe/Paris")
 
+    # ── Personnalisation du panel ─────────────────────────────────────────────
+    PANEL_TITLE      = os.environ.get("PANEL_TITLE",      "AC EVO Panel")
+    PANEL_BANNER_IMG = os.environ.get("PANEL_BANNER_IMG", "")   # nom de fichier dans media/banner/
+    PANEL_LOGO_IMG   = os.environ.get("PANEL_LOGO_IMG",   "")   # nom de fichier dans media/banner/
+
     # ── Mode de déploiement ───────────────────────────────────────────────────
     # "native" = Windows subprocess, "docker" = Wine sur Linux
     DEPLOY_MODE = os.environ.get("DEPLOY_MODE", "native")
@@ -71,4 +94,4 @@ class Config:
     SESSION_COOKIE_HTTPONLY  = True
     SESSION_COOKIE_SAMESITE  = "Lax"
     SESSION_COOKIE_SECURE    = os.environ.get("SESSION_COOKIE_SECURE", "true").lower() == "true"
-    PERMANENT_SESSION_LIFETIME = timedelta(hours=12)
+    PERMANENT_SESSION_LIFETIME = timedelta(hours=2)

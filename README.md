@@ -21,59 +21,121 @@
 
 ## Aperçu
 
-### Dashboard admin
+### Pages publiques
 
-Statut du serveur en temps réel, événement en cours et prochains à venir. Accessible sans compte.
+**Accueil** — Événements à venir, session en cours avec joueurs connectés et uptime, classement des 4 dernières sessions.
 
 <p align="center">
-  <img src="docs/screenshot-dashboard.png" alt="Dashboard" width="700">
+  <img src="app/static/screenshots/01_accueil.png" alt="Accueil" width="700">
+</p>
+<p align="center">
+  <img src="app/static/screenshots/01b_accueil_bas.png" alt="Accueil — bas de page" width="700">
 </p>
 
-### Gestion du serveur
-
-Démarrage, arrêt, restart depuis le navigateur. Circuit, météo, voitures avec filtres catégorie et plage PI, ballast et restrictor par voiture.
+**Résultats** — Historique des sessions groupées par run (Race Weekend ou Practice). Badges PRACTICE / QUALIFYING / WARMUP / RACE. Classement avec drapeaux nationaux, meilleurs tours et secteurs color-codés.
 
 <p align="center">
-  <img src="docs/screenshot-server.png" alt="Gestion serveur" width="700">
+  <img src="app/static/screenshots/02_resultats.png" alt="Résultats" width="700">
 </p>
 
-### Calendrier des événements
-
-Vue mensuelle avec chips colorés. Clic sur un créneau vide → formulaire pré-rempli. Lancement automatique du serveur à l'heure prévue.
+**Classement global** — Leaderboard de la saison par voiture : meilleur tour, nombre de sessions, dernière participation.
 
 <p align="center">
-  <img src="docs/screenshot-events.png" alt="Calendrier" width="700">
+  <img src="app/static/screenshots/03_classement.png" alt="Classement" width="700">
 </p>
 
-### Résultats de session
-
-Historique complet des sessions avec podium, meilleurs tours et classement. Visible directement sur la page d'accueil publique (4 dernières sessions).
+**Timing en direct** — Classement live mis à jour toutes les 15 secondes : position, pilote, voiture, meilleur tour et écart au leader.
 
 <p align="center">
-  <img src="docs/page_resultat.png" alt="Page résultats" width="700">
+  <img src="app/static/screenshots/04_timing.png" alt="Timing en direct" width="700">
 </p>
 
-### Détail d'une session
-
-Classement complet avec drapeaux nationaux, voiture, meilleur tour, secteurs color-codés (violet = meilleur session, vert = meilleur perso), gap au leader, consistance pilote et détail tour par tour dépliable. En mode **Race** : temps total de course, meilleur tour individuel (badge **FL**), gap en nombre de tours et grille de départ.
+**Connexion / Inscription** — Authentification pilote et formulaire d'inscription (validation manuelle par l'admin).
 
 <p align="center">
-  <img src="docs/race_details.png" alt="Détail session Race" width="700">
+  <img src="app/static/screenshots/05_login.png" alt="Connexion" width="700">
+</p>
+<p align="center">
+  <img src="app/static/screenshots/06_inscription.png" alt="Inscription" width="700">
+</p>
+
+---
+
+### Interface admin
+
+**Dashboard** — Vue synthétique : statut serveur, événement en cours, logs récents.
+
+<p align="center">
+  <img src="app/static/screenshots/07_dashboard.png" alt="Dashboard admin" width="700">
+</p>
+
+**Serveur — Statut** — Démarrage, arrêt, restart. Statut en temps réel, joueurs connectés, logs en direct.
+
+<p align="center">
+  <img src="app/static/screenshots/08_serveur_status.png" alt="Serveur statut" width="700">
+</p>
+
+**Serveur — Configuration** — Sélection du circuit, météo, durées de session (Practice / Qualifying / Warmup / Race). Liste des voitures avec filtres par catégorie et plage PI, ballast et restrictor par voiture.
+
+<p align="center">
+  <img src="app/static/screenshots/09_serveur_config.png" alt="Serveur config" width="700">
+</p>
+
+**Serveur — Rotation** — File d'attente de configs avec glisser-déposer pour réordonner. Option cycle (retour au premier après le dernier). Suivi en temps réel : config active en surbrillance, config suivante.
+
+<p align="center">
+  <img src="app/static/screenshots/10_serveur_rotation.png" alt="Rotation de configs" width="700">
+</p>
+
+**Serveur — Événements** — Déclenchement des sessions liées aux événements planifiés.
+
+<p align="center">
+  <img src="app/static/screenshots/11_serveur_events.png" alt="Serveur événements" width="700">
+</p>
+
+**Pilotes** — Liste des pilotes inscrits avec statut (en attente / approuvé / rejeté). Actions d'approbation, rejet, email. Génération de l'`entry_list.json`.
+
+<p align="center">
+  <img src="app/static/screenshots/12_pilotes.png" alt="Pilotes" width="700">
+</p>
+
+**Événements** — Calendrier mensuel avec chips colorés. Formulaire de création/édition : circuit, mode, météo, voitures, durées. Import depuis un fichier de config existant pour pré-remplir le formulaire.
+
+<p align="center">
+  <img src="app/static/screenshots/13_evenements.png" alt="Événements" width="700">
+</p>
+
+**Live Admin** — Contrôle de la session en cours : avancer dans la rotation, consulter les logs en temps réel.
+
+<p align="center">
+  <img src="app/static/screenshots/14_live_admin.png" alt="Live admin" width="700">
+</p>
+
+**Paramètres** — Configuration du panel depuis l'interface : clés API, Discord, email, sécurité. Gestion des comptes admin.
+
+<p align="center">
+  <img src="app/static/screenshots/15_parametres.png" alt="Paramètres" width="700">
 </p>
 
 ---
 
 ## Fonctionnalités
 
-**Serveur** — Modes Practice et Race Weekend. Auto-restart watchdog. Nombre de joueurs en temps réel. Logs consultables depuis l'interface. Notifications Discord (démarrage, arrêt, crash, roulement).
+**Serveur** — Modes Practice et Race Weekend. Auto-restart watchdog. Joueurs en temps réel. Logs consultables depuis l'interface. Notifications Discord (démarrage, arrêt, crash, roulement).
 
-**Roulement de configs** — Enchaînement automatique de fichiers de configuration à la fin de chaque session. Option cycle (retour au premier après le dernier). Déclenchement via webhook de fin de session. Suivi en temps réel dans l'interface (config active en surbrillance, pill de statut, boutons Lancer/Arrêter). Notifications Discord à chaque changement de config.
+**Roulement de configs** — File d'attente avec glisser-déposer, option cycle. Déclenchement via webhook de fin de session. Avancement automatique (Practice → suivant ; Race Weekend → après la race). Notifications Discord à chaque changement.
 
-**Résultats** — Réception automatique via webhook en fin de session. Affichage sur la page d'accueil (4 dernières sessions) et page dédiée. Classement avec drapeaux nationaux, voiture, meilleurs tours, secteurs color-codés (violet = meilleur session, vert = meilleur perso), gap au leader, consistance pilote. Mode Race : temps total, meilleur tour individuel (badge FL), gap en nombre de tours, grille de départ. Détail tour par tour dépliable.
+**Timing live** — Classement en temps réel via l'API TCP du serveur. Mis à jour toutes les 15 secondes. Accessible publiquement.
+
+**Leaderboard** — Classement global de la saison par voiture, calculé à partir de tous les résultats importés.
+
+**Résultats** — Import automatique via webhook en fin de session. Classement avec drapeaux nationaux, meilleurs tours, secteurs color-codés (violet = meilleur session, vert = meilleur perso), gap au leader, consistance pilote, détail tour par tour dépliable. Mode Race : temps total, meilleur tour individuel (badge FL), gap en tours, grille de départ.
 
 **Pilotes** — Inscription publique avec validation manuelle. Emails transactionnels (approbation, rejet, rappel). Génération automatique de l'`entry_list.json`.
 
-**Événements** — Publics ou privés, brouillon/publié/terminé. Lancement auto du serveur à l'heure prévue. Fin automatique après la dernière session + 1h de grâce. Import depuis un fichier de config existant (pré-remplissage du formulaire).
+**Événements** — Publics ou privés, brouillon/publié/terminé. Lancement auto du serveur à l'heure prévue. Fin automatique après la dernière session + 1h de grâce. Import depuis un fichier de config existant.
+
+**Paramètres** — Toutes les variables `.env` éditables depuis l'interface sans accès SSH. Gestion des comptes admin (création, mot de passe, suppression).
 
 **Interface** — Multilingue (FR / EN / ES / DE / IT). Statut serveur rafraîchi toutes les 5s. Fuseau horaire configurable.
 
@@ -109,14 +171,16 @@ curl -fsSL https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.g
 ```bash
 git clone https://github.com/Zyphro3D/pannel-ac-evo-server.git /opt/pannel-ac-evo-server
 
-mkdir -p /opt/pannel-ac-evo-server/docker/aceserver/configs
-cp -r /opt/aceserver/* /opt/pannel-ac-evo-server/docker/aceserver/
+mkdir -p /opt/pannel-ac-evo-server/aceserver/configs
+cp -r /opt/aceserver/* /opt/pannel-ac-evo-server/aceserver/
 ```
+
+> Les fichiers résultats générés par le jeu (`result*.json`) tombent dans `aceserver/results/` — ce dossier est ignoré par git.
 
 ### 3. Configurer
 
 ```bash
-cd /opt/pannel-ac-evo-server/docker
+cd /opt/pannel-ac-evo-server
 cp .env.example .env
 nano .env
 ```
@@ -131,13 +195,13 @@ PANEL_URL=            # https://votre-domaine.fr ou http://IP:4300
 SESSION_COOKIE_SECURE=true   # false si HTTP sans reverse proxy
 ```
 
-### 4. Lancer
+### 4. Builder et lancer
 
 ```bash
-docker compose up -d
+docker compose up -d --build
 ```
 
-Deux containers démarrent :
+Deux containers sont construits puis démarrent :
 - **`ace-panel`** — Flask (Python uniquement), port 4300
 - **`ace-server`** — Wine + AssettoCorsaEVOServer.exe, ports 9700 + 8080
 
@@ -151,6 +215,55 @@ docker compose logs -f aceserver # serveur de jeu uniquement
 
 Le panel est accessible sur `http://IP:4300`.
 
+### 5. Ouvrir les ports (accès depuis internet)
+
+Configurez une redirection de ports sur votre box/routeur vers l'IP locale de votre serveur.
+
+| Port | Protocole | Usage |
+|---|---|---|
+| `9700` | UDP + TCP | Connexion des joueurs (serveur de jeu ACE EVO) |
+| `8081` | TCP | Enregistrement auprès de Kunos (liste publique des serveurs) |
+| `4300` | TCP | Interface web du panel — HTTP direct |
+| `443` | TCP | Interface web du panel — HTTPS (Let's Encrypt ou reverse proxy) |
+
+> Le port `8080` (API interne ACE EVO) **ne doit pas être exposé** — il est utilisé uniquement en local entre les deux containers.
+
+### 6. Accès HTTPS (optionnel)
+
+**Mode 1 — HTTP direct** (défaut, aucune config supplémentaire)
+```
+http://IP:4300
+```
+
+**Mode 2 — HTTPS intégré via Let's Encrypt**
+
+```bash
+sudo apt install certbot
+sudo certbot certonly --standalone -d votre-domaine.fr
+```
+
+Dans `.env` :
+```env
+PANEL_PORT=443
+SSL_CERTFILE=/etc/letsencrypt/live/votre-domaine.fr/fullchain.pem
+SSL_KEYFILE=/etc/letsencrypt/live/votre-domaine.fr/privkey.pem
+SESSION_COOKIE_SECURE=true
+```
+
+Dans `docker-compose.yml`, décommentez la ligne :
+```yaml
+- /etc/letsencrypt:/etc/letsencrypt:ro
+```
+
+Après chaque renouvellement du certificat :
+```bash
+docker compose restart panel
+```
+
+**Mode 3 — Reverse proxy (Nginx, Caddy…)**
+
+Laissez le panel sur HTTP port 4300 et gérez le SSL côté reverse proxy. Assurez-vous que `SESSION_COOKIE_SECURE=true` est défini dans `.env`.
+
 ### Architecture
 
 ```
@@ -158,8 +271,21 @@ docker compose
 ├── ace-panel    → Flask uniquement (port 4300) — rebuild rapide sans toucher au jeu
 └── ace-server   → Wine + ACE EVO exe (ports 9700, 8080) — cycle de vie géré par le panel
          ↑
-    Volume partagé /aceserver (configs, résultats)
+    Volume partagé ./aceserver → /aceserver (configs, résultats)
     Docker socket (le panel démarre/arrête ace-server)
+```
+
+**Structure du dossier `aceserver/` :**
+```
+aceserver/
+├── AssettoCorsaEVOServer.exe   ← installé via SteamCMD (non versionné)
+├── cars.json                   ← liste des voitures disponibles
+├── events_practice.json        ← modèles de sessions practice
+├── events_race_weekend.json    ← modèles de sessions race weekend
+├── configs/                    ← fichiers de config JSON — versionnés
+│   └── default.json
+└── results/                    ← résultats de session — non versionnés
+    └── result*.json
 ```
 
 ### Variables Docker (référence)
@@ -192,8 +318,18 @@ Référence complète des variables `.env` :
 | `PANEL_URL` | URL publique (utilisée dans les emails) | `http://localhost:4300` |
 | `PANEL_TIMEZONE` | Fuseau horaire | `Europe/Paris` |
 | `DEFAULT_LOCALE` | Langue par défaut (`fr` / `en` / `es` / `de` / `it`) | `fr` |
-| `SESSION_COOKIE_SECURE` | `true` derrière HTTPS, `false` en HTTP | `true` |
+| `SESSION_COOKIE_SECURE` | `true` derrière HTTPS, `false` en HTTP direct | `true` |
+| `PANEL_PORT` | Port d'écoute du panel | `4300` |
 | `ACESERVER_HTTP_PORT` | Port HTTP de l'API du serveur de jeu | `8080` |
+
+### HTTPS / SSL *(optionnel)*
+
+| Variable | Description |
+|---|---|
+| `SSL_CERTFILE` | Chemin vers le certificat (ex: `/etc/letsencrypt/live/domain/fullchain.pem`) |
+| `SSL_KEYFILE` | Chemin vers la clé privée (ex: `/etc/letsencrypt/live/domain/privkey.pem`) |
+
+> Si les deux variables sont renseignées, le panel démarre en HTTPS via gunicorn. Sinon, il utilise waitress en HTTP.
 
 ### Discord
 
@@ -230,107 +366,95 @@ docker compose up -d panel
 docker compose up -d --build
 ```
 
-Le `.env` et la base de données ne sont jamais modifiés. Les migrations s'appliquent automatiquement au démarrage.
+Le `.env` et la base de données ne sont jamais modifiés par une mise à jour. Les migrations de schéma s'appliquent automatiquement au démarrage.
 
 ---
 
 ## Changelog
 
+### v1.7.0 — 10/06/2026
+
+**Nouvelles pages**
+- **Timing en direct** (`/timing`) — classement live via l'API TCP du serveur, mis à jour toutes les 15s, accessible publiquement
+- **Classement global** (`/leaderboard`) — meilleur tour par voiture sur l'ensemble des résultats importés
+- **Live Admin** — contrôle de la session en cours depuis l'interface admin
+- **Paramètres** — toutes les variables `.env` éditables depuis l'interface sans accès SSH ; gestion des comptes admin (création, mot de passe, suppression)
+
+**Interface**
+- Refonte complète de l'UI : nouvelle navbar, nouveau thème, mise en page repensée sur toutes les pages
+- Page d'accueil : 3 colonnes (événements / session en cours / état serveur), sparkline des joueurs, countdown de session
+- Page résultats : tri et recherche, groupement visuel par run
+
+**Qualité du code**
+- Décorateur `admin_required` centralisé dans `app/utils.py` (supprimé des 3 blueprints)
+- `discord_notifier.safe_notify()` — les notifications Discord loggent l'erreur au lieu de la silencer
+- `except Exception: pass` remplacés par des `log.warning(...)` explicites
+- Imports inline déplacés en tête de fichier dans tous les blueprints
+- `server_config.py` : helpers extraits (`_valid_config_name`, `_car_dict`, `_fmt_dur`), validation des champs numériques (`MaxPlayers`, ports)
+
+**Traductions**
+- 13 nouvelles clés ajoutées dans les 5 langues (Live, Port TCP/UDP, Ballast, Restrictor, Timing, Classement en direct…)
+- Corrections des correspondances fuzzy incorrectes dans le `.po` français
+
+---
+
 ### v1.6.0 — 03/05/2026
 
 **Roulement de configs**
-- File d'attente de fichiers de configuration dans l'onglet Serveur : glisser-déposer pour réordonner, case Cycle (retour au premier après le dernier)
-- Bouton **Lancer le cycle** : démarre le serveur sur la première config du roulement, `IsCycleEnabled` forcé à `false` en mémoire pour laisser le panel gérer l'enchaînement
-- Déclenchement via webhook `POST /api/results/ingest` à la fin de chaque session (Practice → toujours final ; Race Weekend → avance uniquement après la session "race")
-- Suivi en temps réel : pill verte (config en cours → suivante), config active en surbrillance, bouton **Arrêter le cycle**
-- Watchdog comme filet de sécurité (crash), webhook comme déclencheur principal
-- Anti-doublon : le thread webhook vérifie que le watchdog n'a pas déjà avancé avant d'agir
-- Notifications Discord : **Cycle lancé** (liste complète de la file + cycle activé/non) et **Changement de config** (config précédente → nouvelle, mode, circuit, durées)
+- File d'attente de fichiers de configuration : glisser-déposer pour réordonner, case Cycle (retour au premier après le dernier)
+- Bouton **Lancer le cycle** : démarre le serveur sur la première config, enchaîne automatiquement à chaque fin de session
+- Suivi en temps réel : pill verte (config active → suivante), bouton **Arrêter le cycle**
+- Notifications Discord : **Cycle lancé** et **Changement de config** (précédente → nouvelle, mode, circuit, durées)
 
 **Événements — import depuis une config**
-- Menu déroulant en haut du formulaire de création/édition d'événement pour importer un fichier de config existant
-- Pré-remplit automatiquement le circuit, le mode, la météo, les durées de session (secondes → h/min) et les véhicules (sélection, ballast, restrictor)
+- Menu déroulant pour importer un fichier de config existant dans le formulaire d'événement
+- Pré-remplit circuit, mode, météo, durées et véhicules (sélection, ballast, restrictor)
+
+---
 
 ### v1.5.0 — 02/05/2026
 
 **Groupement des résultats par run**
-- `run_id` unique (uuid4) généré à chaque démarrage du serveur — toutes les sessions du même run (Practice, Qualification, Warmup, Course) sont liées de façon certaine, sans heuristique temporelle
-- Le watchdog conserve le même `run_id` en cas de crash/restart automatique
-- Page résultats : les sessions sont regroupées sous un en-tête coloré (Race Weekend ou Practice), avec les badges PRACTICE / QUALIFYING / WARMUP / RACE colorés
-- Page d'accueil : bordure colorée sur chaque carte selon le groupe d'appartenance
-- Fallback anchor-on-Race pour les anciens résultats sans `run_id`
+- `run_id` unique (uuid4) à chaque démarrage — Practice, Qualifying, Warmup, Race d'un même run liés de façon certaine
+- Page résultats : sessions regroupées sous un en-tête coloré avec badges de type
 
 **Interface — icônes CSS pures**
-- Tous les emojis interceptés par Twemoji remplacés par des icônes CSS : poubelle (×5), page logs, triangle warning, engrenage, triangle play
-- Médailles podium 🥇🥈🥉 remplacées par des cercles numérotés CSS (or/argent/bronze)
-- Modal logs : largeur 360px → `min(960px, 92vw)`, police 11 → 12px, hauteur max 400 → 520px
+- Tous les emojis interceptés par Twemoji remplacés par des icônes CSS pures
+- Médailles podium remplacées par des cercles numérotés CSS (or/argent/bronze)
 
-**Traductions**
-- 39 clés manquantes ajoutées dans les 5 langues (FR / EN / ES / DE / IT) : pages résultats/course complètes, cookie banner, reset password, etc.
-- `pybabel compile` intégré dans le `Dockerfile.panel` — les `.mo` sont toujours recompilés au build
+**Traductions** — 39 clés manquantes ajoutées dans les 5 langues
 
 ---
 
 ### v1.4.0 — 01/05/2026
 
 **Résultats — import et affichage**
-- Import automatique corrigé : glob `result*.json` pour matcher les fichiers `resultsresults_*.json` d'ACE EVO
-- Endpoint `/api/results/ingest` gère le body vide d'ACE EVO (signal de fin de session → scan du dossier)
-- Scan au démarrage exécuté dans le bon contexte Flask (fix "Working outside of application context")
-- 4 derniers résultats affichés sur la page d'accueil publique avec lien "Voir tout →"
+- Import automatique via webhook de fin de session, scan du dossier au démarrage
+- 4 dernières sessions sur la page d'accueil publique
 
 **Résultats — mode Race**
-- `time_standings` en course = temps total de course (pas un best lap)
-- Colonnes dédiées : **Temps course** + **Meilleur tour individuel** (badge FL)
-- Tours de formation exclus du comptage (flags bit 7 = 128)
-- Gap en nombre de tours (`+X tours`) si décalage, sinon écart temps
-- Colonne **Grille** (position de départ) visible uniquement en Race
+- Temps total de course, meilleur tour individuel (badge FL), gap en nombre de tours, grille de départ
 
 **Résultats — enrichissements visuels**
-- Drapeaux nationaux emoji cross-platform via Twemoji (🇫🇷 🇮🇹 🇩🇪…)
-- Table de correspondance ISO 3166 alpha-3 → alpha-2 (50+ pays)
-- Icônes et emojis remplacés par des éléments CSS purs (⚡⏱⚠▶ → FL badge, flèche CSS, !)
+- Drapeaux nationaux via Twemoji, table ISO 3166 (50+ pays)
+- Secteurs color-codés, gap au leader, consistance pilote
 
 ---
 
 ### v1.3.0 — 30/04/2026
 
-**Architecture Docker split (panel ↔ serveur séparés)**
-- `Dockerfile.panel` — image Python slim, Flask uniquement, sans Wine
-- `Dockerfile.aceserver` — image Wine + ACE EVO exe, sans Flask
-- Le panel contrôle `ace-server` via Docker socket (start / stop / logs / watchdog)
-- Rebuild du panel en ~30 secondes sans interrompre le serveur de jeu
+**Architecture Docker split**
+- `Dockerfile.panel` (Flask, sans Wine) + `Dockerfile.aceserver` (Wine + ACE EVO exe)
+- Rebuild du panel en ~30s sans interrompre le serveur de jeu
 - Volume partagé `/aceserver` pour les configs et résultats
-
-**Résultats de session — UI complète**
-- Gap au leader pour chaque pilote dans le classement
-- Color-coding des secteurs : violet = meilleur secteur de la session, vert = meilleur secteur perso
-- Interprétation correcte des flags de tour ACE EVO (`flags==2` = tour propre officiel)
-- En-tête de session : durée, meilleur tour global, serveur, date
-- Détail tour par tour avec icône ♛ (meilleur session) et ★ (meilleur perso)
-- Indicateurs de tours notés (⚑) et invalides/out-laps (⚠)
-- Consistance pilote (écart-type des tours propres)
-
-**Corrections**
-- Bouton "Résultats" dans la navbar : suppression du `div.navbar-center` sans style (boîte blanche flottante)
-- `_ensure_race_weekend_file` réintégrée dans process_manager (regression introduite lors du refactoring)
-- Lock file Xvfb `/tmp/.X99-lock` nettoyé au démarrage du container aceserver
 
 ---
 
 ### v1.2.0 — 29/04/2026
 
-**Support Docker (Linux)**
-- Image `ich777/winehq-baseimage`, Wine stable, Debian
-- Initialisation Wine en arrière-plan, volume prefix persistant
-- Config par défaut Brands Hatch GP au premier démarrage
-
-**Nouveautés**
-- Réception des résultats de session via webhook (`POST /api/results/ingest`)
-- Page résultats publique avec classement, podium, détail tours dépliable
-- Widget "Derniers résultats" sur le dashboard admin
+- Réception des résultats via webhook (`POST /api/results/ingest`)
 - Calendrier des événements mensuel avec timeline horaire
-- Ballast et Restrictor par voiture, lancement automatique, fin automatique
+- Ballast et Restrictor par voiture, lancement et fin automatiques
 
 ---
 
@@ -344,7 +468,7 @@ Le `.env` et la base de données ne sont jamais modifiés. Les migrations s'appl
 
 ## Mode alternatif — Windows natif *(legacy, non maintenu)*
 
-> ⚠️ Le support Windows n'est plus activement développé. Il reste fonctionnel mais ne bénéficie pas des nouvelles fonctionnalités (architecture split, UI résultats enrichie). Utilisez Docker si possible.
+> ⚠️ Le support Windows n'est plus activement développé. Il reste fonctionnel mais ne bénéficie pas des nouvelles fonctionnalités. Utilisez Docker si possible.
 
 **Prérequis** : Python 3.11+, Git, fichiers `cars.json` / `events_*.json` du ServerLauncher officiel.
 

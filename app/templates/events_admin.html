@@ -1,23 +1,17 @@
 {% extends "base.html" %}
-{% block title %}{{ _('Événements') }} — AC EVO Panel{% endblock %}
+{% block title %}{{ _('Événements') }} — {{ panel_title }}{% endblock %}
 {% block content %}
 <div class="card">
   <div class="card-header">
     <h2>{{ _('Événements') }}</h2>
     <div style="display:flex;gap:8px;align-items:center">
-      <div class="view-toggle">
-        <button class="view-btn" data-view="calendar" onclick="setView('calendar')">{{ _('Calendrier') }}</button>
+      <div class="view-toggle" id="ev-view-toggle">
+        <button class="view-btn active" data-view="calendar" onclick="setView('calendar')">{{ _('Calendrier') }}</button>
         <button class="view-btn" data-view="list" onclick="setView('list')">{{ _('Liste') }}</button>
       </div>
       <a href="{{ url_for('events_admin.event_create') }}" class="btn-primary" style="font-size:13px">+ {{ _('Créer') }}</a>
     </div>
   </div>
-
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% for category, message in messages %}
-    <div class="alert-{{ category }}" style="margin-bottom:12px">{{ message }}</div>
-    {% endfor %}
-  {% endwith %}
 
   <!-- ── Vue Calendrier ── -->
   <div id="view-calendar">
@@ -145,8 +139,11 @@ const CAL_EVENTS = [
 let _calYear  = new Date().getFullYear();
 let _calMonth = new Date().getMonth(); // 0-indexed
 
-const MONTHS_FR = ['Janvier','Février','Mars','Avril','Mai','Juin',
-                   'Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+const MONTHS_FR = [
+  "{{ _('Janvier') }}","{{ _('Février') }}","{{ _('Mars') }}","{{ _('Avril') }}",
+  "{{ _('Mai') }}","{{ _('Juin') }}","{{ _('Juillet') }}","{{ _('Août') }}",
+  "{{ _('Septembre') }}","{{ _('Octobre') }}","{{ _('Novembre') }}","{{ _('Décembre') }}"
+];
 
 function renderCalendar() {
   const grid  = document.getElementById('cal-grid');
@@ -214,9 +211,15 @@ function prevMonth() { if (--_calMonth < 0)  { _calMonth = 11; _calYear--; } ren
 function nextMonth() { if (++_calMonth > 11)  { _calMonth = 0;  _calYear++; } renderCalendar(); closeDayDetail(); }
 
 // ── Vue journée ─────────────────────────────────────────────────────────────
-const DAYS_FR  = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
-const MONTHS_LONG_FR = ['janvier','février','mars','avril','mai','juin',
-                        'juillet','août','septembre','octobre','novembre','décembre'];
+const DAYS_FR  = [
+  "{{ _('Dimanche') }}","{{ _('Lundi') }}","{{ _('Mardi') }}","{{ _('Mercredi') }}",
+  "{{ _('Jeudi') }}","{{ _('Vendredi') }}","{{ _('Samedi') }}"
+];
+const MONTHS_LONG_FR = [
+  "{{ _('janvier') }}","{{ _('février') }}","{{ _('mars') }}","{{ _('avril') }}",
+  "{{ _('mai') }}","{{ _('juin') }}","{{ _('juillet') }}","{{ _('août') }}",
+  "{{ _('septembre') }}","{{ _('octobre') }}","{{ _('novembre') }}","{{ _('décembre') }}"
+];
 
 function openDayDetail(dateKey) {
   const [y, m, d] = dateKey.split('-').map(Number);
@@ -250,7 +253,7 @@ function openDayDetail(dateKey) {
         onclick="event.stopPropagation(); window.location=this.dataset.url"
         title="${ev.title}">${start}→${end} ${ev.title}</div>`;
     });
-    const hint = evs.length === 0 ? `<span class="cal-hour-hint">+ créer</span>` : '';
+    const hint = evs.length === 0 ? `<span class="cal-hour-hint">+ {{ _('créer') }}</span>` : '';
     html += `<div class="cal-hour-row" data-url="/events/create?date=${dateKey}T${hPad}:00"
       onclick="window.location=this.dataset.url">
       <span class="cal-hour-label">${hPad}:00</span>

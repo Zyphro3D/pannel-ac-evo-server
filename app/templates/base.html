@@ -4,144 +4,250 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="csrf-token" content="{{ csrf_token() }}">
-  <title>{% block title %}AC EVO Panel{% endblock %}</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  <title>{% block title %}{{ panel_title }}{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css', v=static_version) }}">
 </head>
-<body data-active-config="{{ active_config | default('') }}">
+<body>
 
-  <nav class="navbar">
-    <a class="navbar-brand" href="{{ url_for('public.index') }}">
-      <span class="brand-evo">EVO</span>
-      <span class="brand-panel">PANEL</span>
-      {% if current_user.is_authenticated and current_user.is_admin %}<span class="brand-version">v{{ app_version }}</span>{% endif %}
+<nav class="topnav" id="topnav">
+  <div class="topnav-inner">
+
+    {# ── Brand ── #}
+    <a href="{{ url_for('public.index') }}" class="topnav-brand">
+      {% if panel_logo_img %}
+        <img src="{{ url_for('serve_media', filename='banner/' ~ panel_logo_img) }}" class="topnav-logo-img" alt="{{ panel_title }}">
+      {% elif panel_banner_img %}
+        <img src="{{ url_for('serve_media', filename='banner/' ~ panel_banner_img) }}" class="topnav-banner-img" alt="{{ panel_title }}">
+      {% else %}
+        <span class="b-evo">EVO</span>
+        <span class="b-panel">Panel</span>
+      {% endif %}
     </a>
 
-    {% if current_user.is_authenticated %}
-      {% if current_user.is_admin %}
-      <div class="navbar-nav">
-        <a href="{{ url_for('admin.dashboard') }}"
-           class="nav-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}">Dashboard</a>
-        <a href="{{ url_for('admin.server') }}"
-           class="nav-link {% if request.endpoint == 'admin.server' %}active{% endif %}">{{ _('Serveur') }}</a>
-        <a href="{{ url_for('events_admin.events_list') }}"
-           class="nav-link {% if request.endpoint and request.endpoint.startswith('events_admin') and 'driver' not in request.endpoint %}active{% endif %}">{{ _('Événements') }}</a>
-        <a href="{{ url_for('events_admin.drivers_list') }}"
-           class="nav-link {% if request.endpoint and 'driver' in request.endpoint %}active{% endif %}">
-          {{ _('Pilotes') }}
-          {% if pending_pilots_count > 0 %}
-          <span class="nav-badge">{{ pending_pilots_count }}</span>
-          {% endif %}
-        </a>
-        {% if current_user.is_superadmin %}
-        <a href="{{ url_for('admin.administration') }}"
-           class="nav-link {% if request.endpoint == 'admin.administration' %}active{% endif %}">{{ _('Administration') }}</a>
-        {% endif %}
-        <a href="{{ url_for('public.results') }}"
-           class="nav-link {% if request.endpoint and request.endpoint.startswith('public.result') %}active{% endif %}">{{ _('Résultats') }}</a>
-      </div>
-      {% elif current_user.is_pilot %}
-      <div class="navbar-nav">
-        <a href="{{ url_for('public.index') }}"
-           class="nav-link {% if request.endpoint == 'public.index' %}active{% endif %}">{{ _('Événements') }}</a>
-        <a href="{{ url_for('public.pilot_dashboard') }}"
-           class="nav-link {% if request.endpoint == 'public.pilot_dashboard' %}active{% endif %}">{{ _('Mes inscriptions') }}</a>
-        <a href="{{ url_for('public.results') }}"
-           class="nav-link {% if request.endpoint and request.endpoint.startswith('public.result') %}active{% endif %}">{{ _('Résultats') }}</a>
-      </div>
-      {% endif %}
-    {% endif %}
-
-    <div class="navbar-right">
-      {% if not current_user.is_authenticated %}
+    {# ── Links (desktop) ── #}
+    <div class="topnav-links">
+      <a href="{{ url_for('public.index') }}"
+         class="topnav-link {% if request.endpoint == 'public.index' %}active{% endif %}">
+        {{ _('Accueil') }}
+      </a>
       <a href="{{ url_for('public.results') }}"
-         class="nav-link {% if request.endpoint and request.endpoint.startswith('public.result') %}active{% endif %}">{{ _('Résultats') }}</a>
-      {% endif %}
-      {% if current_user.is_authenticated and current_user.is_admin %}
-      <div class="server-badge" id="nav-status">
-        <span class="dot" id="status-dot"></span>
-        <span id="status-label">—</span>
-      </div>
-      {% endif %}
-
-      {% if discord_invite %}
-      <a href="{{ discord_invite }}" target="_blank" rel="noopener noreferrer" class="discord-nav-btn">
-        <svg class="discord-icon" viewBox="0 0 127.14 96.36" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <path fill="currentColor" d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83 97.68 97.68 0 0 0-29.11 0A72.37 72.37 0 0 0 45.64 0a105.89 105.89 0 0 0-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0 0 32.17 16.15 77.7 77.7 0 0 0 6.89-11.11 68.42 68.42 0 0 1-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.66 2a68.68 68.68 0 0 1-10.87 5.19 77 77 0 0 0 6.89 11.1 105.25 105.25 0 0 0 32.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15zM42.45 65.69C36.18 65.69 31 60 31 53s5-12.74 11.43-12.74S54 46 53.89 53s-5.05 12.69-11.44 12.69zm42.24 0C78.41 65.69 73.25 60 73.25 53s5-12.74 11.44-12.74S96.23 46 96.12 53s-5.04 12.69-11.43 12.69z"/>
-        </svg>
-        Discord
+         class="topnav-link {% if request.endpoint in ('public.results', 'public.result_detail') %}active{% endif %}">
+        {{ _('Résultats') }}
+      </a>
+      <a href="{{ url_for('leaderboard.leaderboard') }}"
+         class="topnav-link {% if request.endpoint == 'leaderboard.leaderboard' %}active{% endif %}">
+        {{ _('Classement') }}
+      </a>
+      <a href="{{ url_for('live.timing_page') }}"
+         class="topnav-link {% if request.endpoint == 'live.timing_page' %}active{% endif %}">
+        {{ _('Timing') }}
+      </a>
+      {% if current_user.is_authenticated %}
+      <a href="{{ url_for('public.pilot_dashboard') }}"
+         class="topnav-link {% if request.endpoint == 'public.pilot_dashboard' %}active{% endif %}">
+        {{ _('Mes inscriptions') }}
       </a>
       {% endif %}
 
-      <div class="lang-switcher">
-        <a href="{{ url_for('auth.set_language', lang='fr') }}" class="{% if get_locale() == 'fr' %}active{% endif %}">FR</a>
-        <a href="{{ url_for('auth.set_language', lang='en') }}" class="{% if get_locale() == 'en' %}active{% endif %}">EN</a>
-        <a href="{{ url_for('auth.set_language', lang='es') }}" class="{% if get_locale() == 'es' %}active{% endif %}">ES</a>
-        <a href="{{ url_for('auth.set_language', lang='de') }}" class="{% if get_locale() == 'de' %}active{% endif %}">DE</a>
-        <a href="{{ url_for('auth.set_language', lang='it') }}" class="{% if get_locale() == 'it' %}active{% endif %}">IT</a>
+    </div>
+
+    {# ── Right side ── #}
+    <div class="topnav-right">
+
+      {% if current_user.is_authenticated and current_user.is_admin %}
+      <div class="topnav-status">
+        <span class="dot" id="status-dot"></span>
+        <span id="status-label">—</span>
+        <span id="player-count-sb" class="topnav-players"></span>
+      </div>
+      {# ── Admin dropdown ── #}
+      {% set _admin_eps = ('admin.dashboard','admin.server','events_admin.drivers_list','events_admin.events_list','live.live_page','admin.settings','admin.administration') %}
+      <div class="admin-nav-dropdown">
+        <button class="admin-nav-btn {% if request.endpoint in _admin_eps %}admin-nav-btn-active{% endif %}">
+          Admin
+          <svg width="9" height="9" viewBox="0 0 10 10" fill="none" aria-hidden="true"><path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="admin-nav-menu">
+          <a href="{{ url_for('admin.dashboard') }}" class="admin-nav-item {% if request.endpoint == 'admin.dashboard' %}active{% endif %}">
+            {{ _('Dashboard') }}
+          </a>
+          <a href="{{ url_for('admin.server') }}" class="admin-nav-item {% if request.endpoint == 'admin.server' %}active{% endif %}">
+            {{ _('Serveur') }}
+          </a>
+          <a href="{{ url_for('events_admin.drivers_list') }}" class="admin-nav-item {% if request.endpoint == 'events_admin.drivers_list' %}active{% endif %}">
+            {{ _('Pilotes') }}
+            {% if pending_pilots_count > 0 %}<span class="topnav-badge">{{ pending_pilots_count }}</span>{% endif %}
+          </a>
+          <a href="{{ url_for('events_admin.events_list') }}" class="admin-nav-item {% if request.endpoint == 'events_admin.events_list' %}active{% endif %}">
+            {{ _('Événements') }}
+          </a>
+          <a href="{{ url_for('live.live_page') }}" class="admin-nav-item {% if request.endpoint == 'live.live_page' %}active{% endif %}">
+            {{ _('Live') }}
+          </a>
+          {% if current_user.is_superadmin %}
+          <div class="admin-nav-divider"></div>
+          <a href="{{ url_for('admin.settings') }}" class="admin-nav-item {% if request.endpoint in ('admin.settings','admin.administration') %}active{% endif %}">
+            {{ _('Paramètres') }}
+          </a>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+
+      {# ── Language dropdown ── #}
+      <div class="lang-dropdown">
+        <button class="lang-dropdown-btn">
+          {{ get_locale()|upper }}
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
+            <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <div class="lang-dropdown-menu">
+          <a href="{{ url_for('auth.set_language', lang='fr') }}" class="{% if get_locale() == 'fr' %}active{% endif %}">🇫🇷 Français</a>
+          <a href="{{ url_for('auth.set_language', lang='en') }}" class="{% if get_locale() == 'en' %}active{% endif %}">🇬🇧 English</a>
+          <a href="{{ url_for('auth.set_language', lang='es') }}" class="{% if get_locale() == 'es' %}active{% endif %}">🇪🇸 Español</a>
+          <a href="{{ url_for('auth.set_language', lang='de') }}" class="{% if get_locale() == 'de' %}active{% endif %}">🇩🇪 Deutsch</a>
+          <a href="{{ url_for('auth.set_language', lang='it') }}" class="{% if get_locale() == 'it' %}active{% endif %}">🇮🇹 Italiano</a>
+        </div>
       </div>
 
-      {% if current_user.is_authenticated %}
-        <a href="{{ url_for('auth.logout') }}" class="btn-logout">{{ _('Déconnexion') }}</a>
-      {% else %}
-        <a href="{{ url_for('auth.login') }}" class="btn-logout">{{ _('Connexion') }}</a>
+      {% if discord_invite %}
+      <a href="{{ discord_invite }}" target="_blank" rel="noopener noreferrer" class="btn-discord-sm">
+        <svg viewBox="0 0 127.14 96.36" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path fill="currentColor" d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83 97.68 97.68 0 0 0-29.11 0A72.37 72.37 0 0 0 45.64 0a105.89 105.89 0 0 0-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0 0 32.17 16.15 77.7 77.7 0 0 0 6.89-11.11 68.42 68.42 0 0 1-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.66 2a68.68 68.68 0 0 1-10.87 5.19 77 77 0 0 0 6.89 11.1 105.25 105.25 0 0 0 32.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15zM42.45 65.69C36.18 65.69 31 60 31 53s5-12.74 11.43-12.74S54 46 53.89 53s-5.05 12.69-11.44 12.69zm42.24 0C78.41 65.69 73.25 60 73.25 53s5-12.74 11.44-12.74S96.23 46 96.12 53s-5.04 12.69-11.43 12.69z"/>
+        </svg>
+        {{ _('Rejoins notre Discord') }}
+      </a>
       {% endif %}
+
+      {% if current_user.is_authenticated %}
+        <a href="{{ url_for('auth.logout') }}" class="btn btn-ghost btn-sm">{{ _('Déconnexion') }}</a>
+      {% else %}
+        <a href="{{ url_for('auth.login') }}" class="btn btn-ghost btn-sm">{{ _('Connexion') }}</a>
+        <a href="{{ url_for('public.register') }}" class="btn btn-primary btn-sm">{{ _('Inscription') }}</a>
+      {% endif %}
+
+      <button class="hamburger" id="hamburger" onclick="toggleMobileNav()" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
     </div>
-  </nav>
 
-  <main class="main-content">
-    {% with messages = get_flashed_messages(category_filter=['success']) %}
-      {% for message in messages %}
-      <div class="flash flash-success">{{ message }}</div>
-      {% endfor %}
-    {% endwith %}
-    {% block content %}{% endblock %}
-  </main>
-
-  <!-- Cookie consent GDPR -->
-  <div id="cookie-banner" class="cookie-banner" style="display:none">
-    <span>{{ _('Ce site utilise uniquement des cookies techniques nécessaires à son fonctionnement.') }}</span>
-    <button class="btn-secondary" onclick="acceptCookies()">OK</button>
   </div>
 
-  <script>
-  const I18N = {
-    online:          "{{ _('En ligne') }}",
-    offline:         "{{ _('Hors ligne') }}",
-    saved:           "{{ _('Sauvegardé') }}",
-    error:           "{{ _('Erreur') }}",
-    networkError:    "{{ _('Erreur réseau') }}",
-    serverStarted:   "{{ _('Serveur démarré') }}",
-    serverStopped:   "{{ _('Serveur arrêté') }}",
-    serverRestarted: "{{ _('Serveur redémarré') }}",
-    sessionsSaved:   "{{ _('Sessions sauvegardées') }}",
-    carsSaved:       "{{ _('Véhicules sauvegardés') }}",
-    nameRequired:    "{{ _('Nom requis') }}",
-    duplicateTitle:  "{{ _('Dupliquer la configuration') }}",
-    newConfigTitle:  "{{ _('Nouvelle configuration') }}",
-    configRepaired:  "{{ _('Config réparée') }}",
-    autoRestartOn:   "{{ _('Auto-restart activé') }}",
-    autoRestartOff:  "{{ _('Auto-restart désactivé') }}",
-    players:         "{{ _('joueur(s)') }}",
-  };
+  {# ── Mobile dropdown menu ── #}
+  <div class="topnav-mobile" id="topnav-mobile">
+    <a href="{{ url_for('public.index') }}" class="topnav-mob-link">{{ _('Accueil') }}</a>
+    <a href="{{ url_for('public.results') }}" class="topnav-mob-link">{{ _('Résultats') }}</a>
+    <a href="{{ url_for('leaderboard.leaderboard') }}" class="topnav-mob-link">{{ _('Classement') }}</a>
+    <a href="{{ url_for('live.timing_page') }}" class="topnav-mob-link">{{ _('Timing') }}</a>
+    {% if current_user.is_authenticated %}
+      <a href="{{ url_for('public.pilot_dashboard') }}" class="topnav-mob-link">{{ _('Mes inscriptions') }}</a>
+    {% endif %}
+    {% if current_user.is_authenticated and current_user.is_admin %}
+      <div class="topnav-mob-sep"></div>
+      <span class="topnav-mob-section">Admin</span>
+      <a href="{{ url_for('admin.dashboard') }}" class="topnav-mob-link topnav-mob-sub">{{ _('Dashboard') }}</a>
+      <a href="{{ url_for('admin.server') }}" class="topnav-mob-link topnav-mob-sub">{{ _('Serveur') }}</a>
+      <a href="{{ url_for('events_admin.drivers_list') }}" class="topnav-mob-link topnav-mob-sub">
+        {{ _('Pilotes') }}
+        {% if pending_pilots_count > 0 %}<span class="topnav-badge">{{ pending_pilots_count }}</span>{% endif %}
+      </a>
+      <a href="{{ url_for('events_admin.events_list') }}" class="topnav-mob-link topnav-mob-sub">{{ _('Événements admin') }}</a>
+      <a href="{{ url_for('live.live_page') }}" class="topnav-mob-link topnav-mob-sub">{{ _('Live Admin') }}</a>
+      {% if current_user.is_superadmin %}
+      <a href="{{ url_for('admin.settings') }}" class="topnav-mob-link topnav-mob-sub">{{ _('Paramètres') }}</a>
+      {% endif %}
+    {% endif %}
+    <div class="topnav-mob-sep"></div>
+    {% if current_user.is_authenticated %}
+      <a href="{{ url_for('auth.logout') }}" class="topnav-mob-link">{{ _('Déconnexion') }}</a>
+    {% else %}
+      <a href="{{ url_for('auth.login') }}" class="topnav-mob-link">{{ _('Connexion') }}</a>
+      <a href="{{ url_for('public.register') }}" class="topnav-mob-link">{{ _('Inscription') }}</a>
+    {% endif %}
+  </div>
+</nav>
 
-  function acceptCookies() {
-    localStorage.setItem('cookies_accepted', '1');
-    document.getElementById('cookie-banner').style.display = 'none';
-  }
-  if (!localStorage.getItem('cookies_accepted')) {
-    document.getElementById('cookie-banner').style.display = 'flex';
-  }
-  </script>
-  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
-  <script src="https://cdn.jsdelivr.net/npm/twemoji@14.0.2/dist/twemoji.min.js" crossorigin="anonymous"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      twemoji.parse(document.body, {
-        folder: 'svg', ext: '.svg',
-        base: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/'
-      });
+<div class="page-content">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+      <div class="flash flash-{{ cat if cat in ['success','error','warning','info'] else 'info' }}">{{ msg }}</div>
+    {% endfor %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</div>
+
+{# ── Cookie consent ── #}
+<div id="cookie-banner" class="cookie-banner" style="display:none">
+  <span>{{ _('Ce site utilise uniquement des cookies techniques nécessaires à son fonctionnement.') }}</span>
+  <button class="btn btn-secondary btn-sm" onclick="acceptCookies()">OK</button>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const I18N = {
+  online:          "{{ _('En ligne') }}",
+  offline:         "{{ _('Hors ligne') }}",
+  saved:           "{{ _('Sauvegardé') }}",
+  error:           "{{ _('Erreur') }}",
+  networkError:    "{{ _('Erreur réseau') }}",
+  serverStarted:   "{{ _('Serveur démarré') }}",
+  serverStopped:   "{{ _('Serveur arrêté') }}",
+  serverRestarted: "{{ _('Serveur redémarré') }}",
+  sessionsSaved:   "{{ _('Sessions sauvegardées') }}",
+  carsSaved:       "{{ _('Véhicules sauvegardés') }}",
+  nameRequired:    "{{ _('Nom requis') }}",
+  duplicateTitle:  "{{ _('Dupliquer la configuration') }}",
+  newConfigTitle:  "{{ _('Nouvelle configuration') }}",
+  configRepaired:  "{{ _('Config réparée') }}",
+  autoRestartOn:   "{{ _('Auto-restart activé') }}",
+  autoRestartOff:  "{{ _('Auto-restart désactivé') }}",
+  players:         "{{ _('joueur(s)') }}",
+  empty:           "{{ _('Aucun tour enregistré') }}",
+  loadError:       "{{ _('Erreur de chargement') }}",
+  selectedVehicles:"{{ _('véhicule(s) sélectionné(s)') }}",
+  rotationEmpty:   "{{ _('Aucune configuration dans le roulement.') }}",
+};
+
+function acceptCookies() {
+  localStorage.setItem('cookies_accepted', '1');
+  document.getElementById('cookie-banner').style.display = 'none';
+}
+if (!localStorage.getItem('cookies_accepted')) {
+  document.getElementById('cookie-banner').style.display = 'flex';
+}
+
+function toggleMobileNav() {
+  const m = document.getElementById('topnav-mobile');
+  m.classList.toggle('open');
+}
+document.querySelectorAll('.topnav-dropdown-btn').forEach(btn => {
+  btn.addEventListener('click', function(e) {
+    e.preventDefault();
+    const dropdown = this.closest('.topnav-dropdown');
+    const open = !dropdown.classList.contains('open');
+    document.querySelectorAll('.topnav-dropdown.open').forEach(item => {
+      item.classList.remove('open');
+      item.querySelector('.topnav-dropdown-btn')?.setAttribute('aria-expanded', 'false');
     });
-  </script>
-  {% block scripts %}{% endblock %}
+    dropdown.classList.toggle('open', open);
+    this.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+});
+document.addEventListener('click', function(e) {
+  const nav = document.getElementById('topnav');
+  if (!nav.contains(e.target)) {
+    document.getElementById('topnav-mobile').classList.remove('open');
+  }
+  if (!e.target.closest('.topnav-dropdown')) {
+    document.querySelectorAll('.topnav-dropdown.open').forEach(item => {
+      item.classList.remove('open');
+      item.querySelector('.topnav-dropdown-btn')?.setAttribute('aria-expanded', 'false');
+    });
+  }
+});
+</script>
+<script src="{{ url_for('static', filename='js/app.js', v=static_version) }}"></script>
+{% block scripts %}{% endblock %}
 </body>
 </html>

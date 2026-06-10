@@ -1,12 +1,13 @@
 import hashlib
 import re
 import secrets
+import time
 from datetime import datetime, timedelta
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from flask_babel import _
 from flask_login import login_user, logout_user, login_required, current_user
-from app.models import AdminUser, Driver
+from app.models import AdminAccount, Driver
 from app.services.database import db
 from app import limiter
 
@@ -31,7 +32,7 @@ def _validate_password(pwd: str) -> list[str]:
 
 
 @auth_bp.route("/login", methods=["GET", "POST"])
-@limiter.limit("10 per minute", methods=["POST"])
+@limiter.limit("5 per minute", methods=["POST"])
 def login():
     if current_user.is_authenticated:
         return redirect(url_for("public.pilot_dashboard") if current_user.is_pilot else url_for("admin.dashboard"))
@@ -40,24 +41,26 @@ def login():
         identifier = request.form.get("username", "").strip()
         password   = request.form.get("password", "")
 
-        role = AdminUser.check_credentials(identifier, password)
-        if role:
-            login_user(AdminUser(role=role))
+        account = AdminAccount.query.filter_by(username=identifier, is_active=True).first()
+        if account and account.check_password(password):
+            account.last_login = datetime.utcnow()
+            db.session.commit()
+            login_user(account)
             return redirect(url_for("admin.dashboard"))
 
         driver = (Driver.query.filter_by(email=identifier.lower()).first()
                   or Driver.query.filter_by(ingame_name=identifier).first())
         if driver and driver.check_password(password):
             if driver.status == "pending":
-                flash("pending", "error")
+                flash(_("Votre compte est en attente de validation."), "warning")
             elif driver.status == "rejected":
-                flash("rejected", "error")
+                flash(_("Votre compte a été refusé."), "error")
             else:
                 login_user(driver)
                 return redirect(url_for("public.pilot_dashboard"))
             return render_template("login.html")
 
-        flash("invalid_credentials", "error")
+        flash(_("Identifiants incorrects."), "error")
 
     return render_template("login.html")
 
@@ -70,12 +73,13 @@ def logout():
 
 
 @auth_bp.route("/forgot-password", methods=["GET", "POST"])
-@limiter.limit("5 per minute", methods=["POST"])
+@limiter.limit("3 per minute", methods=["POST"])
 def forgot_password():
     if current_user.is_authenticated:
         return redirect(url_for("public.index"))
 
     if request.method == "POST":
+        started = time.monotonic()
         identifier = request.form.get("identifier", "").strip()
         driver = (Driver.query.filter_by(email=identifier.lower()).first()
                   or Driver.query.filter_by(ingame_name=identifier).first())
@@ -91,6 +95,10 @@ def forgot_password():
             db.session.commit()
             from app.services import mailer
             mailer.send_password_reset(driver, token)
+
+        elapsed = time.monotonic() - started
+        if elapsed < 0.35:
+            time.sleep(0.35 - elapsed)
 
         return redirect(url_for("auth.login"))
 

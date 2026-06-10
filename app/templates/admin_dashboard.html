@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Dashboard — AC EVO Panel{% endblock %}
+{% block title %}Dashboard — {{ panel_title }}{% endblock %}
 {% block content %}
 <div class="admin-dash">
 
@@ -71,6 +71,211 @@
     {% endif %}
   </section>
 
+  <!-- ── Live Timing ── -->
+  <section class="card" style="margin-top:20px">
+    <div class="card-header" id="dt-toggle" style="cursor:pointer;user-select:none">
+      <h2 style="display:flex;align-items:center;gap:10px">
+        {{ _('Timing en direct') }}
+        <span class="dot offline" id="dt-dot"></span>
+        <span id="dt-count" style="font-size:13px;font-weight:400;color:var(--dim)"></span>
+      </h2>
+      <span id="dt-remain" style="font-size:13px;font-weight:600;color:var(--accent);margin-left:auto;margin-right:12px"></span>
+      <span id="dt-chev" style="color:var(--dim);font-size:16px;transition:transform .2s">▾</span>
+    </div>
+    <div id="dt-body">
+      <div id="dt-content"></div>
+    </div>
+  </section>
+
+  <script>
+  (function(){
+    let _data = [];
+    let _open = true;
+    let _startedAt = null;
+    let _sessionLen = null;
+    const _expanded = new Set();
+
+    function _car(raw) {
+      if (!raw) return '—';
+      const map = {'ks_mercedes_190e_evo_ii':'Mercedes 190E Evo II'};
+      return map[raw] || raw.replace(/^ks_/,'').replace(/^preset_/,'')
+        .replace(/_mech_\d+$/,'').replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+    }
+    function _v(v){ return v||'—'; }
+
+    function _fmtRemain(secs) {
+      if (secs <= 0) return 'Terminé';
+      const h = Math.floor(secs/3600);
+      const m = Math.floor((secs%3600)/60);
+      const s = Math.floor(secs%60);
+      return h ? `${h}h${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}` : `${m}:${String(s).padStart(2,'0')}`;
+    }
+
+    function _tickRemain() {
+      const el = document.getElementById('dt-remain');
+      if (!_startedAt || !_sessionLen) { el.textContent = ''; return; }
+      const elapsed = Date.now()/1000 - _startedAt;
+      const remain  = Math.max(0, _sessionLen - elapsed);
+      el.textContent = `⏱ ${_fmtRemain(remain)}`;
+    }
+    setInterval(_tickRemain, 1000);
+
+    async function _adminCmd(cmd, carNum, extra, btn) {
+      btn.disabled = true;
+      const orig = btn.textContent;
+      btn.textContent = '…';
+      try {
+        const r = await fetch('/api/live/admin_cmd', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json','X-CSRFToken': document.querySelector('meta[name=csrf-token]')?.content||''},
+          body: JSON.stringify({cmd, car_num: carNum, extra: extra||''})
+        });
+        const d = await r.json();
+        btn.textContent = d.ok ? '✓' : '✗';
+        setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 1500);
+      } catch(_) {
+        btn.textContent = '✗';
+        setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 1500);
+      }
+    }
+
+    const I18N_DT = {
+      pit:           "{{ _('Pit') }}",
+      mute:          "{{ _('Mute') }}",
+      unmute:        "{{ _('Unmute') }}",
+      kick:          "{{ _('Kick') }}",
+      addTime:       "{{ _('Temps') }}",
+      penalty:       "{{ _('Pénalité') }}",
+      promptTime:    "{{ _('Secondes à ajouter :') }}",
+      promptPenalty: "{{ _('Type (dt/sg/disq/time) :') }}",
+    };
+
+    function _adminBtns(carNum, name) {
+      return `<div class="dt-admin-row">
+        <span class="dt-admin-label">#${carNum} ${name}</span>
+        <button class="dt-btn dt-btn-warn" onclick="dtCmd('to_pit','${carNum}',this)">${I18N_DT.pit}</button>
+        <button class="dt-btn dt-btn-warn" onclick="dtCmd('mute','${carNum}',this)">${I18N_DT.mute}</button>
+        <button class="dt-btn"            onclick="dtCmd('unmute','${carNum}',this)">${I18N_DT.unmute}</button>
+        <button class="dt-btn dt-btn-danger" onclick="dtCmd('kick','${carNum}',this)">${I18N_DT.kick}</button>
+        <span style="color:var(--dim);font-size:11px">${I18N_DT.addTime}:</span>
+        <button class="dt-btn" onclick="dtCmdPrompt('add_time','${carNum}',I18N_DT.promptTime,this)">+T</button>
+        <span style="color:var(--dim);font-size:11px">${I18N_DT.penalty}:</span>
+        <button class="dt-btn dt-btn-warn" onclick="dtCmdPrompt('add_penalty','${carNum}',I18N_DT.promptPenalty,this)">+P</button>
+        <button class="dt-btn"            onclick="dtCmdPrompt('del_penalty','${carNum}',I18N_DT.promptPenalty,this)">-P</button>
+      </div>`;
+    }
+
+    window.dtCmd = function(cmd, carNum, btn) { _adminCmd(cmd, carNum, '', btn); };
+    window.dtCmdPrompt = function(cmd, carNum, prompt, btn) {
+      const val = window.prompt(prompt);
+      if (val !== null) _adminCmd(cmd, carNum, val.trim(), btn);
+    };
+
+    function _lapsHtml(laps) {
+      if (!laps || !laps.length)
+        return `<div class="dt-no-laps">${I18N.empty}</div>`;
+      return '<table class="dt-lap-table">'
+        + '<thead><tr><th>#</th><th>S1</th><th>S2</th><th>S3</th><th>Tour</th></tr></thead>'
+        + '<tbody>' + laps.map(l =>
+          `<tr>
+            <td class="dt-lap-num">${l.lap_num}</td>
+            <td class="dt-s">${_v(l.s1_str)}</td>
+            <td class="dt-s">${_v(l.s2_str)}</td>
+            <td class="dt-s">${_v(l.s3_str)}</td>
+            <td class="dt-t ${l.lap_ms?'has-time':''}">${_v(l.lap_str)}</td>
+          </tr>`).join('') + '</tbody></table>';
+    }
+
+    function _render() {
+      const wrap = document.getElementById('dt-content');
+      if (!_data.length) {
+        wrap.innerHTML = `<div class="dt-empty">${I18N.empty}</div>`;
+        return;
+      }
+      const tbody = _data.map((e,i) => {
+        const pos = i+1;
+        const pcls = pos===1?'pos-gold':pos===2?'pos-silver':pos===3?'pos-bronze':'';
+        const isLdr = pos===1 && !!e.best_lap_str;
+        const sid = e.steam_id;
+        const open = _expanded.has(sid);
+        const num  = e.num || '';
+        return `
+          <tr class="dt-row${isLdr?' t-leader':''}" data-sid="${sid}">
+            <td><span class="pos-badge ${pcls}">${pos}</span></td>
+            <td class="dt-name">${e.name||'—'}${num?' <span class="dt-carnum">#'+num+'</span>':''}</td>
+            <td class="dt-car">${_car(e.car_raw)}</td>
+            <td class="dt-s">${_v(e.curr_s1_str)}</td>
+            <td class="dt-s">${_v(e.curr_s2_str)}</td>
+            <td class="dt-t ${e.last_lap_str?'has-time':''}">${_v(e.last_lap_str)}</td>
+            <td class="dt-t ${e.best_lap_str?'has-time':''}">${_v(e.best_lap_str)}</td>
+            <td class="dt-gap">${isLdr?'<span class="leader-badge">LEADER</span>':_v(e.gap_str)}</td>
+            <td class="dt-tours"><span class="dt-lap-cnt">${e.lap_count||0}</span> <span class="dt-arr">${open?'▴':'▾'}</span></td>
+          </tr>
+          <tr class="dt-hist-row${open?'':' dt-hidden'}" data-hist="${sid}">
+            <td colspan="9">
+              ${num ? _adminBtns(num, e.name||'') : ''}
+              ${_lapsHtml(e.laps)}
+            </td>
+          </tr>`;
+      }).join('');
+
+      wrap.innerHTML = `<div class="dt-scroll">
+        <table class="dt-table">
+          <thead><tr>
+            <th>{{ _('Pos') }}</th><th>{{ _('Pilote') }}</th><th>{{ _('Voiture') }}</th>
+            <th>S1</th><th>S2</th>
+            <th>{{ _('Dernier') }}</th><th>{{ _('Meilleur') }}</th><th>{{ _('Écart') }}</th><th>{{ _('Tours') }}</th>
+          </tr></thead>
+          <tbody>${tbody}</tbody>
+        </table></div>`;
+
+      wrap.querySelectorAll('.dt-row').forEach(row => {
+        row.addEventListener('click', function(ev) {
+          if (ev.target.closest('button')) return;
+          const sid  = row.dataset.sid;
+          const hist = wrap.querySelector(`[data-hist="${sid}"]`);
+          const arr  = row.querySelector('.dt-arr');
+          if (_expanded.has(sid)) {
+            _expanded.delete(sid);
+            hist.classList.add('dt-hidden');
+            arr.textContent = '▾';
+          } else {
+            _expanded.add(sid);
+            hist.classList.remove('dt-hidden');
+            arr.textContent = '▴';
+          }
+        });
+      });
+    }
+
+    async function _refresh() {
+      try {
+        const r = await fetch('/api/timing');
+        if (!r.ok) throw new Error(r.status);
+        const d = await r.json();
+        _data       = d.leaderboard || [];
+        _startedAt  = d.started_at  || null;
+        _sessionLen = d.session_length_s || null;
+        document.getElementById('dt-dot').className = 'dot online';
+        document.getElementById('dt-count').textContent = _data.length ? `${_data.length} ${I18N.players}` : '';
+        _tickRemain();
+        _render();
+      } catch(_) {
+        document.getElementById('dt-dot').className = 'dot offline';
+      }
+    }
+
+    document.getElementById('dt-toggle').addEventListener('click', () => {
+      _open = !_open;
+      document.getElementById('dt-body').style.display = _open ? '' : 'none';
+      document.getElementById('dt-chev').style.transform = _open ? '' : 'rotate(-90deg)';
+    });
+
+    _refresh();
+    setInterval(_refresh, 10000);
+  })();
+  </script>
+
   <div class="grid-two" style="margin-top:20px">
 
     <!-- ── Prochains événements ── -->
@@ -109,7 +314,7 @@
         </tbody>
       </table>
       {% else %}
-      <p class="text-muted">{{ _('Aucun événement à venir.') }}</p>
+      <p class="text-muted" style="padding:8px 20px">{{ _('Aucun événement à venir.') }}</p>
       {% endif %}
     </section>
 
@@ -125,7 +330,7 @@
         {{ _('pilote(s)') }} {{ _('en attente de validation') }}
       </div>
       {% else %}
-      <p class="text-muted">{{ _('Aucun pilote en attente.') }}</p>
+      <p class="text-muted" style="padding:8px 20px">{{ _('Aucun pilote en attente.') }}</p>
       {% endif %}
     </section>
 
@@ -145,7 +350,7 @@
       {% set winner = p.standings[0] if p.standings else none %}
       <a href="{{ url_for('public.result_detail', result_id=s.id) }}" class="dash-result-card">
         <div class="drc-header">
-          <span class="badge-session">{{ p.session_type or '—' }}</span>
+          <span class="badge badge-session">{{ p.session_type or '—' }}</span>
           <span class="drc-date">{{ s.received_at | local_dt_short }}</span>
         </div>
         <div class="drc-track">{{ p.track or '—' }}</div>
@@ -178,11 +383,10 @@
       {% endfor %}
     </div>
     {% else %}
-    <p class="text-muted">{{ _('Aucun résultat pour le moment.') }}</p>
+    <p class="text-muted" style="padding:8px 20px">{{ _('Aucun résultat pour le moment.') }}</p>
     {% endif %}
   </section>
 
 </div>
 
-<div class="toast" id="toast"></div>
 {% endblock %}

@@ -1,5 +1,5 @@
 import json
-from functools import wraps
+import logging
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 
@@ -10,17 +10,12 @@ from flask_login import current_user
 from app.models import Event, EventRegistration, Driver
 from app.services.database import db
 from app.services.server_config import load_events as load_tracks, load_cars, list_configs
+from app.services import mailer, entry_list
+from app.utils import admin_required as _admin_required
+
+log = logging.getLogger(__name__)
 
 events_admin_bp = Blueprint("events_admin", __name__)
-
-
-def _admin_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        if not current_user.is_authenticated or not current_user.is_admin:
-            return redirect(url_for("auth.login"))
-        return f(*args, **kwargs)
-    return decorated
 
 
 def _event_from_form(event, form):
@@ -56,7 +51,8 @@ def _event_from_form(event, form):
     try:
         event.cars_config = form.get("cars_config_json", "{}")
         json.loads(event.cars_config)  # valide le JSON
-    except (ValueError, TypeError):
+    except (ValueError, TypeError) as e:
+        log.warning("cars_config_json invalide pour event id=%s: %s", getattr(event, 'id', '?'), e)
         event.cars_config = "{}"
     # Visibilité — getlist car hidden+checkbox envoient deux valeurs pour le même name
     event.is_public   = "1" in form.getlist("is_public")
@@ -218,7 +214,6 @@ def reg_assign_car(event_id, rid):
 @_admin_required
 def event_entry_list(event_id):
     event = Event.query.get_or_404(event_id)
-    from app.services import entry_list
     ok = entry_list.generate(event)
     flash(_("Entry list générée.") if ok else _("Erreur lors de la génération."), "success" if ok else "error")
     return redirect(url_for("events_admin.event_registrations", event_id=event_id))
@@ -241,7 +236,6 @@ def driver_approve(driver_id):
     driver = Driver.query.get_or_404(driver_id)
     driver.status = "approved"
     db.session.commit()
-    from app.services import mailer
     mailer.send_registration_approved(driver)
     flash(_("%(name)s approuvé.", name=driver.ingame_name), "success")
     return redirect(url_for("events_admin.drivers_list"))
@@ -253,7 +247,6 @@ def driver_reject(driver_id):
     driver = Driver.query.get_or_404(driver_id)
     driver.status = "rejected"
     db.session.commit()
-    from app.services import mailer
     mailer.send_registration_rejected(driver)
     flash(_("%(name)s refusé.", name=driver.ingame_name), "error")
     return redirect(url_for("events_admin.drivers_list"))

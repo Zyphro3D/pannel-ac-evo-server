@@ -1,253 +1,344 @@
 {% extends "base.html" %}
-{% block title %}AC EVO Panel{% endblock %}
+{% block title %}{{ panel_title }}{% endblock %}
+
 {% block content %}
-{% with errors = get_flashed_messages(category_filter=['error']) %}
-  {% for msg in errors %}
-  <div class="alert-error" style="margin-bottom:12px">{{ msg }}</div>
-  {% endfor %}
-{% endwith %}
 
-<!-- ── Hero serveur ── -->
-<div class="public-hero">
-  <div class="public-hero-top">
-    <div class="hero-brand">
-      <span class="brand-evo" style="font-size:28px">EVO</span>
-      <span class="brand-panel" style="font-size:14px">PANEL</span>
-    </div>
-
-    <div class="hero-status-pill {% if status.running %}online{% endif %}">
-      <span class="dot {% if status.running %}online{% endif %} {% if not status.running %}offline{% endif %}"></span>
-      {% if status.running %}
-      <span>{{ _('En ligne') }}</span>
-      {% if status.players is not none %}
-      <span class="hero-players">{{ status.players }} / {{ server_info.max_players if server_info else '?' }} {{ _('joueur(s)') }}</span>
-      {% endif %}
-      {% else %}
-      <span style="color:var(--text-muted)">{{ _('Hors ligne') }}</span>
+{# ── Hero ── #}
+<div class="h-hero" style="background-image: url('{{ url_for('serve_media', filename='banner/hero_banner.png') }}')">
+  <div class="h-hero-content">
+    <h1 class="h-hero-title">
+      {{ _('Vivez la simulation.') }}<br>
+      <strong>{{ _('Dépassez vos limites.') }}</strong>
+    </h1>
+    <div class="h-hero-actions">
+      <a href="{{ url_for('public.results') }}" class="btn btn-primary">{{ _('Voir les résultats') }} ›</a>
+      {% if discord_invite %}
+      <a href="{{ discord_invite }}" target="_blank" rel="noopener noreferrer" class="btn btn-ghost">{{ _('Rejoindre le Discord') }}</a>
+      {% elif not current_user.is_authenticated %}
+      <a href="{{ url_for('public.register') }}" class="btn btn-ghost">{{ _('Rejoindre le panel') }}</a>
       {% endif %}
     </div>
-
-    {% if not current_user.is_authenticated %}
-    <div class="hero-actions">
-      <a href="{{ url_for('auth.login') }}" class="btn-primary" style="font-size:13px">{{ _('Se connecter') }}</a>
-      <a href="{{ url_for('public.register') }}" class="btn-secondary" style="padding:7px 16px;font-size:13px">{{ _("S'inscrire") }}</a>
-    </div>
-    {% endif %}
   </div>
+</div>
 
-  {% if status.running and server_info %}
-  <div class="server-info-grid">
-    <div class="server-info-item">
-      <span class="si-label">{{ _('Nom du serveur') }}</span>
-      <span class="si-value">{{ server_info.server_name }}</span>
+<div>
+
+{# ── 3-column grid ── #}
+<div class="h-grid-3">
+
+  {# ── Col 1 : Événements à venir ── #}
+  <div class="h-panel">
+    <div class="h-panel-header">
+      <span class="h-panel-title">{{ _('Événements à venir') }}</span>
+      {% if current_user.is_authenticated and current_user.is_admin %}
+      <a href="{{ url_for('events_admin.events_list') }}" class="h-panel-link">{{ _('Gérer') }} ›</a>
+      {% endif %}
     </div>
-    <div class="server-info-item">
-      <span class="si-label">{{ _('Circuit') }}</span>
-      <span class="si-value">
-        {{ server_info.circuit }}
-        {% if server_info.track_km %}<span class="si-sub">{{ server_info.track_km }}</span>{% endif %}
-      </span>
-    </div>
-    <div class="server-info-item">
-      <span class="si-label">{{ _('Mode') }}</span>
-      <span class="si-value">{{ server_info.mode }}</span>
-    </div>
-    <div class="server-info-item">
-      <span class="si-label">{{ _('Météo') }}</span>
-      <span class="si-value">{{ server_info.weather }}</span>
-    </div>
-    {% if server_info.is_race_weekend %}
-    <div class="server-info-item">
-      <span class="si-label">{{ _('Sessions') }}</span>
-      <span class="si-value">
-        {{ _('Libre') }} {{ server_info.practice_dur }} —
-        {{ _('Qualif') }} {{ server_info.qualifying_dur }} —
-        {{ _('Chauffe') }} {{ server_info.warmup_dur }} —
-        {{ _('Course') }} {{ server_info.race_dur }}
-      </span>
-    </div>
+
+    {# Ongoing events #}
+    {% for ev in ongoing %}
+    {% if current_user.is_authenticated %}
+      {% set ev_href = url_for('public.pilot_dashboard') %}
     {% else %}
-    <div class="server-info-item">
-      <span class="si-label">{{ _('Durée libre') }}</span>
-      <span class="si-value">{{ server_info.practice_dur }}</span>
-    </div>
+      {% set ev_href = url_for('auth.login', next=url_for('public.pilot_dashboard')) %}
     {% endif %}
-    {% if server_info.cars %}
-    <div class="server-info-item server-info-cars">
-      <span class="si-label">{{ _('Véhicules') }} ({{ server_info.car_count }})</span>
-      <div class="si-cars">
-        {% for car in server_info.cars[:8] %}
-        <span class="car-chip">{{ car }}</span>
-        {% endfor %}
-        {% if server_info.car_count > 8 %}
-        <span class="car-chip car-chip-more">+{{ server_info.car_count - 8 }}</span>
-        {% endif %}
+    <a href="{{ ev_href }}" class="h-event-row" style="border-left:3px solid var(--accent2)">
+      <div class="h-date-box">
+        <span class="h-date-day">{{ ev.date.day if ev.date else '—' }}</span>
+        <span class="h-date-month">{{ ev.date.strftime('%b')|upper if ev.date else '' }}</span>
+        <span class="h-date-time" style="color:var(--accent2)">{{ _('En cours') }}</span>
       </div>
-    </div>
-    {% endif %}
-  </div>
-  {% elif not status.running %}
-  <p style="color:var(--text-muted);font-size:13px;margin-top:12px">{{ _('Le serveur est actuellement hors ligne.') }}</p>
-  {% endif %}
-</div>
+      <div class="h-thumb"></div>
+      <div class="h-event-info">
+        <span class="h-event-tag" style="color:var(--accent2)">{{ _('En cours') }}</span>
+        <h3>{{ ev.title }}</h3>
+        <div class="h-event-meta">{{ ev.circuit_display or ev.circuit or '' }}</div>
+      </div>
+      <div class="h-chev">›</div>
+    </a>
+    {% endfor %}
 
-{% macro event_card(ev, ongoing=false) %}
-{% set reg = my_regs.get(ev.id) %}
-<div class="event-card {% if not ev.is_public and not ongoing and ev.is_full and not reg %}event-full{% endif %}">
-  <div class="event-card-main">
-    <div>
-      <div class="event-card-title">
-        {{ ev.title }}
-        {% if ongoing %}
-        <span class="badge badge-ongoing" style="font-size:11px;margin-left:6px;vertical-align:middle">{{ _('En cours') }}</span>
-        {% endif %}
-        <span class="badge {% if ev.is_public %}badge-public{% else %}badge-private{% endif %}" style="font-size:11px;margin-left:4px;vertical-align:middle">
-          {% if ev.is_public %}{{ _('Public') }}{% else %}{{ _('Privé') }}{% endif %}
-        </span>
-      </div>
-      {% if ev.description %}
-      <div class="event-card-desc">{{ ev.description }}</div>
-      {% endif %}
-    </div>
-    <div class="event-card-meta">
-      <div class="meta-item">
-        <span class="meta-label">{{ _('Date') }}</span>
-        <span class="meta-value">{{ ev.date | local_dt }}</span>
-      </div>
-      <div class="meta-item">
-        <span class="meta-label">{{ _('Circuit') }}</span>
-        <span class="meta-value">{{ ev.circuit_display or ev.circuit or '—' }}</span>
-      </div>
-      <div class="meta-item">
-        <span class="meta-label">{{ _('Mode') }}</span>
-        <span class="meta-value">{{ ev.mode_display }}</span>
-      </div>
-      <div class="meta-item">
-        <span class="meta-label">{{ _('Météo') }}</span>
-        <span class="meta-value">{{ ev.weather_display }}</span>
-      </div>
-      {% if not ev.is_public %}
-      <div class="meta-item">
-        <span class="meta-label">{{ _('Pilotes') }}</span>
-        <span class="meta-value">{{ ev.confirmed_count }} / {{ ev.max_drivers }}</span>
-      </div>
-      {% endif %}
-    </div>
-  </div>
-
-  {% if not ev.is_public and not ongoing %}
-  <div class="event-card-action">
-    {% if current_user.is_authenticated and current_user.is_pilot %}
-      {% if reg %}
-        <span class="badge badge-{{ reg.status }}">
-          {% if reg.status == 'pending' %}{{ _('En attente') }}
-          {% elif reg.status == 'confirmed' %}{{ _('Confirmé') }}
-          {% else %}{{ _('Refusé') }}{% endif %}
-        </span>
-        {% if reg.status == 'pending' %}
-        <form method="post" action="{{ url_for('public.pilot_unregister', event_id=ev.id) }}" style="display:inline">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <button class="btn-danger" style="font-size:12px;padding:5px 10px" onclick="return confirm('{{ _("Se désinscrire ?") }}')">{{ _('Annuler') }}</button>
-        </form>
-        {% endif %}
-      {% elif ev.is_full %}
-        <span class="text-muted" style="font-size:12px">{{ _('Complet') }}</span>
-      {% elif current_user.is_approved %}
-        <form method="post" action="{{ url_for('public.pilot_register', event_id=ev.id) }}">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <button class="btn-primary" style="font-size:13px">{{ _("S'inscrire") }}</button>
-        </form>
+    {# Upcoming events #}
+    {% if upcoming %}
+      {% for ev in upcoming[:3] %}
+      {% if current_user.is_authenticated %}
+        {% set ev_href = url_for('public.pilot_dashboard') %}
       {% else %}
-        <span class="text-muted" style="font-size:12px">{{ _('Compte en attente') }}</span>
+        {% set ev_href = url_for('auth.login', next=url_for('public.pilot_dashboard')) %}
       {% endif %}
-    {% elif not current_user.is_authenticated %}
-      <a href="{{ url_for('auth.login') }}" class="btn-secondary" style="font-size:12px;padding:7px 14px">{{ _('Se connecter') }}</a>
-    {% endif %}
-  </div>
-  {% endif %}
-</div>
-{% endmacro %}
-
-<!-- ── Événement en cours ── -->
-{% if ongoing %}
-<section class="card" style="margin-top:24px">
-  <div class="card-header">
-    <h2>{{ _('Événement en cours') }}</h2>
-    {% if current_user.is_authenticated and current_user.is_pilot %}
-    <a href="{{ url_for('public.pilot_dashboard') }}" class="btn-secondary">{{ _('Mes inscriptions') }} →</a>
-    {% endif %}
-  </div>
-  <div class="events-list">
-    {% for ev in ongoing %}{{ event_card(ev, ongoing=true) }}{% endfor %}
-  </div>
-</section>
-{% endif %}
-
-<!-- ── Événements à venir ── -->
-<section class="card" style="margin-top:24px">
-  <div class="card-header">
-    <h2>{{ _('Événements à venir') }}</h2>
-    {% if not ongoing and current_user.is_authenticated and current_user.is_pilot %}
-    <a href="{{ url_for('public.pilot_dashboard') }}" class="btn-secondary">{{ _('Mes inscriptions') }} →</a>
-    {% endif %}
-  </div>
-  {% if upcoming %}
-  <div class="events-list">
-    {% for ev in upcoming %}{{ event_card(ev) }}{% endfor %}
-  </div>
-  {% else %}
-  <p class="text-muted" style="padding:12px 0">{{ _('Aucun événement à venir pour le moment.') }}</p>
-  {% endif %}
-</section>
-
-<!-- ── Derniers résultats ── -->
-<section class="card" style="margin-top:24px">
-  <div class="card-header">
-    <h2>{{ _('Derniers résultats') }}</h2>
-    <a href="{{ url_for('public.results') }}" class="btn-secondary">{{ _('Voir tout') }} →</a>
-  </div>
-
-  {% if recent_sessions %}
-  <div class="results-grid" style="padding:4px 0">
-    {% for s in recent_sessions %}
-    {% set p = s.parsed %}
-    <a href="{{ url_for('public.result_detail', result_id=s.id) }}"
-       class="res-card" style="--wkd-color: {{ s.wkd_color }}">
-      <div class="res-card-head">
-        <span class="badge-session badge-stype-{{ (p.session_type or '') | lower }}">{{ p.session_type or '—' }}</span>
-        <span class="res-date">{{ s.received_at | local_dt_short }}</span>
-      </div>
-      <div class="res-track">{{ p.track or '—' }}</div>
-      {% if p.layout %}<div class="res-layout">{{ p.layout }}</div>{% endif %}
-      {% if p.standings %}
-      <div class="res-podium">
-        {% for drv in p.standings[:3] %}
-        <div class="res-podium-row pos-{{ loop.index }}">
-          <span class="res-medal-num pos-{{ loop.index }}">{{ loop.index }}</span>
-          <span class="res-pname">{{ drv.nickname }}</span>
-          <span class="mono res-ptime">
-            {% if p.is_race %}{{ drv.race_time or drv.best_lap }}{% else %}{{ drv.best_lap }}{% endif %}
-          </span>
+      <a href="{{ ev_href }}" class="h-event-row">
+        <div class="h-date-box">
+          <span class="h-date-day">{{ ev.date.day if ev.date else '—' }}</span>
+          <span class="h-date-month">{{ ev.date.strftime('%b')|upper if ev.date else '' }}</span>
+          <span class="h-date-time">{{ ev.date.strftime('%H:%M') if ev.date else '' }}</span>
         </div>
-        {% endfor %}
-      </div>
+        <div class="h-thumb"></div>
+        <div class="h-event-info">
+          <span class="h-event-tag">{{ _('Événement') }}</span>
+          <h3>{{ ev.title }}</h3>
+          <div class="h-event-meta">
+            {{ ev.circuit_display or ev.circuit or '—' }}
+            {% if current_user.is_authenticated and current_user.is_pilot and not current_user.is_admin %}
+              {% set my_reg = my_regs.get(ev.id) %}
+              {% if my_reg %}
+                · <span class="badge badge-{{ my_reg.status }}" style="font-size:0.6rem">{{ my_reg.status }}</span>
+              {% endif %}
+            {% endif %}
+          </div>
+        </div>
+        <div class="h-chev">›</div>
+      </a>
+      {% endfor %}
+    {% else %}
+    <div class="h-empty">{{ _('Aucun événement à venir.') }}</div>
+    {% endif %}
+
+  </div>
+
+  {# ── Col 2 : Session en cours ── #}
+  <div class="h-panel">
+    <div class="h-panel-header">
+      <span class="h-panel-title">{{ _('Session en cours') }}</span>
+      {% if status.running %}
+      <span style="display:flex;align-items:center;gap:5px;font-size:0.7rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:var(--green)">
+        <span class="dot online" style="width:7px;height:7px;flex-shrink:0"></span>
+        {{ _('En direct') }}
+      </span>
       {% else %}
-      <div class="res-empty">{{ _('Aucun pilote') }}</div>
+      <span style="font-size:0.72rem;color:var(--dim)">{{ _('Hors ligne') }}</span>
       {% endif %}
-      <div class="res-card-foot">
-        <span>{{ p.standings|length }} {{ _('pilote(s)') }}</span>
-        <span class="res-arrow">→</span>
+    </div>
+
+    {% if status.running and server_info %}
+      <div class="h-session-info">
+        <div class="h-session-name">{{ server_info.server_name }}</div>
+        <div class="h-session-meta">
+          {% if server_info.circuit %}<span>{{ server_info.circuit }}</span>{% endif %}
+          {% if server_info.track_km %}<span>{{ server_info.track_km }}</span>{% endif %}
+          {% if server_info.mode %}<span>{{ server_info.mode }}</span>{% endif %}
+          {% if server_info.weather %}<span>☀ {{ server_info.weather }}</span>{% endif %}
+        </div>
       </div>
+
+      {% if server_info.cars %}
+      <div style="padding:10px 18px;border-bottom:1px solid var(--border)">
+        <div class="si-cars">
+          {% for car in server_info.cars[:5] %}
+          <span class="car-chip">{{ car }}</span>
+          {% endfor %}
+          {% if server_info.car_count > 5 %}
+          <span class="car-chip car-chip-more">+{{ server_info.car_count - 5 }}</span>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+
+      <div style="padding:16px 18px;text-align:center">
+        <a href="{{ url_for('live.timing_page') }}" class="btn btn-secondary btn-full">
+          {{ _('Timing en direct') }} ›
+        </a>
+      </div>
+
+    {% else %}
+    <div class="h-empty">
+      <div class="dot offline" style="width:14px;height:14px;margin:0 auto 12px"></div>
+      <div style="font-size:0.9rem;font-weight:600;color:var(--dim);margin-bottom:6px">{{ _('Serveur hors ligne') }}</div>
+      <div style="font-size:0.76rem">{{ _('Aucune session en cours.') }}</div>
+    </div>
+    {% endif %}
+  </div>
+
+  {# ── Col 3 : État du serveur ── #}
+  <div class="h-panel">
+    <div class="h-panel-header">
+      <span class="h-panel-title">{{ _('État du serveur') }}</span>
+      <span class="dot {% if status.running %}online{% else %}offline{% endif %}"></span>
+    </div>
+
+    {# ── Joueurs / Max + Statut ── #}
+    <div class="h-server-split">
+      <div>
+        <span class="h-server-label">{{ _('Joueurs en ligne') }}</span>
+        <div class="h-server-big">
+          {% if status.running and status.players is not none %}
+            {{ status.players }}{% if server_info %}<span class="h-server-max">/ {{ server_info.max_players }}</span>{% endif %}
+          {% else %}
+            —
+          {% endif %}
+        </div>
+      </div>
+      <div>
+        <span class="h-server-label">{{ _('Statut') }}</span>
+        <div style="margin-top:8px">
+          {% if status.running %}
+          <span class="badge badge-published" style="font-size:0.78rem;padding:4px 10px">{{ _('En ligne') }}</span>
+          {% else %}
+          <span class="badge badge-rejected" style="font-size:0.78rem;padding:4px 10px">{{ _('Hors ligne') }}</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    {% if status.running %}
+
+    {# ── En ligne depuis + sparkline ── #}
+    <div class="h-srv-row">
+      <div class="h-srv-row-left">
+        <span class="h-server-label">{{ _('En ligne depuis') }}</span>
+        <div class="h-srv-uptime"
+             id="srv-uptime"
+             data-started-at="{{ status.started_at or '' }}">—</div>
+      </div>
+      <div class="h-srv-row-right">
+        <svg id="srv-sparkline"
+             class="h-sparkline"
+             viewBox="0 0 120 32"
+             preserveAspectRatio="none"
+             data-history="{{ player_history_json | e }}"
+             data-max="{{ server_info.max_players if server_info else 20 }}">
+        </svg>
+      </div>
+    </div>
+
+    {# ── Prochaine session ── #}
+    {% if server_info and server_info.session_dur_secs %}
+    <div class="h-srv-row" style="border-top:1px solid var(--border)">
+      <div class="h-srv-row-left">
+        <span class="h-server-label">{{ server_info.current_session_label }}</span>
+        <div class="h-srv-countdown"
+             id="srv-countdown"
+             data-session-changed-at="{{ server_info.session_changed_at or status.started_at or '' }}"
+             data-session-dur="{{ server_info.session_dur_secs }}">—</div>
+      </div>
+      <div class="h-srv-row-right" style="align-items:flex-end">
+        <span style="font-size:0.72rem;color:var(--dim)">{{ _('restant') }}</span>
+      </div>
+    </div>
+    {% endif %}
+
+    {% endif %}
+
+  </div>
+
+</div>{# /h-grid-3 #}
+
+{# ── Derniers résultats ── #}
+{% if recent_sessions %}
+<div class="h-panel">
+  <div class="h-panel-header">
+    <span class="h-panel-title">{{ _('Derniers résultats') }}</span>
+    <a href="{{ url_for('public.results') }}" class="h-panel-link">{{ _('Voir tous') }} ›</a>
+  </div>
+  <div class="h-results-row">
+    {% for s in recent_sessions[:4] %}
+    {% set p = s.parsed %}
+    {% set winner = p.standings[0] if p.standings else none %}
+    <a href="{{ url_for('public.result_detail', result_id=s.id) }}"
+       class="h-result-card"
+       style="border-top:3px solid {{ s.wkd_color }}">
+      <h4>{{ p.track or '—' }}</h4>
+      <p>
+        <span class="badge badge-session" style="font-size:0.68rem">{{ p.session_type or '—' }}</span><br>
+        {{ s.received_at | local_dt_short }}
+      </p>
+      {% if winner %}
+      <span class="h-result-driver">
+        {% if p.is_race %}{{ winner.race_time or winner.best_lap }}{% else %}{{ winner.best_lap }}{% endif %}
+        · {{ winner.nickname }}
+      </span>
+      {% else %}
+      <span class="h-result-driver" style="color:var(--dim)">{{ _('Aucun pilote') }}</span>
+      {% endif %}
     </a>
     {% endfor %}
   </div>
+</div>
+{% endif %}
 
-  {% else %}
-  <p class="text-muted" style="padding:8px 0;font-size:13px">
-    {{ _('Aucun résultat disponible pour le moment.') }}
-  </p>
-  {% endif %}
-</section>
+</div>{# /max-width #}
+{% endblock %}
 
-<div class="toast" id="toast"></div>
+{% block scripts %}
+<script>
+/* ── Uptime counter ── */
+function _fmtUptime(s) {
+  const d = Math.floor(s / 86400);
+  const h = Math.floor((s % 86400) / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  if (d > 0) return d + 'j ' + h + 'h' + String(m).padStart(2,'0');
+  if (h > 0) return h + 'h' + String(m).padStart(2,'0');
+  return m + ' min';
+}
+function _tickUptime() {
+  const el = document.getElementById('srv-uptime');
+  if (!el) return;
+  const t = parseFloat(el.dataset.startedAt);
+  if (!t) return;
+  const secs = Math.max(0, Math.floor(Date.now()/1000 - t));
+  el.textContent = _fmtUptime(secs);
+}
+
+/* ── Session countdown ── */
+function _fmtCountdown(s) {
+  if (s <= 0) return '—';
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  if (h > 0) return h + 'h ' + String(m).padStart(2,'0') + 'm';
+  return String(m).padStart(2,'0') + 'm ' + String(sec).padStart(2,'0') + 's';
+}
+function _tickCountdown() {
+  const el = document.getElementById('srv-countdown');
+  if (!el) return;
+  const changed = parseFloat(el.dataset.sessionChangedAt);
+  const dur     = parseInt(el.dataset.sessionDur);
+  if (!changed || !dur) return;
+  const remaining = Math.max(0, Math.floor(changed + dur - Date.now()/1000));
+  el.textContent = _fmtCountdown(remaining);
+}
+
+/* ── Sparkline SVG ── */
+function _drawSparkline() {
+  const svg = document.getElementById('srv-sparkline');
+  if (!svg) return;
+  let history;
+  try { history = JSON.parse(svg.dataset.history || '[]'); } catch(_) { return; }
+  const maxP = parseInt(svg.dataset.max) || 20;
+  const pts  = history.slice(-30);
+  if (pts.length < 2) {
+    svg.innerHTML = '<text x="60" y="20" text-anchor="middle" fill="var(--dim)" font-size="9">{{ _("Pas de données") }}</text>';
+    return;
+  }
+  const W = 120, H = 32, pad = 2;
+  const iW = W - pad*2, iH = H - pad*2;
+  const step = iW / (pts.length - 1);
+  const coords = pts.map((p, i) => {
+    const x = pad + i * step;
+    const y = pad + iH - (p.count / Math.max(maxP, 1)) * iH;
+    return [x.toFixed(1), y.toFixed(1)];
+  });
+  const line  = coords.map(c => c.join(',')).join(' ');
+  const area  = `${pad},${H-pad} ` + line + ` ${coords[coords.length-1][0]},${H-pad}`;
+  svg.innerHTML =
+    `<polyline points="${area}" fill="var(--accent)" fill-opacity="0.12" stroke="none"/>` +
+    `<polyline points="${line}" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linejoin="round"/>`;
+}
+
+/* ── Update sparkline from status poll ── */
+window._onPublicStatusUpdate = function(data) {
+  if (data.history && data.history.length) {
+    const svg = document.getElementById('srv-sparkline');
+    if (svg) {
+      svg.dataset.history = JSON.stringify(data.history);
+      _drawSparkline();
+    }
+  }
+};
+
+/* ── Start ── */
+_drawSparkline();
+_tickUptime();
+_tickCountdown();
+setInterval(() => { _tickUptime(); _tickCountdown(); }, 1000);
+</script>
 {% endblock %}

@@ -1,0 +1,292 @@
+{% extends "base.html" %}
+{% block title %}Live — {{ panel_title }}{% endblock %}
+{% block content %}
+<div class="live-page">
+
+  <div class="live-header">
+    <div>
+      <h1 class="live-title">{{ _('Session en direct') }}</h1>
+      <p class="live-subtitle">{{ _('Mis à jour automatiquement') }} · <span id="live-last-update">—</span></p>
+    </div>
+    <div style="display:flex;gap:.75rem;align-items:center;">
+      <div class="live-badge" id="live-conn-badge">
+        <span class="dot offline" id="live-dot"></span>
+        <span id="live-conn-label">{{ _('Connexion…') }}</span>
+      </div>
+      <div class="live-badge" id="live-tcp-badge" title="{{ _('Connexion TCP directe au serveur de jeu') }}">
+        <span class="dot offline" id="live-tcp-dot"></span>
+        <span id="live-tcp-label">TCP —</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="live-grid">
+
+    <!-- Pilotes connectés -->
+    <div class="live-card">
+      <div class="live-card-title">
+        {{ _('Pilotes connectés') }}
+        <span class="live-count" id="live-driver-count">0</span>
+      </div>
+      <div id="live-drivers-list" class="live-drivers">
+        <div class="live-empty">{{ _('En attente de pilotes…') }}</div>
+      </div>
+    </div>
+
+    <!-- Événements récents -->
+    <div class="live-card live-card-events">
+      <div class="live-card-title">{{ _('Événements récents') }}</div>
+      <div id="live-events-feed" class="live-feed">
+        <div class="live-empty">{{ _('En attente d\'événements…') }}</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Chat in-game -->
+  <div class="live-card live-chat-card" id="live-chat-card">
+    <div class="live-card-title">
+      {{ _('Message in-game') }}
+      <span class="live-chat-hint" id="live-chat-hint">— {{ _('TCP non connecté') }}</span>
+    </div>
+    <div class="live-chat-form">
+      <input type="text" id="live-chat-input" class="live-chat-input"
+             placeholder="{{ _('Tapez un message…') }}" maxlength="200" disabled>
+      <button class="btn-primary" id="live-chat-send" onclick="sendChat()" disabled>{{ _('Envoyer') }}</button>
+    </div>
+    <div id="live-chat-log" class="live-chat-log"></div>
+  </div>
+
+</div>
+
+<script>
+const _CAR_LABELS = {
+  'ks_mercedes_190e_evo_ii': 'Mercedes 190E Evo II',
+};
+
+const I18N_LIVE = {
+  connected:     "{{ _('En direct') }}",
+  reconnecting:  "{{ _('Reconnexion…') }}",
+  tcpConnected:  "{{ _('TCP connecté') }}",
+  tcpDisconnected: "{{ _('TCP déconnecté') }}",
+  tcpNotConnected: "{{ _('non connecté') }}",
+  noDrivers:     "{{ _('Aucun pilote connecté') }}",
+  noEvents:      "{{ _('Aucun événement récent') }}",
+  errNetwork:    "{{ _('erreur réseau') }}",
+  joined:        "{{ _('a rejoint') }}",
+  left:          "{{ _('a quitté') }}",
+  online:        "{{ _('joueur(s) en ligne') }}",
+};
+
+function _carLabel(raw) {
+  if (!raw) return '—';
+  if (_CAR_LABELS[raw]) return _CAR_LABELS[raw];
+  return raw.replace(/^preset_/, '').replace(/_mech_\d+$/, '').replace(/_/g, ' ').toUpperCase();
+}
+
+function _fmtTs(ts) {
+  if (!ts) return '';
+  try { return ts.substring(11, 19); } catch { return ts; }
+}
+
+function _fmtMs(ms) {
+  if (!ms || ms <= 0) return '—';
+  const m   = Math.floor(ms / 60000);
+  const s   = Math.floor((ms % 60000) / 1000);
+  const cs  = Math.floor((ms % 1000) / 10);
+  return `${m}:${String(s).padStart(2,'0')}.${String(cs).padStart(2,'0')}`;
+}
+
+// ── Leaderboard TCP ───────────────────────────────────────────────────────────
+let _tcpLb = {};  // steam_id → {time_ms, sector, name, num}
+
+function _mergeTcpLb(entries) {
+  for (const e of entries) {
+    const sid = String(e.steam_id);
+    _tcpLb[sid] = Object.assign(_tcpLb[sid] || {}, e);
+  }
+}
+
+function _renderDrivers(drivers) {
+  const el = document.getElementById('live-drivers-list');
+  document.getElementById('live-driver-count').textContent = drivers.length;
+  if (!drivers.length) {
+    el.innerHTML = `<div class="live-empty">${I18N_LIVE.noDrivers}</div>`;
+    return;
+  }
+  el.innerHTML = drivers.map(d => {
+    const sid   = String(d.steam_id || '');
+    const tcp   = _tcpLb[sid] || {};
+    const tStr  = _fmtMs(tcp.time_ms);
+    const sStr  = tcp.sector != null ? `S${tcp.sector + 1}` : '';
+    return `
+    <div class="live-driver-row">
+      <span class="live-driver-num">#${d.num}</span>
+      <div class="live-driver-info">
+        <span class="live-driver-name">${d.name}</span>
+        <span class="live-driver-car">${_carLabel(d.car_raw)}</span>
+      </div>
+      ${tStr !== '—' ? `<span class="live-driver-time">${sStr} ${tStr}</span>` : ''}
+      <span class="live-driver-since">${_fmtTs(d.joined_ts)}</span>
+    </div>
+  `}).join('');
+}
+
+function _addEvent(ev) {
+  const feed = document.getElementById('live-events-feed');
+  const empty = feed.querySelector('.live-empty');
+  if (empty) empty.remove();
+
+  const icons = { connect: '🟢', disconnect: '🔴', split: '⏱', players: '👥' };
+  const texts = {
+    connect:    ev => `${ev.name || ev.steam_id} ${I18N_LIVE.joined} · ${_carLabel(ev.car_raw)}`,
+    disconnect: ev => `${ev.name || ev.steam_id} ${I18N_LIVE.left}`,
+    split:      ev => `S${(ev.sector||0)+1}`,
+    players:    ev => `${ev.count} ${I18N_LIVE.online}`,
+  };
+
+  const row = document.createElement('div');
+  row.className = `live-event-row live-event-${ev.type}`;
+  row.innerHTML = `
+    <span class="live-event-ts">${_fmtTs(ev.ts)}</span>
+    <span class="live-event-icon">${icons[ev.type] || '·'}</span>
+    <span class="live-event-text">${(texts[ev.type] || (e => e.type))(ev)}</span>
+  `;
+  feed.insertBefore(row, feed.firstChild);
+  while (feed.children.length > 60) feed.lastChild.remove();
+}
+
+// ── État initial ──────────────────────────────────────────────────────────────
+async function loadState() {
+  try {
+    const r = await fetch('/api/live/state');
+    const d = await r.json();
+    _renderDrivers(d.drivers || []);
+    const feed = document.getElementById('live-events-feed');
+    feed.innerHTML = '';
+    (d.events || []).slice().reverse().forEach(_addEvent);
+    if (!feed.children.length)
+      feed.innerHTML = `<div class="live-empty">${I18N_LIVE.noEvents}</div>`;
+    document.getElementById('live-last-update').textContent =
+      new Date().toLocaleTimeString();
+  } catch(e) {
+    if (typeof showToast === 'function') showToast(I18N.networkError, 'error');
+  }
+}
+
+// ── SSE stream ────────────────────────────────────────────────────────────────
+let _es = null;
+let _drivers = {};
+
+function connectSSE() {
+  if (_es) _es.close();
+  _es = new EventSource('/api/live/stream');
+
+  _es.onopen = () => {
+    document.getElementById('live-dot').className = 'dot online';
+    document.getElementById('live-conn-label').textContent = I18N_LIVE.connected;
+  };
+  _es.onerror = () => {
+    document.getElementById('live-dot').className = 'dot offline';
+    document.getElementById('live-conn-label').textContent = I18N_LIVE.reconnecting;
+    setTimeout(connectSSE, 5000);
+  };
+  _es.onmessage = (e) => {
+    const ev = JSON.parse(e.data);
+    if (ev.type === 'connected') return;
+    document.getElementById('live-last-update').textContent =
+      new Date().toLocaleTimeString();
+    if (ev.type === 'connect') {
+      _drivers[ev.steam_id] = ev;
+    } else if (ev.type === 'driver') {
+      const pending = _drivers[ev.steam_id] || {};
+      _drivers[ev.steam_id] = { ...pending, ...ev, name: ev.name };
+      loadState(); return;
+    } else if (ev.type === 'disconnect') {
+      delete _drivers[ev.steam_id];
+      loadState(); return;
+    }
+    if (ev.type !== 'connected') _addEvent(ev);
+  };
+}
+
+// ── Statut TCP ────────────────────────────────────────────────────────────────
+async function pollTcpStatus() {
+  try {
+    const r = await fetch('/api/live/tcp_status');
+    if (!r.ok) return;
+    const d = await r.json();
+
+    const dot   = document.getElementById('live-tcp-dot');
+    const label = document.getElementById('live-tcp-label');
+    const input = document.getElementById('live-chat-input');
+    const btn   = document.getElementById('live-chat-send');
+    const hint  = document.getElementById('live-chat-hint');
+
+    if (d.connected) {
+      dot.className     = 'dot online';
+      label.textContent = I18N_LIVE.tcpConnected;
+      hint.textContent  = '';
+      input.disabled    = false;
+      btn.disabled      = false;
+    } else {
+      dot.className     = 'dot offline';
+      label.textContent = I18N_LIVE.tcpDisconnected;
+      hint.textContent  = d.error ? `— ${d.error}` : `— ${I18N_LIVE.tcpNotConnected}`;
+      input.disabled    = true;
+      btn.disabled      = true;
+    }
+
+    if (d.leaderboard && d.leaderboard.length) {
+      _mergeTcpLb(d.leaderboard);
+      const st = await fetch('/api/live/state');
+      const sd = await st.json();
+      _renderDrivers(sd.drivers || []);
+    }
+  } catch(e) {
+    document.getElementById('live-tcp-badge').style.display = 'none';
+    document.getElementById('live-chat-card').style.display = 'none';
+  }
+}
+
+// ── Envoi de chat ─────────────────────────────────────────────────────────────
+async function sendChat() {
+  const input = document.getElementById('live-chat-input');
+  const log   = document.getElementById('live-chat-log');
+  const text  = input.value.trim();
+  if (!text) return;
+  input.value = '';
+
+  const row = document.createElement('div');
+  row.className = 'live-chat-row live-chat-sending';
+  row.textContent = `[${new Date().toLocaleTimeString()}] ${text}`;
+  log.insertBefore(row, log.firstChild);
+
+  try {
+    const r = await fetch('/api/live/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content },
+      body: JSON.stringify({ message: text })
+    });
+    const d = await r.json();
+    row.className = d.ok ? 'live-chat-row live-chat-sent' : 'live-chat-row live-chat-error';
+    if (!d.ok) row.textContent += ` ✗ ${d.error || ''}`;
+  } catch(e) {
+    row.className = 'live-chat-row live-chat-error';
+    row.textContent += ` ✗ ${I18N_LIVE.errNetwork}`;
+  }
+  while (log.children.length > 20) log.lastChild.remove();
+}
+
+document.getElementById('live-chat-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') sendChat();
+});
+
+// Init
+loadState();
+connectSSE();
+pollTcpStatus();
+setInterval(loadState, 30000);
+setInterval(pollTcpStatus, 5000);
+</script>
+{% endblock %}

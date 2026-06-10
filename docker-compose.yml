@@ -1,8 +1,8 @@
 services:
   panel:
     build:
-      context: ..
-      dockerfile: docker/Dockerfile.panel
+      context: .
+      dockerfile: Dockerfile.panel
     container_name: ace-panel
     ports:
       - "${PANEL_PORT:-4300}:${PANEL_PORT:-4300}"
@@ -13,6 +13,10 @@ services:
       - panel_data:/panel/data
       # Docker socket pour contrôler le container aceserver depuis le panel
       - /var/run/docker.sock:/var/run/docker.sock
+      # Fichier de configuration .env — monté pour que la page Paramètres lise/écrive les vraies valeurs
+      - ./.env:/panel/.env
+      # HTTPS intégré (Let's Encrypt) — décommentez et adaptez SSL_CERTFILE/SSL_KEYFILE dans .env
+      # - /etc/letsencrypt:/etc/letsencrypt:ro
     env_file:
       - .env
     restart: unless-stopped

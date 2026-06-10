@@ -1,4 +1,5 @@
 import smtplib
+import socket
 import threading
 import logging
 from datetime import datetime
@@ -56,11 +57,11 @@ def _html_to_plain(html: str) -> str:
 def _smtp_send(msg: MIMEMultipart, to: str):
     port = _cfg["port"]
     if port == 465:
-        with smtplib.SMTP_SSL(_cfg["server"], port, timeout=15) as smtp:
+        with smtplib.SMTP_SSL(_cfg["server"], port, timeout=8) as smtp:
             smtp.login(_cfg["username"], _cfg["password"])
             smtp.sendmail(msg["From"], [to], msg.as_string())
     else:
-        with smtplib.SMTP(_cfg["server"], port, timeout=15) as smtp:
+        with smtplib.SMTP(_cfg["server"], port, timeout=8) as smtp:
             if _cfg.get("use_tls"):
                 smtp.starttls()
             smtp.login(_cfg["username"], _cfg["password"])
@@ -77,7 +78,7 @@ def _send(to: str, subject: str, html: str):
             msg = _build_msg(to, subject, html)
             _smtp_send(msg, to)
             log.info("Email envoyé à %s — %s", to, subject)
-        except Exception:
+        except (smtplib.SMTPException, socket.timeout, OSError):
             log.exception("Erreur envoi email à %s", to)
 
     threading.Thread(target=_worker, daemon=True).start()
@@ -92,7 +93,7 @@ def send_test(to: str) -> dict:
         msg  = _build_msg(to, "[ACE EVO] Email de test", html)
         _smtp_send(msg, to)
         return {"ok": True, "to": to}
-    except Exception as e:
+    except (smtplib.SMTPException, socket.timeout, OSError) as e:
         return {"ok": False, "error": str(e)}
 
 

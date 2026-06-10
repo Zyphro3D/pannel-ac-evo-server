@@ -1,4 +1,5 @@
 import json
+import re
 import shutil
 from pathlib import Path
 from flask import current_app, session
@@ -17,6 +18,15 @@ def _events_path(mode: str = "practice") -> Path:
     return Path(current_app.config[key])
 
 
+# ── Validation du nom de fichier de config ────────────────────────────────────
+
+_CONFIG_NAME_RE = re.compile(r'^[\w\-. ]+\.json$')
+
+def _valid_config_name(name: str) -> bool:
+    """Valide qu'un nom de config est sûr : alphanum/tiret/espace/point, extension .json."""
+    return bool(_CONFIG_NAME_RE.match(name)) and ".." not in name and "/" not in name and "\\" not in name
+
+
 # ── Gestion des fichiers de config ───────────────────────────────────────────
 
 def list_configs() -> list[str]:
@@ -33,7 +43,6 @@ def get_active_config_name() -> str:
     name = session.get("active_config")
     if name and name in configs:
         return name
-    # Premier fichier par défaut
     session["active_config"] = configs[0]
     return configs[0]
 
@@ -52,11 +61,9 @@ def _active_path() -> Path:
 
 def create_config(name: str, copy_from: str | None = None) -> dict:
     """Crée un nouveau fichier de config. Copie copy_from si fourni, sinon template vide."""
-    import re
     if not name.endswith(".json"):
         name += ".json"
-    # Interdit tout caractère hors alphanum, tiret, underscore, point
-    if not re.match(r'^[\w\-. ]+\.json$', name) or '..' in name or '/' in name or '\\' in name:
+    if not _valid_config_name(name):
         return {"ok": False, "error": "invalid_name"}
 
     dest = _configs_dir() / name
@@ -83,12 +90,27 @@ def delete_config(name: str) -> dict:
 
     (_configs_dir() / name).unlink()
 
-    # Si c'était la config active, basculer sur une autre
     if session.get("active_config") == name:
         remaining = [c for c in configs if c != name]
         session["active_config"] = remaining[0]
 
     return {"ok": True}
+
+
+def rename_config(old_name: str, new_name: str) -> dict:
+    if not new_name.endswith(".json"):
+        new_name += ".json"
+    if not _valid_config_name(new_name):
+        return {"ok": False, "error": "invalid_name"}
+    configs = list_configs()
+    if old_name not in configs:
+        return {"ok": False, "error": "not_found"}
+    if new_name in configs:
+        return {"ok": False, "error": "file_exists"}
+    (_configs_dir() / old_name).rename(_configs_dir() / new_name)
+    if session.get("active_config") == old_name:
+        session["active_config"] = new_name
+    return {"ok": True, "name": new_name}
 
 
 # ── Réparation de la config ──────────────────────────────────────────────────
@@ -168,6 +190,14 @@ _WEATHER_LABELS = {
 }
 
 
+def _fmt_dur(seconds: int) -> str:
+    """Formate une durée en secondes en chaîne lisible (ex: '1h30' ou '45 min')."""
+    if not seconds:
+        return "—"
+    h, m = divmod(seconds // 60, 60)
+    return f"{h}h{m:02d}" if h else f"{m} min"
+
+
 def get_running_server_info() -> dict | None:
     """
     Retourne les infos affichables de la session en cours (circuit, mode, météo,
@@ -191,7 +221,6 @@ def get_running_server_info() -> dict | None:
     srv = cfg.get("Server", {})
     ses = cfg.get("Sessions", {})
 
-    # Circuit : "track|layout|event_name|length"
     track_raw = ev.get("SelectedTrackValue", "")
     parts = track_raw.split("|") if track_raw else []
     circuit = f"{parts[0]} — {parts[1]}" if len(parts) >= 2 else "—"
@@ -200,85 +229,102 @@ def get_running_server_info() -> dict | None:
     mode    = _MODE_LABELS.get(ev.get("SelectedSessionTypeValue", ""), ev.get("SelectedSessionTypeValue", "—"))
     weather = _WEATHER_LABELS.get(ev.get("SelectedWeatherTypeValue", ""), "—")
 
-    # Véhicules sélectionnés
     cars = ev.get("Cars", [])
     selected = [c.get("display_name") or c.get("name", "") for c in cars
                 if c.get("is_selected") or c.get("IsSelected")]
 
-    # Durée principale (Practice) en secondes → h/min
-    def _fmt_dur(seconds: int) -> str:
-        if not seconds:
-            return "—"
-        h, m = divmod(seconds // 60, 60)
-        return f"{h}h{m:02d}" if h else f"{m} min"
-
-    practice_dur  = _fmt_dur(ses.get("PracticeSession", {}).get("Length", 0))
+    practice_dur   = _fmt_dur(ses.get("PracticeSession",   {}).get("Length", 0))
     qualifying_dur = _fmt_dur(ses.get("QualifyingSession", {}).get("Length", 0))
-    warmup_dur    = _fmt_dur(ses.get("WarmupSession", {}).get("Length", 0))
-    race_dur      = _fmt_dur(ses.get("RaceSession", {}).get("Length", 0))
+    warmup_dur     = _fmt_dur(ses.get("WarmupSession",     {}).get("Length", 0))
+    race_dur       = _fmt_dur(ses.get("RaceSession",       {}).get("Length", 0))
+
+    is_race_weekend_val = ev.get("SelectedSessionTypeValue") == "GameModeType_RACE_WEEKEND"
+
+    last_type = state.get("last_session_type", "")
+    if is_race_weekend_val:
+        if last_type == "qualifying":
+            cur_sess_key, cur_sess_label = "WarmupSession",     "Warmup"
+        elif last_type == "warmup":
+            cur_sess_key, cur_sess_label = "RaceSession",       "Race"
+        elif last_type == "race":
+            cur_sess_key, cur_sess_label = None,                "Terminé"
+        else:
+            cur_sess_key, cur_sess_label = "QualifyingSession", "Qualifying"
+    else:
+        cur_sess_key, cur_sess_label = "PracticeSession", "Practice"
+
+    session_dur_secs = ses.get(cur_sess_key, {}).get("Length", 0) if cur_sess_key else 0
+    session_changed_at = state.get("session_changed_at") or state.get("started_at")
 
     return {
-        "server_name":    srv.get("ServerName", "—"),
-        "config_file":    config_name,
-        "circuit":        circuit,
-        "track_km":       track_km,
-        "mode":           mode,
-        "weather":        weather,
-        "cars":           selected,
-        "car_count":      len(selected),
-        "max_players":    srv.get("MaxPlayers", "—"),
-        "practice_dur":   practice_dur,
-        "qualifying_dur": qualifying_dur,
-        "warmup_dur":     warmup_dur,
-        "race_dur":       race_dur,
-        "is_race_weekend": ev.get("SelectedSessionTypeValue") == "GameModeType_RACE_WEEKEND",
+        "server_name":            srv.get("ServerName", "—"),
+        "config_file":            config_name,
+        "circuit":                circuit,
+        "track_km":               track_km,
+        "mode":                   mode,
+        "weather":                weather,
+        "cars":                   selected,
+        "car_count":              len(selected),
+        "max_players":            srv.get("MaxPlayers", "—"),
+        "practice_dur":           practice_dur,
+        "qualifying_dur":         qualifying_dur,
+        "warmup_dur":             warmup_dur,
+        "race_dur":               race_dur,
+        "is_race_weekend":        is_race_weekend_val,
+        "session_dur_secs":       session_dur_secs,
+        "session_changed_at":     session_changed_at,
+        "current_session_label":  cur_sess_label,
+    }
+
+
+def _car_dict(car: dict, selected: bool, ballast: float, restrictor: float) -> dict:
+    """Construit le dict complet d'une voiture (clés camelCase + snake_case pour ACE EVO)."""
+    return {
+        "is_selected": selected,   "IsSelected": selected,
+        "ballast": ballast,        "Ballast": ballast,
+        "restrictor": restrictor,  "Restrictor": restrictor,
+        "performance_indicator": car["performance_indicator"],
+        "PerformanceIndicator":  car["performance_indicator"],
+        "property_1": car.get("property_1"), "P1": car.get("property_1"),
+        "property_2": car.get("property_2"), "P2": car.get("property_2"),
+        "property_3": car.get("property_3"), "P3": car.get("property_3"),
+        "name": car["name"], "display_name": car["display_name"],
     }
 
 
 def build_config_from_event(event) -> dict:
     """Construit un dict de config complet à partir d'un Event de la DB."""
-    import json as _json
-    import re
-
     cfg = _default_config()
 
-    # Server
     cfg["Server"]["ServerName"]     = event.title
     cfg["Server"]["MaxPlayers"]     = event.max_drivers
     cfg["Server"]["DriverPassword"] = event.password or ""
 
-    # Event
-    cfg["Event"]["SelectedSessionTypeValue"]    = event.mode
-    cfg["Event"]["SelectedWeatherTypeValue"]    = event.weather
-    cfg["Event"]["SelectedTrackValue"]          = event.circuit
+    cfg["Event"]["SelectedSessionTypeValue"] = event.mode
+    cfg["Event"]["SelectedWeatherTypeValue"] = event.weather
+    cfg["Event"]["SelectedTrackValue"]       = event.circuit
 
-    # Cars — marquer comme sélectionnées celles dans allowed_cars (ou toutes si liste vide)
-    allowed_names = set(_json.loads(event.allowed_cars or "[]"))
-    cars_cfg = {}
+    allowed_names = set(json.loads(event.allowed_cars or "[]"))
     try:
-        cars_cfg = _json.loads(event.cars_config or "{}")
+        cars_cfg = json.loads(event.cars_config or "{}")
     except (ValueError, TypeError):
-        pass
+        cars_cfg = {}
+
     car_list = []
     for car in load_cars():
         selected = (not allowed_names) or (car["name"] in allowed_names)
-        car_overrides = cars_cfg.get(car["name"], {})
-        ballast    = float(car_overrides.get("ballast", 0))
-        restrictor = float(car_overrides.get("restrictor", 0))
-        car_list.append({
-            "is_selected": selected,   "IsSelected": selected,
-            "ballast": ballast,        "Ballast": ballast,
-            "restrictor": restrictor,  "Restrictor": restrictor,
-            "performance_indicator": car["performance_indicator"],
-            "PerformanceIndicator":  car["performance_indicator"],
-            "property_1": car.get("property_1"), "P1": car.get("property_1"),
-            "property_2": car.get("property_2"), "P2": car.get("property_2"),
-            "property_3": car.get("property_3"), "P3": car.get("property_3"),
-            "name": car["name"], "display_name": car["display_name"],
-        })
+        overrides = cars_cfg.get(car["name"], {})
+        try:
+            ballast = float(overrides.get("ballast", 0))
+        except (ValueError, TypeError):
+            ballast = 0.0
+        try:
+            restrictor = float(overrides.get("restrictor", 0))
+        except (ValueError, TypeError):
+            restrictor = 0.0
+        car_list.append(_car_dict(car, selected, ballast, restrictor))
     cfg["Event"]["Cars"] = car_list
 
-    # Sessions (minutes → secondes)
     sess = cfg["Sessions"]
     sess["PracticeSession"]["Length"]   = (event.practice_minutes   or 60) * 60
     sess["QualifyingSession"]["Length"] = (event.qualifying_minutes or 30) * 60
@@ -295,7 +341,6 @@ def build_config_from_event(event) -> dict:
 
 def save_event_config(event, cfg: dict) -> str:
     """Sauvegarde la config d'un événement dans CONFIGS_DIR. Retourne le nom du fichier."""
-    import re
     slug = re.sub(r"[^\w\-]", "_", event.title)[:40].strip("_")
     name = f"event_{event.id}_{slug}.json"
     path = _configs_dir() / name
@@ -309,7 +354,16 @@ def save_config(data: dict):
         json.dump(data, f, indent=2, ensure_ascii=False)
 
 
+# Champs réservés aux superadmins (ports réseau)
 _SUPERADMIN_ONLY_FIELDS = {"TcpPort", "UdpPort", "HttpPort"}
+
+# Champs numériques avec leurs contraintes (min, max)
+_INT_FIELDS: dict[str, tuple[int, int]] = {
+    "MaxPlayers": (1, 128),
+    "TcpPort":    (1, 65535),
+    "UdpPort":    (1, 65535),
+    "HttpPort":   (1, 65535),
+}
 
 
 def apply_server_patch(patch: dict, is_superadmin: bool = False) -> dict:
@@ -331,37 +385,30 @@ def apply_server_patch(patch: dict, is_superadmin: bool = False) -> dict:
         if key in server_fields:
             if key in _SUPERADMIN_ONLY_FIELDS and not is_superadmin:
                 continue
+            if key in _INT_FIELDS:
+                lo, hi = _INT_FIELDS[key]
+                try:
+                    value = max(lo, min(hi, int(value)))
+                except (ValueError, TypeError):
+                    continue
             config["Server"][key] = value
         elif key in event_fields:
             config["Event"][key] = value
         elif key == "Cars":
-            # Reconstruire depuis cars.json pour avoir tous les champs complets
             patch_map = {c["name"]: c for c in value}
-            all_cars = load_cars()
             new_cars = []
-            for car in all_cars:
+            for car in load_cars():
                 p = patch_map.get(car["name"], {})
                 selected = bool(p.get("IsSelected", False))
-                ballast = float(p.get("Ballast", 0))
-                restrictor = float(p.get("Restrictor", 0))
-                new_cars.append({
-                    "is_selected": selected,
-                    "ballast": ballast,
-                    "restrictor": restrictor,
-                    "performance_indicator": car["performance_indicator"],
-                    "property_1": car["property_1"],
-                    "property_2": car["property_2"],
-                    "property_3": car["property_3"],
-                    "name": car["name"],
-                    "display_name": car["display_name"],
-                    "IsSelected": selected,
-                    "Ballast": ballast,
-                    "Restrictor": restrictor,
-                    "PerformanceIndicator": car["performance_indicator"],
-                    "P1": car["property_1"],
-                    "P2": car["property_2"],
-                    "P3": car["property_3"],
-                })
+                try:
+                    ballast = float(p.get("Ballast", 0))
+                except (ValueError, TypeError):
+                    ballast = 0.0
+                try:
+                    restrictor = float(p.get("Restrictor", 0))
+                except (ValueError, TypeError):
+                    restrictor = 0.0
+                new_cars.append(_car_dict(car, selected, ballast, restrictor))
             config["Event"]["Cars"] = new_cars
         elif key == "Sessions":
             for sess_key, sess_val in value.items():
@@ -390,8 +437,6 @@ def _default_config() -> dict:
     import os as _os
     _port       = _os.environ.get("PANEL_PORT", "4300")
     _deploy     = _os.environ.get("DEPLOY_MODE", "native")
-    # En docker_split, ace-server et ace-panel sont sur le même réseau Docker.
-    # Le serveur de jeu doit joindre le panel via son service name, pas 127.0.0.1.
     _panel_host = "panel" if _deploy == "docker_split" else "127.0.0.1"
     return {
         "Server": {
@@ -409,7 +454,7 @@ def _default_config() -> dict:
             "EntryListUrl": "",
             "ResultsPostUrl": f"http://{_panel_host}:{_port}/api/results/ingest",
             "EntryListPath": "",
-            "ResultsPath": "",   # laisser vide : le serveur concatène sans slash
+            "ResultsPath": "",
         },
         "Event": {
             "SelectedSessionTypeValue": "GameModeType_PRACTICE",

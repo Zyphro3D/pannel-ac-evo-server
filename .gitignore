@@ -34,23 +34,24 @@ env/
 # Babel compilé — inclus dans le repo pour éviter l'étape de compilation manuelle
 # Régénérer avec : python compile_mo.py
 
-# Fichiers runtime du serveur ACE (générés par le jeu)
-serverConfig/
-system/
+# aceserver — binaires et fichiers runtime du jeu (installés via SteamCMD, pas versionnés)
+aceserver/*.exe
+aceserver/*.dll
+aceserver/*.kspkg
+aceserver/*.ico
+aceserver/*.json
+aceserver/.*
+aceserver/steamapps/
+aceserver/_CommonRedist/
+aceserver/content/
+aceserver/serverConfig/
+aceserver/results/
+# Garder les configs versionnées
+!aceserver/configs/
+!aceserver/configs/*.json
 
-# docker/aceserver — binaires du jeu (installés via SteamCMD, pas versionnés)
-docker/aceserver/*.exe
-docker/aceserver/*.dll
-docker/aceserver/*.kspkg
-docker/aceserver/*.ico
-docker/aceserver/*.json
-docker/aceserver/steamapps/
-docker/aceserver/_CommonRedist/
-docker/aceserver/content/
-docker/aceserver/results/
-# Garder les fichiers de config et exemples
-!docker/aceserver/configs/
-!docker/aceserver/configs/*.json
+# Assets uploadés (générés à l'exécution, pas versionnés)
+media/
 
 # IDE
 .vscode/
@@ -62,3 +63,4 @@ docker/aceserver/results/
 Thumbs.db
 .DS_Store
 desktop.ini
+slice_thumbnails.py

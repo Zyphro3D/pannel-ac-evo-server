@@ -22,23 +22,37 @@ from app import create_app
 app = create_app()
 
 if __name__ == "__main__":
-    from waitress import serve
     import socket
 
-    host = "0.0.0.0"
-    port = int(os.environ.get("PANEL_PORT", 4300))
+    host     = "0.0.0.0"
+    port     = int(os.environ.get("PANEL_PORT", 4300))
+    ssl_cert = os.environ.get("SSL_CERTFILE", "").strip()
+    ssl_key  = os.environ.get("SSL_KEYFILE", "").strip()
 
     local_ip = socket.gethostbyname(socket.gethostname())
+    scheme   = "https" if ssl_cert and ssl_key else "http"
 
     print("=" * 52)
     print(f"  AC EVO Server Panel  v{_version}")
     print("=" * 52)
-    print(f"  Local   : http://127.0.0.1:{port}")
-    print(f"  Réseau  : http://{local_ip}:{port}")
-    print(f"  Threads : 8")
+    print(f"  Local   : {scheme}://127.0.0.1:{port}")
+    print(f"  Réseau  : {scheme}://{local_ip}:{port}")
     print(f"  Logs    : logs/app.log")
     print("=" * 52)
     print("  CTRL+C pour arrêter")
     print()
 
-    serve(app, host=host, port=port, threads=8)
+    if ssl_cert and ssl_key:
+        # gunicorn gère nativement les certificats SSL
+        os.execvp("gunicorn", [
+            "gunicorn",
+            "--bind",    f"{host}:{port}",
+            "--workers", "4",
+            "--certfile", ssl_cert,
+            "--keyfile",  ssl_key,
+            "--access-logfile", "-",
+            "run:app",
+        ])
+    else:
+        from waitress import serve
+        serve(app, host=host, port=port, threads=8)

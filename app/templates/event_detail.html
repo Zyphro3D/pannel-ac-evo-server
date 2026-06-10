@@ -1,11 +1,11 @@
 {% extends "base.html" %}
-{% block title %}{{ _('Inscrits') }} — {{ event.title }} — AC EVO Panel{% endblock %}
+{% block title %}{{ _('Inscrits') }} — {{ event.title }} — {{ panel_title }}{% endblock %}
 {% block content %}
 <div class="card">
   <div class="card-header">
     <div>
       <h2>{{ event.title }}</h2>
-      <div style="font-size:12px;color:var(--text-muted);margin-top:4px">
+      <div style="font-size:12px;color:var(--dim);margin-top:4px">
         {{ event.date | local_dt }} —
         {{ event.circuit_display or event.circuit }} —
         {{ event.mode_display }} — {{ event.weather_display }}
@@ -20,13 +20,7 @@
     </div>
   </div>
 
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% for category, message in messages %}
-    <div class="alert-{{ category }}" style="margin-bottom:12px">{{ message }}</div>
-    {% endfor %}
-  {% endwith %}
-
-  <div style="font-size:12px;color:var(--text-muted);margin-bottom:16px">
+  <div style="font-size:12px;color:var(--dim);margin-bottom:16px">
     {{ event.confirmed_count }} {{ _('Confirmé') }} / {{ event.pending_count }} {{ _('En attente') }} — max {{ event.max_drivers }}
     {% if event.password %}&nbsp;— 🔒 {{ _('Course privée') }}{% endif %}
   </div>
@@ -46,7 +40,7 @@
       {% for reg in regs %}
       <tr>
         <td style="font-weight:600">{{ reg.driver.ingame_name }}</td>
-        <td style="color:var(--text-muted);font-size:12px">{{ reg.driver.email }}</td>
+        <td style="color:var(--dim);font-size:12px">{{ reg.driver.email }}</td>
         <td>
           <form method="post" action="{{ url_for('events_admin.reg_assign_car', event_id=event.id, rid=reg.id) }}"
                 style="display:flex;gap:6px;align-items:center">

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}{{ _('Modifier l\'événement') if action == 'edit' else _('Nouvel événement') }} — AC EVO Panel{% endblock %}
+{% block title %}{{ _('Modifier l\'événement') if action == 'edit' else _('Nouvel événement') }} — {{ panel_title }}{% endblock %}
 {% block content %}
 
 {# Helpers durée : convertir minutes → heures / reste #}
@@ -11,12 +11,6 @@
     <h2>{{ _('Modifier l\'événement') if action == 'edit' else _('Nouvel événement') }}</h2>
     <a href="{{ url_for('events_admin.events_list') }}" class="btn-secondary">← {{ _('Retour') }}</a>
   </div>
-
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% for category, message in messages %}
-    <div class="alert-{{ category }}" style="margin-bottom:12px">{{ message }}</div>
-    {% endfor %}
-  {% endwith %}
 
   <form method="post" class="panel-form" id="event-form">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -257,8 +251,8 @@
             <th>{{ _('Véhicule') }}</th>
             <th>PI</th>
             <th>{{ _('Catégories') }}</th>
-            <th>Ballast</th>
-            <th>Restrictor</th>
+            <th>{{ _('Ballast') }}</th>
+            <th>{{ _('Restrictor') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -309,8 +303,12 @@ function updateCircuitDisplay(sel) {
 // ── Mode toggle ──
 function onModeChange(val) {
   const isRW = val === 'GameModeType_RACE_WEEKEND';
-  document.getElementById('dur-practice-block').style.display = isRW ? 'none' : '';
-  document.getElementById('dur-race-block').style.display     = isRW ? ''     : 'none';
+  const practiceBlock = document.getElementById('dur-practice-block');
+  const raceBlock = document.getElementById('dur-race-block');
+  practiceBlock.style.display = isRW ? 'none' : '';
+  raceBlock.style.display     = isRW ? ''     : 'none';
+  practiceBlock.querySelectorAll('input').forEach(input => { input.disabled = isRW; });
+  raceBlock.querySelectorAll('input').forEach(input => { input.disabled = !isRW; });
 }
 
 // ── PI slider sync ──
@@ -405,9 +403,9 @@ async function importFromConfig() {
   let cfg;
   try {
     const r = await fetch('/api/configs/' + encodeURIComponent(sel.value));
-    if (!r.ok) { alert('Erreur : config introuvable.'); return; }
+    if (!r.ok) { showToast(I18N.error + ' : config introuvable.', 'error'); return; }
     cfg = await r.json();
-  } catch (_) { alert('Erreur réseau.'); return; }
+  } catch (_) { showToast(I18N.networkError, 'error'); return; }
 
   // Circuit
   const circSel = document.getElementById('circuit-select');

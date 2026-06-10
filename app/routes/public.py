@@ -160,15 +160,14 @@ def _now_utc():
 
 @public_bp.route("/")
 def index():
-    if current_user.is_authenticated and current_user.is_admin:
-        return redirect(url_for("admin.dashboard"))
-
-
     from app.models import SessionResult
     from app.services.results_parser import parse_result_file
 
+    from app.services.process_manager import get_player_history
+    import json as _j
     status      = get_status()
     server_info = get_running_server_info() if status["running"] else None
+    player_history_json = _j.dumps(get_player_history()[-30:]) if status["running"] else "[]"
     now = _now_utc()
     ongoing = (Event.query
                .filter_by(status="published")
@@ -207,7 +206,8 @@ def index():
                            ongoing=ongoing,
                            upcoming=upcoming,
                            my_regs=my_regs,
-                           recent_sessions=recent_sessions)
+                           recent_sessions=recent_sessions,
+                           player_history_json=player_history_json)
 
 
 @public_bp.route("/register", methods=["GET", "POST"])

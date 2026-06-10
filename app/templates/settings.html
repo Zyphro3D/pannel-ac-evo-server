@@ -1,0 +1,473 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Paramètres') }} — {{ panel_title }}{% endblock %}
+
+{% macro env_form(section_id, section_label, keys, title=None) %}
+<form method="post" action="{{ url_for('admin.settings', tab=section_id) }}" class="settings-card settings-card-form">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <input type="hidden" name="_tab" value="{{ section_id }}">
+  <div class="settings-card-head">
+    <h2>{{ title or section_label }}</h2>
+  </div>
+  <div class="settings-fields">
+    {% for k in keys %}
+    <label class="settings-field">
+      <span>
+        <strong>{{ k }}</strong>
+        {% if k in env_descs %}<em>{{ env_descs[k] }}</em>{% endif %}
+      </span>
+      {% if k in sensitive %}
+        <input class="form-control" type="password" name="{{ k }}" value="{{ env_values.get(k, '') }}"
+               autocomplete="new-password" placeholder="{{ _('Non défini') }}">
+      {% else %}
+        <input class="form-control" type="text" name="{{ k }}" value="{{ env_values.get(k, '') }}"
+               placeholder="{{ _('Valeur par défaut') }}">
+      {% endif %}
+    </label>
+    {% endfor %}
+  </div>
+  <button type="submit" class="btn btn-primary settings-save-btn">{{ _('Enregistrer les modifications') }}</button>
+</form>
+{% endmacro %}
+
+{% macro nav_item(label, href, active, badge=None) %}
+<a href="{{ href }}" class="settings-side-link {% if active %}active{% endif %}">
+  <span class="settings-side-icon"></span>
+  <span>{{ label }}</span>
+  {% if badge %}<b>{{ badge }}</b>{% endif %}
+</a>
+{% endmacro %}
+
+{% block content %}
+{% set current_section = namespace(id='panel', label='Panel', keys=[]) %}
+{% for sid, slabel, keys in env_sections %}
+  {% if tab == sid %}
+    {% set current_section.id = sid %}
+    {% set current_section.label = slabel %}
+    {% set current_section.keys = keys %}
+  {% endif %}
+{% endfor %}
+
+<div class="settings-page">
+  <header class="settings-hero">
+    <div class="settings-hero-mark" aria-hidden="true">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
+        <path d="M12 8.2a3.8 3.8 0 1 0 0 7.6a3.8 3.8 0 0 0 0-7.6Z" stroke="currentColor" stroke-width="1.8"/>
+        <path d="M19.2 13.3a7.7 7.7 0 0 0 .05-2.6l2-1.55l-2-3.46l-2.4.96a8.1 8.1 0 0 0-2.2-1.28L14.3 2h-4l-.35 3.37a8.1 8.1 0 0 0-2.2 1.28l-2.4-.96l-2 3.46l2 1.55a7.7 7.7 0 0 0 .05 2.6l-2.05 1.55l2 3.46l2.44-.98a8.2 8.2 0 0 0 2.16 1.25l.35 3.42h4l.35-3.42a8.2 8.2 0 0 0 2.16-1.25l2.44.98l2-3.46l-2.05-1.55Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div>
+      <h1>{{ _('Paramètres du serveur') }}</h1>
+      <p>{{ _('Gérez et configurez votre environnement de jeu et vos services.') }}</p>
+    </div>
+  </header>
+
+  <div class="settings-layout">
+    <aside class="settings-sidebar">
+      {{ nav_item(_('Paramètres serveur'), url_for('admin.settings', tab='panel'), tab == 'panel') }}
+      {{ nav_item(_('Mail (SMTP)'), url_for('admin.settings', tab='mail'), tab == 'mail') }}
+      {{ nav_item(_('Comptes admin'), url_for('admin.settings', tab='accounts'), tab == 'accounts') }}
+      {{ nav_item(_('Serveur ACE'), url_for('admin.settings', tab='server'), tab == 'server') }}
+      {{ nav_item(_('Bot TCP'), url_for('admin.settings', tab='bot'), tab == 'bot') }}
+      {{ nav_item(_('Discord'), url_for('admin.settings', tab='discord'), tab == 'discord') }}
+      {{ nav_item(_('Langue & fuseau'), url_for('admin.settings', tab='locale'), tab == 'locale') }}
+      {{ nav_item(_('Médias'), url_for('admin.settings', tab='media'), tab == 'media') }}
+      {{ nav_item(_('Sécurité'), url_for('admin.settings', tab='security'), tab == 'security') }}
+      <a href="{{ url_for('admin.settings', tab='users') }}" class="settings-side-link {% if tab == 'users' %}active{% endif %}">
+        <span class="settings-side-icon"></span>
+        <span>{{ _('Gestion pilotes') }}</span>
+        {% if pending_pilots_count > 0 %}<b>{{ pending_pilots_count }}</b>{% endif %}
+      </a>
+      <a href="{{ url_for('admin.settings', tab='events') }}" class="settings-side-link {% if tab == 'events' %}active{% endif %}">
+        <span class="settings-side-icon"></span>
+        <span>{{ _('Événements') }}</span>
+      </a>
+      <a href="{{ url_for('admin.settings', tab='live') }}" class="settings-side-link {% if tab == 'live' %}active{% endif %}">
+        <span class="settings-side-icon"></span>
+        <span>{{ _('Live Admin') }}</span>
+      </a>
+
+      <div class="settings-global-status">
+        <span>{{ _('Statut global') }}</span>
+        <strong class="{% if server_status.running %}is-online{% else %}is-offline{% endif %}">
+          {% if server_status.running %}{{ _('Opérationnel') }}{% else %}{{ _('Hors ligne') }}{% endif %}
+        </strong>
+        <small>{{ _('Fichier env') }}</small>
+        <code>{{ env_path }}</code>
+      </div>
+    </aside>
+
+    <main class="settings-main">
+      {% if tab in ['media', 'users', 'events', 'live', 'accounts'] %}
+        {% set active_panel = tab %}
+      {% else %}
+        {% set active_panel = current_section.id %}
+      {% endif %}
+
+      {% if active_panel not in ['media', 'users', 'events', 'live', 'accounts'] %}
+      <section class="settings-dashboard-grid">
+        {{ env_form(current_section.id, current_section.label, current_section.keys,
+                    _('Paramètres serveur') if current_section.id == 'panel' else current_section.label) }}
+
+        <div class="settings-card">
+          <div class="settings-card-head">
+            <h2>{{ _('Raccourcis') }}</h2>
+          </div>
+          <div class="settings-shortcuts">
+            <a href="{{ url_for('admin.server') }}">{{ _('Configuration serveur') }}</a>
+            <a href="{{ url_for('events_admin.events_list') }}">{{ _('Gestion événements') }}</a>
+            <a href="{{ url_for('events_admin.drivers_list') }}">{{ _('Gestion pilotes') }}</a>
+            <a href="{{ url_for('admin.settings', tab='media') }}">{{ _('Bannières & logo') }}</a>
+          </div>
+        </div>
+
+        <div class="settings-card">
+          <div class="settings-card-head">
+            <h2>{{ _('Ports réseau') }}</h2>
+          </div>
+          <table class="settings-mini-table">
+            <tbody>
+              <tr><td>{{ _('Serveur de jeu') }}</td><td>{{ env_values.get('ACESERVER_TCP_PORT', '9700') }}</td><td>TCP</td></tr>
+              <tr><td>{{ _('API serveur') }}</td><td>{{ env_values.get('ACESERVER_HTTP_PORT', '8080') }}</td><td>HTTP</td></tr>
+              <tr><td>{{ _('Panel web') }}</td><td>{{ request.host.split(':')[-1] if ':' in request.host else '80' }}</td><td>HTTP</td></tr>
+            </tbody>
+          </table>
+          <a class="btn btn-secondary btn-sm settings-inline-action" href="{{ url_for('admin.settings', tab='server') }}">{{ _('Modifier les ports') }}</a>
+        </div>
+
+        <div class="settings-card">
+          <div class="settings-card-head">
+            <h2>{{ _('Comptes administrateurs') }}</h2>
+            <a href="{{ url_for('admin.settings', tab='accounts') }}" class="btn btn-secondary btn-sm">{{ _('Gérer') }}</a>
+          </div>
+          <table class="settings-mini-table">
+            <tbody>
+              {% for acc in admin_accounts %}
+              <tr>
+                <td>{{ acc.display_name or acc.username }}</td>
+                <td>{{ _('Super Admin') if acc.is_superadmin else _('Admin') }}</td>
+                <td class="{{ 'is-online' if acc.is_active else 'is-offline' }}">{{ _('Actif') if acc.is_active else _('Inactif') }}</td>
+              </tr>
+              {% else %}
+              <tr><td colspan="3" style="color:var(--dim)">{{ _('Aucun compte') }}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+      {% endif %}
+
+      {% if tab == 'media' %}
+      <section class="settings-dashboard-grid">
+        <div class="settings-card settings-card-wide">
+          <div class="settings-card-head">
+            <h2>{{ _('Médias — Bannière & Logo') }}</h2>
+          </div>
+          <p class="settings-card-copy">
+            {{ _('Les images uploadées ici peuvent être utilisées dans') }} <strong>PANEL_BANNER_IMG</strong> {{ _('et') }} <strong>PANEL_LOGO_IMG</strong>.
+          </p>
+          <div id="upload-zone" class="settings-upload"
+               onclick="document.getElementById('file-input').click()"
+               ondragover="ev.preventDefault();this.classList.add('dragging')"
+               ondragleave="this.classList.remove('dragging')"
+               ondrop="handleDrop(event)">
+            <input type="file" id="file-input" hidden accept=".jpg,.jpeg,.png,.gif,.webp"
+                   onchange="uploadFile(this.files[0])">
+            <strong>{{ _('Déposer une image') }}</strong>
+            <span>JPG, PNG, GIF, WEBP · 5 Mo max</span>
+            <div id="upload-status"></div>
+          </div>
+        </div>
+
+        {% if media_banners %}
+        <div class="settings-media-grid settings-card-wide">
+          {% for fname in media_banners %}
+          <article class="settings-media-item">
+            <img src="{{ url_for('serve_media', filename='banner/' ~ fname) }}" alt="{{ fname }}">
+            <div>
+              <strong title="{{ fname }}">{{ fname }}</strong>
+              <button class="btn btn-ghost btn-sm" type="button"
+                      onclick="navigator.clipboard.writeText('{{ fname }}').then(()=>{this.textContent='Copié';setTimeout(()=>this.textContent='Copier',1400)})">
+                {{ _('Copier') }}
+              </button>
+            </div>
+          </article>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="settings-card settings-card-wide">
+          <p class="settings-empty">{{ _('Aucun fichier dans media/banner/ pour le moment.') }}</p>
+        </div>
+        {% endif %}
+      </section>
+      {% endif %}
+
+      {% if tab == 'accounts' %}
+      {# ── Gestion des comptes administrateurs ── #}
+      <section class="settings-dashboard-grid">
+        <div class="settings-card settings-card-wide">
+          <div class="settings-card-head">
+            <h2>{{ _('Comptes administrateurs') }}</h2>
+            <button class="btn btn-primary btn-sm" onclick="openAccountModal()">+ {{ _('Ajouter') }}</button>
+          </div>
+          <table class="settings-table">
+            <thead>
+              <tr>
+                <th>{{ _('Identifiant') }}</th>
+                <th>{{ _('Nom affiché') }}</th>
+                <th>{{ _('Rôle') }}</th>
+                <th>{{ _('Statut') }}</th>
+                <th>{{ _('Dernière connexion') }}</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for acc in admin_accounts %}
+              <tr id="acc-row-{{ acc.id }}">
+                <td><strong>{{ acc.username }}</strong></td>
+                <td>{{ acc.display_name or '—' }}</td>
+                <td>
+                  <span class="badge {% if acc.is_superadmin %}badge-published{% else %}badge-session{% endif %}">
+                    {{ _('Super Admin') if acc.is_superadmin else _('Admin') }}
+                  </span>
+                </td>
+                <td>
+                  <span class="badge {% if acc.is_active %}badge-published{% else %}badge-rejected{% endif %}" id="acc-status-{{ acc.id }}">
+                    {{ _('Actif') if acc.is_active else _('Inactif') }}
+                  </span>
+                </td>
+                <td style="font-size:0.82rem;color:var(--dim)">
+                  {{ acc.last_login.strftime('%d/%m/%Y %H:%M') if acc.last_login else '—' }}
+                </td>
+                <td style="display:flex;gap:6px;justify-content:flex-end">
+                  <button class="btn btn-secondary btn-sm"
+                          onclick="openEditModal({{ acc.id }}, '{{ acc.username }}', '{{ acc.display_name or '' }}', '{{ acc.role }}')">
+                    {{ _('Modifier') }}
+                  </button>
+                  {% if acc.get_id() != current_user.get_id() %}
+                  <button class="btn btn-ghost btn-sm" id="acc-toggle-{{ acc.id }}"
+                          onclick="toggleAccount({{ acc.id }}, {{ 'true' if acc.is_active else 'false' }})">
+                    {{ _('Désactiver') if acc.is_active else _('Activer') }}
+                  </button>
+                  <form method="post" action="{{ url_for('admin.account_delete', account_id=acc.id) }}"
+                        onsubmit="return confirm('{{ _('Supprimer ce compte ?') }}')">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-danger btn-sm">{{ _('Supprimer') }}</button>
+                  </form>
+                  {% endif %}
+                </td>
+              </tr>
+              {% else %}
+              <tr><td colspan="6" style="text-align:center;color:var(--dim);padding:20px">{{ _('Aucun compte administrateur.') }}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      {# ── Modal création ── #}
+      <div class="modal-overlay" id="modal-account-create" style="display:none">
+        <div class="modal-box">
+          <h3>+ {{ _('Nouveau compte administrateur') }}</h3>
+          <form method="post" action="{{ url_for('admin.account_create') }}" id="form-account-create">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="form-group" style="margin-top:14px">
+              <label>{{ _('Identifiant') }} *</label>
+              <input class="form-control" type="text" name="username" required autocomplete="off">
+            </div>
+            <div class="form-group">
+              <label>{{ _('Nom affiché') }}</label>
+              <input class="form-control" type="text" name="display_name" autocomplete="off">
+            </div>
+            <div class="form-group">
+              <label>{{ _('Mot de passe') }} *</label>
+              <input class="form-control" type="password" name="password" required autocomplete="new-password">
+            </div>
+            <div class="form-group">
+              <label>{{ _('Rôle') }}</label>
+              <select class="form-control" name="role">
+                <option value="admin">{{ _('Admin') }}</option>
+                <option value="superadmin">{{ _('Super Admin') }}</option>
+              </select>
+            </div>
+            <div class="modal-actions">
+              <button type="button" class="btn-secondary" onclick="closeAccountModal()">{{ _('Annuler') }}</button>
+              <button type="submit" class="btn-primary">{{ _('Créer') }}</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      {# ── Modal édition ── #}
+      <div class="modal-overlay" id="modal-account-edit" style="display:none">
+        <div class="modal-box">
+          <h3>✎ {{ _('Modifier le compte') }}</h3>
+          <form method="post" id="form-account-edit" action="">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="form-group" style="margin-top:14px">
+              <label>{{ _('Identifiant') }}</label>
+              <input class="form-control" type="text" name="username" id="edit-username" required autocomplete="off">
+            </div>
+            <div class="form-group">
+              <label>{{ _('Nom affiché') }}</label>
+              <input class="form-control" type="text" name="display_name" id="edit-display_name" autocomplete="off">
+            </div>
+            <div class="form-group">
+              <label>{{ _('Nouveau mot de passe') }} <span style="font-size:0.75rem;color:var(--dim)">({{ _('laisser vide pour ne pas changer') }})</span></label>
+              <input class="form-control" type="password" name="password" autocomplete="new-password">
+            </div>
+            <div class="form-group">
+              <label>{{ _('Rôle') }}</label>
+              <select class="form-control" name="role" id="edit-role">
+                <option value="admin">{{ _('Admin') }}</option>
+                <option value="superadmin">{{ _('Super Admin') }}</option>
+              </select>
+            </div>
+            <div class="modal-actions">
+              <button type="button" class="btn-secondary" onclick="closeEditModal()">{{ _('Annuler') }}</button>
+              <button type="submit" class="btn-primary">{{ _('Enregistrer') }}</button>
+            </div>
+          </form>
+        </div>
+      </div>
+      {% endif %}
+
+      {% if tab == 'users' %}
+      <section class="settings-dashboard-grid">
+        <div class="settings-card settings-card-wide">
+          <div class="settings-card-head">
+            <h2>{{ _('Gestion pilotes') }}</h2>
+            <a href="{{ url_for('events_admin.drivers_list') }}" class="btn btn-secondary btn-sm">{{ _('Ouvrir la gestion') }}</a>
+          </div>
+          {% if drivers_list %}
+          <table class="settings-table">
+            <thead>
+              <tr>
+                <th>{{ _('Pilote') }}</th>
+                <th>{{ _('Email') }}</th>
+                <th>{{ _('Statut') }}</th>
+                <th>{{ _('Inscription') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for d in drivers_list %}
+              <tr>
+                <td>{{ d.ingame_name }}</td>
+                <td>{{ d.email }}</td>
+                <td><span class="badge badge-{{ d.status }}">{{ d.status }}</span></td>
+                <td>{{ d.created_at.strftime('%d/%m/%Y') if d.created_at else '—' }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+          <p class="settings-empty">{{ _('Aucun pilote enregistré pour le moment.') }}</p>
+          {% endif %}
+        </div>
+      </section>
+      {% endif %}
+
+      {% if tab == 'events' %}
+      <section class="settings-dashboard-grid">
+        <div class="settings-card settings-card-wide">
+          <div class="settings-card-head">
+            <h2>{{ _('Événements') }}</h2>
+            <a href="{{ url_for('events_admin.events_list') }}" class="btn btn-secondary btn-sm">{{ _('Ouvrir la gestion') }}</a>
+          </div>
+          <p class="settings-card-copy">
+            {{ _('La gestion complète des événements conserve son écran dédié. Ce raccourci reste ici pour garder le hub paramètres cohérent.') }}
+          </p>
+          <div class="settings-shortcuts">
+            <a href="{{ url_for('events_admin.events_list') }}">{{ _('Liste des événements') }}</a>
+            <a href="{{ url_for('events_admin.event_create') }}">{{ _('Créer un événement') }}</a>
+          </div>
+        </div>
+      </section>
+      {% endif %}
+
+      {% if tab == 'live' %}
+      <section class="settings-dashboard-grid">
+        <div class="settings-card settings-card-wide">
+          <div class="settings-card-head">
+            <h2>{{ _('Live Admin') }}</h2>
+            <a href="{{ url_for('live.live_page') }}" class="btn btn-secondary btn-sm">{{ _('Ouvrir le live') }}</a>
+          </div>
+          <p class="settings-card-copy">
+            {{ _('Le live admin garde sa page temps réel dédiée. Le raccourci est maintenant intégré au hub sans casser la navigation verticale.') }}
+          </p>
+        </div>
+      </section>
+      {% endif %}
+    </main>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if tab == 'accounts' %}
+<script>
+function openAccountModal() {
+  document.getElementById('modal-account-create').style.display = 'flex';
+}
+function closeAccountModal() {
+  document.getElementById('modal-account-create').style.display = 'none';
+}
+function openEditModal(id, username, displayName, role) {
+  document.getElementById('edit-username').value     = username;
+  document.getElementById('edit-display_name').value = displayName;
+  document.getElementById('edit-role').value         = role;
+  document.getElementById('form-account-edit').action = '/accounts/' + id + '/edit';
+  document.getElementById('modal-account-edit').style.display = 'flex';
+}
+function closeEditModal() {
+  document.getElementById('modal-account-edit').style.display = 'none';
+}
+async function toggleAccount(id, isActive) {
+  const csrf = document.querySelector('meta[name=csrf-token]')?.content || '';
+  const res  = await fetch('/accounts/' + id + '/toggle', {
+    method: 'POST',
+    headers: {'X-CSRFToken': csrf, 'Content-Type': 'application/x-www-form-urlencoded'},
+    body: 'csrf_token=' + encodeURIComponent(csrf),
+  });
+  const data = await res.json();
+  if (!data.ok) { alert(data.error); return; }
+  const badge  = document.getElementById('acc-status-' + id);
+  const btn    = document.getElementById('acc-toggle-' + id);
+  badge.textContent = data.active ? '{{ _("Actif") }}' : '{{ _("Inactif") }}';
+  badge.className   = 'badge ' + (data.active ? 'badge-published' : 'badge-rejected');
+  btn.textContent   = data.active ? '{{ _("Désactiver") }}' : '{{ _("Activer") }}';
+  btn.onclick       = () => toggleAccount(id, data.active);
+}
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) o.style.display = 'none'; });
+});
+</script>
+{% endif %}
+{% if tab == 'media' %}
+<script>
+async function uploadFile(file) {
+  if (!file) return;
+  const status = document.getElementById('upload-status');
+  status.className = '';
+  status.textContent = 'Envoi...';
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('csrf_token', document.querySelector('meta[name=csrf-token]')?.content || '');
+  try {
+    const response = await fetch('/settings/upload-media', {method: 'POST', body: fd});
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || 'Erreur upload');
+    status.className = 'success';
+    status.textContent = data.filename + ' uploadé. Rechargez la page pour le voir.';
+  } catch (error) {
+    status.className = 'error';
+    status.textContent = error.message || 'Erreur réseau';
+  }
+}
+function handleDrop(ev) {
+  ev.preventDefault();
+  ev.currentTarget.classList.remove('dragging');
+  uploadFile(ev.dataTransfer.files[0]);
+}
+</script>
+{% endif %}
+{% endblock %}

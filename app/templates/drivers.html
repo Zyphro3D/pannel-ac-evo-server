@@ -1,18 +1,12 @@
 {% extends "base.html" %}
-{% block title %}{{ _('Pilotes') }} — AC EVO Panel{% endblock %}
+{% block title %}{{ _('Pilotes') }} — {{ panel_title }}{% endblock %}
 {% block content %}
-
-{% with messages = get_flashed_messages(with_categories=true) %}
-  {% for category, message in messages %}
-  <div class="alert-{{ category }}" style="margin-bottom:12px">{{ message }}</div>
-  {% endfor %}
-{% endwith %}
 
 <!-- ── En attente ── -->
 <section class="card" style="margin-bottom:20px">
   <div class="card-header">
     <h2>{{ _('En attente de validation') }}</h2>
-    <span style="font-size:13px;color:var(--text-muted)">{{ pending|length }} {{ _('pilote(s)') }}</span>
+    <span style="font-size:13px;color:var(--dim)">{{ pending|length }} {{ _('pilote(s)') }}</span>
   </div>
   {% if pending %}
   <table class="simple-table full-width">
@@ -23,8 +17,8 @@
       {% for d in pending %}
       <tr>
         <td style="font-weight:600">{{ d.ingame_name }}</td>
-        <td style="color:var(--text-muted);font-size:12px">{{ d.email }}</td>
-        <td style="font-size:12px;color:var(--text-muted)">{{ d.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+        <td style="color:var(--dim);font-size:12px">{{ d.email }}</td>
+        <td style="font-size:12px;color:var(--dim)">{{ d.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
         <td>
           <div class="table-actions" style="justify-content:flex-end">
             <form method="post" action="{{ url_for('events_admin.driver_approve', driver_id=d.id) }}" style="display:inline">
@@ -46,7 +40,7 @@
     </tbody>
   </table>
   {% else %}
-  <p class="text-muted" style="padding:8px 0">{{ _('Aucun pilote en attente.') }}</p>
+  <p class="text-muted" style="padding:8px 20px">{{ _('Aucun pilote en attente.') }}</p>
   {% endif %}
 </section>
 
@@ -54,7 +48,7 @@
 <section class="card" style="margin-bottom:20px">
   <div class="card-header">
     <h2>{{ _('Pilotes approuvés') }}</h2>
-    <span style="font-size:13px;color:var(--text-muted)">{{ approved|length }} {{ _('pilote(s)') }}</span>
+    <span style="font-size:13px;color:var(--dim)">{{ approved|length }} {{ _('pilote(s)') }}</span>
   </div>
   {% if approved %}
   <table class="simple-table full-width">
@@ -65,8 +59,8 @@
       {% for d in approved %}
       <tr>
         <td style="font-weight:600">{{ d.ingame_name }}</td>
-        <td style="color:var(--text-muted);font-size:12px">{{ d.email }}</td>
-        <td style="font-size:12px;color:var(--text-muted)">{{ d.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+        <td style="color:var(--dim);font-size:12px">{{ d.email }}</td>
+        <td style="font-size:12px;color:var(--dim)">{{ d.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
         <td>
           <div class="table-actions" style="justify-content:flex-end">
             <form method="post" action="{{ url_for('events_admin.driver_delete', driver_id=d.id) }}" style="display:inline">
@@ -80,7 +74,7 @@
     </tbody>
   </table>
   {% else %}
-  <p class="text-muted" style="padding:8px 0">{{ _('Aucun pilote approuvé.') }}</p>
+  <p class="text-muted" style="padding:8px 20px">{{ _('Aucun pilote approuvé.') }}</p>
   {% endif %}
 </section>
 
@@ -89,7 +83,7 @@
 <section class="card">
   <div class="card-header">
     <h2>{{ _('Pilotes refusés') }}</h2>
-    <span style="font-size:13px;color:var(--text-muted)">{{ rejected|length }}</span>
+    <span style="font-size:13px;color:var(--dim)">{{ rejected|length }}</span>
   </div>
   <table class="simple-table full-width">
     <thead>
@@ -99,7 +93,7 @@
       {% for d in rejected %}
       <tr>
         <td>{{ d.ingame_name }}</td>
-        <td style="color:var(--text-muted);font-size:12px">{{ d.email }}</td>
+        <td style="color:var(--dim);font-size:12px">{{ d.email }}</td>
         <td>
           <div class="table-actions">
             <form method="post" action="{{ url_for('events_admin.driver_approve', driver_id=d.id) }}" style="display:inline">

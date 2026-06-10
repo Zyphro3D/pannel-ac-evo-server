@@ -6,6 +6,7 @@ Modes:
   DEPLOY_MODE=docker       → Wine dans le même container (legacy)
   DEPLOY_MODE=docker_split → Panel contrôle le container aceserver via Docker socket
 """
+import collections
 import json
 import logging
 import os
@@ -39,6 +40,10 @@ _watchdog_stop   = threading.Event()
 _exe_path: str   = ""
 _wine_ready      = threading.Event()
 
+# Player history: {ts, count} samples, ~1h at 30s interval
+_player_history: collections.deque = collections.deque(maxlen=120)
+_last_history_sample: float = 0.0
+
 log = logging.getLogger(__name__)
 
 
@@ -55,6 +60,13 @@ def _read_state() -> dict:
 
 def _write_state(pid: int, config_name: str, sc_b64: str, sd_b64: str,
                  auto_restart: bool, http_port: int = 8080, run_id: str = ""):
+    import time as _t
+    existing = _read_state()
+    # Preserve started_at across state rewrites; set a new one only when launching a fresh process
+    if pid and pid != existing.get("pid"):
+        started_at = _t.time()
+    else:
+        started_at = existing.get("started_at") or _t.time()
     _STATE_FILE.write_text(json.dumps({
         "pid":          pid,
         "config":       config_name,
@@ -63,12 +75,39 @@ def _write_state(pid: int, config_name: str, sc_b64: str, sd_b64: str,
         "auto_restart": auto_restart,
         "http_port":    http_port,
         "run_id":       run_id,
+        "started_at":   started_at,
     }))
 
 
 def _clear_state():
     if _STATE_FILE.exists():
         _STATE_FILE.unlink()
+
+
+def update_session_state(session_type: str):
+    """Called after each result ingest to track session timing."""
+    state = _read_state()
+    if not state:
+        return
+    state["session_changed_at"] = time.time()
+    state["last_session_type"]  = session_type.lower()
+    _STATE_FILE.write_text(json.dumps(state))
+
+
+def _sample_player_history():
+    """Append current player count to in-memory history every ~30s."""
+    global _last_history_sample
+    now = time.time()
+    if now - _last_history_sample < 30:
+        return
+    _last_history_sample = now
+    count = get_player_count()
+    if count is not None:
+        _player_history.append({"ts": int(now), "count": count})
+
+
+def get_player_history() -> list:
+    return list(_player_history)
 
 
 def _set_auto_restart(enabled: bool):
@@ -347,6 +386,8 @@ def _watchdog_loop():
     global _exe_path
     log.info("Watchdog started (mode=%s)", _DEPLOY_MODE)
     while not _watchdog_stop.wait(timeout=10):
+        if is_running():
+            _sample_player_history()
         state = _read_state()
         if not state:
             continue
@@ -609,10 +650,13 @@ def get_status() -> dict:
     state   = _read_state()
     players = get_player_count() if running else None
     return {
-        "running":      running,
-        "pid":          state.get("pid") if running else None,
-        "config":       state.get("config") if running else None,
-        "run_id":       state.get("run_id") if running else None,
-        "auto_restart": state.get("auto_restart", False),
-        "players":      players,
+        "running":            running,
+        "pid":                state.get("pid")               if running else None,
+        "config":             state.get("config")            if running else None,
+        "run_id":             state.get("run_id")            if running else None,
+        "auto_restart":       state.get("auto_restart", False),
+        "players":            players,
+        "started_at":         state.get("started_at")        if running else None,
+        "session_changed_at": state.get("session_changed_at") if running else None,
+        "last_session_type":  state.get("last_session_type") if running else None,
     }

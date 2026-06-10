@@ -1,8 +1,13 @@
 {% extends "base.html" %}
-{% block title %}Serveur — AC EVO Panel{% endblock %}
+{% block title %}Serveur — {{ panel_title }}{% endblock %}
 {% block content %}
-<div class="dashboard">
+{% set view = server_view or request.args.get('view', 'status') %}
+{% set max_players = config.Server.MaxPlayers if config else 0 %}
+{% set selected_cars = config.Event.Cars | selectattr('IsSelected') | list if config else [] %}
+<script>document.body.dataset.activeConfig = "{{ active_config|default('') }}";</script>
+<div class="dashboard server-admin-page server-hub-page">
 
+  {% if view == 'configuration' %}
   <!-- ── Sélecteur de config ── -->
   <div class="config-bar">
     <div class="config-bar-left">
@@ -18,9 +23,17 @@
     <div class="config-bar-right">
       <button class="btn-secondary" onclick="openCreateModal(false)">+ {{ _('Nouveau') }}</button>
       <button class="btn-secondary" onclick="openCreateModal(true)">&#10697; {{ _('Dupliquer') }}</button>
+      <button class="btn-secondary" onclick="openRenameModal()">&#9998; {{ _('Renommer') }}</button>
       <button class="btn-danger"    onclick="confirmDeleteConfig()"><span class="icon-trash"></span> {{ _('Supprimer') }}</button>
     </div>
   </div>
+  {% else %}
+  <select id="config-select" class="server-hidden-select" aria-hidden="true">
+    {% for cfg in configs %}
+    <option value="{{ cfg }}" {% if cfg == active_config %}selected{% endif %}>{{ cfg }}</option>
+    {% endfor %}
+  </select>
+  {% endif %}
 
   <!-- ── Modal création ── -->
   <div class="modal-overlay" id="modal-create" style="display:none">
@@ -38,12 +51,29 @@
     </div>
   </div>
 
+  <!-- ── Modal renommer config ── -->
+  <div class="modal-overlay" id="modal-rename" style="display:none">
+    <div class="modal-box">
+      <h3>&#9998; {{ _('Renommer la configuration') }}</h3>
+      <input type="hidden" id="modal-rename-old">
+      <div class="form-group" style="margin-top:14px">
+        <label>{{ _('Nouveau nom') }}</label>
+        <input type="text" id="modal-rename-new" placeholder="nouveau-nom.json"
+               onkeydown="if(event.key==='Enter') submitRename()">
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeRenameModal()">{{ _('Annuler') }}</button>
+        <button class="btn-primary"   onclick="submitRename()">{{ _('Renommer') }}</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ── Modal erreur config ── -->
   <div class="modal-overlay" id="modal-config-error" style="display:none">
     <div class="modal-box">
       <h3 style="color:#d97706"><span class="icon-warn"></span> {{ _('Fichier invalide') }}</h3>
-      <p style="margin:10px 0 6px;color:var(--text-muted);font-size:13px">{{ _('Ce fichier contient des erreurs :') }}</p>
-      <ul id="modal-error-list" style="margin:0 0 16px 16px;font-size:12px;color:var(--text-muted);line-height:1.8"></ul>
+      <p style="margin:10px 0 6px;color:var(--dim);font-size:13px">{{ _('Ce fichier contient des erreurs :') }}</p>
+      <ul id="modal-error-list" style="margin:0 0 16px 16px;font-size:12px;color:var(--dim);line-height:1.8"></ul>
       <div class="modal-actions">
         <button class="btn-secondary" onclick="closeConfigErrorModal()">{{ _('Choisir autre') }}</button>
         <button class="btn-primary"   onclick="doRepairConfig()"><span class="icon-gear"></span> {{ _('Réparer') }}</button>
@@ -63,8 +93,146 @@
     </div>
   </div>
 
+  <div class="server-layout">
+    <aside class="server-sidebar settings-sidebar">
+      <a href="{{ url_for('admin.server', view='status') }}" class="settings-side-link {% if view == 'status' %}active{% endif %}"><span class="settings-side-icon"></span><span>{{ _('Statut') }}</span></a>
+      <a href="{{ url_for('admin.server', view='configuration') }}" class="settings-side-link {% if view == 'configuration' %}active{% endif %}"><span class="settings-side-icon"></span><span>{{ _('Configuration') }}</span></a>
+      <a href="{{ url_for('admin.server', view='rotation') }}" class="settings-side-link {% if view == 'rotation' %}active{% endif %}"><span class="settings-side-icon"></span><span>{{ _('Programmation') }}</span></a>
+      <a href="{{ url_for('admin.server', view='events') }}" class="settings-side-link {% if view == 'events' %}active{% endif %}"><span class="settings-side-icon"></span><span>{{ _('Événement') }}</span></a>
+      <div class="settings-global-status">
+        <span>{{ _('Configuration active') }}</span>
+        <strong>{{ active_config or _('Aucune') }}</strong>
+        <small>{{ _('État serveur') }}</small>
+        <code id="server-side-status">{{ _('Vérification...') }}</code>
+      </div>
+    </aside>
+
+    <main class="server-main">
+  {% if view == 'status' %}
+  <header class="server-status-hero">
+    <div>
+      <h1>{{ _('Contrôle Practice/Race') }}</h1>
+      <strong>{{ _('Gérez votre serveur et vos sessions de jeu') }}</strong>
+    </div>
+    <section class="srv-top-status">
+      <div class="srv-top-card srv-top-card-status">
+        <span>{{ _('Statut serveur') }}</span>
+        <strong><span class="dot" id="main-status-dot"></span><span id="main-status-label">{{ _('Vérification...') }}</span></strong>
+        <small>{{ active_config }}</small>
+      </div>
+      <div class="srv-top-card">
+        <span>{{ _('Joueurs en ligne') }}</span>
+        <strong><span id="player-count-number">0</span><em>/ {{ max_players }}</em></strong>
+        <small>{{ _('Max joueurs') }} : {{ max_players }}</small>
+      </div>
+      <div class="srv-top-card">
+        <span>{{ _('Session') }}</span>
+        <strong>{{ current_mode }}</strong>
+        <small>{{ current_track.track }}{% if current_track.layout %} — {{ current_track.layout }}{% endif %}</small>
+      </div>
+    </section>
+  </header>
+
+  <section class="srv-action-grid">
+    <button class="srv-action-card srv-action-start" id="btn-start" onclick="serverAction('start')">
+      <span>▶</span><strong>{{ _('Démarrer le serveur') }}</strong>
+    </button>
+    <button class="srv-action-card srv-action-stop" id="btn-stop" onclick="serverAction('stop')">
+      <span>■</span><strong>{{ _('Arrêter le serveur') }}</strong>
+    </button>
+    <button class="srv-action-card" id="btn-restart" onclick="serverAction('restart')">
+      <span>↻</span><strong>{{ _('Redémarrer le serveur') }}</strong>
+    </button>
+    <button class="srv-action-card srv-action-warn" onclick="openLogs()">
+      <span>!</span><strong>{{ _('Logs serveur') }}</strong>
+    </button>
+  </section>
+
+  <section class="srv-status-grid">
+    <article class="srv-card srv-card-wide">
+      <div class="srv-card-head"><h2>{{ _('Session en cours') }}</h2><b>{{ current_mode }}</b></div>
+      <div class="srv-session-table">
+        <span>{{ _('Configuration') }}</span><strong>{{ active_config }}</strong>
+        <span>{{ _('Serveur') }}</span><strong>{{ config.Server.ServerName }}</strong>
+        <span>{{ _('Joueurs max') }}</span><strong>{{ max_players }}</strong>
+        <span>{{ _('Véhicules autorisés') }}</span><strong>{{ selected_cars|length }}</strong>
+        <span>{{ _('Circuit') }}</span><strong>{{ current_track.track }}{% if current_track.layout %} — {{ current_track.layout }}{% endif %}</strong>
+      </div>
+    </article>
+    <article class="srv-card">
+      <div class="srv-card-head"><h2>{{ _('Circuit actuel') }}</h2></div>
+      {% if current_track.image %}<img class="srv-track-img" src="{{ url_for('serve_media', filename=current_track.image) }}" alt="{{ current_track.track }}">{% endif %}
+      <strong class="srv-track-name">{{ current_track.track }}</strong>
+      <span class="srv-track-layout">{{ current_track.layout or current_track.length_km }}</span>
+    </article>
+    <article class="srv-card">
+      <div class="srv-card-head"><h2>{{ _('Météo actuelle') }}</h2></div>
+      <div class="srv-weather-mark {% if current_weather == _('Pluie') %}rain{% elif current_weather == _('Nuageux') %}cloud{% endif %}"></div>
+      <strong class="srv-big-value">{{ current_weather }}</strong>
+      <span class="srv-track-layout">{{ current_weather_behavior }}</span>
+    </article>
+    <article class="srv-card">
+      <div class="srv-card-head"><h2>{{ _('Heure actuelle') }}</h2></div>
+      <strong class="srv-big-value">{{ (config.Sessions.PracticeSession.Hour|string).zfill(2) }}:00</strong>
+      <span class="srv-track-layout">{{ _('Heure in-game') }}</span>
+    </article>
+    <article class="srv-card">
+      <div class="srv-card-head"><h2>{{ _('Auto-restart') }}</h2></div>
+      <div class="toggle-label" style="margin-top:12px">
+        <label class="toggle">
+          <input type="checkbox" id="srv-auto-restart-card" onchange="toggleAutoRestart(this.checked)">
+          <span class="slider"></span>
+        </label>
+        <span id="srv-auto-restart-label" style="font-size:0.82rem;color:var(--dim)">{{ _('Désactivé') }}</span>
+      </div>
+      <span class="srv-track-layout" style="margin-top:8px;font-size:0.75rem;color:var(--dim)">{{ _('Redémarre en cas de crash') }}</span>
+    </article>
+    <article class="srv-card srv-card-wide">
+      <div class="srv-card-head"><h2>{{ _('Activité récente') }}</h2></div>
+      <div class="srv-activity-list">
+        {% for item in recent_server_activity %}
+        <div><time>{{ item.time }}</time><span>{{ item.message }}</span><strong>log</strong></div>
+        {% else %}
+        <p>{{ _('Aucune activité serveur récente.') }}</p>
+        {% endfor %}
+      </div>
+    </article>
+  </section>
+  {% endif %}
+
+  {% if view == 'configuration' %}
+  <header class="server-section-head">
+    <h1>{{ _('Configurations') }}</h1>
+    <button class="btn btn-primary" onclick="openCreateModal(false)">+ {{ _('Nouvelle configuration') }}</button>
+  </header>
+  <section class="srv-config-grid">
+    {% for item in config_summaries %}
+    <article class="srv-config-card {% if item.active %}active{% endif %}">
+      {% if item.track.image %}<img src="{{ url_for('serve_media', filename=item.track.image) }}" alt="{{ item.track.track }}">{% endif %}
+      <div class="srv-config-body">
+        <div class="srv-config-title"><h2>{{ item.server_name }}</h2>{% if item.active %}<span>{{ _('Active') }}</span>{% endif %}</div>
+        <p>{{ item.name }}</p>
+        <dl>
+          <dt>{{ _('Circuit') }}</dt><dd>{{ item.track.track }}{% if item.track.layout %} — {{ item.track.layout }}{% endif %}</dd>
+          <dt>{{ _('Mode') }}</dt><dd>{{ item.mode }}</dd>
+          <dt>{{ _('Météo') }}</dt><dd>{{ item.weather }} · {{ item.behavior }}</dd>
+          <dt>{{ _('Joueurs') }}</dt><dd>{{ item.max_players }}</dd>
+          <dt>{{ _('Véhicules') }}</dt><dd>{{ item.car_count }}</dd>
+        </dl>
+        <details class="srv-action-menu">
+          <summary>{{ _('Action') }}</summary>
+          <button onclick="serverSelectConfig('{{ item.name }}');switchConfig('{{ item.name }}')">{{ _('Modifier') }}</button>
+          <button onclick="serverSelectConfig('{{ item.name }}');openRenameModal()">{{ _('Renommer') }}</button>
+          <button onclick="serverSelectConfig('{{ item.name }}');openCreateModal(true)">{{ _('Dupliquer') }}</button>
+          <button onclick="serverSelectConfig('{{ item.name }}');confirmDeleteConfig()">{{ _('Supprimer') }}</button>
+        </details>
+      </div>
+    </article>
+    {% endfor %}
+  </section>
+
   <!-- ── Status bar ── -->
-  <div class="status-bar">
+  <div class="status-bar" id="server-control">
     <div class="server-status-large">
       <span class="dot" id="main-status-dot"></span>
       <span id="main-status-label">{{ _('Vérification...') }}</span>
@@ -83,7 +251,7 @@
   </div>
 
   <!-- ── Informations serveur ── -->
-  <section class="card" style="margin-top:16px">
+  <section class="card" id="server-info" style="margin-top:16px">
     <div class="card-header"><h2>{{ _('Informations serveur') }}</h2></div>
     <form id="form-server" class="panel-form">
 
@@ -95,11 +263,11 @@
         {% if current_user.is_superadmin %}
         <div class="form-row">
           <div class="form-group">
-            <label>TCP Port</label>
+            <label>{{ _('Port TCP') }}</label>
             <input type="number" name="TcpPort" value="{{ config.Server.TcpPort }}">
           </div>
           <div class="form-group">
-            <label>UDP Port</label>
+            <label>{{ _('Port UDP') }}</label>
             <input type="number" name="UdpPort" value="{{ config.Server.UdpPort }}">
           </div>
         </div>
@@ -145,7 +313,7 @@
   </section>
 
   <!-- ── Événement & Sessions ── -->
-  <section class="card" style="margin-top:16px">
+  <section class="card" id="server-event" style="margin-top:16px">
       <div class="card-header"><h2>{{ _('Événement') }}</h2></div>
       <form id="form-event" class="panel-form">
 
@@ -180,7 +348,7 @@
           <select name="SelectedInitialGripValue">
             <option value="InitialGrip_GREEN"   {% if config.Event.SelectedInitialGripValue == 'InitialGrip_GREEN'   %}selected{% endif %}>{{ _('Vert') }}</option>
             <option value="InitialGrip_FAST"    {% if config.Event.SelectedInitialGripValue == 'InitialGrip_FAST'    %}selected{% endif %}>{{ _('Rapide') }}</option>
-            <option value="InitialGrip_OPTIMAL" {% if config.Event.SelectedInitialGripValue == 'InitialGrip_OPTIMAL' %}selected{% endif %}>{{ _('Optimal') }}</option>
+            <option value="InitialGrip_OPTIMUM" {% if config.Event.SelectedInitialGripValue == 'InitialGrip_OPTIMUM' %}selected{% endif %}>{{ _('Optimal') }}</option>
           </select>
         </div>
 
@@ -215,7 +383,7 @@
     </div>
     {% endmacro %}
 
-    <section class="card" style="margin-top:16px">
+    <section class="card" id="server-sessions" style="margin-top:16px">
       <div class="card-header"><h2>{{ _('Sessions') }}</h2></div>
       <form id="form-sessions" class="panel-form">
         <div class="sessions-grid">
@@ -311,9 +479,11 @@
         </div>
     </form>
   </section>
+  {% endif %}
 
   <!-- ── Roulement de configurations ── -->
-  <section class="card" style="margin-top:16px">
+  {% if view == 'rotation' %}
+  <section class="card" id="server-rotation" style="margin-top:16px">
     <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
       <h2>{{ _('Roulement de configs') }}</h2>
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
@@ -355,9 +525,33 @@
       </div>
     </div>
   </section>
+  {% endif %}
+
+  {% if view == 'events' %}
+  <header class="server-section-head">
+    <h1>{{ _('Événements') }}</h1>
+    <a href="{{ url_for('events_admin.event_create') }}" class="btn btn-primary">+ {{ _('Créer') }}</a>
+  </header>
+  <section class="srv-calendar">
+    {% for ev in server_events %}
+    <article class="srv-event-card {{ ev.status }}">
+      <time><strong>{{ ev.date.strftime('%d') }}</strong><span>{{ ev.date.strftime('%m/%Y') }}</span></time>
+      <div>
+        <h2>{{ ev.title }}</h2>
+        <p>{{ ev.circuit_display or ev.circuit or '—' }}</p>
+        <span>{{ ev.date | local_dt }}</span>
+      </div>
+      <a href="{{ url_for('events_admin.event_edit', event_id=ev.id) }}">{{ _('Modifier') }}</a>
+    </article>
+    {% else %}
+    <div class="srv-empty-state">{{ _('Aucun événement programmé.') }}</div>
+    {% endfor %}
+  </section>
+  {% endif %}
 
   <!-- ── Véhicules ── -->
-  <section class="card" style="margin-top:16px">
+  {% if view == 'configuration' %}
+  <section class="card" id="server-cars" style="margin-top:16px">
       <div class="card-header">
         <h2>{{ _('Véhicules') }}</h2>
       </div>
@@ -401,7 +595,7 @@
             <tr>
               <th></th>
               <th>{{ _('Véhicule') }}</th>
-              <th>PI</th>
+              <th class="pi-sort-th" onclick="togglePiSort(this)" title="Trier par PI">PI <span class="pi-sort-icon" id="pi-sort-icon">⇅</span></th>
               <th>Ballast</th>
               <th>Restrictor</th>
             </tr>
@@ -414,7 +608,8 @@
                 data-pi="{{ car.performance_indicator }}"
                 data-p1="{{ car.property_1_label }}"
                 data-p2="{{ car.property_2_label }}"
-                data-p3="{{ car.property_3_label }}">
+                data-p3="{{ car.property_3_label }}"
+                data-idx="{{ loop.index0 }}">
               <td>
                 <input type="checkbox" class="car-check" data-car="{{ car.name }}"
                        {% if cfg_car and (cfg_car.IsSelected or cfg_car.is_selected) %}checked{% endif %}>
@@ -433,14 +628,23 @@
         <span id="cars-selected-count">0 {{ _('véhicule(s) sélectionné(s)') }}</span>
       </div>
     </section>
+    {% endif %}
+    </main>
   </div>
 
   <!-- ── Bouton unique Sauvegarder tout ── -->
-  <div style="display:flex;justify-content:flex-end;margin-top:20px;padding-bottom:32px">
-    <button class="btn-primary" style="padding:10px 32px;font-size:14px" onclick="saveAll()">{{ _('Sauvegarder tout') }}</button>
+  {% if view == 'configuration' %}
+  <div class="save-dock">
+    <button class="btn-primary save-dock-btn" onclick="saveAll()">{{ _('Sauvegarder tout') }}</button>
   </div>
+  {% endif %}
 
 </div>
 
-<div class="toast" id="toast"></div>
+<script>
+function serverSelectConfig(name) {
+  const select = document.getElementById('config-select');
+  if (select) select.value = name;
+}
+</script>
 {% endblock %}

@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Classement en direct') }} — AC EVO{% endblock %}
+{% block content %}
+<div class="timing-page">
+
+  <div class="timing-header">
+    <div>
+      <h1 class="timing-title">{{ _('Classement en direct') }}</h1>
+      <p class="timing-subtitle">
+        {{ _('Mis à jour toutes les 15s') }} ·
+        <span id="t-last">—</span> ·
+        <span id="t-count">0</span> {{ _('pilote(s)') }}
+      </p>
+    </div>
+    <div class="timing-badge" id="t-badge">
+      <span class="dot offline" id="t-dot"></span>
+      <span id="t-label">{{ _('Chargement…') }}</span>
+    </div>
+  </div>
+
+  <div class="timing-wrap">
+    <table class="timing-table" id="timing-table">
+      <thead>
+        <tr>
+          <th class="t-pos">{{ _('Pos') }}</th>
+          <th class="t-name">{{ _('Pilote') }}</th>
+          <th class="t-car">{{ _('Voiture') }}</th>
+          <th class="t-best">{{ _('Meilleur tour') }}</th>
+          <th class="t-gap">{{ _('Écart') }}</th>
+        </tr>
+      </thead>
+      <tbody id="timing-body">
+        <tr><td colspan="5" class="timing-empty">{{ _('Chargement…') }}</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+const T = {
+  live:      "{{ _('En direct') }}",
+  loading:   "{{ _('Chargement…') }}",
+  noDrivers: "{{ _('Aucun pilote connecté') }}",
+};
+
+function _carLabel(raw) {
+  if (!raw) return '—';
+  const map = { 'ks_mercedes_190e_evo_ii': 'Mercedes 190E Evo II' };
+  if (map[raw]) return map[raw];
+  return raw.replace(/^ks_/, '').replace(/^preset_/, '')
+            .replace(/_mech_\d+$/, '').replace(/_/g, ' ')
+            .replace(/\b\w/g, c => c.toUpperCase());
+}
+
+async function refresh() {
+  try {
+    const r = await fetch('/api/timing');
+    if (!r.ok) throw new Error(r.status);
+    const d = await r.json();
+
+    document.getElementById('t-dot').className    = 'dot online';
+    document.getElementById('t-label').textContent = T.live;
+    document.getElementById('t-count').textContent = d.player_count || d.leaderboard.length;
+    document.getElementById('t-last').textContent  = new Date().toLocaleTimeString('fr-FR');
+
+    const tbody = document.getElementById('timing-body');
+    const lb    = d.leaderboard || [];
+
+    if (!lb.length) {
+      tbody.innerHTML = `<tr><td colspan="5" class="timing-empty">${T.noDrivers}</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = lb.map((e, i) => {
+      const pos     = i + 1;
+      const isLeader = pos === 1;
+      const hasBest  = !!e.best_lap_str;
+      const posClass = isLeader ? 'pos-gold' : pos === 2 ? 'pos-silver' : pos === 3 ? 'pos-bronze' : '';
+      return `
+        <tr class="t-row ${isLeader && hasBest ? 't-leader' : ''}">
+          <td class="t-pos"><span class="pos-badge ${posClass}">${pos}</span></td>
+          <td class="t-name">${e.name || '—'}</td>
+          <td class="t-car">${_carLabel(e.car_raw)}</td>
+          <td class="t-best ${hasBest ? 'has-time' : ''}">${e.best_lap_str || '—'}</td>
+          <td class="t-gap">${isLeader && hasBest ? '<span class="leader-badge">LEADER</span>' : (e.gap_str || '—')}</td>
+        </tr>`;
+    }).join('');
+  } catch(e) {
+    document.getElementById('t-dot').className    = 'dot offline';
+    document.getElementById('t-label').textContent = I18N.error;
+    if (typeof showToast === 'function') showToast(I18N.networkError, 'error');
+  }
+}
+
+refresh();
+setInterval(refresh, 15000);
+</script>
+{% endblock %}

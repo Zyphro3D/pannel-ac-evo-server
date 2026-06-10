@@ -14,7 +14,7 @@
     "EntryListUrl": "",
     "ResultsPostUrl": "http://panel:4300/api/results/ingest",
     "EntryListPath": "",
-    "ResultsPath": ""
+    "ResultsPath": "/aceserver/results/"
   },
   "Event": {
     "SelectedSessionTypeValue": "GameModeType_RACE_WEEKEND",

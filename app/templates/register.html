@@ -1,64 +1,62 @@
 {% extends "base.html" %}
-{% block title %}{{ _('Inscription pilote') }} — AC EVO Panel{% endblock %}
+{% block title %}{{ _('Inscription pilote') }} — {{ panel_title }}{% endblock %}
 {% block content %}
-<div class="login-wrapper">
-  <div class="login-box" style="width:420px">
-    <div class="login-logo">
-      <span class="brand-evo">EVO</span>
-      <span class="brand-panel">PANEL</span>
+<div style="display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 80px)">
+  <div class="auth-card" style="max-width:420px">
+    <div class="auth-logo">
+      {% if panel_logo_img %}
+        <img src="{{ url_for('serve_media', filename='banner/' ~ panel_logo_img) }}" style="max-height:60px;object-fit:contain;margin-bottom:8px" alt="">
+      {% else %}
+        <span class="b-evo">EVO</span>
+        <span class="b-panel">Panel</span>
+      {% endif %}
     </div>
-    <p class="login-sub">{{ _('Inscription pilote') }}</p>
+    <h2 class="auth-title">{{ _('Inscription pilote') }}</h2>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% for category, message in messages %}
-      <div class="alert-{{ category }}" style="margin-bottom:10px">{{ message }}</div>
-      {% endfor %}
-    {% endwith %}
-
-    <form method="post" class="login-form">
+    <form method="post">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <div class="form-group">
-        <label>{{ _('Nom in-game') }} <span style="color:var(--text-muted);font-weight:400">(2–30 caractères)</span></label>
-        <input type="text" name="ingame_name" required minlength="2" maxlength="30"
+        <label>{{ _('Nom in-game') }} <span style="color:var(--dim);font-weight:400;font-size:0.72rem">(2–30 car.)</span></label>
+        <input class="form-control" type="text" name="ingame_name" required minlength="2" maxlength="30"
                pattern="[A-Za-z0-9_\-.\s]{2,30}"
                placeholder="Ex: Jean-Pierre_Dupont"
                value="{{ request.form.get('ingame_name', '') }}">
       </div>
       <div class="form-group">
         <label>{{ _('Adresse email') }}</label>
-        <input type="email" name="email" required
-               value="{{ request.form.get('email', '') }}">
+        <input class="form-control" type="email" name="email" required value="{{ request.form.get('email', '') }}">
       </div>
       <div class="form-group">
         <label>{{ _('Mot de passe') }}</label>
-        <input type="password" name="password" id="pwd" required minlength="10" autocomplete="new-password">
-        <div class="pwd-rules" id="pwd-rules">
-          <span id="r-len">✕ {{ _('10 caractères minimum') }}</span>
-          <span id="r-upper">✕ {{ _('Une majuscule') }}</span>
-          <span id="r-lower">✕ {{ _('Une minuscule') }}</span>
-          <span id="r-digit">✕ {{ _('Un chiffre') }}</span>
-          <span id="r-special">✕ {{ _('Un caractère spécial') }}</span>
+        <input class="form-control" type="password" name="password" id="pwd" required minlength="10" autocomplete="new-password">
+        <div id="pwd-rules" style="display:flex;flex-direction:column;gap:2px;margin-top:6px;font-size:0.72rem">
+          <span id="r-len"    style="color:var(--dim)">✕ {{ _('10 caractères minimum') }}</span>
+          <span id="r-upper"  style="color:var(--dim)">✕ {{ _('Une majuscule') }}</span>
+          <span id="r-lower"  style="color:var(--dim)">✕ {{ _('Une minuscule') }}</span>
+          <span id="r-digit"  style="color:var(--dim)">✕ {{ _('Un chiffre') }}</span>
+          <span id="r-special"style="color:var(--dim)">✕ {{ _('Un caractère spécial') }}</span>
         </div>
       </div>
       <div class="form-group">
         <label>{{ _('Confirmer le mot de passe') }}</label>
-        <input type="password" name="confirm" required minlength="10" autocomplete="new-password">
+        <input class="form-control" type="password" name="confirm" required minlength="10" autocomplete="new-password">
       </div>
-      <button type="submit" class="btn-primary full-width">{{ _("S'inscrire") }}</button>
+      <button type="submit" class="btn btn-primary btn-full" style="margin-top:4px">{{ _("S'inscrire") }}</button>
     </form>
 
-    <p style="text-align:center;margin-top:16px;font-size:12px;color:var(--text-muted)">
-      {{ _('Déjà un compte ?') }} <a href="{{ url_for('auth.login') }}" style="color:var(--accent)">{{ _('Se connecter') }}</a>
-    </p>
-    <p style="text-align:center;margin-top:8px;font-size:11px;color:var(--border)">
+    <div class="auth-footer">
+      {{ _('Déjà un compte ?') }} <a href="{{ url_for('auth.login') }}">{{ _('Se connecter') }}</a>
+    </div>
+    <p style="text-align:center;margin-top:8px;font-size:0.72rem;color:var(--dim)">
       {{ _('Votre compte sera activé par un administrateur.') }}
     </p>
   </div>
 </div>
+
 {% block scripts %}
 <script>
-const pwd   = document.getElementById('pwd');
-const rules = {
+const pwd    = document.getElementById('pwd');
+const rules  = {
   len:     { el: document.getElementById('r-len'),     fn: v => v.length >= 10 },
   upper:   { el: document.getElementById('r-upper'),   fn: v => /[A-Z]/.test(v) },
   lower:   { el: document.getElementById('r-lower'),   fn: v => /[a-z]/.test(v) },
@@ -77,7 +75,7 @@ pwd.addEventListener('input', () => {
   for (const [key, rule] of Object.entries(rules)) {
     const pass = rule.fn(v);
     rule.el.textContent = (pass ? '✓ ' : '✕ ') + labels[key];
-    rule.el.style.color = pass ? 'var(--green)' : 'var(--text-muted)';
+    rule.el.style.color = pass ? 'var(--green)' : 'var(--dim)';
   }
 });
 </script>

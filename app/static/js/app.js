@@ -29,7 +29,7 @@ function closeConfigErrorModal() {
 }
 
 async function doRepairConfig() {
-  const r = await fetch('/api/config/repair', { method: 'POST' });
+  const r = await fetch('/api/config/repair', { method: 'POST', headers: _csrfHeaders() });
   const d = await r.json();
   if (d.ok) {
     closeConfigErrorModal();
@@ -40,13 +40,13 @@ async function doRepairConfig() {
   }
 }
 
-checkConfig();
+if (document.getElementById('modal-config-error')) checkConfig();
 
 /* ── Config file management ── */
 async function switchConfig(name) {
   const r = await fetch('/api/configs/select', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: _csrfHeaders(),
     body: JSON.stringify({ name }),
   });
   const d = await r.json();
@@ -81,7 +81,7 @@ async function submitCreate() {
 
   const r = await fetch('/api/configs/create', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: _csrfHeaders(),
     body: JSON.stringify({ name, copy_from: copyFrom }),
   });
   const d = await r.json();
@@ -90,12 +90,12 @@ async function submitCreate() {
     // Sélectionner la nouvelle config puis recharger
     await fetch('/api/configs/select', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: _csrfHeaders(),
       body: JSON.stringify({ name: d.name }),
     });
     window.location.reload();
   } else {
-    showToast('Erreur: ' + d.error, 'error');
+    showToast(I18N.error + ': ' + d.error, 'error');
   }
 }
 
@@ -106,20 +106,48 @@ async function confirmDeleteConfig() {
 
   const r = await fetch('/api/configs/delete', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: _csrfHeaders(),
     body: JSON.stringify({ name }),
   });
   const d = await r.json();
   if (d.ok) {
     window.location.reload();
   } else {
-    showToast('Erreur: ' + d.error, 'error');
+    showToast(I18N.error + ': ' + d.error, 'error');
   }
+}
+
+function openRenameModal() {
+  const current = document.getElementById('config-select')?.value;
+  if (!current) return;
+  document.getElementById('modal-rename-old').value = current;
+  document.getElementById('modal-rename-new').value = current.replace(/\.json$/i, '');
+  document.getElementById('modal-rename').style.display = 'flex';
+  setTimeout(() => document.getElementById('modal-rename-new').select(), 50);
+}
+function closeRenameModal() {
+  document.getElementById('modal-rename').style.display = 'none';
+}
+async function submitRename() {
+  const oldName = document.getElementById('modal-rename-old').value;
+  const newName = document.getElementById('modal-rename-new').value.trim();
+  if (!newName) return;
+  const r = await fetch('/api/configs/rename', {
+    method: 'POST',
+    headers: _csrfHeaders(),
+    body: JSON.stringify({ old_name: oldName, new_name: newName }),
+  });
+  const d = await r.json();
+  if (d.ok) { window.location.reload(); }
+  else { showToast(I18N.error + ': ' + d.error, 'error'); }
 }
 
 // Fermer modal en cliquant en dehors
 document.getElementById('modal-create')?.addEventListener('click', function(e) {
   if (e.target === this) closeModal();
+});
+document.getElementById('modal-rename')?.addEventListener('click', function(e) {
+  if (e.target === this) closeRenameModal();
 });
 
 
@@ -142,7 +170,7 @@ async function toggleAutoRestart(enabled) {
   try {
     const r = await fetch('/api/server/auto-restart', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: _csrfHeaders(),
       body: JSON.stringify({ enabled }),
     });
     const d = await r.json();
@@ -165,25 +193,32 @@ function updateStatusUI(running, runningConfig, autoRestart, players) {
   const sameConfig  = running && runningConfig === _activeConfig;
   const otherConfig = running && runningConfig !== _activeConfig;
 
-  const dots      = document.querySelectorAll('.dot');
-  const label     = document.getElementById('main-status-label');
-  const navLbl    = document.getElementById('status-label');
-  const playerEl  = document.getElementById('player-count');
-
-  dots.forEach(d => {
-    d.classList.toggle('online',  running);
-    d.classList.toggle('offline', !running);
+  // Only update server-status dots (not the timing widget dot)
+  const statusDotIds = ['main-status-dot', 'status-dot'];
+  statusDotIds.forEach(id => {
+    const d = document.getElementById(id);
+    if (d) {
+      d.classList.toggle('online',  running);
+      d.classList.toggle('offline', !running);
+    }
   });
 
   let txt = running ? I18N.online : I18N.offline;
+  const label    = document.getElementById('main-status-label');
+  const navLbl   = document.getElementById('status-label');
+  const sideLbl  = document.getElementById('server-side-status');
+  const playerEl = document.getElementById('player-count');
+  const playerNum = document.getElementById('player-count-number');
+  const playerSb = document.getElementById('player-count-sb');
   if (label)  label.textContent  = txt;
   if (navLbl) navLbl.textContent = txt;
+  if (sideLbl) sideLbl.textContent = txt;
 
-  if (playerEl) {
-    playerEl.textContent = (running && players !== null && players !== undefined)
-      ? `${players} ${I18N.players}`
-      : '';
-  }
+  const pTxt = (running && players !== null && players !== undefined)
+    ? `${players} ${I18N.players}` : '';
+  if (playerEl) playerEl.textContent = pTxt;
+  if (playerNum) playerNum.textContent = (running && players !== null && players !== undefined) ? players : '0';
+  if (playerSb) playerSb.textContent = pTxt;
 
   const btnStart   = document.getElementById('btn-start');
   const btnStop    = document.getElementById('btn-stop');
@@ -208,11 +243,14 @@ async function fetchStatus() {
     const r = await fetch('/api/status');
     const d = await r.json();
     updateStatusUI(d.running, d.config, d.auto_restart, d.players);
+    if (typeof window._onPublicStatusUpdate === 'function') window._onPublicStatusUpdate(d);
   } catch (_) {}
 }
 
-fetchStatus();
-setInterval(fetchStatus, 5000);
+if (document.getElementById('main-status-dot') || document.getElementById('status-dot')) {
+  fetchStatus();
+  setInterval(fetchStatus, 5000);
+}
 
 /* ── Server logs ── */
 async function loadLogs() {
@@ -220,10 +258,10 @@ async function loadLogs() {
   try {
     const r = await fetch('/api/server/logs');
     const d = await r.json();
-    pre.textContent = d.logs || '(vide)';
+    pre.textContent = d.logs || (I18N.empty || '(vide)');
     pre.scrollTop = pre.scrollHeight;
   } catch (_) {
-    pre.textContent = 'Erreur de chargement';
+    pre.textContent = I18N.loadError || I18N.error;
   }
 }
 
@@ -240,7 +278,7 @@ async function serverAction(action) {
 
   const labels = { start: I18N.serverStarted, stop: I18N.serverStopped, restart: I18N.serverRestarted };
   try {
-    const r = await fetch(`/api/server/${action}`, { method: 'POST' });
+    const r = await fetch(`/api/server/${action}`, { method: 'POST', headers: _csrfHeaders() });
     const d = await r.json();
     if (d.ok) {
       showToast(labels[action] || 'OK', 'success');
@@ -252,7 +290,7 @@ async function serverAction(action) {
       setTimeout(fetchStatus, 800);
     }
   } catch (e) {
-    showToast('Erreur réseau', 'error');
+    showToast(I18N.networkError, 'error');
     setTimeout(fetchStatus, 800);
   }
 }
@@ -309,7 +347,7 @@ async function saveAll() {
   try {
     const r = await fetch('/api/config', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: _csrfHeaders(),
       body: JSON.stringify(data),
     });
     const d = await r.json();
@@ -363,6 +401,7 @@ function onSessionTypeChange(val) {
   const isRaceWeekend = val === 'GameModeType_RACE_WEEKEND';
   document.querySelectorAll('.sess-race-only').forEach(el => {
     el.style.display = isRaceWeekend ? '' : 'none';
+    el.classList.toggle('enabled', isRaceWeekend);
   });
 }
 
@@ -373,6 +412,31 @@ function onSessionTypeChange(val) {
 })();
 
 /* ── Cars ── */
+let _carSortDir = 'none';
+
+function togglePiSort(th) {
+  const dirs = ['none', 'asc', 'desc'];
+  _carSortDir = dirs[(dirs.indexOf(_carSortDir) + 1) % dirs.length];
+  const icon = document.getElementById('pi-sort-icon');
+  if (icon) icon.textContent = _carSortDir === 'asc' ? '↑' : _carSortDir === 'desc' ? '↓' : '⇅';
+  if (th) th.classList.toggle('pi-sort-active', _carSortDir !== 'none');
+  _applyCarsSort();
+}
+
+function _applyCarsSort() {
+  const tbody = document.querySelector('#cars-table tbody');
+  if (!tbody) return;
+  const rows = Array.from(tbody.querySelectorAll('.car-row'));
+  if (_carSortDir === 'asc') {
+    rows.sort((a, b) => parseFloat(a.dataset.pi) - parseFloat(b.dataset.pi));
+  } else if (_carSortDir === 'desc') {
+    rows.sort((a, b) => parseFloat(b.dataset.pi) - parseFloat(a.dataset.pi));
+  } else {
+    rows.sort((a, b) => parseInt(a.dataset.idx) - parseInt(b.dataset.idx));
+  }
+  rows.forEach(r => tbody.appendChild(r));
+}
+
 function toggleCat(btn) {
   btn.classList.toggle('active');
   filterCars(true);
@@ -413,6 +477,7 @@ function filterCars(autoSelect = false) {
     }
   });
   updateSelectedCount();
+  _applyCarsSort();
 }
 
 function selectAllVisible(checked) {
@@ -425,7 +490,7 @@ function selectAllVisible(checked) {
 function updateSelectedCount() {
   const total = document.querySelectorAll('.car-check:checked').length;
   const el = document.getElementById('cars-selected-count');
-  if (el) el.textContent = `${total} véhicule(s) sélectionné(s)`;
+  if (el) el.textContent = `${total} ${I18N.selectedVehicles || 'véhicule(s) sélectionné(s)'}`;
 }
 
 document.querySelectorAll('.car-check').forEach(cb => {
@@ -506,7 +571,7 @@ function renderRotList() {
   if (_rotConfigs.length === 0) {
     const p = document.createElement('p');
     p.className = 'rot-empty';
-    p.textContent = 'Aucune configuration dans le roulement.';
+    p.textContent = I18N.rotationEmpty || 'Aucune configuration dans le roulement.';
     list.appendChild(p);
     updateRotationStatus();
     return;
@@ -607,4 +672,3 @@ async function stopRotationCycle() {
 }
 
 if (document.getElementById('rot-enabled')) loadRotation();
-
