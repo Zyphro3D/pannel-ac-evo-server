@@ -375,7 +375,7 @@ def settings():
     if request.method == "POST":
         tab = request.form.get("_tab", "panel")
         new_vals = {}
-        for _, _, keys in _ENV_SECTIONS:
+        for _sec_id, _sec_label, keys in _ENV_SECTIONS:
             for k in keys:
                 val = request.form.get(k)
                 if val is not None:
