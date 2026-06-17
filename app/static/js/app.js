@@ -57,6 +57,56 @@ async function switchConfig(name) {
   }
 }
 
+async function editConfig(name, editUrl) {
+  const r = await fetch('/api/configs/select', {
+    method: 'POST',
+    headers: _csrfHeaders(),
+    body: JSON.stringify({ name }),
+  });
+  const d = await r.json();
+  if (d.ok) {
+    window.location.href = editUrl;
+  } else {
+    showToast(I18N.error + ': ' + d.error, 'error');
+  }
+}
+
+async function startConfig(name) {
+  let statusData = null;
+  try {
+    const sr = await fetch('/api/status');
+    statusData = await sr.json();
+  } catch (_) {}
+
+  if (statusData && statusData.running && statusData.config && statusData.config !== name) {
+    const ok = confirm(
+      (I18N.serverRunningWith || 'Le serveur tourne avec') + ' « ' + statusData.config + ' ».\n' +
+      (I18N.replaceWith || 'Remplacer par') + ' « ' + name + ' » ?'
+    );
+    if (!ok) return;
+  }
+
+  const sel = await fetch('/api/configs/select', {
+    method: 'POST',
+    headers: _csrfHeaders(),
+    body: JSON.stringify({ name }),
+  });
+  if (!(await sel.json()).ok) { showToast(I18N.error, 'error'); return; }
+
+  const start = await fetch('/api/server/start', {
+    method: 'POST',
+    headers: _csrfHeaders(),
+    body: JSON.stringify({}),
+  });
+  const d = await start.json();
+  if (d.ok) {
+    showToast(I18N.serverStarted, 'success');
+    setTimeout(() => window.location.reload(), 1500);
+  } else {
+    showToast(I18N.error + ': ' + (d.error || ''), 'error');
+  }
+}
+
 function openCreateModal(duplicate) {
   const active = document.getElementById('config-select')?.value || '';
   document.getElementById('modal-title').textContent = duplicate
@@ -227,12 +277,18 @@ function updateStatusUI(running, runningConfig, autoRestart, players) {
   // Réactiver tous les boutons (ils sont désactivés pendant l'action)
   [btnStart, btnStop, btnRestart].forEach(b => { if (b) b.disabled = false; });
 
-  // Start : visible uniquement si serveur OFF
-  if (btnStart)   { btnStart.style.display   = running ? 'none' : ''; }
-  // Stop : visible dès que le serveur tourne
-  if (btnStop)    { btnStop.style.display     = running ? ''     : 'none'; }
-  // Restart : visible si le serveur tourne (on fait confiance à l'opérateur)
-  if (btnRestart) { btnRestart.style.display  = running ? ''     : 'none'; }
+  const editMode = document.getElementById('server-control')?.dataset.barMode === 'edit';
+  if (editMode) {
+    // Page config_edit : les boutons dépendent du fait que CETTE config tourne
+    if (btnStart)   { btnStart.style.display   = sameConfig ? 'none' : ''; }
+    if (btnStop)    { btnStop.style.display     = sameConfig ? ''     : 'none'; }
+    if (btnRestart) { btnRestart.style.display  = sameConfig ? ''     : 'none'; }
+  } else {
+    // Comportement standard (vue statut, etc.)
+    if (btnStart)   { btnStart.style.display   = running ? 'none' : ''; }
+    if (btnStop)    { btnStop.style.display     = running ? ''     : 'none'; }
+    if (btnRestart) { btnRestart.style.display  = running ? ''     : 'none'; }
+  }
 
   const chk = document.getElementById('chk-auto-restart');
   if (chk) chk.checked = !!autoRestart;

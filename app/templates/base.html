@@ -169,6 +169,11 @@
 </nav>
 
 <div class="page-content">
+  {% if system_warnings is defined %}
+    {% for warn in system_warnings %}
+      <div class="flash flash-warning flash-system">⚠ {{ warn }}</div>
+    {% endfor %}
+  {% endif %}
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% for cat, msg in messages %}
       <div class="flash flash-{{ cat if cat in ['success','error','warning','info'] else 'info' }}">{{ msg }}</div>
@@ -207,6 +212,11 @@ const I18N = {
   loadError:       "{{ _('Erreur de chargement') }}",
   selectedVehicles:"{{ _('véhicule(s) sélectionné(s)') }}",
   rotationEmpty:   "{{ _('Aucune configuration dans le roulement.') }}",
+  serverRunningWith: "{{ _('Le serveur tourne avec la configuration') }}",
+  replaceWith:     "{{ _('Remplacer par') }}",
+  finished:        "{{ _('Terminé') }}",
+  leader:          "{{ _('LEADER') }}",
+  lap:             "{{ _('Tour') }}",
 };
 
 function acceptCookies() {

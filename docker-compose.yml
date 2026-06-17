@@ -1,4 +1,29 @@
 services:
+  dockerproxy:
+    image: ghcr.io/tecnativa/docker-socket-proxy:latest
+    container_name: ace-docker-proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      # Seules les opérations nécessaires au panel sont autorisées
+      CONTAINERS: 1
+      POST: 1
+      ALLOW_START: 1
+      ALLOW_STOP: 1
+      ALLOW_RESTARTS: 1
+      # Tout le reste est refusé
+      IMAGES: 0
+      NETWORKS: 0
+      VOLUMES: 0
+      BUILD: 0
+      EXEC: 0
+      SWARM: 0
+      AUTH: 0
+      SECRETS: 0
+    networks:
+      - dockerproxy
+    restart: unless-stopped
+
   panel:
     build:
       context: .
@@ -11,14 +36,23 @@ services:
       - ./aceserver:/aceserver
       # Base de données et données persistantes du panel
       - panel_data:/panel/data
-      # Docker socket pour contrôler le container aceserver depuis le panel
-      - /var/run/docker.sock:/var/run/docker.sock
       # Fichier de configuration .env — monté pour que la page Paramètres lise/écrive les vraies valeurs
       - ./.env:/panel/.env
+      # SteamCMD (mise à jour du serveur de jeu depuis le panel)
+      - /opt/steamcmd:/opt/steamcmd
+      # Session Steam authentifiée du host (pour accéder aux apps nécessitant un compte)
+      - ${HOME}/Steam:/root/Steam
       # HTTPS intégré (Let's Encrypt) — décommentez et adaptez SSL_CERTFILE/SSL_KEYFILE dans .env
       # - /etc/letsencrypt:/etc/letsencrypt:ro
+    environment:
+      DOCKER_HOST: tcp://dockerproxy:2375
     env_file:
       - .env
+    networks:
+      - dockerproxy
+      - default
+    depends_on:
+      - dockerproxy
     restart: unless-stopped
 
   aceserver:
@@ -44,3 +78,7 @@ services:
 volumes:
   panel_data:
   wine_prefix:
+
+networks:
+  dockerproxy:
+    internal: true   # le proxy n'est pas accessible depuis l'extérieur

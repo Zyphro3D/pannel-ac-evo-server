@@ -1,5 +1,11 @@
 FROM python:3.11-slim
 
+# Bibliothèques 32-bit pour SteamCMD (binaire i386)
+RUN dpkg --add-architecture i386 \
+ && apt-get update \
+ && apt-get install -y --no-install-recommends libc6:i386 libstdc++6:i386 \
+ && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /panel
 
 COPY requirements.txt .

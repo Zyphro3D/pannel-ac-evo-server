@@ -4,8 +4,8 @@ import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
-from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify
-from flask_babel import _
+from flask import Blueprint, current_app, render_template, redirect, url_for, request, flash, jsonify
+from flask_babel import _, lazy_gettext as _l
 from flask_login import current_user
 
 from app.models import AdminAccount, Driver, Event, SessionResult
@@ -189,6 +189,9 @@ def server():
         "GameModeType_RACE_WEEKEND": _("Race Weekend"),
     }
 
+    running_status = get_status()
+    running_config = running_status.get("config", "") if running_status.get("running") else ""
+
     def _config_summary(name: str) -> dict:
         cfg = load_config_by_name(name) or {}
         srv = cfg.get("Server", {})
@@ -199,6 +202,7 @@ def server():
         return {
             "name": name,
             "active": name == active_config,
+            "running": name == running_config,
             "server_name": srv.get("ServerName", name),
             "max_players": srv.get("MaxPlayers", "—"),
             "mode": mode_labels.get(ev.get("SelectedSessionTypeValue"), ev.get("SelectedSessionTypeValue", "—")),
@@ -266,51 +270,57 @@ def server():
 # ── Helpers .env ──────────────────────────────────────────────────────────────
 
 _ENV_SECTIONS = [
-    ("panel",    "Panel",          ["PANEL_TITLE", "PANEL_BANNER_IMG", "PANEL_LOGO_IMG", "PANEL_URL", "PANEL_TIMEZONE"]),
-    ("security", "Sécurité",       ["SECRET_KEY", "SESSION_COOKIE_SECURE", "RESULTS_INGEST_SECRET"]),
-    ("accounts", "Comptes",        []),  # Géré via AdminAccount en base de données
-    ("server",   "Serveur ACE",    ["ACESERVER_HTTP_PORT", "ACESERVER_TCP_HOST", "ACESERVER_TCP_PORT",
-                                    "ACESERVER_DIR", "CONFIGS_DIR"]),
-    ("bot",      "Bot TCP",        ["ACE_BOT_STEAM_ID", "ACE_BOT_CAR_MODEL", "ACE_BOT_DISPLAY_NAME",
-                                    "ACE_BOT_ADMIN_PASSWORD"]),
-    ("discord",  "Discord",        ["DISCORD_WEBHOOK_URL", "DISCORD_PILOTS_WEBHOOK_URL", "DISCORD_INVITE_URL"]),
-    ("mail",     "Email SMTP",     ["MAIL_SERVER", "MAIL_PORT", "MAIL_USE_TLS", "MAIL_USERNAME",
-                                    "MAIL_PASSWORD", "MAIL_FROM", "MAIL_ADMIN"]),
-    ("locale",   "Langue & Fuseau",["DEFAULT_LOCALE", "PANEL_TIMEZONE"]),
+    ("panel",    "Panel",                    ["PANEL_TITLE", "PANEL_BANNER_IMG", "PANEL_LOGO_IMG", "PANEL_URL", "PANEL_TIMEZONE"]),
+    ("security", _l("Sécurité"),             ["SECRET_KEY", "SESSION_COOKIE_SECURE", "RESULTS_INGEST_SECRET"]),
+    ("accounts", _l("Comptes"),              []),  # Géré via AdminAccount en base de données
+    ("server",   _l("Serveur ACE"),          ["ACESERVER_HTTP_PORT", "ACESERVER_TCP_HOST", "ACESERVER_TCP_PORT",
+                                              "ACESERVER_DIR", "CONFIGS_DIR"]),
+    ("bot",      _l("Bot TCP"),              ["ACE_BOT_STEAM_ID", "ACE_BOT_IS_ADMIN",
+                                              "ACE_BOT_MSG_WELCOME", "ACE_BOT_MSG_DISCORD", "ACE_BOT_MSG_SITE"]),
+    ("conteneur", _l("Serveur de jeu"),      ["STEAM_USERNAME"]),
+    ("discord",  "Discord",                  ["DISCORD_WEBHOOK_URL", "DISCORD_PILOTS_WEBHOOK_URL", "DISCORD_INVITE_URL"]),
+    ("mail",     _l("Email SMTP"),           ["MAIL_SERVER", "MAIL_PORT", "MAIL_USE_TLS", "MAIL_USERNAME",
+                                              "MAIL_PASSWORD", "MAIL_FROM", "MAIL_ADMIN"]),
+    ("locale",   _l("Langue & Fuseau"),      ["DEFAULT_LOCALE", "PANEL_TIMEZONE"]),
 ]
 _ENV_DESCS = {
-    "PANEL_TITLE":      "Nom affiché dans la sidebar",
-    "PANEL_BANNER_IMG": "Nom de fichier dans media/banner/ (ex: banner.jpg)",
-    "PANEL_LOGO_IMG":   "Logo sur la bannière (ex: logo.png)",
-    "PANEL_URL":        "URL publique du panel (liens dans les emails)",
-    "PANEL_TIMEZONE":   "Fuseau horaire (ex: Europe/Paris)",
-    "SECRET_KEY":       "Clé de session Flask — générer avec python -c \"import secrets; print(secrets.token_hex(32))\"",
-    "SESSION_COOKIE_SECURE": "true si HTTPS, false si HTTP local",
-    "RESULTS_INGEST_SECRET": "Secret HMAC du webhook résultats (/api/results/ingest)",
-    "ACESERVER_HTTP_PORT": "Port HTTP de l'API du serveur (défaut 8080)",
-    "ACESERVER_TCP_HOST":  "Hôte TCP ACE EVO (défaut 127.0.0.1)",
-    "ACESERVER_TCP_PORT":  "Port TCP ACE EVO (défaut 9700)",
-    "ACESERVER_DIR":    "Dossier d'installation ACE EVO",
-    "CONFIGS_DIR":      "Dossier des fichiers de configuration JSON",
-    "ACE_BOT_STEAM_ID":      "Steam ID du bot (laisser vide pour désactiver)",
-    "ACE_BOT_CAR_MODEL":     "Modèle de voiture du bot",
-    "ACE_BOT_DISPLAY_NAME":  "Nom affiché du bot",
-    "ACE_BOT_ADMIN_PASSWORD":"Mot de passe admin pour élever le bot",
-    "DISCORD_WEBHOOK_URL":   "Webhook principal Discord",
-    "DISCORD_PILOTS_WEBHOOK_URL": "Webhook pilotes Discord",
-    "DISCORD_INVITE_URL":    "Lien d'invitation Discord affiché sur le panel",
-    "MAIL_SERVER":      "Serveur SMTP (laisser vide pour désactiver les emails)",
-    "MAIL_PORT":        "Port SMTP (ex: 587 ou 465)",
-    "MAIL_USE_TLS":     "TLS : true ou false",
-    "MAIL_USERNAME":    "Identifiant SMTP",
-    "MAIL_PASSWORD":    "Mot de passe SMTP",
-    "MAIL_FROM":        "Adresse expéditeur",
-    "MAIL_ADMIN":       "Adresse(s) admin pour les notifications (séparées par virgule)",
-    "DEFAULT_LOCALE":   "Langue par défaut : fr, en, es, de, it",
+    "PANEL_TITLE":      _l("Nom affiché dans la sidebar"),
+    "PANEL_BANNER_IMG": _l("Nom de fichier dans media/banner/ (ex: banner.jpg)"),
+    "PANEL_LOGO_IMG":   _l("Logo sur la bannière (ex: logo.png)"),
+    "PANEL_URL":        _l("URL publique du panel (liens dans les emails)"),
+    "PANEL_TIMEZONE":   _l("Fuseau horaire (ex: Europe/Paris)"),
+    "SECRET_KEY":       _l("Clé de session Flask — générer avec python -c \"import secrets; print(secrets.token_hex(32))\""),
+    "SESSION_COOKIE_SECURE": _l("true si HTTPS, false si HTTP local"),
+    "RESULTS_INGEST_SECRET": _l("Secret HMAC du webhook résultats (/api/results/ingest)"),
+    "ACESERVER_HTTP_PORT": _l("Port HTTP de l'API du serveur (défaut 8080)"),
+    "ACESERVER_TCP_HOST":  _l("Hôte TCP ACE EVO (défaut 127.0.0.1)"),
+    "ACESERVER_TCP_PORT":  _l("Port TCP ACE EVO (défaut 9700)"),
+    "ACESERVER_DIR":    _l("Dossier d'installation ACE EVO"),
+    "CONFIGS_DIR":      _l("Dossier des fichiers de configuration JSON"),
+    "ACE_BOT_STEAM_ID":       _l("Steam ID 64-bit du compte bot — le bot se connecte au serveur avec ce compte. Laisser vide pour désactiver le bot."),
+    "ACE_BOT_CAR_MODEL":      _l("Voiture utilisée par le bot pour rejoindre la session."),
+    "ACE_BOT_IS_ADMIN":       _l("Activer les droits admin pour le bot (true/false). Le mot de passe est lu automatiquement depuis la config serveur active."),
+    "ACE_BOT_MSG_WELCOME":    _l("Message de bienvenue envoyé à chaque connexion. Variable : {name}. Laisser vide pour désactiver."),
+    "ACE_BOT_MSG_DISCORD":    _l("Message Discord envoyé si DISCORD_INVITE_URL est défini. Variables : {name}, {discord_url}. Laisser vide pour désactiver."),
+    "ACE_BOT_MSG_SITE":       _l("Message site envoyé si PANEL_URL est défini. Variables : {name}, {site_url}. Laisser vide pour désactiver."),
+    "STEAM_USERNAME":    _l("Pré-remplit le formulaire de mise à jour. Le mot de passe est saisi au moment de la mise à jour, jamais stocké."),
+    "DISCORD_WEBHOOK_URL":   _l("Webhook principal Discord"),
+    "DISCORD_PILOTS_WEBHOOK_URL": _l("Webhook pilotes Discord"),
+    "DISCORD_INVITE_URL":    _l("Lien d'invitation Discord affiché sur le panel"),
+    "MAIL_SERVER":      _l("Serveur SMTP (laisser vide pour désactiver les emails)"),
+    "MAIL_PORT":        _l("Port SMTP (ex: 587 ou 465)"),
+    "MAIL_USE_TLS":     _l("TLS : true ou false"),
+    "MAIL_USERNAME":    _l("Identifiant SMTP"),
+    "MAIL_PASSWORD":    _l("Mot de passe SMTP"),
+    "MAIL_FROM":        _l("Adresse expéditeur"),
+    "MAIL_ADMIN":       _l("Adresse(s) admin pour les notifications (séparées par virgule)"),
+    "DEFAULT_LOCALE":   _l("Langue par défaut : fr, en, es, de, it"),
 }
-_SENSITIVE = {"SECRET_KEY", "MAIL_PASSWORD", "ACE_BOT_ADMIN_PASSWORD",
+_SENSITIVE = {"SECRET_KEY", "MAIL_PASSWORD",
               "DISCORD_WEBHOOK_URL", "DISCORD_PILOTS_WEBHOOK_URL",
               "RESULTS_INGEST_SECRET"}
+_SKIP_IF_EMPTY = {"MAIL_PASSWORD"}   # champs mot de passe : vide = ne pas écraser (STEAM_PASSWORD : vide = effacer = session cachée)
+_CHECKBOXES = {"ACE_BOT_IS_ADMIN"}
 
 
 def _read_env_file():
@@ -377,11 +387,23 @@ def settings():
         new_vals = {}
         for _sec_id, _sec_label, keys in _ENV_SECTIONS:
             for k in keys:
-                val = request.form.get(k)
-                if val is not None:
-                    new_vals[k] = val.strip()
+                if k in _CHECKBOXES:
+                    new_vals[k] = "true" if "true" in request.form.getlist(k) else "false"
+                else:
+                    val = request.form.get(k)
+                    if val is not None:
+                        stripped = val.strip()
+                        if stripped == "" and k in _SKIP_IF_EMPTY:
+                            pass  # mot de passe laissé vide → conserver la valeur actuelle
+                        else:
+                            new_vals[k] = stripped
         _write_env_file(new_vals)
         env_values.update(new_vals)
+        # Applique immédiatement sans redémarrage
+        import os as _os
+        for _k, _v in new_vals.items():
+            _os.environ[_k] = _v
+            current_app.config[_k] = _v
         flash(_("Paramètres sauvegardés — redémarrez le panel pour les appliquer."), "success")
         saved = True
         return redirect(url_for("admin.settings", tab=tab))
@@ -393,6 +415,15 @@ def settings():
                          if f.suffix.lower() in {".jpg", ".jpeg", ".png", ".gif", ".webp"}]
     drivers_list   = Driver.query.order_by(Driver.created_at.desc()).limit(8).all()
     admin_accounts = AdminAccount.query.order_by(AdminAccount.role.desc(), AdminAccount.username).all()
+    try:
+        bot_cars = sorted(load_cars(), key=lambda c: c["display_name"])
+    except Exception:
+        bot_cars = []
+    try:
+        from app.services.server_config import load_config
+        bot_admin_password_set = bool(load_config().get("Server", {}).get("AdminPassword", ""))
+    except Exception:
+        bot_admin_password_set = False
 
     return render_template("settings.html",
                            env_values=env_values,
@@ -405,6 +436,8 @@ def settings():
                            media_banners=media_banners,
                            drivers_list=drivers_list,
                            admin_accounts=admin_accounts,
+                           bot_cars=bot_cars,
+                           bot_admin_password_set=bot_admin_password_set,
                            server_status=get_status())
 
 
@@ -414,14 +447,14 @@ def upload_media():
     if not current_user.is_superadmin:
         return jsonify({"ok": False, "error": "Unauthorized"}), 403
     if request.content_length and request.content_length > 5 * 1024 * 1024:
-        return jsonify({"ok": False, "error": "Fichier trop volumineux (max 5 Mo)"}), 413
+        return jsonify({"ok": False, "error": _("Fichier trop volumineux (max 5 Mo)")}), 413
     f = request.files.get("file")
     if not f or not f.filename:
         return jsonify({"ok": False, "error": "No file"}), 400
     ext = Path(f.filename).suffix.lower()
     allowed = {".jpg", ".jpeg", ".png", ".gif", ".webp"}
     if ext not in allowed:
-        return jsonify({"ok": False, "error": "Type non autorisé"}), 400
+        return jsonify({"ok": False, "error": _("Type non autorisé")}), 400
     header = f.stream.read(16)
     f.stream.seek(0)
     signatures = {
@@ -432,7 +465,7 @@ def upload_media():
         ".webp": [b"RIFF"],
     }
     if not any(header.startswith(sig) for sig in signatures[ext]):
-        return jsonify({"ok": False, "error": "Signature de fichier invalide"}), 400
+        return jsonify({"ok": False, "error": _("Signature de fichier invalide")}), 400
     safe_stem = re.sub(r"[^a-zA-Z0-9_-]", "_", Path(f.filename).stem)[:40].strip("_")
     safe_name = f"{uuid.uuid4().hex}_{safe_stem or 'banner'}{ext}"
     dest = Path(__file__).parent.parent.parent / "media" / "banner" / safe_name
@@ -447,7 +480,7 @@ def upload_media():
 @_admin_required
 def account_create():
     if not current_user.is_superadmin:
-        return jsonify({"ok": False, "error": "Accès refusé"}), 403
+        return jsonify({"ok": False, "error": _("Accès refusé")}), 403
     username     = request.form.get("username", "").strip()
     display_name = request.form.get("display_name", "").strip()
     password     = request.form.get("password", "")
@@ -472,7 +505,7 @@ def account_create():
 @_admin_required
 def account_edit(account_id):
     if not current_user.is_superadmin:
-        return jsonify({"ok": False, "error": "Accès refusé"}), 403
+        return jsonify({"ok": False, "error": _("Accès refusé")}), 403
     acc = db.session.get(AdminAccount, account_id)
     if not acc:
         flash(_("Compte introuvable."), "error")
@@ -506,16 +539,16 @@ def account_edit(account_id):
 @_admin_required
 def account_toggle(account_id):
     if not current_user.is_superadmin:
-        return jsonify({"ok": False, "error": "Accès refusé"}), 403
+        return jsonify({"ok": False, "error": _("Accès refusé")}), 403
     acc = db.session.get(AdminAccount, account_id)
     if not acc:
-        return jsonify({"ok": False, "error": "Compte introuvable"}), 404
+        return jsonify({"ok": False, "error": _("Compte introuvable")}), 404
     if acc.is_active and acc.role == "superadmin":
         remaining = AdminAccount.query.filter_by(role="superadmin", is_active=True).count()
         if remaining <= 1:
-            return jsonify({"ok": False, "error": "Dernier superadmin actif — impossible de désactiver"}), 400
+            return jsonify({"ok": False, "error": _("Dernier superadmin actif — impossible de désactiver")}), 400
     if str(current_user.get_id()) == acc.get_id():
-        return jsonify({"ok": False, "error": "Impossible de vous désactiver vous-même"}), 400
+        return jsonify({"ok": False, "error": _("Impossible de vous désactiver vous-même")}), 400
     acc.is_active = not acc.is_active
     db.session.commit()
     return jsonify({"ok": True, "active": acc.is_active})

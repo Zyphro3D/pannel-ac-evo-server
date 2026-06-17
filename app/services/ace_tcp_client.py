@@ -24,13 +24,11 @@ _host: str = "127.0.0.1"
 _port: int = 9700
 _steam_id: str = ""
 _car_model: str = "preset_190_evo_ii"
-_display_name: str = ""
-_admin_password: str = ""
 
 _sock: socket.socket | None = None
 _lock = threading.Lock()
 _connected = False
-_running = False
+_running   = False
 
 # Leaderboard en mémoire : steam_id_str → {name, num, sector, time_ms, sectors}
 _leaderboard: dict[str, dict] = {}
@@ -144,8 +142,7 @@ def _build_connection_request() -> bytes:
         _field_varint(5, 8) +
         _field_varint(6, 5) +
         _field_str(7, _steam_id) +
-        (_field_str(8, _display_name) if _display_name else b'') +
-        _field_str(9, _car_model)
+        _field_str(9, _get_car_model())
     )
     return _wrap('ClientConnectionRequest', payload)
 
@@ -296,10 +293,11 @@ def _connect_loop():
             with _lock:
                 _sock = sock
                 _connected = True
-            # S'élever admin dès la connexion si un mot de passe est configuré
-            if _admin_password:
+            # S'élever admin dès la connexion si configuré
+            _pwd = _get_admin_password()
+            if _pwd:
                 time.sleep(1)
-                send_chat(f"\\admin {_admin_password}")
+                send_chat(f"\\admin {_pwd}")
                 log.info("ace_tcp_client: élévation admin envoyée")
             _recv_loop(sock)
         except Exception as e:
@@ -362,17 +360,73 @@ _welcome_site: str    = ""
 _deploy_mode: str     = "native"
 _log_file: str        = ""
 _container_name: str  = "ace-server"
+_msg_welcome: str     = "Bienvenue {name} !"
+_msg_discord: str     = "Rejoins le discord : {discord_url}"
+_msg_site: str        = "Retrouve tes resultats et evenements sur : {site_url}"
+
+
+def _get_car_model() -> str:
+    """Lit la première voiture de la config active. Fallback sur _car_model si introuvable."""
+    try:
+        configs_dir = os.environ.get("CONFIGS_DIR", "/aceserver/configs")
+        active_file = os.path.join(configs_dir, ".active_config")
+        if os.path.exists(active_file):
+            with open(active_file) as f:
+                name = f.read().strip()
+        else:
+            import glob
+            files = sorted(glob.glob(os.path.join(configs_dir, "*.json")))
+            name = os.path.basename(files[0]) if files else ""
+        if not name:
+            return _car_model
+        import json as _json
+        with open(os.path.join(configs_dir, name), encoding="utf-8") as f:
+            cfg = _json.load(f)
+        cars = cfg.get("Event", {}).get("Cars", [])
+        if cars:
+            model = cars[0].get("name", "")
+            if model:
+                log.info("ace_tcp_client: car_model auto-détecté depuis '%s': %s", name, model)
+                return model
+    except Exception as e:
+        log.debug("ace_tcp_client: erreur lecture car_model: %s", e)
+    return _car_model
+
+
+def _get_admin_password() -> str:
+    """Lit le mot de passe admin en temps réel depuis l'env et la config active."""
+    if os.environ.get("ACE_BOT_IS_ADMIN", "false").lower() != "true":
+        return ""
+    try:
+        configs_dir = os.environ.get("CONFIGS_DIR", "/aceserver/configs")
+        active_file = os.path.join(configs_dir, ".active_config")
+        if os.path.exists(active_file):
+            with open(active_file) as f:
+                name = f.read().strip()
+        else:
+            import glob
+            files = sorted(glob.glob(os.path.join(configs_dir, "*.json")))
+            name = os.path.basename(files[0]) if files else ""
+        if not name:
+            return ""
+        import json as _json
+        with open(os.path.join(configs_dir, name), encoding="utf-8") as f:
+            return _json.load(f).get("Server", {}).get("AdminPassword", "")
+    except Exception:
+        return ""
 
 
 def _send_welcome(name: str):
     time.sleep(2)   # laisser le temps au joueur de charger
-    send_chat(f"Bienvenue {name} !")
-    if _welcome_discord:
+    vars = {"name": name, "discord_url": _welcome_discord, "site_url": _welcome_site}
+    if _msg_welcome:
+        send_chat(_msg_welcome.format_map(vars))
+    if _welcome_discord and _msg_discord:
         time.sleep(1)
-        send_chat(f"Rejoins le discord : {_welcome_discord}")
-    if _welcome_site:
+        send_chat(_msg_discord.format_map(vars))
+    if _welcome_site and _msg_site:
         time.sleep(1)
-        send_chat(f"Retrouve tes resultats et evenements sur : {_welcome_site}")
+        send_chat(_msg_site.format_map(vars))
     log.info("ace_tcp_client: bienvenue envoyé à %s", name)
 
 
@@ -427,36 +481,40 @@ def _welcome_loop_docker():
 # ── API publique ──────────────────────────────────────────────────────────────
 
 def start(host: str, port: int, steam_id: str,
-          car_model: str    = "preset_190_evo_ii",
-          display_name: str = "",
-          admin_password: str = "",
-          discord_url: str  = "",
-          site_url: str     = "",
-          deploy_mode: str  = "native",
-          log_file: str     = "",
+          car_model: str   = "preset_190_evo_ii",
+          discord_url: str = "",
+          site_url: str       = "",
+          msg_welcome: str    = "Bienvenue {name} !",
+          msg_discord: str    = "Rejoins le discord : {discord_url}",
+          msg_site: str       = "Retrouve tes resultats et evenements sur : {site_url}",
+          deploy_mode: str    = "native",
+          log_file: str       = "",
           container_name: str = "ace-server",
           on_event=None):
     """Démarre le client TCP (+ moniteur de bienvenue) en arrière-plan."""
-    global _host, _port, _steam_id, _car_model, _display_name, _admin_password
+    global _host, _port, _steam_id, _car_model
     global _on_event, _running
     global _welcome_discord, _welcome_site, _deploy_mode, _log_file, _container_name
-    _host             = host
-    _port             = port
-    _steam_id         = steam_id
-    _car_model        = car_model
-    _display_name     = display_name
-    _admin_password   = admin_password
-    _welcome_discord  = discord_url
+    global _msg_welcome, _msg_discord, _msg_site
+    _host            = host
+    _port            = port
+    _steam_id        = steam_id
+    _car_model       = car_model
+    _welcome_discord = discord_url
     _welcome_site     = site_url
+    _msg_welcome      = msg_welcome
+    _msg_discord      = msg_discord
+    _msg_site         = msg_site
     _deploy_mode      = deploy_mode
     _log_file         = log_file
     _container_name   = container_name
     _on_event         = on_event
     _running          = True
 
-    threading.Thread(target=_connect_loop,    daemon=True, name="ace-tcp-client").start()
+    threading.Thread(target=_connect_loop, daemon=True, name="ace-tcp-client").start()
 
-    if discord_url or site_url:
+    has_welcome = msg_welcome or (discord_url and msg_discord) or (site_url and msg_site)
+    if has_welcome:
         if deploy_mode == "docker_split":
             threading.Thread(target=_welcome_loop_docker, daemon=True,
                              name="ace-welcome-bot").start()

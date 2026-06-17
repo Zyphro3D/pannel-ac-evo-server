@@ -50,8 +50,34 @@
       <span class="live-chat-hint" id="live-chat-hint">— {{ _('TCP non connecté') }}</span>
     </div>
     <div class="live-chat-form">
+      <select id="live-cmd-select" class="live-cmd-select" onchange="onCmdSelect(this)" disabled>
+        <option value="">— {{ _('Commande admin…') }} —</option>
+        <optgroup label="{{ _('Session') }}">
+          <option value="\skip">{{ _('Phase suivante') }} (\skip)</option>
+        </optgroup>
+        <optgroup label="{{ _('Joueur') }} [#num]">
+          <option value="\kick ">\kick [#num] — {{ _('Expulser') }}</option>
+          <option value="\mute ">\mute [#num] — {{ _('Muet') }}</option>
+          <option value="\unmute ">\unmute [#num] — {{ _('Retirer le muet') }}</option>
+          <option value="\to_pit ">\to_pit [#num] — {{ _('Envoyer aux stands') }}</option>
+          <option value="\add_time ">\add_time [#num] [sec] — {{ _('Ajouter du temps') }}</option>
+          <option value="\ballast ">\ballast [#num] [−100…100] — Ballast</option>
+          <option value="\restrictor ">\restrictor [#num] [0.0…0.2] — Restrictor</option>
+        </optgroup>
+        <optgroup label="{{ _('Pénalités') }} [#num]">
+          <option value="\add_penalty  disq">\add_penalty [#num] disq — {{ _('Disqualification') }}</option>
+          <option value="\add_penalty  dt">\add_penalty [#num] dt — Drive-through</option>
+          <option value="\add_penalty  sg">\add_penalty [#num] sg — Stop &amp; Go</option>
+          <option value="\del_penalty  disq">\del_penalty [#num] disq — {{ _('Retirer disq') }}</option>
+          <option value="\del_penalty  dt">\del_penalty [#num] dt — {{ _('Retirer drive-through') }}</option>
+          <option value="\del_penalty  sg">\del_penalty [#num] sg — {{ _('Retirer stop &amp; go') }}</option>
+        </optgroup>
+      </select>
+      <select id="live-car-select" class="live-cmd-select" onchange="onCarSelect(this)" style="display:none" disabled>
+        <option value="">— {{ _('Pilote…') }} —</option>
+      </select>
       <input type="text" id="live-chat-input" class="live-chat-input"
-             placeholder="{{ _('Tapez un message…') }}" maxlength="200" disabled>
+             placeholder="{{ _('Tapez un message ou commande…') }}" maxlength="200" disabled>
       <button class="btn-primary" id="live-chat-send" onclick="sendChat()" disabled>{{ _('Envoyer') }}</button>
     </div>
     <div id="live-chat-log" class="live-chat-log"></div>
@@ -161,6 +187,9 @@ async function loadState() {
   try {
     const r = await fetch('/api/live/state');
     const d = await r.json();
+    for (const driver of d.drivers || []) {
+      if (driver.steam_id) _drivers[String(driver.steam_id)] = driver;
+    }
     _renderDrivers(d.drivers || []);
     const feed = document.getElementById('live-events-feed');
     feed.innerHTML = '';
@@ -223,18 +252,25 @@ async function pollTcpStatus() {
     const btn   = document.getElementById('live-chat-send');
     const hint  = document.getElementById('live-chat-hint');
 
+    const sel    = document.getElementById('live-cmd-select');
+    const carSel = document.getElementById('live-car-select');
     if (d.connected) {
       dot.className     = 'dot online';
       label.textContent = I18N_LIVE.tcpConnected;
       hint.textContent  = '';
       input.disabled    = false;
       btn.disabled      = false;
+      sel.disabled      = false;
+      carSel.disabled   = false;
     } else {
       dot.className     = 'dot offline';
       label.textContent = I18N_LIVE.tcpDisconnected;
       hint.textContent  = d.error ? `— ${d.error}` : `— ${I18N_LIVE.tcpNotConnected}`;
       input.disabled    = true;
       btn.disabled      = true;
+      sel.disabled      = true;
+      carSel.disabled   = true;
+      carSel.style.display = 'none';
     }
 
     if (d.leaderboard && d.leaderboard.length) {
@@ -276,6 +312,64 @@ async function sendChat() {
     row.textContent += ` ✗ ${I18N_LIVE.errNetwork}`;
   }
   while (log.children.length > 20) log.lastChild.remove();
+}
+
+let _pendingCmd = '';
+
+function _refreshCarSelect() {
+  const sel = document.getElementById('live-car-select');
+  sel.innerHTML = '<option value="">— {{ _("Pilote…") }} —</option>';
+  const drivers = Object.values(_drivers).sort((a, b) => (a.num || 0) - (b.num || 0));
+  for (const d of drivers) {
+    if (!d.num) continue;
+    const opt = document.createElement('option');
+    opt.value = d.num;
+    opt.textContent = `#${d.num} — ${d.name || '?'}`;
+    sel.appendChild(opt);
+  }
+}
+
+function onCmdSelect(sel) {
+  const val = sel.value;
+  sel.value = '';
+  const carSel = document.getElementById('live-car-select');
+  const input  = document.getElementById('live-chat-input');
+
+  if (!val) { carSel.style.display = 'none'; return; }
+
+  // \skip n'a pas besoin de numéro de voiture
+  if (val === '\\skip') {
+    carSel.style.display = 'none';
+    input.value = val;
+    input.focus();
+    return;
+  }
+
+  // Toutes les autres commandes nécessitent un numéro de voiture
+  _pendingCmd = val;
+  _refreshCarSelect();
+  carSel.style.display = '';
+  carSel.value = '';
+  carSel.focus();
+}
+
+function onCarSelect(sel) {
+  const num = sel.value;
+  sel.value = '';
+  sel.style.display = 'none';
+  if (!num || !_pendingCmd) return;
+
+  const input = document.getElementById('live-chat-input');
+  // Commandes avec double espace : \add_penalty  disq → \add_penalty 5 disq
+  const doubleSpace = _pendingCmd.indexOf('  ');
+  if (doubleSpace !== -1) {
+    input.value = _pendingCmd.slice(0, doubleSpace + 1) + num + ' ' + _pendingCmd.slice(doubleSpace + 2);
+  } else {
+    input.value = _pendingCmd + num;
+  }
+  _pendingCmd = '';
+  input.focus();
+  input.setSelectionRange(input.value.length, input.value.length);
 }
 
 document.getElementById('live-chat-input').addEventListener('keydown', e => {

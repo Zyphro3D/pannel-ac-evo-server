@@ -68,6 +68,7 @@
       {{ nav_item(_('Comptes admin'), url_for('admin.settings', tab='accounts'), tab == 'accounts') }}
       {{ nav_item(_('Serveur ACE'), url_for('admin.settings', tab='server'), tab == 'server') }}
       {{ nav_item(_('Bot TCP'), url_for('admin.settings', tab='bot'), tab == 'bot') }}
+      {{ nav_item(_('Serveur de jeu'), url_for('admin.settings', tab='conteneur'), tab == 'conteneur') }}
       {{ nav_item(_('Discord'), url_for('admin.settings', tab='discord'), tab == 'discord') }}
       {{ nav_item(_('Langue & fuseau'), url_for('admin.settings', tab='locale'), tab == 'locale') }}
       {{ nav_item(_('Médias'), url_for('admin.settings', tab='media'), tab == 'media') }}
@@ -103,7 +104,367 @@
         {% set active_panel = current_section.id %}
       {% endif %}
 
-      {% if active_panel not in ['media', 'users', 'events', 'live', 'accounts'] %}
+      {% if tab == 'conteneur' %}
+      {# ── Gestion du conteneur de jeu ─────────────────────────────────────── #}
+      <section class="settings-dashboard-grid">
+        <div class="settings-card settings-card-wide">
+          <div class="settings-card-head">
+            <h2>{{ _('Serveur de jeu') }}</h2>
+          </div>
+
+          {# Statut + version #}
+          <div id="ctr-status-block" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem">
+            <div style="background:var(--surface2);border-radius:8px;padding:14px 16px">
+              <div style="font-size:0.75rem;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">{{ _('Conteneur') }}</div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <span class="dot offline" id="ctr-dot"></span>
+                <strong id="ctr-status-label">—</strong>
+              </div>
+              <div style="font-size:0.78rem;color:var(--text2);margin-top:4px" id="ctr-uptime">—</div>
+            </div>
+            <div style="background:var(--surface2);border-radius:8px;padding:14px 16px">
+              <div style="font-size:0.75rem;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">{{ _('Version') }}</div>
+              <div id="ctr-version-installed" style="font-size:0.9rem">—</div>
+              <div id="ctr-version-target"    style="font-size:0.78rem;color:var(--text2);margin-top:2px">—</div>
+            </div>
+          </div>
+
+          {# Actions #}
+          <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1.5rem">
+            <button id="ctr-btn-restart" class="btn btn-secondary" onclick="ctrRestart()" type="button">
+              {{ _('Redémarrer le serveur') }}
+            </button>
+            <button id="ctr-btn-update" class="btn btn-primary" onclick="ctrModalOpen()" type="button">
+              {{ _('Vérifier et mettre à jour') }}
+            </button>
+          </div>
+
+          {# Terminal de sortie #}
+          <div id="ctr-terminal-wrap" style="display:none">
+            <div style="font-size:0.75rem;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">{{ _('Sortie SteamCMD') }}</div>
+            <pre id="ctr-terminal"
+                 style="background:#0d1117;color:#e6edf3;border-radius:8px;padding:14px 16px;font-size:0.78rem;
+                        line-height:1.5;max-height:360px;overflow-y:auto;white-space:pre-wrap;word-break:break-all"></pre>
+          </div>
+
+          <div id="ctr-msg" style="margin-top:8px;font-size:0.85rem"></div>
+        </div>
+      </section>
+
+      {# ── Compte Steam par défaut (pré-remplissage modal) ────────────────────── #}
+      <section class="settings-dashboard-grid" style="margin-top:1.5rem">
+        <form method="post" action="{{ url_for('admin.settings', tab='conteneur') }}" class="settings-card settings-card-wide settings-card-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="_tab" value="conteneur">
+          <div class="settings-card-head">
+            <h2>{{ _('Compte Steam (SteamCMD)') }}</h2>
+          </div>
+
+          <div class="settings-card-copy" style="background:var(--surface2);border-radius:8px;padding:14px 16px;margin-bottom:8px;font-size:0.83rem;line-height:1.6">
+            {{ _("Le mot de passe est saisi au moment de la mise à jour et n'est jamais stocké. Ce champ pré-remplit simplement le formulaire. Le compte doit posséder ACE EVO dans sa bibliothèque Steam.") }}
+          </div>
+
+          <div class="form-group">
+            <label for="STEAM_USERNAME"><strong>{{ _('Nom d\'utilisateur Steam par défaut') }}</strong></label>
+            <em class="env-desc">{{ env_descs.get('STEAM_USERNAME', '') }}</em>
+            <input class="form-control" type="text" name="STEAM_USERNAME" id="STEAM_USERNAME"
+                   value="{{ env_values.get('STEAM_USERNAME', '') }}"
+                   placeholder="{{ _('ex: moncomptesteam') }}">
+          </div>
+
+          <div class="settings-card-foot">
+            <button type="submit" class="btn btn-primary">{{ _('Sauvegarder') }}</button>
+          </div>
+        </form>
+      </section>
+
+      {# ── Modal connexion Steam ─────────────────────────────────────────────────── #}
+      <div id="steam-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center">
+        <div style="background:var(--surface1);border-radius:12px;padding:28px 32px;width:min(440px,92vw);box-shadow:0 8px 40px rgba(0,0,0,.5)">
+          <h3 style="margin:0 0 8px;font-size:1.1rem">🔐 {{ _('Connexion Steam') }}</h3>
+          <p style="font-size:0.83rem;color:var(--text2);margin:0 0 20px;line-height:1.5">
+            {{ _('Entrez les identifiants du compte Steam qui possède ACE EVO. Ils ne sont pas sauvegardés.') }}
+          </p>
+          <div class="form-group" style="margin-bottom:12px">
+            <label style="font-size:0.85rem;font-weight:600">{{ _('Nom d\'utilisateur') }}</label>
+            <input class="form-control" type="text" id="sm-user" autocomplete="username" placeholder="{{ _('votre_pseudo_steam') }}">
+          </div>
+          <div class="form-group" style="margin-bottom:12px">
+            <label style="font-size:0.85rem;font-weight:600">{{ _('Mot de passe') }}</label>
+            <input class="form-control" type="password" id="sm-pass" autocomplete="current-password">
+          </div>
+          <div class="form-group" style="margin-bottom:20px">
+            <label style="font-size:0.85rem;font-weight:600">
+              {{ _('Code Steam Guard') }}
+              <span style="color:var(--text2);font-weight:400;font-size:0.8rem"> — {{ _('optionnel, si activé sur le compte') }}</span>
+            </label>
+            <input class="form-control" type="text" id="sm-guard" maxlength="8"
+                   style="letter-spacing:.18em;text-transform:uppercase"
+                   autocomplete="one-time-code" placeholder="XXXXX">
+          </div>
+          <div style="display:flex;gap:.75rem;justify-content:flex-end">
+            <button class="btn btn-secondary" onclick="ctrModalClose()" type="button">{{ _('Annuler') }}</button>
+            <button class="btn btn-primary" onclick="ctrModalConfirm()" type="button" id="sm-btn-ok">⬆ {{ _('Lancer la mise à jour') }}</button>
+          </div>
+        </div>
+      </div>
+
+      <script>
+      const _CSRF = document.querySelector('meta[name="csrf-token"]').content;
+
+      function _fmtUptime(s) {
+        if (!s || s < 0) return '—';
+        const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60);
+        return h ? `${h}h ${m}min` : `${m} min`;
+      }
+
+      async function ctrLoadInfo() {
+        try {
+          const r = await fetch('/api/container/info');
+          const d = await r.json();
+          const dot   = document.getElementById('ctr-dot');
+          const label = document.getElementById('ctr-status-label');
+          const uptime = document.getElementById('ctr-uptime');
+          const vi    = document.getElementById('ctr-version-installed');
+          const vt    = document.getElementById('ctr-version-target');
+          const btnU  = document.getElementById('ctr-btn-update');
+
+          dot.className = d.container.status === 'running' ? 'dot online' : 'dot offline';
+          label.textContent = d.container.status === 'running' ? '{{ _("En cours") }}' : (d.container.status || '{{ _("Inconnu") }}');
+          uptime.textContent = d.container.status === 'running' ? '{{ _("Depuis") }} ' + _fmtUptime(d.container.uptime_s) : '';
+          vi.textContent = `{{ _("Build installé") }} : ${d.installed_build}`;
+          if (d.update_pending) {
+            vt.innerHTML = `<span style="color:var(--yellow,#f0a500)">⚠ {{ _("Mise à jour disponible") }} : ${d.target_build}</span>`;
+            btnU.textContent = '⬆ {{ _("Mettre à jour") }}';
+          } else {
+            vt.textContent = d.last_updated ? `{{ _("Vérifié le") }} ${d.last_updated}` : '';
+            btnU.textContent = '{{ _("Vérifier et mettre à jour") }}';
+          }
+        } catch(e) {
+          document.getElementById('ctr-msg').textContent = '{{ _("Erreur de chargement") }}';
+        }
+      }
+
+      async function ctrRestart() {
+        const btn = document.getElementById('ctr-btn-restart');
+        btn.disabled = true;
+        btn.textContent = '{{ _("Redémarrage…") }}';
+        document.getElementById('ctr-msg').textContent = '';
+        try {
+          const r = await fetch('/api/container/restart', {
+            method: 'POST',
+            headers: {'X-CSRFToken': _CSRF}
+          });
+          const d = await r.json();
+          document.getElementById('ctr-msg').textContent = d.ok ? '✓ {{ _("Serveur redémarré") }}' : `✗ ${d.error}`;
+          setTimeout(ctrLoadInfo, 3000);
+        } catch(e) {
+          document.getElementById('ctr-msg').textContent = `✗ ${e}`;
+        } finally {
+          btn.disabled = false;
+          btn.textContent = '{{ _("Redémarrer le serveur") }}';
+        }
+      }
+
+      function ctrModalOpen() {
+        document.getElementById('sm-user').value = {{ env_values.get('STEAM_USERNAME', '')|tojson }};
+        document.getElementById('sm-pass').value = '';
+        document.getElementById('sm-guard').value = '';
+        const modal = document.getElementById('steam-modal');
+        modal.style.display = 'flex';
+        setTimeout(() => document.getElementById('sm-pass').focus(), 50);
+      }
+
+      function ctrModalClose() {
+        document.getElementById('steam-modal').style.display = 'none';
+      }
+
+      function ctrModalConfirm() {
+        const user = document.getElementById('sm-user').value.trim();
+        const pass = document.getElementById('sm-pass').value;
+        const guard = document.getElementById('sm-guard').value.trim().toUpperCase();
+        if (!user || !pass) {
+          document.getElementById('sm-pass').focus();
+          return;
+        }
+        ctrModalClose();
+        ctrUpdate(user, pass, guard);
+      }
+
+      document.getElementById('steam-modal').addEventListener('keydown', e => {
+        if (e.key === 'Enter') ctrModalConfirm();
+        if (e.key === 'Escape') ctrModalClose();
+      });
+
+      async function ctrUpdate(steamUser, steamPass, steamGuard) {
+        const btn  = document.getElementById('ctr-btn-update');
+        const wrap = document.getElementById('ctr-terminal-wrap');
+        const term = document.getElementById('ctr-terminal');
+        const msg  = document.getElementById('ctr-msg');
+        btn.disabled = true;
+        btn.textContent = '{{ _("Mise à jour en cours…") }}';
+        wrap.style.display = '';
+        term.textContent = '';
+        msg.textContent = '';
+
+        const body = {username: steamUser, password: steamPass};
+        if (steamGuard) body.guard_code = steamGuard;
+
+        try {
+          term.textContent = '⏳ Connexion...\n';
+          const resp = await fetch('/api/container/update', {
+            method: 'POST',
+            headers: {'X-CSRFToken': _CSRF, 'Content-Type': 'application/json'},
+            body: JSON.stringify(body),
+          });
+          if (!resp.ok) {
+            term.textContent += `\n✗ Erreur HTTP ${resp.status}: ${await resp.text()}`;
+            msg.textContent = '✗ {{ _("Mise à jour échouée") }}';
+            return;
+          }
+          const reader = resp.body.getReader();
+          const decoder = new TextDecoder();
+          let buf = '';
+          while (true) {
+            const {done, value} = await reader.read();
+            if (done) break;
+            buf += decoder.decode(value, {stream: true});
+            const parts = buf.split('\n');
+            buf = parts.pop();
+            for (const part of parts) {
+              if (part.startsWith('data: ')) {
+                try {
+                  const ev = JSON.parse(part.slice(6));
+                  term.textContent += ev.msg + '\n';
+                  term.scrollTop = term.scrollHeight;
+                  if (ev.done) {
+                    msg.textContent = ev.error ? '✗ {{ _("Mise à jour échouée") }}' : '✓ {{ _("Mise à jour terminée") }}';
+                    setTimeout(ctrLoadInfo, 2000);
+                  }
+                } catch(_) {}
+              }
+            }
+          }
+        } catch(e) {
+          term.textContent += `\n✗ ${e}`;
+        } finally {
+          btn.disabled = false;
+          btn.textContent = '{{ _("Vérifier et mettre à jour") }}';
+        }
+      }
+
+      ctrLoadInfo();
+      setInterval(ctrLoadInfo, 30000);
+      </script>
+
+      {% elif tab == 'bot' %}
+      <section class="settings-dashboard-grid">
+        <form method="post" action="{{ url_for('admin.settings', tab='bot') }}" class="settings-card settings-card-wide settings-card-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="_tab" value="bot">
+          <div class="settings-card-head">
+            <h2>{{ _('Bot TCP') }}</h2>
+          </div>
+
+          <div class="settings-card-copy" style="background:var(--surface2);border-radius:8px;padding:14px 16px;margin-bottom:8px;font-size:0.83rem;line-height:1.6">
+            <strong>{{ _('À quoi sert le bot TCP ?') }}</strong><br>
+            {{ _('Le bot est un client fantôme qui se connecte silencieusement au serveur ACE EVO via TCP (port 9700). Il écoute les événements de session en temps réel (leaderboard, passages de secteurs, connexions/déconnexions) et les transmet au panel sans passer par le webhook de fin de session.') }}<br><br>
+            {{ _('Si un mot de passe admin est défini, il peut aussi envoyer des commandes dans le tchat du jeu (/kick, /next session, etc.).') }}<br><br>
+            <strong>{{ _('Steam ID') }}</strong> — {{ _('Compte Steam dédié recommandé (pas votre compte personnel). Le Steam ID 64-bit se trouve sur') }} <a href="https://www.steamidfinder.com" target="_blank" rel="noopener">steamidfinder.com</a>.
+          </div>
+
+          <div class="settings-fields">
+
+            <label class="settings-field">
+              <span>
+                <strong>ACE_BOT_STEAM_ID</strong>
+                <em>{{ env_descs.get('ACE_BOT_STEAM_ID', '') }}</em>
+              </span>
+              <input class="form-control" type="text" name="ACE_BOT_STEAM_ID"
+                     value="{{ env_values.get('ACE_BOT_STEAM_ID', '') }}"
+                     placeholder="{{ _('Laisser vide pour désactiver') }}">
+            </label>
+
+            <div class="settings-field" style="align-items:center">
+              <span>
+                <strong>{{ _('Voiture du bot') }}</strong>
+                <em>{{ _('Auto-sélectionnée depuis la première voiture de la config active — se met à jour à chaque rotation de session.') }}</em>
+              </span>
+              <span style="font-size:0.85rem;color:var(--text2);font-style:italic">
+                {{ _('Automatique') }}
+              </span>
+            </div>
+
+            <label class="settings-field">
+              <span>
+                <strong>ACE_BOT_IS_ADMIN</strong>
+                <em>{{ env_descs.get('ACE_BOT_IS_ADMIN', '') }}</em>
+              </span>
+              <div>
+                <input type="hidden" name="ACE_BOT_IS_ADMIN" value="false">
+                <input type="checkbox" name="ACE_BOT_IS_ADMIN" value="true" id="bot-is-admin-cb"
+                       {% if env_values.get('ACE_BOT_IS_ADMIN', 'false') == 'true' %}checked{% endif %}
+                       style="width:20px;height:20px;cursor:pointer">
+                <div id="bot-admin-warn"
+                     style="margin-top:6px;font-size:0.78rem;color:var(--yellow,#f0a500);{% if bot_admin_password_set or env_values.get('ACE_BOT_IS_ADMIN','false') != 'true' %}display:none{% endif %}">
+                  ⚠ {{ _('AdminPassword vide dans la config serveur — le bot se connectera sans droits admin.') }}
+                  <a href="{{ url_for('admin.server') }}" style="color:inherit;text-decoration:underline">{{ _('Configurer') }}</a>
+                </div>
+                <script>
+                document.getElementById('bot-is-admin-cb').addEventListener('change', function() {
+                  document.getElementById('bot-admin-warn').style.display =
+                    (this.checked && !{{ 'true' if bot_admin_password_set else 'false' }}) ? '' : 'none';
+                });
+                </script>
+              </div>
+            </label>
+
+          </div>
+
+          <div class="settings-card-head" style="margin-top:20px">
+            <h2>{{ _('Messages de bienvenue') }}</h2>
+          </div>
+          <div class="settings-card-copy" style="background:var(--surface2);border-radius:8px;padding:12px 16px;margin-bottom:8px;font-size:0.82rem">
+            {{ _('Variables disponibles') }} : <code>{name}</code> {{ _('(pseudo du pilote)') }}, <code>{discord_url}</code>, <code>{site_url}</code>.<br>
+            {{ _('Laisser vide pour désactiver le message correspondant.') }}
+          </div>
+          <div class="settings-fields">
+
+            <label class="settings-field">
+              <span>
+                <strong>ACE_BOT_MSG_WELCOME</strong>
+                <em>{{ env_descs.get('ACE_BOT_MSG_WELCOME', '') }}</em>
+              </span>
+              <input class="form-control" type="text" name="ACE_BOT_MSG_WELCOME"
+                     value="{{ env_values.get('ACE_BOT_MSG_WELCOME', _('Bienvenue {name} !')) }}"
+                     placeholder="{{ _('Bienvenue {name} !') }}">
+            </label>
+
+            <label class="settings-field">
+              <span>
+                <strong>ACE_BOT_MSG_DISCORD</strong>
+                <em>{{ env_descs.get('ACE_BOT_MSG_DISCORD', '') }}</em>
+              </span>
+              <input class="form-control" type="text" name="ACE_BOT_MSG_DISCORD"
+                     value="{{ env_values.get('ACE_BOT_MSG_DISCORD', _('Rejoins le discord : {discord_url}')) }}"
+                     placeholder="{{ _('Rejoins le discord : {discord_url}') }}">
+            </label>
+
+            <label class="settings-field">
+              <span>
+                <strong>ACE_BOT_MSG_SITE</strong>
+                <em>{{ env_descs.get('ACE_BOT_MSG_SITE', '') }}</em>
+              </span>
+              <input class="form-control" type="text" name="ACE_BOT_MSG_SITE"
+                     value="{{ env_values.get('ACE_BOT_MSG_SITE', _('Retrouve tes resultats et evenements sur : {site_url}')) }}"
+                     placeholder="{{ _('Retrouve tes resultats et evenements sur : {site_url}') }}">
+            </label>
+
+          </div>
+          <button type="submit" class="btn btn-primary settings-save-btn">{{ _('Enregistrer les modifications') }}</button>
+        </form>
+      </section>
+      {% elif active_panel not in ['media', 'users', 'events', 'live', 'accounts'] %}
       <section class="settings-dashboard-grid">
         {{ env_form(current_section.id, current_section.label, current_section.keys,
                     _('Paramètres serveur') if current_section.id == 'panel' else current_section.label) }}
@@ -173,7 +534,7 @@
             <input type="file" id="file-input" hidden accept=".jpg,.jpeg,.png,.gif,.webp"
                    onchange="uploadFile(this.files[0])">
             <strong>{{ _('Déposer une image') }}</strong>
-            <span>JPG, PNG, GIF, WEBP · 5 Mo max</span>
+            <span>{{ _('JPG, PNG, GIF, WEBP · 5 Mo max') }}</span>
             <div id="upload-status"></div>
           </div>
         </div>

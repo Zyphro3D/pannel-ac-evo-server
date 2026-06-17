@@ -40,6 +40,8 @@ aceserver/*.dll
 aceserver/*.kspkg
 aceserver/*.ico
 aceserver/*.json
+aceserver/*.so
+aceserver/linux64/
 aceserver/.*
 aceserver/steamapps/
 aceserver/_CommonRedist/

@@ -7,33 +7,11 @@
 <script>document.body.dataset.activeConfig = "{{ active_config|default('') }}";</script>
 <div class="dashboard server-admin-page server-hub-page">
 
-  {% if view == 'configuration' %}
-  <!-- ── Sélecteur de config ── -->
-  <div class="config-bar">
-    <div class="config-bar-left">
-      <span class="config-label">{{ _('Configuration') }}</span>
-      <div class="config-select-wrapper">
-        <select id="config-select" onchange="switchConfig(this.value)">
-          {% for cfg in configs %}
-          <option value="{{ cfg }}" {% if cfg == active_config %}selected{% endif %}>{{ cfg }}</option>
-          {% endfor %}
-        </select>
-      </div>
-    </div>
-    <div class="config-bar-right">
-      <button class="btn-secondary" onclick="openCreateModal(false)">+ {{ _('Nouveau') }}</button>
-      <button class="btn-secondary" onclick="openCreateModal(true)">&#10697; {{ _('Dupliquer') }}</button>
-      <button class="btn-secondary" onclick="openRenameModal()">&#9998; {{ _('Renommer') }}</button>
-      <button class="btn-danger"    onclick="confirmDeleteConfig()"><span class="icon-trash"></span> {{ _('Supprimer') }}</button>
-    </div>
-  </div>
-  {% else %}
   <select id="config-select" class="server-hidden-select" aria-hidden="true">
     {% for cfg in configs %}
     <option value="{{ cfg }}" {% if cfg == active_config %}selected{% endif %}>{{ cfg }}</option>
     {% endfor %}
   </select>
-  {% endif %}
 
   <!-- ── Modal création ── -->
   <div class="modal-overlay" id="modal-create" style="display:none">
@@ -96,7 +74,7 @@
   <div class="server-layout">
     <aside class="server-sidebar settings-sidebar">
       <a href="{{ url_for('admin.server', view='status') }}" class="settings-side-link {% if view == 'status' %}active{% endif %}"><span class="settings-side-icon"></span><span>{{ _('Statut') }}</span></a>
-      <a href="{{ url_for('admin.server', view='configuration') }}" class="settings-side-link {% if view == 'configuration' %}active{% endif %}"><span class="settings-side-icon"></span><span>{{ _('Configuration') }}</span></a>
+      <a href="{{ url_for('admin.server', view='configuration') }}" class="settings-side-link {% if view in ['configuration', 'config_edit'] %}active{% endif %}"><span class="settings-side-icon"></span><span>{{ _('Configuration') }}</span></a>
       <a href="{{ url_for('admin.server', view='rotation') }}" class="settings-side-link {% if view == 'rotation' %}active{% endif %}"><span class="settings-side-icon"></span><span>{{ _('Programmation') }}</span></a>
       <a href="{{ url_for('admin.server', view='events') }}" class="settings-side-link {% if view == 'events' %}active{% endif %}"><span class="settings-side-icon"></span><span>{{ _('Événement') }}</span></a>
       <div class="settings-global-status">
@@ -207,11 +185,15 @@
   </header>
   <section class="srv-config-grid">
     {% for item in config_summaries %}
-    <article class="srv-config-card {% if item.active %}active{% endif %}">
+    <article class="srv-config-card {% if item.running %}running{% elif item.active %}active{% endif %}">
       {% if item.track.image %}<img src="{{ url_for('serve_media', filename=item.track.image) }}" alt="{{ item.track.track }}">{% endif %}
       <div class="srv-config-body">
-        <div class="srv-config-title"><h2>{{ item.server_name }}</h2>{% if item.active %}<span>{{ _('Active') }}</span>{% endif %}</div>
+        <div class="srv-config-title">
+          <h2>{{ item.server_name }}</h2>
+          {% if item.running %}<span class="badge-running">{{ _('En ligne') }}</span>{% endif %}
+        </div>
         <p>{{ item.name }}</p>
+        {% if item.running %}<p class="running-players-info"><span id="card-players">—</span> {{ _('joueur(s)') }}</p>{% endif %}
         <dl>
           <dt>{{ _('Circuit') }}</dt><dd>{{ item.track.track }}{% if item.track.layout %} — {{ item.track.layout }}{% endif %}</dd>
           <dt>{{ _('Mode') }}</dt><dd>{{ item.mode }}</dd>
@@ -221,7 +203,13 @@
         </dl>
         <details class="srv-action-menu">
           <summary>{{ _('Action') }}</summary>
-          <button onclick="serverSelectConfig('{{ item.name }}');switchConfig('{{ item.name }}')">{{ _('Modifier') }}</button>
+          {% if item.running %}
+          <button onclick="serverAction('stop')">{{ _('Arrêter') }}</button>
+          <button onclick="serverAction('restart')">{{ _('Redémarrer') }}</button>
+          {% else %}
+          <button onclick="startConfig('{{ item.name }}')">{{ _('Démarrer') }}</button>
+          {% endif %}
+          <button onclick="editConfig('{{ item.name }}', '{{ url_for('admin.server', view='config_edit') }}')">{{ _('Modifier') }}</button>
           <button onclick="serverSelectConfig('{{ item.name }}');openRenameModal()">{{ _('Renommer') }}</button>
           <button onclick="serverSelectConfig('{{ item.name }}');openCreateModal(true)">{{ _('Dupliquer') }}</button>
           <button onclick="serverSelectConfig('{{ item.name }}');confirmDeleteConfig()">{{ _('Supprimer') }}</button>
@@ -230,9 +218,16 @@
     </article>
     {% endfor %}
   </section>
+  {% endif %}
+
+  {% if view == 'config_edit' %}
+  <header class="server-section-head">
+    <a href="{{ url_for('admin.server', view='configuration') }}" class="btn btn-secondary">← {{ _('Configurations') }}</a>
+    <h1>{{ _('Modifier') }} — {{ active_config }}</h1>
+  </header>
 
   <!-- ── Status bar ── -->
-  <div class="status-bar" id="server-control">
+  <div class="status-bar" id="server-control" data-bar-mode="edit">
     <div class="server-status-large">
       <span class="dot" id="main-status-dot"></span>
       <span id="main-status-label">{{ _('Vérification...') }}</span>
@@ -550,7 +545,7 @@
   {% endif %}
 
   <!-- ── Véhicules ── -->
-  {% if view == 'configuration' %}
+  {% if view == 'config_edit' %}
   <section class="card" id="server-cars" style="margin-top:16px">
       <div class="card-header">
         <h2>{{ _('Véhicules') }}</h2>
@@ -633,7 +628,7 @@
   </div>
 
   <!-- ── Bouton unique Sauvegarder tout ── -->
-  {% if view == 'configuration' %}
+  {% if view == 'config_edit' %}
   <div class="save-dock">
     <button class="btn-primary save-dock-btn" onclick="saveAll()">{{ _('Sauvegarder tout') }}</button>
   </div>
@@ -642,6 +637,21 @@
 </div>
 
 <script>
+{% if view == 'configuration' %}
+(function pollCardPlayers() {
+  const el = document.getElementById('card-players');
+  if (!el) return;
+  async function update() {
+    try {
+      const d = await (await fetch('/api/status')).json();
+      el.textContent = d.running ? (d.players ?? 0) : '—';
+    } catch (_) {}
+  }
+  update();
+  setInterval(update, 15000);
+})();
+{% endif %}
+
 function serverSelectConfig(name) {
   const select = document.getElementById('config-select');
   if (select) select.value = name;

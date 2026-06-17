@@ -42,6 +42,9 @@ _wine_ready      = threading.Event()
 
 # Player history: {ts, count} samples, ~1h at 30s interval
 _player_history: collections.deque = collections.deque(maxlen=120)
+
+# Avertissements système détectés au démarrage (mauvaise config Docker, etc.)
+_system_warnings: list[str] = []
 _last_history_sample: float = 0.0
 
 log = logging.getLogger(__name__)
@@ -479,6 +482,27 @@ def _start_watchdog():
     _watchdog_thread.start()
 
 
+def _check_docker_restart_policy() -> None:
+    """Vérifie que ace-server a restart:no — sinon double lancement possible."""
+    try:
+        container = _get_aceserver_container()
+        if not container:
+            return
+        policy = container.attrs.get("HostConfig", {}).get("RestartPolicy", {}).get("Name", "no")
+        if policy != "no":
+            msg = (
+                f"Le container '{_DOCKER_CONTAINER_NAME}' a la politique "
+                f"restart='{policy}' au lieu de 'no'. "
+                f"Le watchdog du panel gère déjà les redémarrages — "
+                f"une politique Docker active peut provoquer un double lancement du serveur. "
+                f"Corrigez restart: \"no\" dans votre docker-compose.yml puis relancez docker compose up -d."
+            )
+            _system_warnings.append(msg)
+            log.warning("CONFIG: %s", msg)
+    except Exception as e:
+        log.debug("Impossible de vérifier la politique restart : %s", e)
+
+
 def init_watchdog(exe_path: str):
     global _exe_path
     _exe_path = exe_path
@@ -486,10 +510,17 @@ def init_watchdog(exe_path: str):
         threading.Thread(target=_prewarm_wine, daemon=True, name="wine-prewarm").start()
     else:
         _wine_ready.set()
+    if _DEPLOY_MODE == "docker_split":
+        _check_docker_restart_policy()
     _start_watchdog()
 
 
 # ── Public API ───────────────────────────────────────────────────────────────
+
+def get_system_warnings() -> list[str]:
+    """Retourne les avertissements de configuration détectés au démarrage."""
+    return list(_system_warnings)
+
 
 def is_running() -> bool:
     if _DEPLOY_MODE == "docker_split":

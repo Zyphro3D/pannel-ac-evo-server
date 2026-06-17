@@ -83,7 +83,7 @@ async function refresh() {
           <td class="t-name">${e.name || '—'}</td>
           <td class="t-car">${_carLabel(e.car_raw)}</td>
           <td class="t-best ${hasBest ? 'has-time' : ''}">${e.best_lap_str || '—'}</td>
-          <td class="t-gap">${isLeader && hasBest ? '<span class="leader-badge">LEADER</span>' : (e.gap_str || '—')}</td>
+          <td class="t-gap">${isLeader && hasBest ? `<span class="leader-badge">${I18N.leader}</span>` : (e.gap_str || '—')}</td>
         </tr>`;
     }).join('');
   } catch(e) {

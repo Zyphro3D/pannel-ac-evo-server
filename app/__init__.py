@@ -118,21 +118,23 @@ def create_app():
     limiter.init_app(app)
 
     # ── Blueprints ────────────────────────────────────────────────────────────
-    from app.routes.auth         import auth_bp
-    from app.routes.admin        import admin_bp
-    from app.routes.api          import api_bp, results_ingest
-    from app.routes.public       import public_bp
-    from app.routes.events_admin import events_admin_bp
-    from app.routes.leaderboard  import leaderboard_bp
-    from app.routes.live         import live_bp
+    from app.routes.auth            import auth_bp
+    from app.routes.admin           import admin_bp
+    from app.routes.api             import api_bp, results_ingest
+    from app.routes.public          import public_bp
+    from app.routes.events_admin    import events_admin_bp
+    from app.routes.leaderboard     import leaderboard_bp
+    from app.routes.live            import live_bp
+    from app.routes.container_mgmt import container_mgmt_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
-    app.register_blueprint(api_bp,          url_prefix="/api")
+    app.register_blueprint(api_bp,             url_prefix="/api")
     app.register_blueprint(public_bp)
     app.register_blueprint(events_admin_bp)
     app.register_blueprint(leaderboard_bp)
     app.register_blueprint(live_bp)
+    app.register_blueprint(container_mgmt_bp)
     csrf.exempt(live_bp)
     csrf.exempt(results_ingest)  # Webhook externe protégé par HMAC/réseau privé.
 
@@ -273,13 +275,25 @@ def create_app():
             port=_tcp_port,
             steam_id=_bot_steam_id,
             car_model=_car_model,
-            display_name=app.config.get("ACE_BOT_DISPLAY_NAME", ""),
-            admin_password=app.config.get("ACE_BOT_ADMIN_PASSWORD", ""),
             discord_url=app.config.get("DISCORD_INVITE_URL", ""),
             site_url=app.config.get("PANEL_URL", ""),
+            msg_welcome=app.config.get("ACE_BOT_MSG_WELCOME", "Bienvenue {name} !"),
+            msg_discord=app.config.get("ACE_BOT_MSG_DISCORD", "Rejoins le discord : {discord_url}"),
+            msg_site=app.config.get("ACE_BOT_MSG_SITE",    "Retrouve tes resultats et evenements sur : {site_url}"),
             deploy_mode=_DEPLOY_MODE,
             log_file=str(_LOG_FILE),
             container_name=_DOCKER_CONTAINER_NAME,
         )
+
+    @app.context_processor
+    def _inject_system_warnings():
+        from flask_login import current_user
+        from app.services.process_manager import get_system_warnings
+        try:
+            if current_user.is_authenticated and current_user.is_admin:
+                return {"system_warnings": get_system_warnings()}
+        except Exception:
+            pass
+        return {"system_warnings": []}
 
     return app

@@ -50,8 +50,10 @@ class Config:
     # Steam ID du "bot" qui se connecte au serveur (laisser vide pour désactiver)
     ACE_BOT_STEAM_ID       = os.environ.get("ACE_BOT_STEAM_ID",       "")
     ACE_BOT_CAR_MODEL      = os.environ.get("ACE_BOT_CAR_MODEL",      "preset_190e_mech_1")
-    ACE_BOT_DISPLAY_NAME   = os.environ.get("ACE_BOT_DISPLAY_NAME",   "")
-    ACE_BOT_ADMIN_PASSWORD = os.environ.get("ACE_BOT_ADMIN_PASSWORD", "")
+    ACE_BOT_IS_ADMIN       = os.environ.get("ACE_BOT_IS_ADMIN",       "false")
+    ACE_BOT_MSG_WELCOME    = os.environ.get("ACE_BOT_MSG_WELCOME",    "Bienvenue {name} !")
+    ACE_BOT_MSG_DISCORD    = os.environ.get("ACE_BOT_MSG_DISCORD",    "Rejoins le discord : {discord_url}")
+    ACE_BOT_MSG_SITE       = os.environ.get("ACE_BOT_MSG_SITE",       "Retrouve tes resultats et evenements sur : {site_url}")
     DISCORD_WEBHOOK_URL        = os.environ.get("DISCORD_WEBHOOK_URL", "")
     DISCORD_PILOTS_WEBHOOK_URL = os.environ.get("DISCORD_PILOTS_WEBHOOK_URL", "")
     DISCORD_INVITE_URL         = os.environ.get("DISCORD_INVITE_URL", "")
@@ -85,6 +87,11 @@ class Config:
     PANEL_TITLE      = os.environ.get("PANEL_TITLE",      "AC EVO Panel")
     PANEL_BANNER_IMG = os.environ.get("PANEL_BANNER_IMG", "")   # nom de fichier dans media/banner/
     PANEL_LOGO_IMG   = os.environ.get("PANEL_LOGO_IMG",   "")   # nom de fichier dans media/banner/
+
+    # ── SteamCMD (mise à jour du serveur de jeu) ─────────────────────────────
+    STEAMCMD_PATH     = os.environ.get("STEAMCMD_PATH",     "/opt/steamcmd/steamcmd.sh")
+    STEAM_USERNAME    = os.environ.get("STEAM_USERNAME",    "anonymous")
+    STEAM_PASSWORD    = os.environ.get("STEAM_PASSWORD",    "")
 
     # ── Mode de déploiement ───────────────────────────────────────────────────
     # "native" = Windows subprocess, "docker" = Wine sur Linux

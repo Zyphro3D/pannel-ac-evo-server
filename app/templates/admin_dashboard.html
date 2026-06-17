@@ -104,7 +104,7 @@
     function _v(v){ return v||'—'; }
 
     function _fmtRemain(secs) {
-      if (secs <= 0) return 'Terminé';
+      if (secs <= 0) return I18N.finished;
       const h = Math.floor(secs/3600);
       const m = Math.floor((secs%3600)/60);
       const s = Math.floor(secs%60);
@@ -175,7 +175,7 @@
       if (!laps || !laps.length)
         return `<div class="dt-no-laps">${I18N.empty}</div>`;
       return '<table class="dt-lap-table">'
-        + '<thead><tr><th>#</th><th>S1</th><th>S2</th><th>S3</th><th>Tour</th></tr></thead>'
+        + `<thead><tr><th>#</th><th>S1</th><th>S2</th><th>S3</th><th>${I18N.lap}</th></tr></thead>`
         + '<tbody>' + laps.map(l =>
           `<tr>
             <td class="dt-lap-num">${l.lap_num}</td>
@@ -208,7 +208,7 @@
             <td class="dt-s">${_v(e.curr_s2_str)}</td>
             <td class="dt-t ${e.last_lap_str?'has-time':''}">${_v(e.last_lap_str)}</td>
             <td class="dt-t ${e.best_lap_str?'has-time':''}">${_v(e.best_lap_str)}</td>
-            <td class="dt-gap">${isLdr?'<span class="leader-badge">LEADER</span>':_v(e.gap_str)}</td>
+            <td class="dt-gap">${isLdr?`<span class="leader-badge">${I18N.leader}</span>`:_v(e.gap_str)}</td>
             <td class="dt-tours"><span class="dt-lap-cnt">${e.lap_count||0}</span> <span class="dt-arr">${open?'▴':'▾'}</span></td>
           </tr>
           <tr class="dt-hist-row${open?'':' dt-hidden'}" data-hist="${sid}">
