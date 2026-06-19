@@ -66,3 +66,4 @@ Thumbs.db
 .DS_Store
 desktop.ini
 slice_thumbnails.py
+tools/

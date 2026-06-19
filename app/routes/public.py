@@ -4,7 +4,7 @@ from datetime import datetime, timezone, timedelta
 
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_babel import _
-from flask_login import current_user, login_user
+from flask_login import current_user, login_user, login_required
 from app import limiter
 
 from app.models import Driver, Event, EventRegistration
@@ -281,6 +281,7 @@ def pilot_dashboard():
 
 
 @public_bp.route("/pilot/events/<int:event_id>/register", methods=["POST"])
+@login_required
 def pilot_register(event_id):
     if not current_user.is_authenticated or not current_user.is_pilot:
         return redirect(url_for("auth.login"))
@@ -341,6 +342,7 @@ def result_detail(result_id):
 
 
 @public_bp.route("/pilot/events/<int:event_id>/unregister", methods=["POST"])
+@login_required
 def pilot_unregister(event_id):
     if not current_user.is_authenticated or not current_user.is_pilot:
         return redirect(url_for("auth.login"))

@@ -54,6 +54,23 @@ def _seed_admin_accounts(db, cfg):
     db.session.commit()
 
 
+def _migrate_indexes(db):
+    """Crée les index composites manquants sur les DB existantes."""
+    import sqlalchemy as sa
+    indexes = [
+        ("ix_event_status_email_sent",       "CREATE INDEX IF NOT EXISTS ix_event_status_email_sent ON event (status, email_sent)"),
+        ("ix_event_status_discord_notified",  "CREATE INDEX IF NOT EXISTS ix_event_status_discord_notified ON event (status, discord_notified)"),
+    ]
+    with db.engine.connect() as conn:
+        for name, sql in indexes:
+            try:
+                conn.execute(sa.text(sql))
+                conn.commit()
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).warning("Index %s ignoré : %s", name, e)
+
+
 def _migrate_db(db):
     """Applique les ALTER TABLE manquants sur SQLite sans casser les données existantes."""
     import sqlalchemy as sa
@@ -107,6 +124,7 @@ def create_app():
         from . import models  # noqa: F401 — enregistre les modèles
         db.create_all()
         _migrate_db(db)
+        _migrate_indexes(db)
         _seed_admin_accounts(db, app.config)
 
     # ── Extensions Flask ──────────────────────────────────────────────────────
@@ -247,11 +265,7 @@ def create_app():
         _logging.getLogger(__name__).warning("scan_and_import ignoré : %s", _e)
 
     from app.services import discord_notifier
-    discord_notifier.init(
-        app.config.get("DISCORD_WEBHOOK_URL", ""),
-        app.config.get("DISCORD_PILOTS_WEBHOOK_URL", ""),
-        app.config.get("PANEL_TIMEZONE", "Europe/Paris"),
-    )
+    discord_notifier.init(panel_timezone=app.config.get("PANEL_TIMEZONE", "Europe/Paris"))
 
     from app.services import mailer
     mailer.init(app.config)

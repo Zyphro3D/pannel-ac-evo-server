@@ -38,6 +38,39 @@ msgstr "Overcast"
 msgid "Pluie"
 msgstr "Rain"
 
+msgid "Nuages épars"
+msgstr "Scattered clouds"
+
+msgid "Nuages fragmentés"
+msgstr "Broken clouds"
+
+msgid "Bruine"
+msgstr "Drizzle"
+
+msgid "Pluie forte"
+msgstr "Heavy rain"
+
+msgid "Humide"
+msgstr "Damp"
+
+msgid "Type de serveur"
+msgstr "Server type"
+
+msgid "Non classé"
+msgstr "Unranked"
+
+msgid "Classé"
+msgstr "Ranked"
+
+msgid "Réglages voiture"
+msgstr "Car tuning"
+
+msgid "Autorisés"
+msgstr "Allowed"
+
+msgid "Interdits"
+msgstr "Denied"
+
 #: /panel/app/routes/admin.py:184 /panel/app/templates/server.html:335
 msgid "Statique"
 msgstr "Static"
@@ -2155,6 +2188,12 @@ msgstr "Max pit wait (s)"
 msgid "Overtime (s)"
 msgstr "Overtime (s)"
 
+msgid "Min. joueurs en attente"
+msgstr "Min. waiting players"
+
+msgid "Max. joueurs en attente"
+msgstr "Max. waiting players"
+
 #: /panel/app/templates/server.html:483
 msgid "Roulement de configs"
 msgstr "Config rotation"
@@ -2763,3 +2802,189 @@ msgstr "Loading…"
 #~ msgid "Active"
 #~ msgstr "Active"
 
+
+msgid "Élever admin"
+msgstr "Elevate to admin"
+
+msgid "Envoyer \\admin <password> via le bot TCP"
+msgstr "Send \\admin <password> via TCP bot"
+
+msgid "Bot élevé admin"
+msgstr "Bot elevated to admin"
+
+msgid "Échec élévation admin"
+msgstr "Admin elevation failed"
+
+msgid "Trois channels possibles : principal (événements serveur), pilotes (connexions joueurs), course (meilleur tour, actions admin). Si un channel n'est pas renseigné, les notifications tombent sur le channel principal."
+msgstr "Three channels available: main (server events), pilots (player connections), race (best lap, admin actions). If a channel is not set, notifications fall back to the main channel."
+
+msgid "Mentions"
+msgstr "Mentions"
+
+msgid "Texte envoyé avant l'embed pour mentionner un rôle ou @here. Laisser vide pour désactiver."
+msgstr "Text sent before the embed to mention a role or @here. Leave empty to disable."
+
+msgid "Exemples"
+msgstr "Examples"
+
+msgid "Vide = pas de mention"
+msgstr "Empty = no mention"
+
+msgid "Messages — Serveur"
+msgstr "Messages — Server"
+
+msgid "Titre de l'embed affiché dans le channel principal. Laisser vide pour utiliser le texte par défaut."
+msgstr "Embed title displayed in the main channel. Leave empty to use the default text."
+
+msgid "Variables"
+msgstr "Variables"
+
+msgid "Crash détecté"
+msgstr "Crash detected"
+
+msgid "Messages — Pilotes"
+msgstr "Messages — Pilots"
+
+msgid "Titre de l'embed affiché dans le channel pilotes."
+msgstr "Embed title displayed in the pilots channel."
+
+msgid "Connexion joueur"
+msgstr "Player connection"
+
+msgid "Déconnexion joueur"
+msgstr "Player disconnection"
+
+msgid "Changement de véhicule"
+msgstr "Vehicle change"
+
+msgid "Messages — Course"
+msgstr "Messages — Race"
+
+msgid "Titre de l'embed affiché dans le channel course."
+msgstr "Embed title displayed in the race channel."
+
+msgid "Meilleur tour du serveur"
+msgstr "Server best lap"
+
+msgid "Action admin"
+msgstr "Admin action"
+
+msgid "Webhook principal — démarrage, arrêt, crash du serveur"
+msgstr "Main webhook — server start, stop, crash"
+
+msgid "Webhook pilotes — connexions, déconnexions, changements de véhicule"
+msgstr "Pilots webhook — connections, disconnections, vehicle changes"
+
+msgid "Webhook course — meilleur tour, actions admin (kick, pénalités…)"
+msgstr "Race webhook — best lap, admin actions (kick, penalties…)"
+
+msgid "Mention envoyée avec les événements serveur (ex: @here ou <@&123456789>). Laisser vide pour désactiver."
+msgstr "Mention sent with server events (e.g. @here or <@&123456789>). Leave empty to disable."
+
+msgid "Mention envoyée avec les connexions joueurs. Laisser vide pour désactiver."
+msgstr "Mention sent with player connections. Leave empty to disable."
+
+msgid "Mention envoyée avec les événements course. Laisser vide pour désactiver."
+msgstr "Mention sent with race events. Leave empty to disable."
+
+msgid "Titre embed — Serveur démarré. Variables : {config}, {mode}, {circuit}"
+msgstr "Embed title — Server started. Variables: {config}, {mode}, {circuit}"
+
+msgid "Titre embed — Serveur arrêté. Variables : {config}"
+msgstr "Embed title — Server stopped. Variables: {config}"
+
+msgid "Titre embed — Crash détecté. Variables : {config}"
+msgstr "Embed title — Crash detected. Variables: {config}"
+
+msgid "Titre embed — Connexion joueur. Variables : {name}, {num}, {car}, {steam_id}"
+msgstr "Embed title — Player connection. Variables: {name}, {num}, {car}, {steam_id}"
+
+msgid "Titre embed — Déconnexion joueur. Variables : {name}, {duration}, {steam_id}"
+msgstr "Embed title — Player disconnection. Variables: {name}, {duration}, {steam_id}"
+
+msgid "Titre embed — Changement de véhicule. Variables : {name}, {num}, {old_car}, {new_car}"
+msgstr "Embed title — Vehicle change. Variables: {name}, {num}, {old_car}, {new_car}"
+
+msgid "Titre embed — Meilleur tour serveur. Variables : {name}, {lap}, {car}"
+msgstr "Embed title — Server best lap. Variables: {name}, {lap}, {car}"
+
+msgid "Titre embed — Action admin. Variables : {action}, {target}, {admin}, {detail}"
+msgstr "Embed title — Admin action. Variables: {action}, {target}, {admin}, {detail}"
+
+msgid "Accès non autorisé"
+msgstr "Unauthorized"
+
+msgid "Aucun fichier fourni"
+msgstr "No file provided"
+
+msgid "Erreur lors du redémarrage du container"
+msgstr "Error restarting the container"
+
+msgid "Nom d'utilisateur Steam invalide"
+msgstr "Invalid Steam username"
+
+msgid "Mot de passe Steam trop long"
+msgstr "Steam password is too long"
+
+msgid "Code Steam Guard invalide"
+msgstr "Invalid Steam Guard code"
+
+msgid "Config serveur"
+msgstr "Server config"
+
+msgid "Configuration du serveur de jeu"
+msgstr "Game server configuration"
+
+msgid "Ces paramètres sont communs à toutes vos configurations. Ils remplacent automatiquement les valeurs des fichiers JSON au démarrage du serveur."
+msgstr "These settings apply to all your configurations. They automatically override JSON file values when the server starts."
+
+msgid "Laisser un champ vide conserve la valeur par défaut."
+msgstr "Leaving a field empty keeps the default value."
+
+msgid "Identité"
+msgstr "Identity"
+
+msgid "Identité visuelle"
+msgstr "Visual Identity"
+
+msgid "Infrastructure ACE EVO"
+msgstr "ACE EVO Infrastructure"
+
+msgid "Réseau"
+msgstr "Network"
+
+msgid "Accès"
+msgstr "Access"
+
+msgid "Chemins"
+msgstr "Paths"
+
+msgid "Vide = accès libre"
+msgstr "Empty = open access"
+
+msgid "Vide = pas de mot de passe admin"
+msgstr "Empty = no admin password"
+
+msgid "Laisser vide si non utilisé"
+msgstr "Leave empty if not used"
+
+msgid "Ces paramètres sont globaux"
+msgstr "These settings are global"
+
+msgid "Paramètres → Config serveur"
+msgstr "Settings → Server config"
+
+msgid "Port TCP / UDP"
+msgstr "TCP / UDP port"
+
+msgid "Aucun"
+msgstr "None"
+
+msgid "La configuration a été modifiée. Redémarrez le serveur pour appliquer les changements."
+msgstr "The configuration has been modified. Restart the server to apply the changes."
+
+msgid "Type"
+msgstr "Type"
+
+msgid "Multiplicateur temps"
+msgstr "Time multiplier"

@@ -130,7 +130,8 @@ def check_config() -> list[str]:
     """Retourne la liste des problèmes détectés dans la config active."""
     issues = []
     try:
-        config = load_config()
+        with open(_active_path(), "r", encoding="utf-8") as f:
+            config = json.load(f)
     except Exception as e:
         return [f"Fichier illisible : {e}"]
 
@@ -166,7 +167,8 @@ def repair_config() -> dict:
 
 def load_config() -> dict:
     with open(_active_path(), "r", encoding="utf-8") as f:
-        return json.load(f)
+        raw = json.load(f)
+    return _deep_merge(_default_config(), raw)
 
 
 def load_config_by_name(name: str) -> dict | None:
@@ -174,7 +176,8 @@ def load_config_by_name(name: str) -> dict | None:
     path = _configs_dir() / name
     try:
         with open(path, "r", encoding="utf-8") as f:
-            return json.load(f)
+            raw = json.load(f)
+        return _deep_merge(_default_config(), raw)
     except Exception:
         return None
 
@@ -365,15 +368,47 @@ _INT_FIELDS: dict[str, tuple[int, int]] = {
     "HttpPort":   (1, 65535),
 }
 
+# Mapping : variable d'environnement globale → (clé JSON, valeur par défaut)
+_GLOBAL_FIELDS: dict[str, tuple[str, object]] = {
+    "SERVER_NAME":            ("ServerName",     "ACE EVO Server"),
+    "SERVER_MAX_PLAYERS":     ("MaxPlayers",      8),
+    "SERVER_TCP_PORT":        ("TcpPort",         9700),
+    "SERVER_UDP_PORT":        ("UdpPort",         9700),
+    "SERVER_DRIVER_PASSWORD": ("DriverPassword",  ""),
+    "SERVER_ADMIN_PASSWORD":  ("AdminPassword",   ""),
+    "SERVER_ENTRY_LIST_PATH": ("EntryListPath",   ""),
+    "SERVER_RESULTS_PATH":    ("ResultsPath",     ""),
+}
+
+
+def inject_global_server_settings(config: dict) -> dict:
+    """Injecte les paramètres globaux (env vars) dans config['Server']."""
+    import os as _os
+    srv = config.setdefault("Server", {})
+    for env_key, (json_key, default) in _GLOBAL_FIELDS.items():
+        val = _os.environ.get(env_key, "").strip()
+        if not val:
+            continue
+        if isinstance(default, int):
+            try:
+                srv[json_key] = int(val)
+            except (ValueError, TypeError):
+                pass
+        else:
+            srv[json_key] = val
+    return config
+
 
 def apply_server_patch(patch: dict, is_superadmin: bool = False) -> dict:
     config = load_config()
 
+    # Ces champs sont désormais globaux (gérés via Paramètres → Config serveur)
+    _global_json_keys = {v[0] for v in _GLOBAL_FIELDS.values()}
+
     server_fields = {
-        "ServerName", "MaxPlayers", "TcpPort", "UdpPort", "HttpPort",
-        "IsCycleEnabled", "DriverPassword", "SpectatorPassword",
-        "AdminPassword", "EntryListPath", "ResultsPath",
+        "HttpPort", "SpectatorPassword",
         "EntryListUrl", "ResultsPostUrl", "SelectedServerTypeValue",
+        "SelectedTuningTypeValue",
     }
     event_fields = {
         "SelectedSessionTypeValue", "SelectedWeatherTypeValue",
@@ -382,6 +417,8 @@ def apply_server_patch(patch: dict, is_superadmin: bool = False) -> dict:
     }
 
     for key, value in patch.items():
+        if key in _global_json_keys:
+            continue  # ignoré : géré globalement via les paramètres
         if key in server_fields:
             if key in _SUPERADMIN_ONLY_FIELDS and not is_superadmin:
                 continue
@@ -438,23 +475,32 @@ def _default_config() -> dict:
     _port       = _os.environ.get("PANEL_PORT", "4300")
     _deploy     = _os.environ.get("DEPLOY_MODE", "native")
     _panel_host = "panel" if _deploy == "docker_split" else "127.0.0.1"
+
+    def _env_int(key, default):
+        val = _os.environ.get(key, "").strip()
+        try:
+            return int(val) if val else default
+        except (ValueError, TypeError):
+            return default
+
     return {
         "Server": {
             "SelectedServerTypeValue": "MultiplayerServerListSessionType_RANKED",
-            "ServerName": "New Server",
-            "MaxPlayers": 8,
+            "SelectedTuningTypeValue": "TuningAllowed",
+            "ServerName":     _os.environ.get("SERVER_NAME",            "").strip() or "ACE EVO Server",
+            "MaxPlayers":     _env_int("SERVER_MAX_PLAYERS", 8),
             "MaxPlayersLimit": 32,
-            "TcpPort": 9700,
-            "UdpPort": 9700,
+            "TcpPort":        _env_int("SERVER_TCP_PORT",    9700),
+            "UdpPort":        _env_int("SERVER_UDP_PORT",    9700),
             "HttpPort": 8080,
             "IsCycleEnabled": True,
-            "DriverPassword": "",
+            "DriverPassword": _os.environ.get("SERVER_DRIVER_PASSWORD", ""),
             "SpectatorPassword": "",
-            "AdminPassword": "",
+            "AdminPassword":  _os.environ.get("SERVER_ADMIN_PASSWORD",  ""),
             "EntryListUrl": "",
             "ResultsPostUrl": f"http://{_panel_host}:{_port}/api/results/ingest",
-            "EntryListPath": "",
-            "ResultsPath": "",
+            "EntryListPath":  _os.environ.get("SERVER_ENTRY_LIST_PATH", ""),
+            "ResultsPath":    _os.environ.get("SERVER_RESULTS_PATH",    ""),
         },
         "Event": {
             "SelectedSessionTypeValue": "GameModeType_PRACTICE",

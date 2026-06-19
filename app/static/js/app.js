@@ -383,7 +383,8 @@ async function saveAll() {
       if (!match) continue;
       const [, sessKey, field] = match;
       if (!sessions[sessKey]) sessions[sessKey] = {};
-      sessions[sessKey][field] = el.type === 'checkbox' ? el.checked : el.type === 'number' ? Number(el.value) : el.value;
+      const _isNum = el.type === 'number' || (el.tagName === 'SELECT' && el.value !== '' && !isNaN(el.value));
+      sessions[sessKey][field] = el.type === 'checkbox' ? el.checked : _isNum ? Number(el.value) : el.value;
     }
     data.Sessions = sessions;
   }
@@ -431,7 +432,7 @@ function updatePiSlider(autoSelect = true) {
   const p2 = span > 0 ? ((maxVal - lo) / span * 100) : 100;
   const track = document.getElementById('pi-slider-track');
   if (track) track.style.background =
-    `linear-gradient(to right,var(--border) ${p1}%,var(--accent) ${p1}%,var(--accent) ${p2}%,var(--border) ${p2}%)`;
+    `linear-gradient(to right,rgba(100,116,139,0.65) ${p1}%,var(--accent) ${p1}%,var(--accent) ${p2}%,rgba(100,116,139,0.65) ${p2}%)`;
   const disp = document.getElementById('pi-display');
   if (disp) disp.textContent = `${minVal.toFixed(1)} — ${maxVal.toFixed(1)}`;
   filterCars(autoSelect);

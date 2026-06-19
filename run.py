@@ -32,15 +32,15 @@ if __name__ == "__main__":
     local_ip = socket.gethostbyname(socket.gethostname())
     scheme   = "https" if ssl_cert and ssl_key else "http"
 
-    print("=" * 52)
-    print(f"  AC EVO Server Panel  v{_version}")
-    print("=" * 52)
-    print(f"  Local   : {scheme}://127.0.0.1:{port}")
-    print(f"  Réseau  : {scheme}://{local_ip}:{port}")
-    print(f"  Logs    : logs/app.log")
-    print("=" * 52)
-    print("  CTRL+C pour arrêter")
-    print()
+    _log = logging.getLogger("panel.startup")
+    _log.info("=" * 52)
+    _log.info("  AC EVO Server Panel  v%s", _version)
+    _log.info("=" * 52)
+    _log.info("  Local   : %s://127.0.0.1:%s", scheme, port)
+    _log.info("  Réseau  : %s://%s:%s", scheme, local_ip, port)
+    _log.info("  Logs    : logs/app.log")
+    _log.info("=" * 52)
+    _log.info("  CTRL+C pour arrêter")
 
     if ssl_cert and ssl_key:
         # gunicorn gère nativement les certificats SSL

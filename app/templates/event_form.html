@@ -93,7 +93,7 @@
     </div>
 
     <!-- ── Durées de session ── -->
-    <div class="form-section-title">{{ _('Durées de session') }}</div>
+    <h3 class="form-section-title">{{ _('Durées de session') }}</h3>
 
     <div id="dur-practice-block">
       <div class="form-row">
@@ -163,7 +163,7 @@
     </div>
 
     <!-- ── Paramètres accès ── -->
-    <div class="form-row" style="margin-top:4px">
+    <div class="form-row form-group-mt">
       <div class="form-group">
         <label>{{ _('Mot de passe serveur') }} <span class="label-hint">({{ _('vide = public') }})</span></label>
         <input type="text" name="password" maxlength="50"
@@ -177,8 +177,8 @@
     </div>
 
     <!-- ── Événement public ── -->
-    <div class="form-group" style="margin-top:4px">
-      <label class="toggle-label" style="display:flex;align-items:center;gap:10px;cursor:pointer">
+    <div class="form-group form-group-mt">
+      <label class="toggle-label">
         <input type="hidden" name="is_public" value="0">
         <input type="checkbox" name="is_public" value="1"
                {% if event and event.is_public %}checked{% endif %}>
@@ -187,24 +187,24 @@
     </div>
 
     <!-- ── Lancement automatique ── -->
-    <div class="form-group" style="margin-top:4px">
-      <label class="toggle-label" style="display:flex;align-items:center;gap:10px;cursor:pointer">
+    <div class="form-group form-group-mt">
+      <label class="toggle-label">
         <input type="hidden" name="auto_launch" value="0">
         <input type="checkbox" name="auto_launch" value="1"
                {% if event and event.auto_launch %}checked{% endif %}>
         <span>{{ _('Lancer le serveur automatiquement') }}</span>
       </label>
       {% if event and event.launched %}
-      <p style="font-size:12px;color:var(--green);margin-top:4px">✓ {{ _('Serveur lancé automatiquement pour cet événement.') }}</p>
+      <p class="success-hint">✓ {{ _('Serveur lancé automatiquement pour cet événement.') }}</p>
       {% endif %}
     </div>
 
     <!-- ── Sélection véhicules ── -->
     {% if cars %}
-    <div class="form-section-title" style="margin-top:8px">
+    <h3 class="form-section-title" style="margin-top:8px">
       {{ _('Véhicules autorisés') }}
-      <span id="cars-sel-count" style="font-size:12px;font-weight:400;color:var(--text-muted)"></span>
-    </div>
+      <span id="cars-sel-count" class="cars-sel-count"></span>
+    </h3>
 
     <!-- Filtres -->
     <div class="cars-filters">

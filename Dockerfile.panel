@@ -20,7 +20,6 @@ ENV DEPLOY_MODE=docker_split \
     ACESERVER_DIR=/aceserver \
     CONFIGS_DIR=/aceserver/configs \
     DATABASE_URL=sqlite:////panel/data/ace_evo.db \
-    SESSION_COOKIE_SECURE=false \
     ACESERVER_CONTAINER_NAME=ace-server \
     ACESERVER_HOST=aceserver \
     PYTHONUNBUFFERED=1

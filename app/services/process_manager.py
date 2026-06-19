@@ -42,6 +42,7 @@ _wine_ready      = threading.Event()
 
 # Player history: {ts, count} samples, ~1h at 30s interval
 _player_history: collections.deque = collections.deque(maxlen=120)
+_player_history_lock = threading.Lock()
 
 # Avertissements système détectés au démarrage (mauvaise config Docker, etc.)
 _system_warnings: list[str] = []
@@ -106,11 +107,13 @@ def _sample_player_history():
     _last_history_sample = now
     count = get_player_count()
     if count is not None:
-        _player_history.append({"ts": int(now), "count": count})
+        with _player_history_lock:
+            _player_history.append({"ts": int(now), "count": count})
 
 
 def get_player_history() -> list:
-    return list(_player_history)
+    with _player_history_lock:
+        return list(_player_history)
 
 
 def _set_auto_restart(enabled: bool):

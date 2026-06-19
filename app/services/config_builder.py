@@ -47,6 +47,7 @@ def build_launch_args(config: dict) -> tuple[str, str]:
         "spectator_password": server.get("SpectatorPassword", ""),
         "admin_password": server.get("AdminPassword", ""),
         "type": server.get("SelectedServerTypeValue", "MultiplayerServerListSessionType_RANKED"),
+        "tuning_type": server.get("SelectedTuningTypeValue", "TuningAllowed"),
         "entry_list_path": server.get("EntryListPath", ""),
         "results_path": server.get("ResultsPath", ""),
         "results_post_url": server.get("ResultsPostUrl", ""),

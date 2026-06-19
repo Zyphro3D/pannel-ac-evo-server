@@ -23,3 +23,23 @@ def admin_required_json(f):
             return jsonify({"ok": False, "error": "forbidden"}), 403
         return f(*args, **kwargs)
     return decorated
+
+
+def superadmin_required(f):
+    """Redirige vers /dashboard si l'utilisateur n'est pas superadmin."""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not current_user.is_authenticated or not current_user.is_superadmin:
+            return redirect(url_for("admin.dashboard"))
+        return f(*args, **kwargs)
+    return decorated
+
+
+def superadmin_required_json(f):
+    """Retourne 403 JSON si l'utilisateur n'est pas superadmin."""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not current_user.is_authenticated or not current_user.is_superadmin:
+            return jsonify({"ok": False, "error": "forbidden"}), 403
+        return f(*args, **kwargs)
+    return decorated

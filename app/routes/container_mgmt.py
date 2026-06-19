@@ -1,9 +1,13 @@
 """Gestion du conteneur de jeu ACE EVO — statut, redémarrage, mise à jour SteamCMD."""
 import json
+import logging
 import os
 import re
 import subprocess
 import threading
+import time
+
+log = logging.getLogger(__name__)
 from datetime import datetime, timezone
 
 from flask import Blueprint, Response, current_app, jsonify, request, stream_with_context
@@ -98,7 +102,8 @@ def container_restart():
         c.restart(timeout=15)
         return jsonify({"ok": True})
     except Exception as e:
-        return jsonify({"ok": False, "error": str(e)}), 500
+        log.error("container_restart error: %s", e)
+        return jsonify({"ok": False, "error": _("Erreur lors du redémarrage du container")}), 500
 
 
 @container_mgmt_bp.route("/api/container/update", methods=["POST"])
@@ -113,6 +118,14 @@ def container_update():
     steam_user    = (data.get("username") or current_app.config.get("STEAM_USERNAME", "anonymous")).strip() or "anonymous"
     steam_pass    = (data.get("password") or "").strip()
     steam_guard   = (data.get("guard_code") or "").strip()
+
+    import re as _re
+    if not _re.fullmatch(r'[\w.\-@]{1,64}', steam_user):
+        return jsonify({"error": _("Nom d'utilisateur Steam invalide")}), 400
+    if len(steam_pass) > 128:
+        return jsonify({"error": _("Mot de passe Steam trop long")}), 400
+    if steam_guard and not _re.fullmatch(r'[A-Za-z0-9]{1,16}', steam_guard):
+        return jsonify({"error": _("Code Steam Guard invalide")}), 400
     appid         = _APPID
 
     def _gen():
@@ -176,9 +189,39 @@ def container_update():
             yield _msg("🚀 Redémarrage du serveur...")
             try:
                 c.start()
-                yield _msg("✓ Serveur redémarré", done=True)
             except Exception as e:
                 yield _msg(f"✗ Erreur redémarrage : {e}", error=True, done=True)
+                return
+
+            # 4 — Attente de la régénération des données (cars.json, events)
+            yield _msg("⏳ Synchronisation véhicules et circuits...")
+            cars_path = os.path.join(aceserver_dir, "cars.json")
+            ev_p_path = os.path.join(aceserver_dir, "events_practice.json")
+            ev_r_path = os.path.join(aceserver_dir, "events_race_weekend.json")
+            old_cars_mt = os.path.getmtime(cars_path) if os.path.exists(cars_path) else 0
+            deadline = time.time() + 90
+            while time.time() < deadline:
+                time.sleep(3)
+                if os.path.exists(cars_path) and os.path.getmtime(cars_path) > old_cars_mt:
+                    break
+            try:
+                with open(cars_path, encoding="utf-8") as f:
+                    cars_count = len(json.load(f).get("cars", []))
+                ev_p_count = 0
+                ev_r_count = 0
+                if os.path.exists(ev_p_path):
+                    with open(ev_p_path, encoding="utf-8") as f:
+                        ev_p_count = len(json.load(f).get("events", []))
+                if os.path.exists(ev_r_path):
+                    with open(ev_r_path, encoding="utf-8") as f:
+                        ev_r_count = len(json.load(f).get("events", []))
+                yield _msg(
+                    f"✓ Données synchronisées — {cars_count} véhicules, "
+                    f"{ev_p_count + ev_r_count} circuits",
+                    done=True,
+                )
+            except Exception:
+                yield _msg("✓ Serveur redémarré", done=True)
         finally:
             _updating.release()
 

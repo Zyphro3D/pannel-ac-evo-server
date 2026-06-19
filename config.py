@@ -56,6 +56,7 @@ class Config:
     ACE_BOT_MSG_SITE       = os.environ.get("ACE_BOT_MSG_SITE",       "Retrouve tes resultats et evenements sur : {site_url}")
     DISCORD_WEBHOOK_URL        = os.environ.get("DISCORD_WEBHOOK_URL", "")
     DISCORD_PILOTS_WEBHOOK_URL = os.environ.get("DISCORD_PILOTS_WEBHOOK_URL", "")
+    DISCORD_RACE_WEBHOOK_URL   = os.environ.get("DISCORD_RACE_WEBHOOK_URL", "")
     DISCORD_INVITE_URL         = os.environ.get("DISCORD_INVITE_URL", "")
     RESULTS_INGEST_SECRET      = os.environ.get("RESULTS_INGEST_SECRET", "")
     SERVER_SHOW_CONSOLE = os.environ.get("SERVER_SHOW_CONSOLE", "true").lower() == "true"

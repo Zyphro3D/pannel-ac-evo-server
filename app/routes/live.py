@@ -6,8 +6,10 @@ import json
 import os
 import re
 import logging
-from flask import Blueprint, render_template, Response, stream_with_context, jsonify
+from flask import Blueprint, render_template, Response, stream_with_context, jsonify, request
 from flask_login import login_required
+from flask_babel import _
+from app.utils import admin_required
 
 log = logging.getLogger(__name__)
 
@@ -315,6 +317,17 @@ def timing_state():
         "started_at":     session.get("started_at"),
         "session_length_s": session.get("session_length_s"),
     })
+
+
+@live_bp.route("/api/live/bot/elevate-admin", methods=["POST"])
+@admin_required
+def bot_elevate_admin():
+    """Envoie \\admin <password> au serveur via le bot TCP, même si ACE_BOT_IS_ADMIN=false."""
+    from app.services.ace_tcp_client import elevate_admin
+    err = elevate_admin()
+    if err:
+        return jsonify({"ok": False, "error": err}), 400
+    return jsonify({"ok": True})
 
 
 @live_bp.route("/api/live/stream")

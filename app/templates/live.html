@@ -17,6 +17,10 @@
         <span class="dot offline" id="live-tcp-dot"></span>
         <span id="live-tcp-label">TCP —</span>
       </div>
+      <button class="btn btn-ghost btn-sm" id="btn-elevate-admin" onclick="elevateAdmin()"
+              title="{{ _('Envoyer \\admin <password> via le bot TCP') }}" style="display:none">
+        {{ _('Élever admin') }}
+      </button>
     </div>
   </div>
 
@@ -61,13 +65,13 @@
           <option value="\unmute ">\unmute [#num] — {{ _('Retirer le muet') }}</option>
           <option value="\to_pit ">\to_pit [#num] — {{ _('Envoyer aux stands') }}</option>
           <option value="\add_time ">\add_time [#num] [sec] — {{ _('Ajouter du temps') }}</option>
-          <option value="\ballast ">\ballast [#num] [−100…100] — Ballast</option>
-          <option value="\restrictor ">\restrictor [#num] [0.0…0.2] — Restrictor</option>
+          <option value="\ballast ">\ballast [#num] [−100…100] — {{ _('Ballast') }}</option>
+          <option value="\restrictor ">\restrictor [#num] [0.0…0.2] — {{ _('Restricteur') }}</option>
         </optgroup>
         <optgroup label="{{ _('Pénalités') }} [#num]">
           <option value="\add_penalty  disq">\add_penalty [#num] disq — {{ _('Disqualification') }}</option>
-          <option value="\add_penalty  dt">\add_penalty [#num] dt — Drive-through</option>
-          <option value="\add_penalty  sg">\add_penalty [#num] sg — Stop &amp; Go</option>
+          <option value="\add_penalty  dt">\add_penalty [#num] dt — {{ _('Drive-through') }}</option>
+          <option value="\add_penalty  sg">\add_penalty [#num] sg — {{ _('Stop &amp; Go') }}</option>
           <option value="\del_penalty  disq">\del_penalty [#num] disq — {{ _('Retirer disq') }}</option>
           <option value="\del_penalty  dt">\del_penalty [#num] dt — {{ _('Retirer drive-through') }}</option>
           <option value="\del_penalty  sg">\del_penalty [#num] sg — {{ _('Retirer stop &amp; go') }}</option>
@@ -91,17 +95,19 @@ const _CAR_LABELS = {
 };
 
 const I18N_LIVE = {
-  connected:     "{{ _('En direct') }}",
-  reconnecting:  "{{ _('Reconnexion…') }}",
-  tcpConnected:  "{{ _('TCP connecté') }}",
-  tcpDisconnected: "{{ _('TCP déconnecté') }}",
-  tcpNotConnected: "{{ _('non connecté') }}",
-  noDrivers:     "{{ _('Aucun pilote connecté') }}",
-  noEvents:      "{{ _('Aucun événement récent') }}",
-  errNetwork:    "{{ _('erreur réseau') }}",
-  joined:        "{{ _('a rejoint') }}",
-  left:          "{{ _('a quitté') }}",
-  online:        "{{ _('joueur(s) en ligne') }}",
+  connected:        "{{ _('En direct') }}",
+  reconnecting:     "{{ _('Reconnexion…') }}",
+  tcpConnected:     "{{ _('TCP connecté') }}",
+  tcpDisconnected:  "{{ _('TCP déconnecté') }}",
+  tcpNotConnected:  "{{ _('non connecté') }}",
+  noDrivers:        "{{ _('Aucun pilote connecté') }}",
+  noEvents:         "{{ _('Aucun événement récent') }}",
+  errNetwork:       "{{ _('erreur réseau') }}",
+  joined:           "{{ _('a rejoint') }}",
+  left:             "{{ _('a quitté') }}",
+  online:           "{{ _('joueur(s) en ligne') }}",
+  elevateOk:        "{{ _('Bot élevé admin') }}",
+  elevateErr:       "{{ _('Échec élévation admin') }}",
 };
 
 function _carLabel(raw) {
@@ -254,6 +260,7 @@ async function pollTcpStatus() {
 
     const sel    = document.getElementById('live-cmd-select');
     const carSel = document.getElementById('live-car-select');
+    const elevateBtn = document.getElementById('btn-elevate-admin');
     if (d.connected) {
       dot.className     = 'dot online';
       label.textContent = I18N_LIVE.tcpConnected;
@@ -262,6 +269,7 @@ async function pollTcpStatus() {
       btn.disabled      = false;
       sel.disabled      = false;
       carSel.disabled   = false;
+      if (elevateBtn) elevateBtn.style.display = '';
     } else {
       dot.className     = 'dot offline';
       label.textContent = I18N_LIVE.tcpDisconnected;
@@ -271,6 +279,7 @@ async function pollTcpStatus() {
       sel.disabled      = true;
       carSel.disabled   = true;
       carSel.style.display = 'none';
+      if (elevateBtn) elevateBtn.style.display = 'none';
     }
 
     if (d.leaderboard && d.leaderboard.length) {
@@ -375,6 +384,27 @@ function onCarSelect(sel) {
 document.getElementById('live-chat-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') sendChat();
 });
+
+async function elevateAdmin() {
+  const btn = document.getElementById('btn-elevate-admin');
+  btn.disabled = true;
+  try {
+    const r = await fetch('/api/live/bot/elevate-admin', {
+      method: 'POST',
+      headers: { 'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content },
+    });
+    const d = await r.json();
+    if (d.ok) {
+      showToast(I18N_LIVE.elevateOk, 'success');
+    } else {
+      showToast(`${I18N_LIVE.elevateErr} : ${d.error || ''}`, 'error');
+    }
+  } catch(e) {
+    showToast(I18N_LIVE.elevateErr, 'error');
+  } finally {
+    btn.disabled = false;
+  }
+}
 
 // Init
 loadState();

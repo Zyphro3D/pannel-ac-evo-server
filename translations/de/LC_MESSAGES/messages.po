@@ -38,6 +38,39 @@ msgstr "Bewölkt"
 msgid "Pluie"
 msgstr "Regen"
 
+msgid "Nuages épars"
+msgstr "Aufgelockerte Bewölkung"
+
+msgid "Nuages fragmentés"
+msgstr "Aufgebrochene Bewölkung"
+
+msgid "Bruine"
+msgstr "Nieselregen"
+
+msgid "Pluie forte"
+msgstr "Starkregen"
+
+msgid "Humide"
+msgstr "Feucht"
+
+msgid "Type de serveur"
+msgstr "Server-Typ"
+
+msgid "Non classé"
+msgstr "Nicht gewertet"
+
+msgid "Classé"
+msgstr "Gewertet"
+
+msgid "Réglages voiture"
+msgstr "Fahrzeug-Setup"
+
+msgid "Autorisés"
+msgstr "Erlaubt"
+
+msgid "Interdits"
+msgstr "Verboten"
+
 #: /panel/app/routes/admin.py:184 /panel/app/templates/server.html:335
 msgid "Statique"
 msgstr "Statisch"
@@ -2161,6 +2194,12 @@ msgstr "Max. Box-Wartezeit (s)"
 msgid "Overtime (s)"
 msgstr "Overtime (s)"
 
+msgid "Min. joueurs en attente"
+msgstr "Min. wartende Spieler"
+
+msgid "Max. joueurs en attente"
+msgstr "Max. wartende Spieler"
+
 #: /panel/app/templates/server.html:483
 msgid "Roulement de configs"
 msgstr "Config-Rotation"
@@ -2770,3 +2809,189 @@ msgstr "Laden…"
 #~ msgid "Active"
 #~ msgstr "Aktiv"
 
+
+msgid "Élever admin"
+msgstr "Admin-Rechte erteilen"
+
+msgid "Envoyer \\admin <password> via le bot TCP"
+msgstr "\\admin <Passwort> via TCP-Bot senden"
+
+msgid "Bot élevé admin"
+msgstr "Bot zum Admin erhoben"
+
+msgid "Échec élévation admin"
+msgstr "Fehler bei Admin-Erhebung"
+
+msgid "Trois channels possibles : principal (événements serveur), pilotes (connexions joueurs), course (meilleur tour, actions admin). Si un channel n'est pas renseigné, les notifications tombent sur le channel principal."
+msgstr "Drei Channels verfügbar: Haupt (Server-Ereignisse), Piloten (Spielerverbindungen), Rennen (beste Runde, Admin-Aktionen). Wenn ein Channel nicht gesetzt ist, werden Benachrichtigungen an den Hauptchannel gesendet."
+
+msgid "Mentions"
+msgstr "Erwähnungen"
+
+msgid "Texte envoyé avant l'embed pour mentionner un rôle ou @here. Laisser vide pour désactiver."
+msgstr "Text vor dem Embed zum Erwähnen einer Rolle oder @here. Leer lassen zum Deaktivieren."
+
+msgid "Exemples"
+msgstr "Beispiele"
+
+msgid "Vide = pas de mention"
+msgstr "Leer = keine Erwähnung"
+
+msgid "Messages — Serveur"
+msgstr "Nachrichten — Server"
+
+msgid "Titre de l'embed affiché dans le channel principal. Laisser vide pour utiliser le texte par défaut."
+msgstr "Embed-Titel im Hauptchannel. Leer lassen für Standardtext."
+
+msgid "Variables"
+msgstr "Variablen"
+
+msgid "Crash détecté"
+msgstr "Absturz erkannt"
+
+msgid "Messages — Pilotes"
+msgstr "Nachrichten — Piloten"
+
+msgid "Titre de l'embed affiché dans le channel pilotes."
+msgstr "Embed-Titel im Piloten-Channel."
+
+msgid "Connexion joueur"
+msgstr "Spielerverbindung"
+
+msgid "Déconnexion joueur"
+msgstr "Spielertrennung"
+
+msgid "Changement de véhicule"
+msgstr "Fahrzeugwechsel"
+
+msgid "Messages — Course"
+msgstr "Nachrichten — Rennen"
+
+msgid "Titre de l'embed affiché dans le channel course."
+msgstr "Embed-Titel im Rennen-Channel."
+
+msgid "Meilleur tour du serveur"
+msgstr "Beste Serverrunde"
+
+msgid "Action admin"
+msgstr "Admin-Aktion"
+
+msgid "Webhook principal — démarrage, arrêt, crash du serveur"
+msgstr "Haupt-Webhook — Serverstart, -stop, Absturz"
+
+msgid "Webhook pilotes — connexions, déconnexions, changements de véhicule"
+msgstr "Piloten-Webhook — Verbindungen, Trennungen, Fahrzeugwechsel"
+
+msgid "Webhook course — meilleur tour, actions admin (kick, pénalités…)"
+msgstr "Rennen-Webhook — beste Runde, Admin-Aktionen (Kick, Strafen…)"
+
+msgid "Mention envoyée avec les événements serveur (ex: @here ou <@&123456789>). Laisser vide pour désactiver."
+msgstr "Erwähnung bei Server-Ereignissen (z.B. @here oder <@&123456789>). Leer lassen zum Deaktivieren."
+
+msgid "Mention envoyée avec les connexions joueurs. Laisser vide pour désactiver."
+msgstr "Erwähnung bei Spielerverbindungen. Leer lassen zum Deaktivieren."
+
+msgid "Mention envoyée avec les événements course. Laisser vide pour désactiver."
+msgstr "Erwähnung bei Rennereignissen. Leer lassen zum Deaktivieren."
+
+msgid "Titre embed — Serveur démarré. Variables : {config}, {mode}, {circuit}"
+msgstr "Embed-Titel — Server gestartet. Variablen: {config}, {mode}, {circuit}"
+
+msgid "Titre embed — Serveur arrêté. Variables : {config}"
+msgstr "Embed-Titel — Server gestoppt. Variablen: {config}"
+
+msgid "Titre embed — Crash détecté. Variables : {config}"
+msgstr "Embed-Titel — Absturz erkannt. Variablen: {config}"
+
+msgid "Titre embed — Connexion joueur. Variables : {name}, {num}, {car}, {steam_id}"
+msgstr "Embed-Titel — Spielerverbindung. Variablen: {name}, {num}, {car}, {steam_id}"
+
+msgid "Titre embed — Déconnexion joueur. Variables : {name}, {duration}, {steam_id}"
+msgstr "Embed-Titel — Spielertrennung. Variablen: {name}, {duration}, {steam_id}"
+
+msgid "Titre embed — Changement de véhicule. Variables : {name}, {num}, {old_car}, {new_car}"
+msgstr "Embed-Titel — Fahrzeugwechsel. Variablen: {name}, {num}, {old_car}, {new_car}"
+
+msgid "Titre embed — Meilleur tour serveur. Variables : {name}, {lap}, {car}"
+msgstr "Embed-Titel — Beste Serverrunde. Variablen: {name}, {lap}, {car}"
+
+msgid "Titre embed — Action admin. Variables : {action}, {target}, {admin}, {detail}"
+msgstr "Embed-Titel — Admin-Aktion. Variablen: {action}, {target}, {admin}, {detail}"
+
+msgid "Accès non autorisé"
+msgstr "Nicht autorisiert"
+
+msgid "Aucun fichier fourni"
+msgstr "Keine Datei angegeben"
+
+msgid "Erreur lors du redémarrage du container"
+msgstr "Fehler beim Neustart des Containers"
+
+msgid "Nom d'utilisateur Steam invalide"
+msgstr "Ungültiger Steam-Benutzername"
+
+msgid "Mot de passe Steam trop long"
+msgstr "Steam-Passwort ist zu lang"
+
+msgid "Code Steam Guard invalide"
+msgstr "Ungültiger Steam Guard Code"
+
+msgid "Config serveur"
+msgstr "Server-Konfiguration"
+
+msgid "Configuration du serveur de jeu"
+msgstr "Spielserver-Konfiguration"
+
+msgid "Ces paramètres sont communs à toutes vos configurations. Ils remplacent automatiquement les valeurs des fichiers JSON au démarrage du serveur."
+msgstr "Diese Einstellungen gelten für alle Konfigurationen und überschreiben die JSON-Werte beim Serverstart automatisch."
+
+msgid "Laisser un champ vide conserve la valeur par défaut."
+msgstr "Ein leeres Feld behält den Standardwert."
+
+msgid "Identité"
+msgstr "Identität"
+
+msgid "Identité visuelle"
+msgstr "Erscheinungsbild"
+
+msgid "Infrastructure ACE EVO"
+msgstr "ACE EVO Infrastruktur"
+
+msgid "Réseau"
+msgstr "Netzwerk"
+
+msgid "Accès"
+msgstr "Zugang"
+
+msgid "Chemins"
+msgstr "Pfade"
+
+msgid "Vide = accès libre"
+msgstr "Leer = freier Zugang"
+
+msgid "Vide = pas de mot de passe admin"
+msgstr "Leer = kein Admin-Passwort"
+
+msgid "Laisser vide si non utilisé"
+msgstr "Leer lassen wenn nicht verwendet"
+
+msgid "Ces paramètres sont globaux"
+msgstr "Diese Einstellungen sind global"
+
+msgid "Paramètres → Config serveur"
+msgstr "Einstellungen → Server-Konfiguration"
+
+msgid "Port TCP / UDP"
+msgstr "TCP / UDP-Port"
+
+msgid "Aucun"
+msgstr "Keines"
+
+msgid "La configuration a été modifiée. Redémarrez le serveur pour appliquer les changements."
+msgstr "Die Konfiguration wurde geändert. Starten Sie den Server neu, um die Änderungen zu übernehmen."
+
+msgid "Type"
+msgstr "Type"
+
+msgid "Multiplicateur temps"
+msgstr "Zeitmultiplikator"

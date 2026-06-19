@@ -39,7 +39,7 @@ def leaderboard():
     # best[(circuit, car_name)] = {time_ms, time, driver, p1, pi}
     best: dict[tuple, dict] = {}
 
-    rows = SessionResult.query.order_by(SessionResult.received_at.asc()).all()
+    rows = SessionResult.query.order_by(SessionResult.received_at.asc()).limit(2000).all()
     for r in rows:
         try:
             data   = json.loads(r.raw_json)

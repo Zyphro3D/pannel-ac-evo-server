@@ -8,6 +8,8 @@ Messages pris en charge :
   S2C  BroadcastStateMessage    — état courant (PlatformRaceLeaderboard, etc.)
   S2C  SplitFromRemoteMessage   — passage de secteur
 """
+import glob
+import json
 import os
 import re
 import socket
@@ -354,6 +356,21 @@ def update_driver_info(steam_id: str, name: str | None = None, num: str | None =
 _RE_DRIVER_LOG = re.compile(
     r'\[server\] \[info\] Car \[[^\]]+\] #(\d+) for driver (.+?) \[(\d+)\]'
 )
+_RE_CONNECT_LOG = re.compile(
+    r'\[gameplay\] \[info\] (\d+) connected \([^)]+\) on car ([^,\s]+)'
+    r'(?:, with new carId ([0-9a-f-]+))?'
+)
+_RE_DISCONN_LOG = re.compile(r'\[gameplay\] \[info\] (\d+) disconnected')
+_RE_NEWLAP_LOG  = re.compile(r'\[gameplay\] \[info\] New lap carId ([0-9a-f-]+): (\d+:\d+\.\d+)')
+_RE_PLAYERS_LOG = re.compile(r'\[server\] \[info\] Server updated: (\d+) players')
+
+# État supplémentaire pour les notifs Discord (protégé par _lb_lock)
+_join_times:           dict[str, float] = {}  # steam_id → timestamp connexion
+_car_id_to_sid:        dict[str, str]   = {}  # car_id → steam_id (pour les tours)
+_num_to_sid:           dict[str, str]   = {}  # car_num → steam_id (pour actions admin)
+_sid_car_raw:          dict[str, str]   = {}  # steam_id → modèle voiture
+_recently_disconnected: dict[str, dict] = {}  # steam_id → {name, car_raw, ts} pour détecter changement véhicule
+_race_state:           dict              = {"server_best_ms": None}  # best lap serveur
 
 _welcome_discord: str = ""
 _welcome_site: str    = ""
@@ -374,14 +391,12 @@ def _get_car_model() -> str:
             with open(active_file) as f:
                 name = f.read().strip()
         else:
-            import glob
             files = sorted(glob.glob(os.path.join(configs_dir, "*.json")))
             name = os.path.basename(files[0]) if files else ""
         if not name:
             return _car_model
-        import json as _json
         with open(os.path.join(configs_dir, name), encoding="utf-8") as f:
-            cfg = _json.load(f)
+            cfg = json.load(f)
         cars = cfg.get("Event", {}).get("Cars", [])
         if cars:
             model = cars[0].get("name", "")
@@ -404,14 +419,12 @@ def _get_admin_password() -> str:
             with open(active_file) as f:
                 name = f.read().strip()
         else:
-            import glob
             files = sorted(glob.glob(os.path.join(configs_dir, "*.json")))
             name = os.path.basename(files[0]) if files else ""
         if not name:
             return ""
-        import json as _json
         with open(os.path.join(configs_dir, name), encoding="utf-8") as f:
-            return _json.load(f).get("Server", {}).get("AdminPassword", "")
+            return json.load(f).get("Server", {}).get("AdminPassword", "")
     except Exception:
         return ""
 
@@ -430,16 +443,146 @@ def _send_welcome(name: str):
     log.info("ace_tcp_client: bienvenue envoyé à %s", name)
 
 
+def _parse_lap_ms(s: str) -> int:
+    try:
+        parts = s.split(':')
+        rest  = parts[1].split('.')
+        return int(parts[0]) * 60000 + int(rest[0]) * 1000 + (int(rest[1]) if len(rest) > 1 else 0)
+    except Exception:
+        return 0
+
+
+def get_driver_by_num(num: str) -> dict:
+    """Retourne {name, steam_id, car_raw} du pilote par numéro de voiture, ou {}."""
+    with _lb_lock:
+        sid = _num_to_sid.get(str(num))
+        if not sid:
+            return {}
+        return {
+            "name":     _leaderboard.get(sid, {}).get("name", "?"),
+            "steam_id": sid,
+            "car_raw":  _sid_car_raw.get(sid, ""),
+        }
+
+
 def _process_log_line(line: str, seen: set):
+    # Gameplay: connexion — stocke car_raw + car_id avant le log server
+    m = _RE_CONNECT_LOG.search(line)
+    if m:
+        sid, car_raw, car_id = m.group(1), m.group(2), m.group(3) or ""
+        with _lb_lock:
+            _join_times[sid]  = time.time()
+            _sid_car_raw[sid] = car_raw
+            if car_id:
+                _car_id_to_sid[car_id] = sid
+        return
+
+    # Server: nom + numéro (arrive après le connect log)
     m = _RE_DRIVER_LOG.search(line)
     if m:
-        steam_id = m.group(3)
-        name     = m.group(2)
-        if steam_id not in seen:
-            seen.add(steam_id)
-            threading.Thread(
-                target=_send_welcome, args=(name,), daemon=True
-            ).start()
+        num, name, sid = m.group(1), m.group(2), m.group(3)
+        now = time.time()
+        with _lb_lock:
+            _num_to_sid[num] = sid
+            car_raw = _sid_car_raw.get(sid, "")
+            recent  = _recently_disconnected.pop(sid, None)
+            stale   = [k for k, v in _recently_disconnected.items() if now - v["ts"] > 600]
+        # Purge hors du lock — évite O(N) pendant la section critique
+        for k in stale:
+            with _lb_lock:
+                _recently_disconnected.pop(k, None)
+
+        vehicle_changed = (
+            recent is not None
+            and recent["car_raw"]
+            and car_raw
+            and recent["car_raw"] != car_raw
+            and (now - recent["ts"]) < 600
+        )
+
+        if vehicle_changed:
+            seen.add(sid)  # bloque la notif "join" standard
+            threading.Thread(target=_send_welcome, args=(name,), daemon=True).start()
+            try:
+                from app.services import discord_notifier
+                discord_notifier.safe_notify(
+                    discord_notifier.notify_vehicle_change,
+                    name, num, recent["car_raw"], car_raw
+                )
+            except Exception:
+                pass
+        elif sid not in seen:
+            seen.add(sid)
+            threading.Thread(target=_send_welcome, args=(name,), daemon=True).start()
+            try:
+                from app.services import discord_notifier
+                discord_notifier.safe_notify(
+                    discord_notifier.notify_player_join, name, num, car_raw, sid
+                )
+            except Exception:
+                pass
+        return
+
+    # Gameplay: déconnexion
+    m = _RE_DISCONN_LOG.search(line)
+    if m:
+        sid = m.group(1)
+        seen.discard(sid)
+        with _lb_lock:
+            joined   = _join_times.pop(sid, None)
+            old_car  = _sid_car_raw.pop(sid, "")
+            name     = _leaderboard.get(sid, {}).get("name", sid)
+            num      = _leaderboard.get(sid, {}).get("num")
+            if num:
+                _num_to_sid.pop(str(num), None)
+            # Mémorise pour détecter un éventuel changement de véhicule à la reconnexion
+            _recently_disconnected[sid] = {"name": name, "car_raw": old_car, "ts": time.time()}
+        duration_s = int(time.time() - joined) if joined else None
+        try:
+            from app.services import discord_notifier
+            discord_notifier.safe_notify(
+                discord_notifier.notify_player_disconnect, name, sid, duration_s
+            )
+        except Exception:
+            pass
+        return
+
+    # Gameplay: nouveau tour — notifie uniquement si meilleur temps du serveur
+    m = _RE_NEWLAP_LOG.search(line)
+    if m:
+        car_id, lap_str = m.group(1), m.group(2)
+        lap_ms = _parse_lap_ms(lap_str)
+        if lap_ms > 0:
+            notify = False
+            with _lb_lock:
+                sid     = _car_id_to_sid.get(car_id, "")
+                name    = _leaderboard.get(sid, {}).get("name", "?") if sid else "?"
+                car_raw = _sid_car_raw.get(sid, "") if sid else ""
+                best    = _race_state["server_best_ms"]
+                if best is None or lap_ms < best:
+                    _race_state["server_best_ms"] = lap_ms
+                    notify = True
+            if notify:
+                try:
+                    from app.services import discord_notifier
+                    discord_notifier.safe_notify(
+                        discord_notifier.notify_best_lap, name, lap_str, car_raw
+                    )
+                except Exception:
+                    pass
+        return
+
+    # Server: reset de session (0 joueurs = nouveau démarrage serveur)
+    m = _RE_PLAYERS_LOG.search(line)
+    if m and m.group(1) == '0':
+        with _lb_lock:
+            _car_id_to_sid.clear()
+            _num_to_sid.clear()
+            _sid_car_raw.clear()
+            _join_times.clear()
+            _recently_disconnected.clear()
+            _race_state["server_best_ms"] = None
+        seen.clear()
 
 
 def _welcome_loop_native():
@@ -523,6 +666,37 @@ def start(host: str, port: int, steam_id: str,
                              name="ace-welcome-bot").start()
 
     log.info("ace_tcp_client: démarrage vers %s:%d", host, port)
+
+
+def elevate_admin() -> str | None:
+    """Envoie \\admin <password> au serveur avec le mot de passe de la config active.
+    Ignore ACE_BOT_IS_ADMIN — appelé explicitement par l'admin via le panel.
+    Retourne None si ok, message d'erreur sinon.
+    """
+    if not _connected:
+        return "Bot TCP non connecté"
+    try:
+        configs_dir = os.environ.get("CONFIGS_DIR", "/aceserver/configs")
+        active_file = os.path.join(configs_dir, ".active_config")
+        if os.path.exists(active_file):
+            with open(active_file) as f:
+                name = f.read().strip()
+        else:
+            files = sorted(glob.glob(os.path.join(configs_dir, "*.json")))
+            name = os.path.basename(files[0]) if files else ""
+        if not name:
+            return "Aucune configuration active trouvée"
+        with open(os.path.join(configs_dir, name), encoding="utf-8") as f:
+            pwd = json.load(f).get("Server", {}).get("AdminPassword", "")
+        if not pwd:
+            return "Aucun mot de passe admin configuré dans la session active"
+    except Exception as e:
+        return f"Erreur lecture config : {e}"
+    sent = send_chat(f"\\admin {pwd}")
+    if not sent:
+        return "Échec envoi — bot TCP non connecté"
+    log.info("ace_tcp_client: élévation admin manuelle envoyée")
+    return None
 
 
 def stop():

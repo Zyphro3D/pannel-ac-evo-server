@@ -7,12 +7,14 @@ from pathlib import Path
 
 from flask import Blueprint, jsonify, request, current_app
 from flask_login import login_required, current_user
+from app import limiter
 
 from app.services.server_config import (
     load_config, apply_server_patch, load_cars, load_events,
     list_configs, get_active_config_name, set_active_config,
     create_config, delete_config, check_config, repair_config,
     get_running_server_info, load_config_by_name, rename_config,
+    inject_global_server_settings,
 )
 from app.services.process_manager import (
     start_server, stop_server, get_status, get_server_logs,
@@ -101,6 +103,7 @@ def _do_start(auto_restart: bool = False) -> dict:
         except Exception as e:
             log.warning("_ensure_race_weekend_file failed: %s", e)
 
+    inject_global_server_settings(config)
     sc, sd = config_builder.build_launch_args(config)
     result = start_server(sc, sd, get_active_config_name(), auto_restart=auto_restart)
 
@@ -279,6 +282,7 @@ def get_events(mode):
 # ── Résultats de session ──────────────────────────────────────────────────────
 
 @api_bp.route("/results/ingest", methods=["POST"])
+@limiter.limit("60 per hour")
 def results_ingest():
     """Reçoit la notification de fin de session d'AssettoCorsaEVOServer."""
     # ACE EVO peut envoyer le webhook après avoir arrêté le serveur — is_running() serait
@@ -394,6 +398,7 @@ def rotation_start():
         except Exception as e:
             log.warning("_ensure_race_weekend_file failed: %s", e)
 
+    inject_global_server_settings(cfg_data)
     sc, sd = config_builder.build_launch_args(cfg_data)
     result  = start_server(sc, sd, first_cfg, auto_restart=False)
 
@@ -500,6 +505,20 @@ def live_admin_cmd():
         from app.services import ace_tcp_client
         sent = ace_tcp_client.send_chat(msg)
         log.info("admin_cmd: %r → sent=%s", msg, sent)
+        if sent:
+            try:
+                from app.services import discord_notifier
+                driver = ace_tcp_client.get_driver_by_num(car_num) if car_num else {}
+                discord_notifier.safe_notify(
+                    discord_notifier.notify_admin_action,
+                    cmd,
+                    driver.get("name", "?"),
+                    car_num,
+                    extra,
+                    current_user.username,
+                )
+            except Exception:
+                pass
         return jsonify({"ok": sent, "cmd": msg,
                         "error": None if sent else "not_connected"})
     except Exception as e:

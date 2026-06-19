@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180">
+  <rect width="320" height="180" fill="#141820"/>
+
+  <!-- Circuit track outline -->
+  <path d="M 55 138 Q 32 138 32 115 L 32 68 Q 32 44 55 44
+           L 148 44 Q 162 44 170 58 L 188 86 Q 196 100 214 100
+           Q 256 100 256 122 L 256 145 Q 256 162 237 162
+           L 78 162 Q 55 162 55 138 Z"
+        stroke="#3a7bd5" stroke-width="15" fill="none"
+        stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>
+
+  <!-- Centerline dashes -->
+  <path d="M 55 138 Q 32 138 32 115 L 32 68 Q 32 44 55 44
+           L 148 44 Q 162 44 170 58 L 188 86 Q 196 100 214 100
+           Q 256 100 256 122 L 256 145 Q 256 162 237 162
+           L 78 162 Q 55 162 55 138 Z"
+        stroke="#1e3a5f" stroke-width="2" fill="none"
+        stroke-linecap="round" stroke-linejoin="round"
+        stroke-dasharray="6 5" opacity="0.5"/>
+
+  <!-- Start / Finish line (red + white stripes) -->
+  <rect x="47" y="131" width="5" height="7" fill="#e74c3c" rx="1"/>
+  <rect x="47" y="144" width="5" height="7" fill="#e74c3c" rx="1"/>
+  <rect x="52" y="131" width="5" height="7" fill="#ffffff" rx="1" opacity="0.9"/>
+  <rect x="52" y="144" width="5" height="7" fill="#ffffff" rx="1" opacity="0.9"/>
+
+  <!-- Label -->
+  <text x="196" y="72" text-anchor="middle"
+        fill="#3a7bd5" font-family="'Segoe UI',Arial,sans-serif"
+        font-size="9" font-weight="700" letter-spacing="4" opacity="0.45">CIRCUIT</text>
+</svg>

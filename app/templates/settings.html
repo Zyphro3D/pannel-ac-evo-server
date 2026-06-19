@@ -63,28 +63,13 @@
 
   <div class="settings-layout">
     <aside class="settings-sidebar">
-      {{ nav_item(_('Paramètres serveur'), url_for('admin.settings', tab='panel'), tab == 'panel') }}
-      {{ nav_item(_('Mail (SMTP)'), url_for('admin.settings', tab='mail'), tab == 'mail') }}
-      {{ nav_item(_('Comptes admin'), url_for('admin.settings', tab='accounts'), tab == 'accounts') }}
-      {{ nav_item(_('Serveur ACE'), url_for('admin.settings', tab='server'), tab == 'server') }}
-      {{ nav_item(_('Bot TCP'), url_for('admin.settings', tab='bot'), tab == 'bot') }}
-      {{ nav_item(_('Serveur de jeu'), url_for('admin.settings', tab='conteneur'), tab == 'conteneur') }}
-      {{ nav_item(_('Discord'), url_for('admin.settings', tab='discord'), tab == 'discord') }}
-      {{ nav_item(_('Langue & fuseau'), url_for('admin.settings', tab='locale'), tab == 'locale') }}
-      {{ nav_item(_('Médias'), url_for('admin.settings', tab='media'), tab == 'media') }}
-      {{ nav_item(_('Sécurité'), url_for('admin.settings', tab='security'), tab == 'security') }}
-      <a href="{{ url_for('admin.settings', tab='users') }}" class="settings-side-link {% if tab == 'users' %}active{% endif %}">
+      {{ nav_item(_('Panel'), url_for('admin.settings', tab='panel'), tab in ['panel', 'locale', 'security', 'media']) }}
+      {{ nav_item(_('Serveur'), url_for('admin.settings', tab='server'), tab in ['server', 'gameconfig', 'conteneur']) }}
+      {{ nav_item(_('Notifications'), url_for('admin.settings', tab='notifications'), tab in ['notifications', 'bot', 'discord', 'mail']) }}
+      <a href="{{ url_for('admin.settings', tab='accounts') }}" class="settings-side-link {% if tab in ['accounts', 'users', 'events', 'live'] %}active{% endif %}">
         <span class="settings-side-icon"></span>
-        <span>{{ _('Gestion pilotes') }}</span>
+        <span>{{ _('Comptes') }}</span>
         {% if pending_pilots_count > 0 %}<b>{{ pending_pilots_count }}</b>{% endif %}
-      </a>
-      <a href="{{ url_for('admin.settings', tab='events') }}" class="settings-side-link {% if tab == 'events' %}active{% endif %}">
-        <span class="settings-side-icon"></span>
-        <span>{{ _('Événements') }}</span>
-      </a>
-      <a href="{{ url_for('admin.settings', tab='live') }}" class="settings-side-link {% if tab == 'live' %}active{% endif %}">
-        <span class="settings-side-icon"></span>
-        <span>{{ _('Live Admin') }}</span>
       </a>
 
       <div class="settings-global-status">
@@ -92,433 +77,85 @@
         <strong class="{% if server_status.running %}is-online{% else %}is-offline{% endif %}">
           {% if server_status.running %}{{ _('Opérationnel') }}{% else %}{{ _('Hors ligne') }}{% endif %}
         </strong>
-        <small>{{ _('Fichier env') }}</small>
-        <code>{{ env_path }}</code>
       </div>
     </aside>
 
     <main class="settings-main">
-      {% if tab in ['media', 'users', 'events', 'live', 'accounts'] %}
-        {% set active_panel = tab %}
-      {% else %}
-        {% set active_panel = current_section.id %}
-      {% endif %}
 
-      {% if tab == 'conteneur' %}
-      {# ── Gestion du conteneur de jeu ─────────────────────────────────────── #}
+      {# ═══════════════════════════════════════════════════════════════════════ #}
+      {# ── PANEL ── Identité, langue, sécurité, médias ────────────────────── #}
+      {# ═══════════════════════════════════════════════════════════════════════ #}
+      {% if tab in ['panel', 'locale', 'security', 'media'] %}
+
       <section class="settings-dashboard-grid">
-        <div class="settings-card settings-card-wide">
-          <div class="settings-card-head">
-            <h2>{{ _('Serveur de jeu') }}</h2>
-          </div>
-
-          {# Statut + version #}
-          <div id="ctr-status-block" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem">
-            <div style="background:var(--surface2);border-radius:8px;padding:14px 16px">
-              <div style="font-size:0.75rem;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">{{ _('Conteneur') }}</div>
-              <div style="display:flex;align-items:center;gap:8px">
-                <span class="dot offline" id="ctr-dot"></span>
-                <strong id="ctr-status-label">—</strong>
-              </div>
-              <div style="font-size:0.78rem;color:var(--text2);margin-top:4px" id="ctr-uptime">—</div>
-            </div>
-            <div style="background:var(--surface2);border-radius:8px;padding:14px 16px">
-              <div style="font-size:0.75rem;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">{{ _('Version') }}</div>
-              <div id="ctr-version-installed" style="font-size:0.9rem">—</div>
-              <div id="ctr-version-target"    style="font-size:0.78rem;color:var(--text2);margin-top:2px">—</div>
-            </div>
-          </div>
-
-          {# Actions #}
-          <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1.5rem">
-            <button id="ctr-btn-restart" class="btn btn-secondary" onclick="ctrRestart()" type="button">
-              {{ _('Redémarrer le serveur') }}
-            </button>
-            <button id="ctr-btn-update" class="btn btn-primary" onclick="ctrModalOpen()" type="button">
-              {{ _('Vérifier et mettre à jour') }}
-            </button>
-          </div>
-
-          {# Terminal de sortie #}
-          <div id="ctr-terminal-wrap" style="display:none">
-            <div style="font-size:0.75rem;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">{{ _('Sortie SteamCMD') }}</div>
-            <pre id="ctr-terminal"
-                 style="background:#0d1117;color:#e6edf3;border-radius:8px;padding:14px 16px;font-size:0.78rem;
-                        line-height:1.5;max-height:360px;overflow-y:auto;white-space:pre-wrap;word-break:break-all"></pre>
-          </div>
-
-          <div id="ctr-msg" style="margin-top:8px;font-size:0.85rem"></div>
-        </div>
-      </section>
-
-      {# ── Compte Steam par défaut (pré-remplissage modal) ────────────────────── #}
-      <section class="settings-dashboard-grid" style="margin-top:1.5rem">
-        <form method="post" action="{{ url_for('admin.settings', tab='conteneur') }}" class="settings-card settings-card-wide settings-card-form">
+        {# Identité visuelle #}
+        <form method="post" action="{{ url_for('admin.settings', tab='panel') }}" class="settings-card settings-card-form">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <input type="hidden" name="_tab" value="conteneur">
-          <div class="settings-card-head">
-            <h2>{{ _('Compte Steam (SteamCMD)') }}</h2>
+          <input type="hidden" name="_tab" value="panel">
+          <div class="settings-card-head"><h2>{{ _('Identité visuelle') }}</h2></div>
+          <div class="settings-fields">
+            {% for k in ['PANEL_TITLE', 'PANEL_URL', 'PANEL_BANNER_IMG', 'PANEL_LOGO_IMG'] %}
+            <label class="settings-field">
+              <span>
+                <strong>{{ k }}</strong>
+                {% if k in env_descs %}<em>{{ env_descs[k] }}</em>{% endif %}
+              </span>
+              <input class="form-control" type="text" name="{{ k }}" value="{{ env_values.get(k, '') }}"
+                     placeholder="{{ _('Valeur par défaut') }}">
+            </label>
+            {% endfor %}
           </div>
-
-          <div class="settings-card-copy" style="background:var(--surface2);border-radius:8px;padding:14px 16px;margin-bottom:8px;font-size:0.83rem;line-height:1.6">
-            {{ _("Le mot de passe est saisi au moment de la mise à jour et n'est jamais stocké. Ce champ pré-remplit simplement le formulaire. Le compte doit posséder ACE EVO dans sa bibliothèque Steam.") }}
-          </div>
-
-          <div class="form-group">
-            <label for="STEAM_USERNAME"><strong>{{ _('Nom d\'utilisateur Steam par défaut') }}</strong></label>
-            <em class="env-desc">{{ env_descs.get('STEAM_USERNAME', '') }}</em>
-            <input class="form-control" type="text" name="STEAM_USERNAME" id="STEAM_USERNAME"
-                   value="{{ env_values.get('STEAM_USERNAME', '') }}"
-                   placeholder="{{ _('ex: moncomptesteam') }}">
-          </div>
-
-          <div class="settings-card-foot">
-            <button type="submit" class="btn btn-primary">{{ _('Sauvegarder') }}</button>
-          </div>
+          <button type="submit" class="btn btn-primary settings-save-btn">{{ _('Enregistrer les modifications') }}</button>
         </form>
-      </section>
 
-      {# ── Modal connexion Steam ─────────────────────────────────────────────────── #}
-      <div id="steam-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center">
-        <div style="background:var(--surface1);border-radius:12px;padding:28px 32px;width:min(440px,92vw);box-shadow:0 8px 40px rgba(0,0,0,.5)">
-          <h3 style="margin:0 0 8px;font-size:1.1rem">🔐 {{ _('Connexion Steam') }}</h3>
-          <p style="font-size:0.83rem;color:var(--text2);margin:0 0 20px;line-height:1.5">
-            {{ _('Entrez les identifiants du compte Steam qui possède ACE EVO. Ils ne sont pas sauvegardés.') }}
-          </p>
-          <div class="form-group" style="margin-bottom:12px">
-            <label style="font-size:0.85rem;font-weight:600">{{ _('Nom d\'utilisateur') }}</label>
-            <input class="form-control" type="text" id="sm-user" autocomplete="username" placeholder="{{ _('votre_pseudo_steam') }}">
-          </div>
-          <div class="form-group" style="margin-bottom:12px">
-            <label style="font-size:0.85rem;font-weight:600">{{ _('Mot de passe') }}</label>
-            <input class="form-control" type="password" id="sm-pass" autocomplete="current-password">
-          </div>
-          <div class="form-group" style="margin-bottom:20px">
-            <label style="font-size:0.85rem;font-weight:600">
-              {{ _('Code Steam Guard') }}
-              <span style="color:var(--text2);font-weight:400;font-size:0.8rem"> — {{ _('optionnel, si activé sur le compte') }}</span>
-            </label>
-            <input class="form-control" type="text" id="sm-guard" maxlength="8"
-                   style="letter-spacing:.18em;text-transform:uppercase"
-                   autocomplete="one-time-code" placeholder="XXXXX">
-          </div>
-          <div style="display:flex;gap:.75rem;justify-content:flex-end">
-            <button class="btn btn-secondary" onclick="ctrModalClose()" type="button">{{ _('Annuler') }}</button>
-            <button class="btn btn-primary" onclick="ctrModalConfirm()" type="button" id="sm-btn-ok">⬆ {{ _('Lancer la mise à jour') }}</button>
-          </div>
-        </div>
-      </div>
-
-      <script>
-      const _CSRF = document.querySelector('meta[name="csrf-token"]').content;
-
-      function _fmtUptime(s) {
-        if (!s || s < 0) return '—';
-        const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60);
-        return h ? `${h}h ${m}min` : `${m} min`;
-      }
-
-      async function ctrLoadInfo() {
-        try {
-          const r = await fetch('/api/container/info');
-          const d = await r.json();
-          const dot   = document.getElementById('ctr-dot');
-          const label = document.getElementById('ctr-status-label');
-          const uptime = document.getElementById('ctr-uptime');
-          const vi    = document.getElementById('ctr-version-installed');
-          const vt    = document.getElementById('ctr-version-target');
-          const btnU  = document.getElementById('ctr-btn-update');
-
-          dot.className = d.container.status === 'running' ? 'dot online' : 'dot offline';
-          label.textContent = d.container.status === 'running' ? '{{ _("En cours") }}' : (d.container.status || '{{ _("Inconnu") }}');
-          uptime.textContent = d.container.status === 'running' ? '{{ _("Depuis") }} ' + _fmtUptime(d.container.uptime_s) : '';
-          vi.textContent = `{{ _("Build installé") }} : ${d.installed_build}`;
-          if (d.update_pending) {
-            vt.innerHTML = `<span style="color:var(--yellow,#f0a500)">⚠ {{ _("Mise à jour disponible") }} : ${d.target_build}</span>`;
-            btnU.textContent = '⬆ {{ _("Mettre à jour") }}';
-          } else {
-            vt.textContent = d.last_updated ? `{{ _("Vérifié le") }} ${d.last_updated}` : '';
-            btnU.textContent = '{{ _("Vérifier et mettre à jour") }}';
-          }
-        } catch(e) {
-          document.getElementById('ctr-msg').textContent = '{{ _("Erreur de chargement") }}';
-        }
-      }
-
-      async function ctrRestart() {
-        const btn = document.getElementById('ctr-btn-restart');
-        btn.disabled = true;
-        btn.textContent = '{{ _("Redémarrage…") }}';
-        document.getElementById('ctr-msg').textContent = '';
-        try {
-          const r = await fetch('/api/container/restart', {
-            method: 'POST',
-            headers: {'X-CSRFToken': _CSRF}
-          });
-          const d = await r.json();
-          document.getElementById('ctr-msg').textContent = d.ok ? '✓ {{ _("Serveur redémarré") }}' : `✗ ${d.error}`;
-          setTimeout(ctrLoadInfo, 3000);
-        } catch(e) {
-          document.getElementById('ctr-msg').textContent = `✗ ${e}`;
-        } finally {
-          btn.disabled = false;
-          btn.textContent = '{{ _("Redémarrer le serveur") }}';
-        }
-      }
-
-      function ctrModalOpen() {
-        document.getElementById('sm-user').value = {{ env_values.get('STEAM_USERNAME', '')|tojson }};
-        document.getElementById('sm-pass').value = '';
-        document.getElementById('sm-guard').value = '';
-        const modal = document.getElementById('steam-modal');
-        modal.style.display = 'flex';
-        setTimeout(() => document.getElementById('sm-pass').focus(), 50);
-      }
-
-      function ctrModalClose() {
-        document.getElementById('steam-modal').style.display = 'none';
-      }
-
-      function ctrModalConfirm() {
-        const user = document.getElementById('sm-user').value.trim();
-        const pass = document.getElementById('sm-pass').value;
-        const guard = document.getElementById('sm-guard').value.trim().toUpperCase();
-        if (!user || !pass) {
-          document.getElementById('sm-pass').focus();
-          return;
-        }
-        ctrModalClose();
-        ctrUpdate(user, pass, guard);
-      }
-
-      document.getElementById('steam-modal').addEventListener('keydown', e => {
-        if (e.key === 'Enter') ctrModalConfirm();
-        if (e.key === 'Escape') ctrModalClose();
-      });
-
-      async function ctrUpdate(steamUser, steamPass, steamGuard) {
-        const btn  = document.getElementById('ctr-btn-update');
-        const wrap = document.getElementById('ctr-terminal-wrap');
-        const term = document.getElementById('ctr-terminal');
-        const msg  = document.getElementById('ctr-msg');
-        btn.disabled = true;
-        btn.textContent = '{{ _("Mise à jour en cours…") }}';
-        wrap.style.display = '';
-        term.textContent = '';
-        msg.textContent = '';
-
-        const body = {username: steamUser, password: steamPass};
-        if (steamGuard) body.guard_code = steamGuard;
-
-        try {
-          term.textContent = '⏳ Connexion...\n';
-          const resp = await fetch('/api/container/update', {
-            method: 'POST',
-            headers: {'X-CSRFToken': _CSRF, 'Content-Type': 'application/json'},
-            body: JSON.stringify(body),
-          });
-          if (!resp.ok) {
-            term.textContent += `\n✗ Erreur HTTP ${resp.status}: ${await resp.text()}`;
-            msg.textContent = '✗ {{ _("Mise à jour échouée") }}';
-            return;
-          }
-          const reader = resp.body.getReader();
-          const decoder = new TextDecoder();
-          let buf = '';
-          while (true) {
-            const {done, value} = await reader.read();
-            if (done) break;
-            buf += decoder.decode(value, {stream: true});
-            const parts = buf.split('\n');
-            buf = parts.pop();
-            for (const part of parts) {
-              if (part.startsWith('data: ')) {
-                try {
-                  const ev = JSON.parse(part.slice(6));
-                  term.textContent += ev.msg + '\n';
-                  term.scrollTop = term.scrollHeight;
-                  if (ev.done) {
-                    msg.textContent = ev.error ? '✗ {{ _("Mise à jour échouée") }}' : '✓ {{ _("Mise à jour terminée") }}';
-                    setTimeout(ctrLoadInfo, 2000);
-                  }
-                } catch(_) {}
-              }
-            }
-          }
-        } catch(e) {
-          term.textContent += `\n✗ ${e}`;
-        } finally {
-          btn.disabled = false;
-          btn.textContent = '{{ _("Vérifier et mettre à jour") }}';
-        }
-      }
-
-      ctrLoadInfo();
-      setInterval(ctrLoadInfo, 30000);
-      </script>
-
-      {% elif tab == 'bot' %}
-      <section class="settings-dashboard-grid">
-        <form method="post" action="{{ url_for('admin.settings', tab='bot') }}" class="settings-card settings-card-wide settings-card-form">
+        {# Langue & Fuseau #}
+        <form method="post" action="{{ url_for('admin.settings', tab='panel') }}" class="settings-card settings-card-form">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <input type="hidden" name="_tab" value="bot">
-          <div class="settings-card-head">
-            <h2>{{ _('Bot TCP') }}</h2>
-          </div>
-
-          <div class="settings-card-copy" style="background:var(--surface2);border-radius:8px;padding:14px 16px;margin-bottom:8px;font-size:0.83rem;line-height:1.6">
-            <strong>{{ _('À quoi sert le bot TCP ?') }}</strong><br>
-            {{ _('Le bot est un client fantôme qui se connecte silencieusement au serveur ACE EVO via TCP (port 9700). Il écoute les événements de session en temps réel (leaderboard, passages de secteurs, connexions/déconnexions) et les transmet au panel sans passer par le webhook de fin de session.') }}<br><br>
-            {{ _('Si un mot de passe admin est défini, il peut aussi envoyer des commandes dans le tchat du jeu (/kick, /next session, etc.).') }}<br><br>
-            <strong>{{ _('Steam ID') }}</strong> — {{ _('Compte Steam dédié recommandé (pas votre compte personnel). Le Steam ID 64-bit se trouve sur') }} <a href="https://www.steamidfinder.com" target="_blank" rel="noopener">steamidfinder.com</a>.
-          </div>
-
+          <input type="hidden" name="_tab" value="panel">
+          <div class="settings-card-head"><h2>{{ _('Langue & Fuseau') }}</h2></div>
           <div class="settings-fields">
-
+            {% for k in ['DEFAULT_LOCALE', 'PANEL_TIMEZONE'] %}
             <label class="settings-field">
               <span>
-                <strong>ACE_BOT_STEAM_ID</strong>
-                <em>{{ env_descs.get('ACE_BOT_STEAM_ID', '') }}</em>
+                <strong>{{ k }}</strong>
+                {% if k in env_descs %}<em>{{ env_descs[k] }}</em>{% endif %}
               </span>
-              <input class="form-control" type="text" name="ACE_BOT_STEAM_ID"
-                     value="{{ env_values.get('ACE_BOT_STEAM_ID', '') }}"
-                     placeholder="{{ _('Laisser vide pour désactiver') }}">
+              <input class="form-control" type="text" name="{{ k }}" value="{{ env_values.get(k, '') }}"
+                     placeholder="{{ _('Valeur par défaut') }}">
             </label>
-
-            <div class="settings-field" style="align-items:center">
-              <span>
-                <strong>{{ _('Voiture du bot') }}</strong>
-                <em>{{ _('Auto-sélectionnée depuis la première voiture de la config active — se met à jour à chaque rotation de session.') }}</em>
-              </span>
-              <span style="font-size:0.85rem;color:var(--text2);font-style:italic">
-                {{ _('Automatique') }}
-              </span>
-            </div>
-
-            <label class="settings-field">
-              <span>
-                <strong>ACE_BOT_IS_ADMIN</strong>
-                <em>{{ env_descs.get('ACE_BOT_IS_ADMIN', '') }}</em>
-              </span>
-              <div>
-                <input type="hidden" name="ACE_BOT_IS_ADMIN" value="false">
-                <input type="checkbox" name="ACE_BOT_IS_ADMIN" value="true" id="bot-is-admin-cb"
-                       {% if env_values.get('ACE_BOT_IS_ADMIN', 'false') == 'true' %}checked{% endif %}
-                       style="width:20px;height:20px;cursor:pointer">
-                <div id="bot-admin-warn"
-                     style="margin-top:6px;font-size:0.78rem;color:var(--yellow,#f0a500);{% if bot_admin_password_set or env_values.get('ACE_BOT_IS_ADMIN','false') != 'true' %}display:none{% endif %}">
-                  ⚠ {{ _('AdminPassword vide dans la config serveur — le bot se connectera sans droits admin.') }}
-                  <a href="{{ url_for('admin.server') }}" style="color:inherit;text-decoration:underline">{{ _('Configurer') }}</a>
-                </div>
-                <script>
-                document.getElementById('bot-is-admin-cb').addEventListener('change', function() {
-                  document.getElementById('bot-admin-warn').style.display =
-                    (this.checked && !{{ 'true' if bot_admin_password_set else 'false' }}) ? '' : 'none';
-                });
-                </script>
-              </div>
-            </label>
-
+            {% endfor %}
           </div>
+          <button type="submit" class="btn btn-primary settings-save-btn">{{ _('Enregistrer les modifications') }}</button>
+        </form>
 
-          <div class="settings-card-head" style="margin-top:20px">
-            <h2>{{ _('Messages de bienvenue') }}</h2>
-          </div>
-          <div class="settings-card-copy" style="background:var(--surface2);border-radius:8px;padding:12px 16px;margin-bottom:8px;font-size:0.82rem">
-            {{ _('Variables disponibles') }} : <code>{name}</code> {{ _('(pseudo du pilote)') }}, <code>{discord_url}</code>, <code>{site_url}</code>.<br>
-            {{ _('Laisser vide pour désactiver le message correspondant.') }}
-          </div>
+        {# Sécurité #}
+        <form method="post" action="{{ url_for('admin.settings', tab='panel') }}" class="settings-card settings-card-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="_tab" value="panel">
+          <div class="settings-card-head"><h2>{{ _('Sécurité') }}</h2></div>
           <div class="settings-fields">
-
+            {% for k in ['SECRET_KEY', 'SESSION_COOKIE_SECURE', 'RESULTS_INGEST_SECRET'] %}
             <label class="settings-field">
               <span>
-                <strong>ACE_BOT_MSG_WELCOME</strong>
-                <em>{{ env_descs.get('ACE_BOT_MSG_WELCOME', '') }}</em>
+                <strong>{{ k }}</strong>
+                {% if k in env_descs %}<em>{{ env_descs[k] }}</em>{% endif %}
               </span>
-              <input class="form-control" type="text" name="ACE_BOT_MSG_WELCOME"
-                     value="{{ env_values.get('ACE_BOT_MSG_WELCOME', _('Bienvenue {name} !')) }}"
-                     placeholder="{{ _('Bienvenue {name} !') }}">
+              {% if k in sensitive %}
+              <input class="form-control" type="password" name="{{ k }}" value="{{ env_values.get(k, '') }}"
+                     autocomplete="new-password" placeholder="{{ _('Non défini') }}">
+              {% else %}
+              <input class="form-control" type="text" name="{{ k }}" value="{{ env_values.get(k, '') }}"
+                     placeholder="{{ _('Valeur par défaut') }}">
+              {% endif %}
             </label>
-
-            <label class="settings-field">
-              <span>
-                <strong>ACE_BOT_MSG_DISCORD</strong>
-                <em>{{ env_descs.get('ACE_BOT_MSG_DISCORD', '') }}</em>
-              </span>
-              <input class="form-control" type="text" name="ACE_BOT_MSG_DISCORD"
-                     value="{{ env_values.get('ACE_BOT_MSG_DISCORD', _('Rejoins le discord : {discord_url}')) }}"
-                     placeholder="{{ _('Rejoins le discord : {discord_url}') }}">
-            </label>
-
-            <label class="settings-field">
-              <span>
-                <strong>ACE_BOT_MSG_SITE</strong>
-                <em>{{ env_descs.get('ACE_BOT_MSG_SITE', '') }}</em>
-              </span>
-              <input class="form-control" type="text" name="ACE_BOT_MSG_SITE"
-                     value="{{ env_values.get('ACE_BOT_MSG_SITE', _('Retrouve tes resultats et evenements sur : {site_url}')) }}"
-                     placeholder="{{ _('Retrouve tes resultats et evenements sur : {site_url}') }}">
-            </label>
-
+            {% endfor %}
           </div>
           <button type="submit" class="btn btn-primary settings-save-btn">{{ _('Enregistrer les modifications') }}</button>
         </form>
       </section>
-      {% elif active_panel not in ['media', 'users', 'events', 'live', 'accounts'] %}
-      <section class="settings-dashboard-grid">
-        {{ env_form(current_section.id, current_section.label, current_section.keys,
-                    _('Paramètres serveur') if current_section.id == 'panel' else current_section.label) }}
 
-        <div class="settings-card">
-          <div class="settings-card-head">
-            <h2>{{ _('Raccourcis') }}</h2>
-          </div>
-          <div class="settings-shortcuts">
-            <a href="{{ url_for('admin.server') }}">{{ _('Configuration serveur') }}</a>
-            <a href="{{ url_for('events_admin.events_list') }}">{{ _('Gestion événements') }}</a>
-            <a href="{{ url_for('events_admin.drivers_list') }}">{{ _('Gestion pilotes') }}</a>
-            <a href="{{ url_for('admin.settings', tab='media') }}">{{ _('Bannières & logo') }}</a>
-          </div>
-        </div>
-
-        <div class="settings-card">
-          <div class="settings-card-head">
-            <h2>{{ _('Ports réseau') }}</h2>
-          </div>
-          <table class="settings-mini-table">
-            <tbody>
-              <tr><td>{{ _('Serveur de jeu') }}</td><td>{{ env_values.get('ACESERVER_TCP_PORT', '9700') }}</td><td>TCP</td></tr>
-              <tr><td>{{ _('API serveur') }}</td><td>{{ env_values.get('ACESERVER_HTTP_PORT', '8080') }}</td><td>HTTP</td></tr>
-              <tr><td>{{ _('Panel web') }}</td><td>{{ request.host.split(':')[-1] if ':' in request.host else '80' }}</td><td>HTTP</td></tr>
-            </tbody>
-          </table>
-          <a class="btn btn-secondary btn-sm settings-inline-action" href="{{ url_for('admin.settings', tab='server') }}">{{ _('Modifier les ports') }}</a>
-        </div>
-
-        <div class="settings-card">
-          <div class="settings-card-head">
-            <h2>{{ _('Comptes administrateurs') }}</h2>
-            <a href="{{ url_for('admin.settings', tab='accounts') }}" class="btn btn-secondary btn-sm">{{ _('Gérer') }}</a>
-          </div>
-          <table class="settings-mini-table">
-            <tbody>
-              {% for acc in admin_accounts %}
-              <tr>
-                <td>{{ acc.display_name or acc.username }}</td>
-                <td>{{ _('Super Admin') if acc.is_superadmin else _('Admin') }}</td>
-                <td class="{{ 'is-online' if acc.is_active else 'is-offline' }}">{{ _('Actif') if acc.is_active else _('Inactif') }}</td>
-              </tr>
-              {% else %}
-              <tr><td colspan="3" style="color:var(--dim)">{{ _('Aucun compte') }}</td></tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      </section>
-      {% endif %}
-
-      {% if tab == 'media' %}
-      <section class="settings-dashboard-grid">
+      {# Médias #}
+      <section class="settings-dashboard-grid" style="margin-top:1.5rem">
         <div class="settings-card settings-card-wide">
           <div class="settings-card-head">
             <h2>{{ _('Médias — Bannière & Logo') }}</h2>
@@ -528,7 +165,7 @@
           </p>
           <div id="upload-zone" class="settings-upload"
                onclick="document.getElementById('file-input').click()"
-               ondragover="ev.preventDefault();this.classList.add('dragging')"
+               ondragover="event.preventDefault();this.classList.add('dragging')"
                ondragleave="this.classList.remove('dragging')"
                ondrop="handleDrop(event)">
             <input type="file" id="file-input" hidden accept=".jpg,.jpeg,.png,.gif,.webp"
@@ -560,10 +197,511 @@
         </div>
         {% endif %}
       </section>
-      {% endif %}
 
-      {% if tab == 'accounts' %}
-      {# ── Gestion des comptes administrateurs ── #}
+      {# ═══════════════════════════════════════════════════════════════════════ #}
+      {# ── SERVEUR ── Config jeu, infra ACE, mise à jour Steam ────────────── #}
+      {# ═══════════════════════════════════════════════════════════════════════ #}
+      {% elif tab in ['server', 'gameconfig', 'conteneur'] %}
+
+      {# Config jeu globale #}
+      <section class="settings-dashboard-grid">
+        <form method="post" action="{{ url_for('admin.settings', tab='server') }}" class="settings-card settings-card-full settings-card-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="_tab" value="server">
+          <div class="settings-card-head">
+            <h2>{{ _('Configuration du serveur de jeu') }}</h2>
+          </div>
+          <div class="settings-card-copy" style="background:var(--surface2);border-radius:8px;padding:14px 16px;margin-bottom:20px;font-size:0.83rem;line-height:1.6">
+            {{ _('Ces paramètres sont communs à toutes vos configurations. Ils remplacent automatiquement les valeurs des fichiers JSON au démarrage du serveur.') }}<br>
+            {{ _('Laisser un champ vide conserve la valeur par défaut.') }}
+          </div>
+
+          <div class="settings-card-head" style="margin-bottom:4px">
+            <h2 style="font-size:0.85rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text2)">{{ _('Identité') }}</h2>
+          </div>
+          <div class="settings-fields" style="margin-bottom:20px">
+            <label class="settings-field">
+              <span><strong>SERVER_NAME</strong><em>{{ env_descs.get('SERVER_NAME', '') }}</em></span>
+              <input class="form-control" type="text" name="SERVER_NAME" value="{{ env_values.get('SERVER_NAME', '') }}" placeholder="ACE EVO Server">
+            </label>
+            <label class="settings-field">
+              <span><strong>SERVER_MAX_PLAYERS</strong><em>{{ env_descs.get('SERVER_MAX_PLAYERS', '') }}</em></span>
+              <input class="form-control" type="number" name="SERVER_MAX_PLAYERS" min="1" max="128" value="{{ env_values.get('SERVER_MAX_PLAYERS', '') }}" placeholder="8">
+            </label>
+          </div>
+
+          <div class="settings-card-head" style="margin-bottom:4px">
+            <h2 style="font-size:0.85rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text2)">{{ _('Réseau') }}</h2>
+          </div>
+          <div class="settings-fields" style="margin-bottom:20px">
+            <label class="settings-field">
+              <span><strong>SERVER_TCP_PORT</strong><em>{{ env_descs.get('SERVER_TCP_PORT', '') }}</em></span>
+              <input class="form-control" type="number" name="SERVER_TCP_PORT" min="1" max="65535" value="{{ env_values.get('SERVER_TCP_PORT', '') }}" placeholder="9700">
+            </label>
+            <label class="settings-field">
+              <span><strong>SERVER_UDP_PORT</strong><em>{{ env_descs.get('SERVER_UDP_PORT', '') }}</em></span>
+              <input class="form-control" type="number" name="SERVER_UDP_PORT" min="1" max="65535" value="{{ env_values.get('SERVER_UDP_PORT', '') }}" placeholder="9700">
+            </label>
+          </div>
+
+          <div class="settings-card-head" style="margin-bottom:4px">
+            <h2 style="font-size:0.85rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text2)">{{ _('Accès') }}</h2>
+          </div>
+          <div class="settings-fields" style="margin-bottom:20px">
+            <label class="settings-field">
+              <span><strong>SERVER_DRIVER_PASSWORD</strong><em>{{ env_descs.get('SERVER_DRIVER_PASSWORD', '') }}</em></span>
+              <input class="form-control" type="password" name="SERVER_DRIVER_PASSWORD" value="{{ env_values.get('SERVER_DRIVER_PASSWORD', '') }}" autocomplete="new-password" placeholder="{{ _('Vide = accès libre') }}">
+            </label>
+            <label class="settings-field">
+              <span><strong>SERVER_ADMIN_PASSWORD</strong><em>{{ env_descs.get('SERVER_ADMIN_PASSWORD', '') }}</em></span>
+              <input class="form-control" type="password" name="SERVER_ADMIN_PASSWORD" value="{{ env_values.get('SERVER_ADMIN_PASSWORD', '') }}" autocomplete="new-password" placeholder="{{ _('Vide = pas de mot de passe admin') }}">
+            </label>
+          </div>
+
+          <div class="settings-card-head" style="margin-bottom:4px">
+            <h2 style="font-size:0.85rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text2)">{{ _('Chemins') }}</h2>
+          </div>
+          <div class="settings-fields">
+            <label class="settings-field">
+              <span><strong>SERVER_ENTRY_LIST_PATH</strong><em>{{ env_descs.get('SERVER_ENTRY_LIST_PATH', '') }}</em></span>
+              <input class="form-control" type="text" name="SERVER_ENTRY_LIST_PATH" value="{{ env_values.get('SERVER_ENTRY_LIST_PATH', '') }}" placeholder="{{ _('Laisser vide si non utilisé') }}">
+            </label>
+            <label class="settings-field">
+              <span><strong>SERVER_RESULTS_PATH</strong><em>{{ env_descs.get('SERVER_RESULTS_PATH', '') }}</em></span>
+              <input class="form-control" type="text" name="SERVER_RESULTS_PATH" value="{{ env_values.get('SERVER_RESULTS_PATH', '') }}" placeholder="{{ _('Laisser vide si non utilisé') }}">
+            </label>
+          </div>
+
+          <button type="submit" class="btn btn-primary settings-save-btn">{{ _('Enregistrer les modifications') }}</button>
+        </form>
+      </section>
+
+      {# Infrastructure ACE #}
+      <section class="settings-dashboard-grid" style="margin-top:1.5rem">
+        <form method="post" action="{{ url_for('admin.settings', tab='server') }}" class="settings-card settings-card-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="_tab" value="server">
+          <div class="settings-card-head"><h2>{{ _('Infrastructure ACE EVO') }}</h2></div>
+          <div class="settings-fields">
+            {% for k in ['ACESERVER_HTTP_PORT', 'ACESERVER_TCP_HOST', 'ACESERVER_TCP_PORT', 'ACESERVER_DIR', 'CONFIGS_DIR'] %}
+            <label class="settings-field">
+              <span>
+                <strong>{{ k }}</strong>
+                {% if k in env_descs %}<em>{{ env_descs[k] }}</em>{% endif %}
+              </span>
+              <input class="form-control" type="text" name="{{ k }}" value="{{ env_values.get(k, '') }}" placeholder="{{ _('Valeur par défaut') }}">
+            </label>
+            {% endfor %}
+          </div>
+          <button type="submit" class="btn btn-primary settings-save-btn">{{ _('Enregistrer les modifications') }}</button>
+        </form>
+
+        <form method="post" action="{{ url_for('admin.settings', tab='server') }}" class="settings-card settings-card-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="_tab" value="server">
+          <div class="settings-card-head"><h2>{{ _('Compte Steam (SteamCMD)') }}</h2></div>
+          <div class="settings-card-copy" style="background:var(--surface2);border-radius:8px;padding:14px 16px;margin-bottom:8px;font-size:0.83rem;line-height:1.6">
+            {{ _("Le mot de passe est saisi au moment de la mise à jour et n'est jamais stocké. Ce champ pré-remplit simplement le formulaire. Le compte doit posséder ACE EVO dans sa bibliothèque Steam.") }}
+          </div>
+          <div class="settings-fields">
+            <label class="settings-field">
+              <span>
+                <strong>STEAM_USERNAME</strong>
+                <em>{{ env_descs.get('STEAM_USERNAME', '') }}</em>
+              </span>
+              <input class="form-control" type="text" name="STEAM_USERNAME" value="{{ env_values.get('STEAM_USERNAME', '') }}" placeholder="{{ _('ex: moncomptesteam') }}">
+            </label>
+          </div>
+          <button type="submit" class="btn btn-primary settings-save-btn">{{ _('Enregistrer les modifications') }}</button>
+        </form>
+      </section>
+
+      {# Mise à jour Steam / conteneur #}
+      <section class="settings-dashboard-grid" style="margin-top:1.5rem">
+        <div class="settings-card settings-card-full">
+          <div class="settings-card-head">
+            <h2>{{ _('Serveur de jeu') }}</h2>
+          </div>
+          <div id="ctr-status-block" class="grid-2col" style="margin-bottom:1.5rem">
+            <div style="background:var(--surface2);border-radius:8px;padding:14px 16px">
+              <div style="font-size:0.75rem;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">{{ _('Conteneur') }}</div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <span class="dot offline" id="ctr-dot"></span>
+                <strong id="ctr-status-label">—</strong>
+              </div>
+              <div style="font-size:0.78rem;color:var(--text2);margin-top:4px" id="ctr-uptime">—</div>
+            </div>
+            <div style="background:var(--surface2);border-radius:8px;padding:14px 16px">
+              <div style="font-size:0.75rem;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">{{ _('Version') }}</div>
+              <div id="ctr-version-installed" style="font-size:0.9rem">—</div>
+              <div id="ctr-version-target"    style="font-size:0.78rem;color:var(--text2);margin-top:2px">—</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1.5rem">
+            <button id="ctr-btn-restart" class="btn btn-secondary" onclick="ctrRestart()" type="button">{{ _('Redémarrer le serveur') }}</button>
+            <button id="ctr-btn-update" class="btn btn-primary" onclick="ctrModalOpen()" type="button">{{ _('Vérifier et mettre à jour') }}</button>
+          </div>
+          <div id="ctr-terminal-wrap" style="display:none">
+            <div style="font-size:0.75rem;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">{{ _('Sortie SteamCMD') }}</div>
+            <pre id="ctr-terminal" style="background:#0d1117;color:#e6edf3;border-radius:8px;padding:14px 16px;font-size:0.78rem;line-height:1.5;max-height:360px;overflow-y:auto;white-space:pre-wrap;word-break:break-all"></pre>
+          </div>
+          <div id="ctr-msg" style="margin-top:8px;font-size:0.85rem"></div>
+        </div>
+      </section>
+
+      {# Modal Steam #}
+      <div id="steam-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center">
+        <div style="background:var(--surface1);border-radius:12px;padding:28px 32px;width:min(440px,92vw);box-shadow:0 8px 40px rgba(0,0,0,.5)">
+          <h3 style="margin:0 0 8px;font-size:1.1rem">🔐 {{ _('Connexion Steam') }}</h3>
+          <p style="font-size:0.83rem;color:var(--text2);margin:0 0 20px;line-height:1.5">{{ _('Entrez les identifiants du compte Steam qui possède ACE EVO. Ils ne sont pas sauvegardés.') }}</p>
+          <div class="form-group" style="margin-bottom:12px">
+            <label style="font-size:0.85rem;font-weight:600">{{ _('Nom d\'utilisateur') }}</label>
+            <input class="form-control" type="text" id="sm-user" autocomplete="username" placeholder="{{ _('votre_pseudo_steam') }}">
+          </div>
+          <div class="form-group" style="margin-bottom:12px">
+            <label style="font-size:0.85rem;font-weight:600">{{ _('Mot de passe') }}</label>
+            <input class="form-control" type="password" id="sm-pass" autocomplete="current-password">
+          </div>
+          <div class="form-group" style="margin-bottom:20px">
+            <label style="font-size:0.85rem;font-weight:600">
+              {{ _('Code Steam Guard') }}
+              <span style="color:var(--text2);font-weight:400;font-size:0.8rem"> — {{ _('optionnel, si activé sur le compte') }}</span>
+            </label>
+            <input class="form-control" type="text" id="sm-guard" maxlength="8" style="letter-spacing:.18em;text-transform:uppercase" autocomplete="one-time-code" placeholder="XXXXX">
+          </div>
+          <div style="display:flex;gap:.75rem;justify-content:flex-end">
+            <button class="btn btn-secondary" onclick="ctrModalClose()" type="button">{{ _('Annuler') }}</button>
+            <button class="btn btn-primary" onclick="ctrModalConfirm()" type="button" id="sm-btn-ok">⬆ {{ _('Lancer la mise à jour') }}</button>
+          </div>
+        </div>
+      </div>
+
+      <script>
+      const _CSRF = document.querySelector('meta[name="csrf-token"]').content;
+      function _fmtUptime(s) {
+        if (!s || s < 0) return '—';
+        const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60);
+        return h ? `${h}h ${m}min` : `${m} min`;
+      }
+      async function ctrLoadInfo() {
+        try {
+          const r = await fetch('/api/container/info');
+          const d = await r.json();
+          const dot = document.getElementById('ctr-dot');
+          const label = document.getElementById('ctr-status-label');
+          const uptime = document.getElementById('ctr-uptime');
+          const vi = document.getElementById('ctr-version-installed');
+          const vt = document.getElementById('ctr-version-target');
+          const btnU = document.getElementById('ctr-btn-update');
+          dot.className = d.container.status === 'running' ? 'dot online' : 'dot offline';
+          label.textContent = d.container.status === 'running' ? '{{ _("En cours") }}' : (d.container.status || '{{ _("Inconnu") }}');
+          uptime.textContent = d.container.status === 'running' ? '{{ _("Depuis") }} ' + _fmtUptime(d.container.uptime_s) : '';
+          vi.textContent = `{{ _("Build installé") }} : ${d.installed_build}`;
+          if (d.update_pending) {
+            vt.innerHTML = `<span style="color:var(--yellow,#f0a500)">⚠ {{ _("Mise à jour disponible") }} : ${d.target_build}</span>`;
+            btnU.textContent = '⬆ {{ _("Mettre à jour") }}';
+          } else {
+            vt.textContent = d.last_updated ? `{{ _("Vérifié le") }} ${d.last_updated}` : '';
+            btnU.textContent = '{{ _("Vérifier et mettre à jour") }}';
+          }
+        } catch(e) {
+          document.getElementById('ctr-msg').textContent = '{{ _("Erreur de chargement") }}';
+        }
+      }
+      async function ctrRestart() {
+        const btn = document.getElementById('ctr-btn-restart');
+        btn.disabled = true; btn.textContent = '{{ _("Redémarrage…") }}';
+        document.getElementById('ctr-msg').textContent = '';
+        try {
+          const r = await fetch('/api/container/restart', {method:'POST', headers:{'X-CSRFToken':_CSRF}});
+          const d = await r.json();
+          document.getElementById('ctr-msg').textContent = d.ok ? '✓ {{ _("Serveur redémarré") }}' : `✗ ${d.error}`;
+          setTimeout(ctrLoadInfo, 3000);
+        } catch(e) {
+          document.getElementById('ctr-msg').textContent = `✗ ${e}`;
+        } finally {
+          btn.disabled = false; btn.textContent = '{{ _("Redémarrer le serveur") }}';
+        }
+      }
+      function ctrModalOpen() {
+        document.getElementById('sm-user').value = {{ env_values.get('STEAM_USERNAME', '')|tojson }};
+        document.getElementById('sm-pass').value = '';
+        document.getElementById('sm-guard').value = '';
+        const modal = document.getElementById('steam-modal');
+        modal.style.display = 'flex';
+        setTimeout(() => document.getElementById('sm-pass').focus(), 50);
+      }
+      function ctrModalClose() { document.getElementById('steam-modal').style.display = 'none'; }
+      function ctrModalConfirm() {
+        const user = document.getElementById('sm-user').value.trim();
+        const pass = document.getElementById('sm-pass').value;
+        const guard = document.getElementById('sm-guard').value.trim().toUpperCase();
+        if (!user || !pass) { document.getElementById('sm-pass').focus(); return; }
+        ctrModalClose();
+        ctrUpdate(user, pass, guard);
+      }
+      document.getElementById('steam-modal').addEventListener('keydown', e => {
+        if (e.key === 'Enter') ctrModalConfirm();
+        if (e.key === 'Escape') ctrModalClose();
+      });
+      async function ctrUpdate(steamUser, steamPass, steamGuard) {
+        const btn = document.getElementById('ctr-btn-update');
+        const wrap = document.getElementById('ctr-terminal-wrap');
+        const term = document.getElementById('ctr-terminal');
+        const msg = document.getElementById('ctr-msg');
+        btn.disabled = true; btn.textContent = '{{ _("Mise à jour en cours…") }}';
+        wrap.style.display = ''; term.textContent = ''; msg.textContent = '';
+        const body = {username: steamUser, password: steamPass};
+        if (steamGuard) body.guard_code = steamGuard;
+        try {
+          term.textContent = '⏳ Connexion...\n';
+          const resp = await fetch('/api/container/update', {
+            method:'POST',
+            headers:{'X-CSRFToken':_CSRF,'Content-Type':'application/json'},
+            body: JSON.stringify(body),
+          });
+          if (!resp.ok) {
+            term.textContent += `\n✗ Erreur HTTP ${resp.status}: ${await resp.text()}`;
+            msg.textContent = '✗ {{ _("Mise à jour échouée") }}';
+            return;
+          }
+          const reader = resp.body.getReader();
+          const decoder = new TextDecoder();
+          let buf = '';
+          while (true) {
+            const {done, value} = await reader.read();
+            if (done) break;
+            buf += decoder.decode(value, {stream:true});
+            const parts = buf.split('\n'); buf = parts.pop();
+            for (const part of parts) {
+              if (part.startsWith('data: ')) {
+                try {
+                  const ev = JSON.parse(part.slice(6));
+                  term.textContent += ev.msg + '\n';
+                  term.scrollTop = term.scrollHeight;
+                  if (ev.done) {
+                    msg.textContent = ev.error ? '✗ {{ _("Mise à jour échouée") }}' : '✓ {{ _("Mise à jour terminée") }}';
+                    setTimeout(ctrLoadInfo, 2000);
+                  }
+                } catch(_) {}
+              }
+            }
+          }
+        } catch(e) {
+          term.textContent += `\n✗ ${e}`;
+        } finally {
+          btn.disabled = false; btn.textContent = '{{ _("Vérifier et mettre à jour") }}';
+        }
+      }
+      ctrLoadInfo();
+      setInterval(ctrLoadInfo, 30000);
+      </script>
+
+      {# ═══════════════════════════════════════════════════════════════════════ #}
+      {# ── NOTIFICATIONS ── Discord, Mail, Bot TCP ────────────────────────── #}
+      {# ═══════════════════════════════════════════════════════════════════════ #}
+      {% elif tab in ['notifications', 'bot', 'discord', 'mail'] %}
+      <style>
+        .dc-field { display:flex; flex-direction:column; gap:6px; margin-bottom:20px; }
+        .dc-field:last-child { margin-bottom:0; }
+        .dc-field-label { display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
+        .dc-field-label strong { color:rgba(226,234,247,.85); font-family:var(--condensed); font-size:.82rem; font-weight:900; text-transform:uppercase; }
+        .dc-field-desc { font-size:.78rem; color:var(--dim); line-height:1.4; margin-bottom:2px; }
+        .dc-var { background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.14); border-radius:4px; padding:1px 6px; font-size:.72rem; color:var(--accent); font-family:monospace; white-space:nowrap; }
+        .dc-vars { display:flex; flex-wrap:wrap; gap:4px; }
+        .dc-channel-head { font-family:var(--condensed); font-size:.75rem; font-weight:900; text-transform:uppercase; letter-spacing:.1em; color:var(--dim); border-bottom:1px solid rgba(255,255,255,.07); padding-bottom:10px; margin-bottom:18px; }
+      </style>
+
+      {# Discord — Webhooks + Mentions #}
+      <section class="settings-dashboard-grid">
+        <form method="post" action="{{ url_for('admin.settings', tab='notifications') }}" class="settings-card settings-card-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="_tab" value="notifications">
+          <div class="settings-card-head"><h2>Discord — Webhooks</h2></div>
+          <p class="settings-card-copy" style="margin-bottom:20px;line-height:1.5">
+            {{ _('Trois channels optionnels. Si un channel n\'est pas renseigné, ses notifications tombent sur le webhook principal.') }}
+          </p>
+          <div class="dc-field">
+            <div class="dc-field-label"><strong>{{ _('Webhook principal') }}</strong></div>
+            <span class="dc-field-desc">{{ _('Démarrage / arrêt / crash du serveur') }}</span>
+            <input class="form-control" type="password" name="DISCORD_WEBHOOK_URL" value="{{ env_values.get('DISCORD_WEBHOOK_URL', '') }}" autocomplete="off" placeholder="{{ _('Non défini') }}">
+          </div>
+          <div class="dc-field">
+            <div class="dc-field-label"><strong>{{ _('Webhook pilotes') }}</strong></div>
+            <span class="dc-field-desc">{{ _('Connexions / déconnexions joueurs') }}</span>
+            <input class="form-control" type="password" name="DISCORD_PILOTS_WEBHOOK_URL" value="{{ env_values.get('DISCORD_PILOTS_WEBHOOK_URL', '') }}" autocomplete="off" placeholder="{{ _('Vide = webhook principal') }}">
+          </div>
+          <div class="dc-field">
+            <div class="dc-field-label"><strong>{{ _('Webhook course') }}</strong></div>
+            <span class="dc-field-desc">{{ _('Meilleur tour, actions admin') }}</span>
+            <input class="form-control" type="password" name="DISCORD_RACE_WEBHOOK_URL" value="{{ env_values.get('DISCORD_RACE_WEBHOOK_URL', '') }}" autocomplete="off" placeholder="{{ _('Vide = webhook principal') }}">
+          </div>
+          <div class="dc-field">
+            <div class="dc-field-label"><strong>{{ _('Lien d\'invitation') }}</strong></div>
+            <span class="dc-field-desc">{{ _('Affiché sur le dashboard public') }}</span>
+            <input class="form-control" type="password" name="DISCORD_INVITE_URL" value="{{ env_values.get('DISCORD_INVITE_URL', '') }}" autocomplete="off" placeholder="{{ _('Non défini') }}">
+          </div>
+          <button type="submit" class="btn btn-primary settings-save-btn">{{ _('Enregistrer les modifications') }}</button>
+        </form>
+
+        <form method="post" action="{{ url_for('admin.settings', tab='notifications') }}" class="settings-card settings-card-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="_tab" value="notifications">
+          <div class="settings-card-head"><h2>Discord — {{ _('Mentions') }}</h2></div>
+          <p class="settings-card-copy" style="margin-bottom:20px;line-height:1.5">
+            {{ _('Texte envoyé avant l\'embed pour mentionner un rôle ou @here. Laisser vide pour désactiver.') }}<br>
+            {{ _('Exemples') }} : <code>@here</code>, <code>&lt;@&amp;123456789&gt;</code>
+          </p>
+          <div class="dc-field">
+            <div class="dc-field-label"><strong>{{ _('Channel principal') }}</strong></div>
+            <input class="form-control" type="text" name="DISCORD_MENTION_MAIN" value="{{ env_values.get('DISCORD_MENTION_MAIN', '') }}" placeholder="{{ _('Vide = pas de mention') }}">
+          </div>
+          <div class="dc-field">
+            <div class="dc-field-label"><strong>{{ _('Channel pilotes') }}</strong></div>
+            <input class="form-control" type="text" name="DISCORD_MENTION_PILOTS" value="{{ env_values.get('DISCORD_MENTION_PILOTS', '') }}" placeholder="{{ _('Vide = pas de mention') }}">
+          </div>
+          <div class="dc-field">
+            <div class="dc-field-label"><strong>{{ _('Channel course') }}</strong></div>
+            <input class="form-control" type="text" name="DISCORD_MENTION_RACE" value="{{ env_values.get('DISCORD_MENTION_RACE', '') }}" placeholder="{{ _('Vide = pas de mention') }}">
+          </div>
+          <button type="submit" class="btn btn-primary settings-save-btn">{{ _('Enregistrer les modifications') }}</button>
+        </form>
+      </section>
+
+      {# Discord — Messages #}
+      <section class="settings-dashboard-grid" style="margin-top:1.5rem">
+        <form method="post" action="{{ url_for('admin.settings', tab='notifications') }}" class="settings-card settings-card-form settings-card-full">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="_tab" value="notifications">
+          <div class="settings-card-head"><h2>Discord — {{ _('Messages de notification') }}</h2></div>
+          <p class="settings-card-copy" style="margin-bottom:24px;line-height:1.5">
+            {{ _('Titre des embeds Discord envoyés dans chaque channel. Laisser vide = texte par défaut. Les variables entre accolades sont remplacées automatiquement à l\'envoi.') }}
+          </p>
+          <div class="grid-3col">
+            <div>
+              <div class="dc-channel-head">{{ _('Channel principal') }}</div>
+              <div class="dc-field">
+                <div class="dc-field-label"><strong>{{ _('Serveur démarré') }}</strong><div class="dc-vars"><code class="dc-var">{config}</code><code class="dc-var">{mode}</code><code class="dc-var">{circuit}</code></div></div>
+                <input class="form-control" type="text" name="DISCORD_MSG_SERVER_START" value="{{ env_values.get('DISCORD_MSG_SERVER_START', '') }}" placeholder="🏁 Serveur démarré">
+              </div>
+              <div class="dc-field">
+                <div class="dc-field-label"><strong>{{ _('Serveur arrêté') }}</strong><div class="dc-vars"><code class="dc-var">{config}</code></div></div>
+                <input class="form-control" type="text" name="DISCORD_MSG_SERVER_STOP" value="{{ env_values.get('DISCORD_MSG_SERVER_STOP', '') }}" placeholder="⏹ Serveur arrêté">
+              </div>
+              <div class="dc-field">
+                <div class="dc-field-label"><strong>{{ _('Crash détecté') }}</strong><div class="dc-vars"><code class="dc-var">{config}</code></div></div>
+                <input class="form-control" type="text" name="DISCORD_MSG_SERVER_CRASH" value="{{ env_values.get('DISCORD_MSG_SERVER_CRASH', '') }}" placeholder="💥 Crash détecté — Relance auto">
+              </div>
+            </div>
+            <div>
+              <div class="dc-channel-head">{{ _('Channel pilotes') }}</div>
+              <div class="dc-field">
+                <div class="dc-field-label"><strong>{{ _('Connexion joueur') }}</strong><div class="dc-vars"><code class="dc-var">{name}</code><code class="dc-var">{num}</code><code class="dc-var">{car}</code><code class="dc-var">{steam_id}</code></div></div>
+                <input class="form-control" type="text" name="DISCORD_MSG_PLAYER_JOIN" value="{{ env_values.get('DISCORD_MSG_PLAYER_JOIN', '') }}" placeholder="🟢 {num} — {name}">
+              </div>
+              <div class="dc-field">
+                <div class="dc-field-label"><strong>{{ _('Déconnexion joueur') }}</strong><div class="dc-vars"><code class="dc-var">{name}</code><code class="dc-var">{duration}</code><code class="dc-var">{steam_id}</code></div></div>
+                <input class="form-control" type="text" name="DISCORD_MSG_PLAYER_DISCONNECT" value="{{ env_values.get('DISCORD_MSG_PLAYER_DISCONNECT', '') }}" placeholder="🔴 {name}">
+              </div>
+              <div class="dc-field">
+                <div class="dc-field-label"><strong>{{ _('Changement de véhicule') }}</strong><div class="dc-vars"><code class="dc-var">{name}</code><code class="dc-var">{num}</code><code class="dc-var">{old_car}</code><code class="dc-var">{new_car}</code></div></div>
+                <input class="form-control" type="text" name="DISCORD_MSG_VEHICLE_CHANGE" value="{{ env_values.get('DISCORD_MSG_VEHICLE_CHANGE', '') }}" placeholder="🔄 {name} — Changement de véhicule">
+              </div>
+            </div>
+            <div>
+              <div class="dc-channel-head">{{ _('Channel course') }}</div>
+              <div class="dc-field">
+                <div class="dc-field-label"><strong>{{ _('Meilleur tour du serveur') }}</strong><div class="dc-vars"><code class="dc-var">{name}</code><code class="dc-var">{lap}</code><code class="dc-var">{car}</code></div></div>
+                <input class="form-control" type="text" name="DISCORD_MSG_BEST_LAP" value="{{ env_values.get('DISCORD_MSG_BEST_LAP', '') }}" placeholder="⏱ Nouveau meilleur tour du serveur">
+              </div>
+              <div class="dc-field">
+                <div class="dc-field-label"><strong>{{ _('Action admin') }}</strong><div class="dc-vars"><code class="dc-var">{action}</code><code class="dc-var">{target}</code><code class="dc-var">{admin}</code><code class="dc-var">{detail}</code></div></div>
+                <input class="form-control" type="text" name="DISCORD_MSG_ADMIN_ACTION" value="{{ env_values.get('DISCORD_MSG_ADMIN_ACTION', '') }}" placeholder="⚙️ {action} — {target}">
+              </div>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary settings-save-btn" style="margin-top:28px">{{ _('Enregistrer les messages') }}</button>
+        </form>
+      </section>
+
+      {# Mail + Bot #}
+      <section class="settings-dashboard-grid" style="margin-top:1.5rem">
+        <form method="post" action="{{ url_for('admin.settings', tab='notifications') }}" class="settings-card settings-card-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="_tab" value="notifications">
+          <div class="settings-card-head"><h2>{{ _('Mail (SMTP)') }}</h2></div>
+          <div class="settings-fields">
+            {% for k in ['MAIL_SERVER', 'MAIL_PORT', 'MAIL_USE_TLS', 'MAIL_USERNAME', 'MAIL_PASSWORD', 'MAIL_FROM', 'MAIL_ADMIN'] %}
+            <label class="settings-field">
+              <span>
+                <strong>{{ k }}</strong>
+                {% if k in env_descs %}<em>{{ env_descs[k] }}</em>{% endif %}
+              </span>
+              {% if k in sensitive %}
+              <input class="form-control" type="password" name="{{ k }}" value="{{ env_values.get(k, '') }}" autocomplete="new-password" placeholder="{{ _('Non défini') }}">
+              {% else %}
+              <input class="form-control" type="text" name="{{ k }}" value="{{ env_values.get(k, '') }}" placeholder="{{ _('Valeur par défaut') }}">
+              {% endif %}
+            </label>
+            {% endfor %}
+          </div>
+          <button type="submit" class="btn btn-primary settings-save-btn">{{ _('Enregistrer les modifications') }}</button>
+        </form>
+
+        <form method="post" action="{{ url_for('admin.settings', tab='notifications') }}" class="settings-card settings-card-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="_tab" value="notifications">
+          <div class="settings-card-head"><h2>{{ _('Bot TCP') }}</h2></div>
+          <div class="settings-card-copy" style="background:var(--surface2);border-radius:8px;padding:14px 16px;margin-bottom:16px;font-size:0.83rem;line-height:1.6">
+            {{ _('Le bot est un client fantôme qui se connecte silencieusement au serveur ACE EVO via TCP (port 9700). Il écoute les événements de session en temps réel (leaderboard, passages de secteurs, connexions/déconnexions) et les transmet au panel sans passer par le webhook de fin de session.') }}<br><br>
+            <strong>{{ _('Steam ID') }}</strong> — {{ _('Compte Steam dédié recommandé (pas votre compte personnel). Le Steam ID 64-bit se trouve sur') }} <a href="https://www.steamidfinder.com" target="_blank" rel="noopener">steamidfinder.com</a>.
+          </div>
+          <div class="settings-fields">
+            <label class="settings-field">
+              <span><strong>ACE_BOT_STEAM_ID</strong><em>{{ env_descs.get('ACE_BOT_STEAM_ID', '') }}</em></span>
+              <input class="form-control" type="text" name="ACE_BOT_STEAM_ID" value="{{ env_values.get('ACE_BOT_STEAM_ID', '') }}" placeholder="{{ _('Laisser vide pour désactiver') }}">
+            </label>
+            <label class="settings-field">
+              <span><strong>ACE_BOT_IS_ADMIN</strong><em>{{ env_descs.get('ACE_BOT_IS_ADMIN', '') }}</em></span>
+              <div>
+                <input type="hidden" name="ACE_BOT_IS_ADMIN" value="false">
+                <input type="checkbox" name="ACE_BOT_IS_ADMIN" value="true" id="bot-is-admin-cb"
+                       {% if env_values.get('ACE_BOT_IS_ADMIN', 'false') == 'true' %}checked{% endif %}
+                       style="width:20px;height:20px;cursor:pointer">
+                <div id="bot-admin-warn" style="margin-top:6px;font-size:0.78rem;color:var(--yellow,#f0a500);{% if bot_admin_password_set or env_values.get('ACE_BOT_IS_ADMIN','false') != 'true' %}display:none{% endif %}">
+                  ⚠ {{ _('AdminPassword vide dans la config serveur — le bot se connectera sans droits admin.') }}
+                  <a href="{{ url_for('admin.settings', tab='server') }}" style="color:inherit;text-decoration:underline">{{ _('Configurer') }}</a>
+                </div>
+                <script>
+                document.getElementById('bot-is-admin-cb').addEventListener('change', function() {
+                  document.getElementById('bot-admin-warn').style.display =
+                    (this.checked && !{{ 'true' if bot_admin_password_set else 'false' }}) ? '' : 'none';
+                });
+                </script>
+              </div>
+            </label>
+            <label class="settings-field">
+              <span><strong>ACE_BOT_MSG_WELCOME</strong><em>{{ env_descs.get('ACE_BOT_MSG_WELCOME', '') }}</em></span>
+              <input class="form-control" type="text" name="ACE_BOT_MSG_WELCOME" value="{{ env_values.get('ACE_BOT_MSG_WELCOME', _('Bienvenue {name} !')) }}" placeholder="{{ _('Bienvenue {name} !') }}">
+            </label>
+            <label class="settings-field">
+              <span><strong>ACE_BOT_MSG_DISCORD</strong><em>{{ env_descs.get('ACE_BOT_MSG_DISCORD', '') }}</em></span>
+              <input class="form-control" type="text" name="ACE_BOT_MSG_DISCORD" value="{{ env_values.get('ACE_BOT_MSG_DISCORD', _('Rejoins le discord : {discord_url}')) }}" placeholder="{{ _('Rejoins le discord : {discord_url}') }}">
+            </label>
+            <label class="settings-field">
+              <span><strong>ACE_BOT_MSG_SITE</strong><em>{{ env_descs.get('ACE_BOT_MSG_SITE', '') }}</em></span>
+              <input class="form-control" type="text" name="ACE_BOT_MSG_SITE" value="{{ env_values.get('ACE_BOT_MSG_SITE', _('Retrouve tes resultats et evenements sur : {site_url}')) }}" placeholder="{{ _('Retrouve tes resultats et evenements sur : {site_url}') }}">
+            </label>
+          </div>
+          <button type="submit" class="btn btn-primary settings-save-btn">{{ _('Enregistrer les modifications') }}</button>
+        </form>
+      </section>
+
+      {# ═══════════════════════════════════════════════════════════════════════ #}
+      {# ── COMPTES ── Gestion des administrateurs ──────────────────────────── #}
+      {# ═══════════════════════════════════════════════════════════════════════ #}
+      {% elif tab in ['accounts', 'users', 'events', 'live'] %}
+
       <section class="settings-dashboard-grid">
         <div class="settings-card settings-card-wide">
           <div class="settings-card-head">
@@ -596,21 +734,12 @@
                     {{ _('Actif') if acc.is_active else _('Inactif') }}
                   </span>
                 </td>
-                <td style="font-size:0.82rem;color:var(--dim)">
-                  {{ acc.last_login.strftime('%d/%m/%Y %H:%M') if acc.last_login else '—' }}
-                </td>
+                <td style="font-size:0.82rem;color:var(--dim)">{{ acc.last_login.strftime('%d/%m/%Y %H:%M') if acc.last_login else '—' }}</td>
                 <td style="display:flex;gap:6px;justify-content:flex-end">
-                  <button class="btn btn-secondary btn-sm"
-                          onclick="openEditModal({{ acc.id }}, '{{ acc.username }}', '{{ acc.display_name or '' }}', '{{ acc.role }}')">
-                    {{ _('Modifier') }}
-                  </button>
+                  <button class="btn btn-secondary btn-sm" onclick="openEditModal({{ acc.id }}, '{{ acc.username }}', '{{ acc.display_name or '' }}', '{{ acc.role }}')">{{ _('Modifier') }}</button>
                   {% if acc.get_id() != current_user.get_id() %}
-                  <button class="btn btn-ghost btn-sm" id="acc-toggle-{{ acc.id }}"
-                          onclick="toggleAccount({{ acc.id }}, {{ 'true' if acc.is_active else 'false' }})">
-                    {{ _('Désactiver') if acc.is_active else _('Activer') }}
-                  </button>
-                  <form method="post" action="{{ url_for('admin.account_delete', account_id=acc.id) }}"
-                        onsubmit="return confirm('{{ _('Supprimer ce compte ?') }}')">
+                  <button class="btn btn-ghost btn-sm" id="acc-toggle-{{ acc.id }}" onclick="toggleAccount({{ acc.id }}, {{ 'true' if acc.is_active else 'false' }})">{{ _('Désactiver') if acc.is_active else _('Activer') }}</button>
+                  <form method="post" action="{{ url_for('admin.account_delete', account_id=acc.id) }}" onsubmit="return confirm('{{ _('Supprimer ce compte ?') }}')">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="btn btn-danger btn-sm">{{ _('Supprimer') }}</button>
                   </form>
@@ -625,7 +754,35 @@
         </div>
       </section>
 
-      {# ── Modal création ── #}
+      {# Pilotes (si accès via ancienne URL) #}
+      {% if tab == 'users' %}
+      <section class="settings-dashboard-grid" style="margin-top:1.5rem">
+        <div class="settings-card settings-card-wide">
+          <div class="settings-card-head">
+            <h2>{{ _('Gestion pilotes') }}</h2>
+            <a href="{{ url_for('events_admin.drivers_list') }}" class="btn btn-secondary btn-sm">{{ _('Ouvrir la gestion') }}</a>
+          </div>
+          {% if drivers_list %}
+          <table class="settings-table">
+            <thead><tr><th>{{ _('Pilote') }}</th><th>{{ _('Email') }}</th><th>{{ _('Statut') }}</th><th>{{ _('Inscription') }}</th></tr></thead>
+            <tbody>
+              {% for d in drivers_list %}
+              <tr>
+                <td>{{ d.ingame_name }}</td><td>{{ d.email }}</td>
+                <td><span class="badge badge-{{ d.status }}">{{ d.status }}</span></td>
+                <td>{{ d.created_at.strftime('%d/%m/%Y') if d.created_at else '—' }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+          <p class="settings-empty">{{ _('Aucun pilote enregistré pour le moment.') }}</p>
+          {% endif %}
+        </div>
+      </section>
+      {% endif %}
+
+      {# Modals comptes #}
       <div class="modal-overlay" id="modal-account-create" style="display:none">
         <div class="modal-box">
           <h3>+ {{ _('Nouveau compte administrateur') }}</h3>
@@ -657,8 +814,6 @@
           </form>
         </div>
       </div>
-
-      {# ── Modal édition ── #}
       <div class="modal-overlay" id="modal-account-edit" style="display:none">
         <div class="modal-box">
           <h3>✎ {{ _('Modifier le compte') }}</h3>
@@ -690,73 +845,7 @@
           </form>
         </div>
       </div>
-      {% endif %}
 
-      {% if tab == 'users' %}
-      <section class="settings-dashboard-grid">
-        <div class="settings-card settings-card-wide">
-          <div class="settings-card-head">
-            <h2>{{ _('Gestion pilotes') }}</h2>
-            <a href="{{ url_for('events_admin.drivers_list') }}" class="btn btn-secondary btn-sm">{{ _('Ouvrir la gestion') }}</a>
-          </div>
-          {% if drivers_list %}
-          <table class="settings-table">
-            <thead>
-              <tr>
-                <th>{{ _('Pilote') }}</th>
-                <th>{{ _('Email') }}</th>
-                <th>{{ _('Statut') }}</th>
-                <th>{{ _('Inscription') }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for d in drivers_list %}
-              <tr>
-                <td>{{ d.ingame_name }}</td>
-                <td>{{ d.email }}</td>
-                <td><span class="badge badge-{{ d.status }}">{{ d.status }}</span></td>
-                <td>{{ d.created_at.strftime('%d/%m/%Y') if d.created_at else '—' }}</td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-          {% else %}
-          <p class="settings-empty">{{ _('Aucun pilote enregistré pour le moment.') }}</p>
-          {% endif %}
-        </div>
-      </section>
-      {% endif %}
-
-      {% if tab == 'events' %}
-      <section class="settings-dashboard-grid">
-        <div class="settings-card settings-card-wide">
-          <div class="settings-card-head">
-            <h2>{{ _('Événements') }}</h2>
-            <a href="{{ url_for('events_admin.events_list') }}" class="btn btn-secondary btn-sm">{{ _('Ouvrir la gestion') }}</a>
-          </div>
-          <p class="settings-card-copy">
-            {{ _('La gestion complète des événements conserve son écran dédié. Ce raccourci reste ici pour garder le hub paramètres cohérent.') }}
-          </p>
-          <div class="settings-shortcuts">
-            <a href="{{ url_for('events_admin.events_list') }}">{{ _('Liste des événements') }}</a>
-            <a href="{{ url_for('events_admin.event_create') }}">{{ _('Créer un événement') }}</a>
-          </div>
-        </div>
-      </section>
-      {% endif %}
-
-      {% if tab == 'live' %}
-      <section class="settings-dashboard-grid">
-        <div class="settings-card settings-card-wide">
-          <div class="settings-card-head">
-            <h2>{{ _('Live Admin') }}</h2>
-            <a href="{{ url_for('live.live_page') }}" class="btn btn-secondary btn-sm">{{ _('Ouvrir le live') }}</a>
-          </div>
-          <p class="settings-card-copy">
-            {{ _('Le live admin garde sa page temps réel dédiée. Le raccourci est maintenant intégré au hub sans casser la navigation verticale.') }}
-          </p>
-        </div>
-      </section>
       {% endif %}
     </main>
   </div>

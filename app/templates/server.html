@@ -86,6 +86,14 @@
     </aside>
 
     <main class="server-main">
+
+  {% if config_dirty %}
+  <div class="config-dirty-banner">
+    <span class="config-dirty-icon">⚠</span>
+    <span>{{ _('La configuration a été modifiée. Redémarrez le serveur pour appliquer les changements.') }}</span>
+  </div>
+  {% endif %}
+
   {% if view == 'status' %}
   <header class="server-status-hero">
     <div>
@@ -139,7 +147,7 @@
     </article>
     <article class="srv-card">
       <div class="srv-card-head"><h2>{{ _('Circuit actuel') }}</h2></div>
-      {% if current_track.image %}<img class="srv-track-img" src="{{ url_for('serve_media', filename=current_track.image) }}" alt="{{ current_track.track }}">{% endif %}
+      <img class="srv-track-img" src="{{ url_for('serve_media', filename=current_track.image) if current_track.image else url_for('static', filename='img/circuit_placeholder.svg') }}" alt="{{ current_track.track }}">
       <strong class="srv-track-name">{{ current_track.track }}</strong>
       <span class="srv-track-layout">{{ current_track.layout or current_track.length_km }}</span>
     </article>
@@ -186,7 +194,7 @@
   <section class="srv-config-grid">
     {% for item in config_summaries %}
     <article class="srv-config-card {% if item.running %}running{% elif item.active %}active{% endif %}">
-      {% if item.track.image %}<img src="{{ url_for('serve_media', filename=item.track.image) }}" alt="{{ item.track.track }}">{% endif %}
+      <img src="{{ url_for('serve_media', filename=item.track.image) if item.track.image else url_for('static', filename='img/circuit_placeholder.svg') }}" alt="{{ item.track.track }}">
       <div class="srv-config-body">
         <div class="srv-config-title">
           <h2>{{ item.server_name }}</h2>
@@ -245,68 +253,6 @@
     </div>
   </div>
 
-  <!-- ── Informations serveur ── -->
-  <section class="card" id="server-info" style="margin-top:16px">
-    <div class="card-header"><h2>{{ _('Informations serveur') }}</h2></div>
-    <form id="form-server" class="panel-form">
-
-        <div class="form-group">
-          <label>{{ _('Nom du serveur') }}</label>
-          <input type="text" name="ServerName" value="{{ config.Server.ServerName }}">
-        </div>
-
-        {% if current_user.is_superadmin %}
-        <div class="form-row">
-          <div class="form-group">
-            <label>{{ _('Port TCP') }}</label>
-            <input type="number" name="TcpPort" value="{{ config.Server.TcpPort }}">
-          </div>
-          <div class="form-group">
-            <label>{{ _('Port UDP') }}</label>
-            <input type="number" name="UdpPort" value="{{ config.Server.UdpPort }}">
-          </div>
-        </div>
-        {% endif %}
-
-        <div class="form-row">
-          <div class="form-group">
-            <label>{{ _('Joueurs max') }}</label>
-            <input type="number" name="MaxPlayers" min="1" max="32" value="{{ config.Server.MaxPlayers }}">
-          </div>
-          <div class="form-group form-toggle">
-            <label>{{ _('Cycle actif') }}</label>
-            <label class="toggle">
-              <input type="checkbox" name="IsCycleEnabled" {% if config.Server.IsCycleEnabled %}checked{% endif %}>
-              <span class="slider"></span>
-            </label>
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label>{{ _('Mot de passe pilote') }}</label>
-            <input type="password" name="DriverPassword" value="{{ config.Server.DriverPassword }}">
-          </div>
-          <div class="form-group">
-            <label>{{ _('Mot de passe admin') }}</label>
-            <input type="password" name="AdminPassword" value="{{ config.Server.AdminPassword }}">
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label>{{ _('Entry List Path') }}</label>
-            <input type="text" name="EntryListPath" value="{{ config.Server.EntryListPath }}">
-          </div>
-          <div class="form-group">
-            <label>{{ _('Results Path') }}</label>
-            <input type="text" name="ResultsPath" value="{{ config.Server.ResultsPath }}">
-          </div>
-        </div>
-
-    </form>
-  </section>
-
   <!-- ── Événement & Sessions ── -->
   <section class="card" id="server-event" style="margin-top:16px">
       <div class="card-header"><h2>{{ _('Événement') }}</h2></div>
@@ -324,9 +270,14 @@
           <div class="form-group">
             <label>{{ _('Météo') }}</label>
             <select name="SelectedWeatherTypeValue">
-              <option value="GameModeSelectionWeatherType_CLEAR"    {% if config.Event.SelectedWeatherTypeValue == 'GameModeSelectionWeatherType_CLEAR'    %}selected{% endif %}>{{ _('Dégagé') }}</option>
-              <option value="GameModeSelectionWeatherType_OVERCAST" {% if config.Event.SelectedWeatherTypeValue == 'GameModeSelectionWeatherType_OVERCAST' %}selected{% endif %}>{{ _('Nuageux') }}</option>
-              <option value="GameModeSelectionWeatherType_RAIN"     {% if config.Event.SelectedWeatherTypeValue == 'GameModeSelectionWeatherType_RAIN'     %}selected{% endif %}>{{ _('Pluie') }}</option>
+              <option value="GameModeSelectionWeatherType_CLEAR"           {% if config.Event.SelectedWeatherTypeValue == 'GameModeSelectionWeatherType_CLEAR'           %}selected{% endif %}>{{ _('Dégagé') }}</option>
+              <option value="GameModeSelectionWeatherType_SCATTERED_CLOUDS"{% if config.Event.SelectedWeatherTypeValue == 'GameModeSelectionWeatherType_SCATTERED_CLOUDS'%}selected{% endif %}>{{ _('Nuages épars') }}</option>
+              <option value="GameModeSelectionWeatherType_BROKEN_CLOUDS"   {% if config.Event.SelectedWeatherTypeValue == 'GameModeSelectionWeatherType_BROKEN_CLOUDS'   %}selected{% endif %}>{{ _('Nuages fragmentés') }}</option>
+              <option value="GameModeSelectionWeatherType_OVERCAST"        {% if config.Event.SelectedWeatherTypeValue == 'GameModeSelectionWeatherType_OVERCAST'        %}selected{% endif %}>{{ _('Nuageux') }}</option>
+              <option value="GameModeSelectionWeatherType_DRIZZLE"         {% if config.Event.SelectedWeatherTypeValue == 'GameModeSelectionWeatherType_DRIZZLE'         %}selected{% endif %}>{{ _('Bruine') }}</option>
+              <option value="GameModeSelectionWeatherType_RAIN"            {% if config.Event.SelectedWeatherTypeValue == 'GameModeSelectionWeatherType_RAIN'            %}selected{% endif %}>{{ _('Pluie') }}</option>
+              <option value="GameModeSelectionWeatherType_HEAVY_RAIN"      {% if config.Event.SelectedWeatherTypeValue == 'GameModeSelectionWeatherType_HEAVY_RAIN'      %}selected{% endif %}>{{ _('Pluie forte') }}</option>
+              <option value="GameModeSelectionWeatherType_DAMP"            {% if config.Event.SelectedWeatherTypeValue == 'GameModeSelectionWeatherType_DAMP'            %}selected{% endif %}>{{ _('Humide') }}</option>
             </select>
           </div>
           <div class="form-group">
@@ -334,6 +285,23 @@
             <select name="SelectedWeatherBehaviorValue">
               <option value="GameModeSelectionWeatherBehaviour_STATIC"  {% if config.Event.SelectedWeatherBehaviorValue == 'GameModeSelectionWeatherBehaviour_STATIC'  %}selected{% endif %}>{{ _('Statique') }}</option>
               <option value="GameModeSelectionWeatherBehaviour_DYNAMIC" {% if config.Event.SelectedWeatherBehaviorValue == 'GameModeSelectionWeatherBehaviour_DYNAMIC' %}selected{% endif %}>{{ _('Dynamique') }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>{{ _('Type de serveur') }}</label>
+            <select name="SelectedServerTypeValue">
+              <option value="MultiplayerServerListSessionType_UNRANKED" {% if config.Server.SelectedServerTypeValue == 'MultiplayerServerListSessionType_UNRANKED' %}selected{% endif %}>{{ _('Non classé') }}</option>
+              <option value="MultiplayerServerListSessionType_RANKED"   {% if config.Server.SelectedServerTypeValue == 'MultiplayerServerListSessionType_RANKED'   %}selected{% endif %}>{{ _('Classé') }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>{{ _('Réglages voiture') }}</label>
+            <select name="SelectedTuningTypeValue">
+              <option value="TuningAllowed" {% if config.Server.SelectedTuningTypeValue == 'TuningAllowed' %}selected{% endif %}>{{ _('Autorisés') }}</option>
+              <option value="TuningDenied"  {% if config.Server.SelectedTuningTypeValue == 'TuningDenied'  %}selected{% endif %}>{{ _('Interdits') }}</option>
             </select>
           </div>
         </div>
@@ -383,93 +351,53 @@
       <form id="form-sessions" class="panel-form">
         <div class="sessions-grid">
 
-          {% set s = config.Sessions.PracticeSession %}
-          <div class="session-block" id="sess-practice">
-            <div class="session-title"><span>{{ _('Libre') }}</span></div>
+          {% macro sess_block(key, label, s, extra_class='', is_race=false) %}
+          <div class="session-block {{ extra_class }}" id="sess-{{ key|lower }}">
+            <div class="session-title"><span>{{ label }}</span></div>
+            {{ dur_widget(key, s.Length) }}
             <div class="form-row">
-              {{ dur_widget('PracticeSession', s.Length) }}
               <div class="form-group">
                 <label>{{ _('Heure in-game') }}</label>
-                <input type="number" name="PracticeSession[Hour]" min="0" max="23" value="{{ s.Hour }}">
+                <input type="number" name="{{ key }}[Hour]" min="0" max="23" value="{{ s.Hour }}">
+              </div>
+              <div class="form-group">
+                <label>{{ _('Multiplicateur temps') }}</label>
+                <select name="{{ key }}[TimeMultiplier]">
+                  {% for mult in [1, 2, 4, 6, 12, 24, 48] %}
+                  <option value="{{ mult }}" {% if (s.TimeMultiplier or 1)|int == mult %}selected{% endif %}>x{{ mult }}</option>
+                  {% endfor %}
+                </select>
               </div>
             </div>
             <div class="form-row">
               <div class="form-group">
                 <label>{{ _('Attente max box (s)') }}</label>
-                <input type="number" name="PracticeSession[MaxWaitToBox]" min="0" max="999" value="{{ s.MaxWaitToBox }}">
+                <input type="number" name="{{ key }}[MaxWaitToBox]" min="0" max="999" value="{{ s.MaxWaitToBox }}">
               </div>
               <div class="form-group">
                 <label>{{ _('Overtime (s)') }}</label>
-                <input type="number" name="PracticeSession[OvertimeWaitingNextSession]" min="0" max="999" value="{{ s.OvertimeWaitingNextSession }}">
+                <input type="number" name="{{ key }}[OvertimeWaitingNextSession]" min="0" max="999" value="{{ s.OvertimeWaitingNextSession }}">
               </div>
             </div>
+            {% if is_race %}
+            <div class="form-row">
+              <div class="form-group">
+                <label>{{ _('Min. joueurs en attente') }}</label>
+                <input type="number" name="{{ key }}[MinWaitingForPlayers]" min="1" max="128" value="{{ s.MinWaitingForPlayers }}">
+              </div>
+              <div class="form-group">
+                <label>{{ _('Max. joueurs en attente') }}</label>
+                <input type="number" name="{{ key }}[MaxWaitingForPlayers]" min="1" max="128" value="{{ s.MaxWaitingForPlayers }}">
+              </div>
+            </div>
+            {% endif %}
           </div>
+          {% endmacro %}
 
-          {% set s = config.Sessions.QualifyingSession %}
-          <div class="session-block sess-race-only" id="sess-qualifying">
-            <div class="session-title"><span>{{ _('Qualification') }}</span></div>
-            <div class="form-row">
-              {{ dur_widget('QualifyingSession', s.Length) }}
-              <div class="form-group">
-                <label>{{ _('Heure in-game') }}</label>
-                <input type="number" name="QualifyingSession[Hour]" min="0" max="23" value="{{ s.Hour }}">
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label>{{ _('Attente max box (s)') }}</label>
-                <input type="number" name="QualifyingSession[MaxWaitToBox]" min="0" max="999" value="{{ s.MaxWaitToBox }}">
-              </div>
-              <div class="form-group">
-                <label>{{ _('Overtime (s)') }}</label>
-                <input type="number" name="QualifyingSession[OvertimeWaitingNextSession]" min="0" max="999" value="{{ s.OvertimeWaitingNextSession }}">
-              </div>
-            </div>
-          </div>
-
-          {% set s = config.Sessions.WarmupSession %}
-          <div class="session-block sess-race-only" id="sess-warmup">
-            <div class="session-title"><span>{{ _('Chauffe') }}</span></div>
-            <div class="form-row">
-              {{ dur_widget('WarmupSession', s.Length) }}
-              <div class="form-group">
-                <label>{{ _('Heure in-game') }}</label>
-                <input type="number" name="WarmupSession[Hour]" min="0" max="23" value="{{ s.Hour }}">
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label>{{ _('Attente max box (s)') }}</label>
-                <input type="number" name="WarmupSession[MaxWaitToBox]" min="0" max="999" value="{{ s.MaxWaitToBox }}">
-              </div>
-              <div class="form-group">
-                <label>{{ _('Overtime (s)') }}</label>
-                <input type="number" name="WarmupSession[OvertimeWaitingNextSession]" min="0" max="999" value="{{ s.OvertimeWaitingNextSession }}">
-              </div>
-            </div>
-          </div>
-
-          {% set s = config.Sessions.RaceSession %}
-          <div class="session-block sess-race-only" id="sess-race">
-            <div class="session-title"><span>{{ _('Course') }}</span></div>
-            <div class="form-row">
-              {{ dur_widget('RaceSession', s.Length) }}
-              <div class="form-group">
-                <label>{{ _('Heure in-game') }}</label>
-                <input type="number" name="RaceSession[Hour]" min="0" max="23" value="{{ s.Hour }}">
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label>{{ _('Attente max box (s)') }}</label>
-                <input type="number" name="RaceSession[MaxWaitToBox]" min="0" max="999" value="{{ s.MaxWaitToBox }}">
-              </div>
-              <div class="form-group">
-                <label>{{ _('Overtime (s)') }}</label>
-                <input type="number" name="RaceSession[OvertimeWaitingNextSession]" min="0" max="999" value="{{ s.OvertimeWaitingNextSession }}">
-              </div>
-            </div>
-          </div>
+          {{ sess_block('PracticeSession',   _('Libre'),         config.Sessions.PracticeSession) }}
+          {{ sess_block('QualifyingSession', _('Qualification'), config.Sessions.QualifyingSession, 'sess-race-only') }}
+          {{ sess_block('WarmupSession',     _('Chauffe'),       config.Sessions.WarmupSession,     'sess-race-only') }}
+          {{ sess_block('RaceSession',       _('Course'),        config.Sessions.RaceSession,        'sess-race-only', is_race=true) }}
 
         </div>
     </form>
@@ -590,7 +518,8 @@
             <tr>
               <th></th>
               <th>{{ _('Véhicule') }}</th>
-              <th class="pi-sort-th" onclick="togglePiSort(this)" title="Trier par PI">PI <span class="pi-sort-icon" id="pi-sort-icon">⇅</span></th>
+              <th>{{ _('Type') }}</th>
+              <th class="pi-sort-th car-pi-th" onclick="togglePiSort(this)" title="Trier par PI">PI <span class="pi-sort-icon" id="pi-sort-icon">⇅</span></th>
               <th>Ballast</th>
               <th>Restrictor</th>
             </tr>
@@ -609,7 +538,22 @@
                 <input type="checkbox" class="car-check" data-car="{{ car.name }}"
                        {% if cfg_car and (cfg_car.IsSelected or cfg_car.is_selected) %}checked{% endif %}>
               </td>
-              <td class="car-name">{{ car.display_name }}</td>
+              <td class="car-name">
+                {% set parts = car.display_name.split(' - ', 1) %}
+                {% if parts|length > 1 %}
+                  {{ parts[0] }}<small class="car-name-variant"> · {{ parts[1] }}</small>
+                {% else %}
+                  {{ car.display_name }}
+                {% endif %}
+              </td>
+              <td class="car-type">
+                {% if car.property_1_label %}
+                  <span class="car-tag car-tag-{{ car.property_1_label|lower }}">{{ car.property_1_label }}</span>
+                {% endif %}
+                {% if car.property_3_label and car.property_3_label != 'ICE' %}
+                  <span class="car-tag car-tag-{{ car.property_3_label|lower }}">{{ car.property_3_label }}</span>
+                {% endif %}
+              </td>
               <td class="car-pi">{{ "%.1f"|format(car.performance_indicator) }}</td>
               <td><input type="number" class="car-ballast" data-car="{{ car.name }}" value="{{ cfg_car.Ballast if cfg_car else 0 }}" min="0" step="1"></td>
               <td><input type="number" class="car-restrictor" data-car="{{ car.name }}" value="{{ cfg_car.Restrictor if cfg_car else 0 }}" min="0" step="1"></td>

@@ -124,6 +124,11 @@ class Event(db.Model):
     registrations = db.relationship("EventRegistration", back_populates="event",
                                     lazy="dynamic", cascade="all, delete-orphan")
 
+    __table_args__ = (
+        db.Index("ix_event_status_email_sent",      "status", "email_sent"),
+        db.Index("ix_event_status_discord_notified", "status", "discord_notified"),
+    )
+
     @property
     def confirmed_count(self) -> int:
         return self.registrations.filter_by(status="confirmed").count()
