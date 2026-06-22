@@ -1,5 +1,12 @@
 # Changelog
 
+### v1.7.2 — 22/06/2026
+
+**Correction**
+- `ValueError` au démarrage du panel si une variable de port (`ACESERVER_TCP_PORT`, `ACESERVER_HTTP_PORT`, `MAIL_PORT`) est définie mais vide dans le `.env` (ex: après avoir renseigné un hostname sans port)
+
+---
+
 ### v1.7.1 — 19/06/2026
 
 **Tableau des véhicules**

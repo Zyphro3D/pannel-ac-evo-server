@@ -42,9 +42,9 @@ class Config:
         os.path.join(ACESERVER_DIR, "events_race_weekend.json"),
     )
 
-    ACESERVER_HTTP_PORT = int(os.environ.get("ACESERVER_HTTP_PORT", 8080))
+    ACESERVER_HTTP_PORT = int(os.environ.get("ACESERVER_HTTP_PORT") or 8080)
     ACESERVER_TCP_HOST  = os.environ.get("ACESERVER_TCP_HOST", "127.0.0.1")
-    ACESERVER_TCP_PORT  = int(os.environ.get("ACESERVER_TCP_PORT",  9700))
+    ACESERVER_TCP_PORT  = int(os.environ.get("ACESERVER_TCP_PORT")  or 9700)
 
     # ── Client TCP (chat in-game + leaderboard temps réel) ────────────────────
     # Steam ID du "bot" qui se connecte au serveur (laisser vide pour désactiver)
@@ -67,7 +67,7 @@ class Config:
 
     # ── Email ─────────────────────────────────────────────────────────────────
     MAIL_SERVER   = os.environ.get("MAIL_SERVER",   "")
-    MAIL_PORT     = int(os.environ.get("MAIL_PORT", 587))
+    MAIL_PORT     = int(os.environ.get("MAIL_PORT") or 587)
     MAIL_USE_TLS  = os.environ.get("MAIL_USE_TLS",  "true").lower() == "true"
     MAIL_USERNAME = os.environ.get("MAIL_USERNAME", "")
     MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD", "")
