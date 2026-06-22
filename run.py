@@ -47,7 +47,8 @@ if __name__ == "__main__":
         os.execvp("gunicorn", [
             "gunicorn",
             "--bind",    f"{host}:{port}",
-            "--workers", "4",
+            "--workers", "1",   # single process — global state + background threads require it
+            "--threads", "8",
             "--certfile", ssl_cert,
             "--keyfile",  ssl_key,
             "--access-logfile", "-",

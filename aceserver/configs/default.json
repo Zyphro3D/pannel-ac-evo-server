@@ -1,6 +1,6 @@
 {
   "Server": {
-    "SelectedServerTypeValue": "MultiplayerServerListSessionType_UNRANKED",
+    "SelectedServerTypeValue": "MultiplayerServerListSessionType_RANKED",
     "SelectedTuningTypeValue": "TuningAllowed",
     "ServerName": "ZyphRo Serveur",
     "MaxPlayers": 20,
@@ -21,12 +21,12 @@
     "SelectedSessionTypeValue": "GameModeType_PRACTICE",
     "SelectedWeatherTypeValue": "GameModeSelectionWeatherType_CLEAR",
     "SelectedWeatherBehaviorValue": "GameModeSelectionWeatherBehaviour_DYNAMIC",
-    "SelectedInitialGripValue": "InitialGrip_OPTIMUM",
-    "SelectedTrackValue": "Red Bull Ring|National|National Time Attack|2336",
+    "SelectedInitialGripValue": "InitialGrip_GREEN",
+    "SelectedTrackValue": "Circuit de Spa Francorchamps|GP|GP Time Attack|7004",
     "Cars": [
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -43,8 +43,8 @@
         "display_name": "Abarth 695 Biposto - Standard"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -61,8 +61,8 @@
         "display_name": "Alfa Romeo 75 Turbo Evoluzione - Standard"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -79,8 +79,8 @@
         "display_name": "Alfa Romeo Giulia Sprint GTA - Standard"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -97,8 +97,8 @@
         "display_name": "Alfa Romeo Giulia GTAm - Standard"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -115,8 +115,8 @@
         "display_name": "Alfa Romeo Junior - Elettrica 280 CV Veloce"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -133,8 +133,8 @@
         "display_name": "Alpine A110 S - Aero Package"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -151,8 +151,8 @@
         "display_name": "Alpine A290 Beta - Standard"
       },
       {
-        "is_selected": false,
-        "IsSelected": false,
+        "is_selected": true,
+        "IsSelected": true,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -169,8 +169,8 @@
         "display_name": "Audi R8 LMS GT3 Evo II - GT3"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -187,8 +187,8 @@
         "display_name": "Audi R8 LMS GT4 Evo - GT4"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -205,8 +205,8 @@
         "display_name": "Audi RS 3 Sportback - Sportback"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -223,8 +223,8 @@
         "display_name": "Audi RS 6 Avant - Standard"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -241,8 +241,8 @@
         "display_name": "Audi Sport quattro - Standard"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -259,8 +259,8 @@
         "display_name": "BMW M2 Coupe - Standard"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -277,8 +277,8 @@
         "display_name": "BMW M2 Coupe - Performance"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -295,8 +295,8 @@
         "display_name": "BMW M2 CS Racing - 350"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -313,8 +313,8 @@
         "display_name": "BMW M2 CS Racing - 450"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -331,8 +331,8 @@
         "display_name": "BMW M3 E30 Sport Evo (Evolution III) - Standard"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -349,8 +349,8 @@
         "display_name": "BMW M3 E46 CSL - Standard"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -385,8 +385,8 @@
         "display_name": "BMW M4 GT3 Evo - GT3"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -403,8 +403,8 @@
         "display_name": "BMW M8 Competition - Standard"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -421,8 +421,8 @@
         "display_name": "Caterham 485 CSR - Road"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -439,8 +439,8 @@
         "display_name": "Caterham 485 CSR - Track"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -457,8 +457,8 @@
         "display_name": "Caterham 485 CSR - Final Edition"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -475,8 +475,8 @@
         "display_name": "Caterham Academy - Academy"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -493,8 +493,8 @@
         "display_name": "Chevrolet Camaro ZL1 - Standard"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -511,8 +511,8 @@
         "display_name": "Chevrolet Camaro ZL1 - 1LE"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -529,8 +529,8 @@
         "display_name": "Dallara EXP - Standard"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -547,8 +547,8 @@
         "display_name": "Dallara Stradale - Coupe"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -565,8 +565,8 @@
         "display_name": "Dallara Stradale - Spider"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -619,8 +619,8 @@
         "display_name": "Datsun 240Z (S30) - Tuned"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -655,8 +655,8 @@
         "display_name": "Ferrari 296 GT3 - GT3"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -673,8 +673,8 @@
         "display_name": "Ferrari 296 GTB - Standard"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -691,8 +691,8 @@
         "display_name": "Ferrari 296 GTB - Assetto Fiorano"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -709,8 +709,8 @@
         "display_name": "Ferrari 488 Challenge Evo - Ferrari Challenge"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -727,8 +727,8 @@
         "display_name": "Ferrari Daytona SP3 - Standard"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -745,8 +745,8 @@
         "display_name": "Ferrari F2004 - Standard"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -781,8 +781,8 @@
         "display_name": "Ferrari SF-25 - F1 2025"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -817,8 +817,8 @@
         "display_name": "Ford Mustang GT3 - GT3"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -835,8 +835,8 @@
         "display_name": "Honda NSX-R 92R - Standard"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -853,8 +853,8 @@
         "display_name": "Honda S2000 AP1 - Standard"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -871,8 +871,8 @@
         "display_name": "Hyundai i30 N Hatchback - Performance"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -889,8 +889,8 @@
         "display_name": "Hyundai i30 N Hatchback - Performance N Limited"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -907,8 +907,8 @@
         "display_name": "Lamborghini Countach LP5000 QV - LP5000 QV"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -925,8 +925,8 @@
         "display_name": "Lamborghini Huracán ST EVO2 - Super Trofeo"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -943,8 +943,8 @@
         "display_name": "Lamborghini Huracán STO - Road"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -961,8 +961,8 @@
         "display_name": "Lamborghini Huracán STO - Trackday"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -979,8 +979,8 @@
         "display_name": "Lancia Delta HF integrale Evoluzione II - Standard"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -997,8 +997,8 @@
         "display_name": "Lancia Delta HF integrale Evoluzione II - Evo 3 \"Violet\""
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -1015,8 +1015,8 @@
         "display_name": "Lotus Emira - Touring"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -1033,8 +1033,8 @@
         "display_name": "Lotus Emira - Sports"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -1051,8 +1051,8 @@
         "display_name": "Lotus Exige V6 Cup - Standard"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -1069,8 +1069,8 @@
         "display_name": "Lotus Exige V6 Cup - Lotus Motorsport"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -1087,8 +1087,8 @@
         "display_name": "Maserati GT2 - GT2"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -1105,8 +1105,8 @@
         "display_name": "Mazda MX-5 NA - Standard"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -1123,8 +1123,8 @@
         "display_name": "Mazda MX-5 NA - RS Limited"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -1141,8 +1141,8 @@
         "display_name": "Mazda MX-5 ND Cup - Global Cup ND1"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -1159,8 +1159,8 @@
         "display_name": "Mazda MX-5 ND Cup - Global Cup ND2"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -1177,8 +1177,8 @@
         "display_name": "Mercedes-Benz 190E 2.5-16 Evo II - Standard"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -1195,8 +1195,8 @@
         "display_name": "Mercedes-AMG GT2 - GT2"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -1213,8 +1213,8 @@
         "display_name": "Mini John Cooper S - Standard"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -1231,8 +1231,8 @@
         "display_name": "Mini John Cooper S - Tune"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -1249,8 +1249,8 @@
         "display_name": "Peugeot 205 T16 - Standard"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -1267,8 +1267,8 @@
         "display_name": "Porsche 718 Cayman GT4 Clubsport - GT4"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -1285,8 +1285,8 @@
         "display_name": "Porsche 718 Cayman GT4 RS - Standard"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -1321,8 +1321,8 @@
         "display_name": "Porsche 935 - GT2"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -1339,8 +1339,8 @@
         "display_name": "Porsche 911 Turbo 3.6 (964) - Standard"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -1465,8 +1465,8 @@
         "display_name": "Porsche 911 GT3 R Rennsport (992) - Unrestricted"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -1483,8 +1483,8 @@
         "display_name": "Porsche 911 GT3 RS (992) - Clubsport"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -1501,8 +1501,8 @@
         "display_name": "Porsche 911 GT3 RS (992) - Weissach"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -1519,8 +1519,8 @@
         "display_name": "Renault 5 GT Turbo - Standard"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -1537,8 +1537,8 @@
         "display_name": "Toyota Sprinter Trueno 1600GT-Apex (AE86) - Zenki"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -1555,8 +1555,8 @@
         "display_name": "Toyota Sprinter Trueno 1600GT-Apex (AE86) - Kouki"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -1573,8 +1573,8 @@
         "display_name": "Toyota Sprinter Trueno 1600GT-Apex (AE86) - Kouki Black Limited"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -1591,8 +1591,8 @@
         "display_name": "Toyota Sprinter Trueno 1600GT-Apex (AE86) - Anime Tribute"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -1609,8 +1609,8 @@
         "display_name": "Toyota GR86 - Standard"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -1627,8 +1627,8 @@
         "display_name": "Toyota GR86 - Trueno Edition"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -1645,8 +1645,8 @@
         "display_name": "Toyota GR86 - Hakone Edition"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -1663,8 +1663,8 @@
         "display_name": "Toyota Supra MKIV - Standard"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -1681,8 +1681,8 @@
         "display_name": "Toyota Supra MKIV - Drift"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -1699,8 +1699,8 @@
         "display_name": "Volkswagen Golf GTI Mk1 - Standard"
       },
       {
-        "is_selected": true,
-        "IsSelected": true,
+        "is_selected": false,
+        "IsSelected": false,
         "ballast": 0.0,
         "Ballast": 0.0,
         "restrictor": 0.0,
@@ -1726,11 +1726,11 @@
       "IsVisible": true,
       "Name": "Practice",
       "Duration": 0,
-      "Length": 2700,
-      "Hour": 16,
+      "Length": 14400,
+      "Hour": 14,
       "Minute": 0,
-      "MaxWaitToBox": 20,
-      "OvertimeWaitingNextSession": 20,
+      "MaxWaitToBox": 40,
+      "OvertimeWaitingNextSession": 30,
       "MinWaitingForPlayers": 10,
       "MaxWaitingForPlayers": 30
     },

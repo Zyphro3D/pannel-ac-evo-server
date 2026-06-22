@@ -72,12 +72,7 @@ def events_list():
     return render_template("events_admin.html", events=events)
 
 
-_PROP_MAPS = {
-    "property_1": {0: "Road", 1: "Race", 2: "Track"},
-    "property_2": {0: "Modern", 1: "Vintage", 2: "YT"},
-    "property_3": {0: "ICE", 1: "EV", 2: "Hybrid"},
-}
-_CATEGORY_ORDER = ["Road", "Race", "Track", "Modern", "Vintage", "YT", "ICE", "EV", "Hybrid"]
+from app.services.server_config import CAR_PROP_MAPS as _PROP_MAPS, CAR_CATEGORY_ORDER as _CATEGORY_ORDER
 
 
 def _cars_context(cars):
@@ -173,7 +168,7 @@ def event_finish(event_id):
 @_admin_required
 def event_registrations(event_id):
     event = Event.query.get_or_404(event_id)
-    regs  = event.registrations.order_by(EventRegistration.created_at).all()
+    regs  = EventRegistration.query.filter_by(event_id=event.id).order_by(EventRegistration.created_at).all()
     cars  = load_cars()
     return render_template("event_detail.html", event=event, regs=regs, cars=cars)
 
@@ -181,7 +176,7 @@ def event_registrations(event_id):
 @events_admin_bp.route("/events/<int:event_id>/registrations/<int:rid>/approve", methods=["POST"])
 @_admin_required
 def reg_approve(event_id, rid):
-    reg = EventRegistration.query.get_or_404(rid)
+    reg = EventRegistration.query.filter_by(id=rid, event_id=event_id).first_or_404()
     reg.status = "confirmed"
     db.session.commit()
     flash(_("%(name)s confirmé(e).", name=reg.driver.ingame_name), "success")
@@ -191,7 +186,7 @@ def reg_approve(event_id, rid):
 @events_admin_bp.route("/events/<int:event_id>/registrations/<int:rid>/reject", methods=["POST"])
 @_admin_required
 def reg_reject(event_id, rid):
-    reg = EventRegistration.query.get_or_404(rid)
+    reg = EventRegistration.query.filter_by(id=rid, event_id=event_id).first_or_404()
     reg.status = "rejected"
     db.session.commit()
     flash(_("%(name)s refusé.", name=reg.driver.ingame_name), "success")

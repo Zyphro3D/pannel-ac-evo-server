@@ -20,10 +20,10 @@ class Config:
     SUPERADMIN_PASSWORD = _required_env("SUPERADMIN_PASSWORD")
 
     # Dossier contenant les fichiers de config JSON du panel
-    CONFIGS_DIR = os.environ.get("CONFIGS_DIR", r"C:\Users\Administrateur\Documents\ACE")
+    CONFIGS_DIR = os.environ.get("CONFIGS_DIR", "/aceserver/configs")
 
     # Dossier d'installation du serveur de jeu.
-    ACESERVER_DIR = os.environ.get("ACESERVER_DIR", r"C:\aceserver")
+    ACESERVER_DIR = os.environ.get("ACESERVER_DIR", "/aceserver")
 
     ACESERVER_EXE_PATH = os.environ.get(
         "ACESERVER_EXE_PATH",
@@ -42,9 +42,9 @@ class Config:
         os.path.join(ACESERVER_DIR, "events_race_weekend.json"),
     )
 
-    ACESERVER_HTTP_PORT = int(os.environ.get("ACESERVER_HTTP_PORT", 8080))
+    ACESERVER_HTTP_PORT = int(os.environ.get("ACESERVER_HTTP_PORT") or 8080)
     ACESERVER_TCP_HOST  = os.environ.get("ACESERVER_TCP_HOST", "127.0.0.1")
-    ACESERVER_TCP_PORT  = int(os.environ.get("ACESERVER_TCP_PORT",  9700))
+    ACESERVER_TCP_PORT  = int(os.environ.get("ACESERVER_TCP_PORT")  or 9700)
 
     # ── Client TCP (chat in-game + leaderboard temps réel) ────────────────────
     # Steam ID du "bot" qui se connecte au serveur (laisser vide pour désactiver)
@@ -67,7 +67,7 @@ class Config:
 
     # ── Email ─────────────────────────────────────────────────────────────────
     MAIL_SERVER   = os.environ.get("MAIL_SERVER",   "")
-    MAIL_PORT     = int(os.environ.get("MAIL_PORT", 587))
+    MAIL_PORT     = int(os.environ.get("MAIL_PORT") or 587)
     MAIL_USE_TLS  = os.environ.get("MAIL_USE_TLS",  "true").lower() == "true"
     MAIL_USERNAME = os.environ.get("MAIL_USERNAME", "")
     MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD", "")
@@ -88,6 +88,7 @@ class Config:
     PANEL_TITLE      = os.environ.get("PANEL_TITLE",      "AC EVO Panel")
     PANEL_BANNER_IMG = os.environ.get("PANEL_BANNER_IMG", "")   # nom de fichier dans media/banner/
     PANEL_LOGO_IMG   = os.environ.get("PANEL_LOGO_IMG",   "")   # nom de fichier dans media/banner/
+    PANEL_GITHUB_URL = os.environ.get("PANEL_GITHUB_URL", "https://github.com/Zyphro3D/pannel-ac-evo-server")
 
     # ── SteamCMD (mise à jour du serveur de jeu) ─────────────────────────────
     STEAMCMD_PATH     = os.environ.get("STEAMCMD_PATH",     "/opt/steamcmd/steamcmd.sh")
@@ -95,8 +96,10 @@ class Config:
     STEAM_PASSWORD    = os.environ.get("STEAM_PASSWORD",    "")
 
     # ── Mode de déploiement ───────────────────────────────────────────────────
-    # "native" = Windows subprocess, "docker" = Wine sur Linux
-    DEPLOY_MODE = os.environ.get("DEPLOY_MODE", "native")
+    # "docker_split" = panel contrôle le container aceserver (recommandé en prod)
+    # "docker"       = Wine dans le même container
+    # "native"       = Windows subprocess (legacy)
+    DEPLOY_MODE = os.environ.get("DEPLOY_MODE", "docker_split")
 
     # ── Cookies / Session ─────────────────────────────────────────────────────
     SESSION_COOKIE_HTTPONLY  = True

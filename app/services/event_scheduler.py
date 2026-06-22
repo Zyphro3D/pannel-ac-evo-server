@@ -11,7 +11,7 @@ def _loop(app):
         time.sleep(60)
         try:
             with app.app_context():
-                from app.models import Event, EventRegistration
+                from app.models import Event, EventRegistration  # noqa: F401 needed for query
                 from app.services.database import db
                 from app.services import mailer
 
@@ -21,17 +21,13 @@ def _loop(app):
                 for event in Event.query.filter_by(status="published", email_sent=False).all():
                     delta_min = (event.date - now).total_seconds() / 60
                     if delta_min <= event.notify_before:
-                        regs = event.registrations.filter_by(status="confirmed", notified=False).all()
+                        regs = EventRegistration.query.filter_by(event_id=event.id, status="confirmed", notified=False).all()
                         for reg in regs:
                             mailer.send_event_reminder(reg.driver, event, reg)
                             reg.notified = True
                         event.email_sent = True
                         db.session.commit()
                         log.info("Rappels envoyés pour '%s' (%d pilote(s))", event.title, len(regs))
-
-                    # Discord 30 min avant (indépendant du notify_before email)
-                    if 0 < delta_min <= 31 and not event.email_sent:
-                        pass  # géré ci-dessous séparément
 
                 # Discord exactly ~30 min avant (fenêtre 60s, une seule fois via flag)
                 from app.services import discord_notifier
@@ -70,10 +66,12 @@ def _launch_event(app, event, db):
         from app.services.process_manager import start_server, stop_server, is_running
         from app.services import discord_notifier
 
+        server_id = 1  # Event n'a pas encore de server_id — utilise toujours le serveur 1
+
         # Arrêter le serveur en cours si besoin
-        if is_running():
+        if is_running(server_id):
             log.info("Auto-launch: arrêt du serveur en cours avant lancement de '%s'", event.title)
-            stop_server()
+            stop_server(server_id)
             time.sleep(3)
 
         # Construire et sauvegarder la config
@@ -81,13 +79,13 @@ def _launch_event(app, event, db):
         config_name = save_event_config(event, cfg)
         sc_b64, sd_b64 = build_launch_args(cfg)
 
-        result = start_server(sc_b64, sd_b64, config_name, auto_restart=True)
+        result = start_server(sc_b64, sd_b64, config_name, auto_restart=True, server_id=server_id)
         if result["ok"]:
             event.launched = True
             db.session.commit()
             log.info("Auto-launch: '%s' lancé (PID %s, config %s)",
                      event.title, result.get("pid"), config_name)
-            discord_notifier.notify_start(cfg, config_name)
+            discord_notifier.notify_start(cfg, config_name, server_id=server_id)
         else:
             log.error("Auto-launch: échec pour '%s' — %s", event.title, result.get("error"))
 

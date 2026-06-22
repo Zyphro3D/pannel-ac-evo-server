@@ -1,5 +1,52 @@
 # Changelog
 
+### v1.8.0 — 20/06/2026
+
+**Multi-serveur — Phase 2 : gestion des serveurs depuis le panel**
+- Page *Serveurs* (superadmin) : liste, création et suppression de serveurs ACE EVO supplémentaires
+- Création d'un nouveau serveur = nouveau container Docker dédié depuis l'image aceserver existante
+- Sélecteur de serveur actif dans la barre de navigation (tous les admins)
+- Watchdog indépendant par serveur (container_name + http_host par serveur_id)
+- Support `SERVER_ID` dans l'entrypoint aceserver pour les containers additionnels
+
+**Multi-serveur — Phase 3 : adaptation routes**
+- Toutes les routes admin/API utilisent `session["current_server_id"]` au lieu d'un serveur fixe
+- `server_id` FK ajouté à `SessionResult` (migration automatique, NULL pour les résultats existants)
+- Webhook `/api/results/ingest?server_id=N` : identifie le serveur source
+
+**Phase 4 — Banque de données véhicules/circuits**
+- Synchronisation automatique `CarMeta` au démarrage depuis `cars.json` (94 véhicules, catégories Road/Race/Track, PI, images auto-détectées)
+- Synchronisation automatique `TrackMeta` depuis les configs JSON au démarrage (image auto-matchée)
+- Page *Véhicules* (admin) : grille avec image, PI, catégorie, filtres, recherche, toggle actif/inactif, upload image (superadmin)
+- Page *Circuits* (admin) : grille avec image, layout, longueur, toggle actif/inactif, upload image
+- `./media:/panel/media` dans `docker-compose.yml` — images persistées entre les rebuilds
+
+**Page d'accueil publique — refonte multi-serveur**
+- Section 2 : grille de cards serveurs (1/2/3 colonnes selon le nombre de serveurs actifs)
+- Section 3 : événements en grille pleine largeur (1/2/3 colonnes selon le nombre d'événements)
+
+**Événements à venir — refonte visuelle (dashboard admin + page publique)**
+- Cartes portrait « carte de crédit » (min-height 400px) avec photo circuit en haut, date + heure en overlay
+- Disposition adaptive : 1 événement → carte paysage pleine largeur ; 2+ → grille de cartes portrait
+- Bandeau « En cours » animé (point ambré pulsant) pour les événements démarrés
+- Liens intelligents par rôle : admin → inscriptions, pilote → tableau de bord, visiteur → login
+- Données pré-calculées en route (jour/mois localisés via `babel.dates`, heure fuseau `PANEL_TIMEZONE`, durée, taux de remplissage) — zéro logique lourde en Jinja2
+- Chargement eager des inscriptions via `selectinload` pour éviter le N+1
+
+**Footer global**
+- Footer sur toutes les pages : logo, nom, tagline, version + git hash, liens GitHub (dépôt, wiki, bugs, licence MIT)
+- Variable `PANEL_GITHUB_URL` dans `.env.example` et `config.py`
+- Git hash calculé au démarrage via `subprocess` (silencieux en cas d'échec)
+
+**Nouvelles pages admin**
+- Page *Mods* : gestion des mods (placeholder)
+- Pages *Serveurs*, *Véhicules*, *Circuits* : intégrées dans le menu de navigation
+
+⚠️ **Rebuild obligatoire** : `docker compose up -d --build`
+L'entrypoint du container aceserver a été modifié — l'ancienne image ne supporte pas les serveurs additionnels.
+
+---
+
 ### v1.7.1 — 19/06/2026
 
 **Tableau des véhicules**

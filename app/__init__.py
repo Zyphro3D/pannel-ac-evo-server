@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from flask import Flask, request, session
 from flask_babel import Babel
@@ -16,6 +17,17 @@ _STATIC_VERSION   = _APP_VERSION
 try:
     _STATIC_VERSION = f"{_APP_VERSION}.{max((_STATIC_DIR / 'css' / 'main.css').stat().st_mtime_ns, (_STATIC_DIR / 'js' / 'app.js').stat().st_mtime_ns)}"
 except OSError:
+    pass
+
+_GIT_HASH = ""
+try:
+    import subprocess as _sp
+    _GIT_HASH = _sp.check_output(
+        ["git", "rev-parse", "--short", "HEAD"],
+        cwd=str(Path(__file__).parent.parent),
+        stderr=_sp.DEVNULL, timeout=2,
+    ).decode().strip()
+except Exception:
     pass
 
 login_manager = LoginManager()
@@ -54,6 +66,39 @@ def _seed_admin_accounts(db, cfg):
     db.session.commit()
 
 
+def _seed_servers(db):
+    """Au 1er démarrage, crée le Serveur #1 depuis les variables d'environnement."""
+    from app.models import Server
+    if Server.query.count() > 0:
+        return
+    import os, logging
+    log = logging.getLogger(__name__)
+    try:
+        tcp = int(os.environ.get("SERVER_TCP_PORT", "") or 9700)
+    except (ValueError, TypeError):
+        tcp = 9700
+    try:
+        udp = int(os.environ.get("SERVER_UDP_PORT", "") or 9700)
+    except (ValueError, TypeError):
+        udp = 9700
+    s = Server(
+        name            = os.environ.get("SERVER_NAME", "").strip() or "ACE EVO Server",
+        slug            = "server-1",
+        tcp_port        = tcp,
+        udp_port        = udp,
+        http_port       = 8080,
+        container_name  = os.environ.get("ACESERVER_CONTAINER_NAME", "ace-server"),
+        driver_password = os.environ.get("SERVER_DRIVER_PASSWORD", ""),
+        admin_password  = os.environ.get("SERVER_ADMIN_PASSWORD",  ""),
+        active_config   = "default.json",
+        is_enabled      = True,
+        sort_order      = 1,
+    )
+    db.session.add(s)
+    db.session.commit()
+    log.info("Serveur #1 créé automatiquement depuis .env")
+
+
 def _migrate_indexes(db):
     """Crée les index composites manquants sur les DB existantes."""
     import sqlalchemy as sa
@@ -80,7 +125,7 @@ def _migrate_db(db):
         "practice_minutes", "qualifying_minutes", "warmup_minutes", "race_minutes",
         "allowed_cars", "reset_token", "reset_token_expires", "is_public",
         "auto_launch", "launched", "discord_notified", "cars_config",
-        "config_name", "run_id",
+        "config_name", "run_id", "server_id",
     }
     cols_to_add = [
         ("event",  "practice_minutes",    "INTEGER DEFAULT 60"),
@@ -97,6 +142,7 @@ def _migrate_db(db):
         ("event",  "cars_config",         "TEXT    DEFAULT '{}'"),
         ("session_result", "config_name", "TEXT"),
         ("session_result", "run_id",      "TEXT"),
+        ("session_result", "server_id",   "INTEGER"),
     ]
     with engine.connect() as conn:
         for table, col, col_def in cols_to_add:
@@ -112,10 +158,139 @@ def _migrate_db(db):
                 logging.getLogger(__name__).warning("Migration %s.%s ignorée : %s", table, col, e)
 
 
+def _migrate_server_discord(db):
+    """Ajoute les colonnes discord_webhook_* à la table server si absentes."""
+    import sqlalchemy as sa
+    cols = [
+        ("discord_webhook_main",   "TEXT DEFAULT ''"),
+        ("discord_webhook_pilots", "TEXT DEFAULT ''"),
+        ("discord_webhook_race",   "TEXT DEFAULT ''"),
+    ]
+    with db.engine.connect() as conn:
+        existing = [r[1] for r in conn.execute(sa.text("PRAGMA table_info(server)"))]
+        for col, col_def in cols:
+            if col not in existing:
+                try:
+                    conn.execute(sa.text(f"ALTER TABLE server ADD COLUMN {col} {col_def}"))
+                    conn.commit()
+                except Exception as e:
+                    import logging
+                    logging.getLogger(__name__).warning("Migration server.%s ignorée : %s", col, e)
+
+
+_PROP_CATEGORY = {0: "Road", 1: "Race", 2: "Track"}
+
+
+def _sync_car_meta(db):
+    """Synchronise CarMeta depuis cars.json au démarrage (upsert)."""
+    import logging, re as _re
+    from pathlib import Path as _Path
+    log = logging.getLogger(__name__)
+    try:
+        from app.models import CarMeta
+        from app.services.server_config import load_cars
+        _media_cars = _Path(__file__).parent.parent / "media" / "cars"
+        cars = load_cars()
+        for car in cars:
+            slug    = car["name"]
+            dn      = car.get("display_name", "")
+            pi      = car.get("performance_indicator")
+            cat     = _PROP_CATEGORY.get(car.get("property_1", 0), "Road")
+            existing = CarMeta.query.filter_by(slug=slug).first()
+            if existing:
+                existing.display_name = dn
+                existing.pi_min = existing.pi_max = pi
+                if not existing.category:
+                    existing.category = cat
+                if not existing.image_path:
+                    for ext in (".webp", ".jpg", ".jpeg", ".png"):
+                        if (_media_cars / f"{slug}{ext}").exists():
+                            existing.image_path = f"cars/{slug}{ext}"
+                            break
+            else:
+                img = ""
+                for ext in (".webp", ".jpg", ".jpeg", ".png"):
+                    if (_media_cars / f"{slug}{ext}").exists():
+                        img = f"cars/{slug}{ext}"
+                        break
+                db.session.add(CarMeta(
+                    slug=slug, display_name=dn, category=cat,
+                    pi_min=pi, pi_max=pi, image_path=img,
+                ))
+        db.session.commit()
+        log.info("CarMeta synchronisé : %d voitures", len(cars))
+    except Exception as e:
+        import logging as _l2
+        _l2.getLogger(__name__).warning("_sync_car_meta ignoré : %s", e)
+
+
+def _sync_track_meta(db):
+    """Synchronise TrackMeta depuis les configs JSON au démarrage (upsert)."""
+    import logging, json as _json, re as _re
+    from pathlib import Path as _Path
+    log = logging.getLogger(__name__)
+    try:
+        from app.models import TrackMeta
+        from flask import current_app
+        _configs_dir  = _Path(current_app.config["CONFIGS_DIR"])
+        _media_circ   = _Path(__file__).parent.parent / "media" / "circuits"
+
+        def _slug_img(s):
+            return _re.sub(r"[^a-z0-9]+", "_", s.lower()).strip("_")
+
+        track_values = set()
+        for cfg_path in _configs_dir.glob("*.json"):
+            try:
+                with open(cfg_path, "r", encoding="utf-8") as f:
+                    cfg = _json.load(f)
+                tv = cfg.get("Event", {}).get("SelectedTrackValue", "")
+                if tv:
+                    track_values.add(tv)
+            except Exception:
+                continue
+
+        for tv in track_values:
+            if TrackMeta.query.filter_by(track_value=tv).first():
+                continue
+            parts      = tv.split("|")
+            track_name = parts[0] if len(parts) > 0 else ""
+            layout     = parts[1] if len(parts) > 1 else ""
+            try:
+                length_m = int(parts[3]) if len(parts) > 3 else None
+            except (ValueError, IndexError):
+                length_m = None
+            # Cherche l'image correspondante
+            img = ""
+            for candidate in (
+                f"{_slug_img(track_name)}_{_slug_img(layout)}.webp",
+                f"{_slug_img(track_name)}.webp",
+            ):
+                if (_media_circ / candidate).exists():
+                    img = f"circuits/{candidate}"
+                    break
+            db.session.add(TrackMeta(
+                track_value=tv, track_name=track_name, layout=layout,
+                length_m=length_m, image_path=img,
+            ))
+        db.session.commit()
+        log.info("TrackMeta synchronisé : %d circuits", len(track_values))
+    except Exception as e:
+        import logging as _l2
+        _l2.getLogger(__name__).warning("_sync_track_meta ignoré : %s", e)
+
+
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
+
+    # ── Extensions Flask ──────────────────────────────────────────────────────
+    babel.init_app(app, locale_selector=get_locale, default_translation_directories=_TRANSLATIONS_DIR)
+    login_manager.init_app(app)
+    login_manager.login_view    = "auth.login"
+    login_manager.login_message = None
+    csrf.init_app(app)
+    limiter.init_app(app)
 
     # ── Base de données ───────────────────────────────────────────────────────
     from app.services.database import db
@@ -125,15 +300,11 @@ def create_app():
         db.create_all()
         _migrate_db(db)
         _migrate_indexes(db)
+        _migrate_server_discord(db)
         _seed_admin_accounts(db, app.config)
-
-    # ── Extensions Flask ──────────────────────────────────────────────────────
-    babel.init_app(app, locale_selector=get_locale, default_translation_directories=_TRANSLATIONS_DIR)
-    login_manager.init_app(app)
-    login_manager.login_view    = "auth.login"
-    login_manager.login_message = None
-    csrf.init_app(app)
-    limiter.init_app(app)
+        _seed_servers(db)
+        _sync_car_meta(db)
+        _sync_track_meta(db)
 
     # ── Blueprints ────────────────────────────────────────────────────────────
     from app.routes.auth            import auth_bp
@@ -153,15 +324,20 @@ def create_app():
     app.register_blueprint(leaderboard_bp)
     app.register_blueprint(live_bp)
     app.register_blueprint(container_mgmt_bp)
-    csrf.exempt(live_bp)
+    # SSE streaming endpoint can't send CSRF tokens — exempt it individually.
+    # All POST routes in live_bp remain CSRF-protected.
+    from app.routes.live import live_stream
+    csrf.exempt(live_stream)
     csrf.exempt(results_ingest)  # Webhook externe protégé par HMAC/réseau privé.
 
     app.jinja_env.globals["get_locale"]  = get_locale
-    app.jinja_env.globals["app_version"] = _APP_VERSION
+    app.jinja_env.globals["app_version"]    = _APP_VERSION
+    app.jinja_env.globals["git_hash"]       = _GIT_HASH
     app.jinja_env.globals["static_version"] = _STATIC_VERSION
     app.jinja_env.globals["panel_title"]       = Config.PANEL_TITLE
     app.jinja_env.globals["panel_banner_img"]  = Config.PANEL_BANNER_IMG
     app.jinja_env.globals["panel_logo_img"]    = Config.PANEL_LOGO_IMG
+    app.jinja_env.globals["github_url"]        = Config.PANEL_GITHUB_URL
     import json as _json
     app.jinja_env.filters["from_json"] = lambda s: _json.loads(s) if s else []
 
@@ -196,17 +372,29 @@ def create_app():
 
     @app.context_processor
     def _inject_globals():
+        from flask import session as _session
         from flask_login import current_user
         count = 0
+        servers = []
+        server_running_ids = set()
+        current_server_id = _session.get("current_server_id", 1)
         try:
             if current_user.is_authenticated and current_user.is_admin:
-                from app.models import Driver
+                from app.models import Driver, Server
+                from app.services.process_manager import is_running
                 count = Driver.query.filter_by(status="pending").count()
+                servers = Server.query.filter_by(is_enabled=True).order_by(Server.sort_order, Server.id).all()
+                if servers and current_server_id not in {s.id for s in servers}:
+                    current_server_id = servers[0].id
+                server_running_ids = {s.id for s in servers if is_running(s.id)}
         except Exception:
             pass
         return {
             "pending_pilots_count": count,
-            "discord_invite": Config.DISCORD_INVITE_URL,
+            "discord_invite":       os.environ.get("DISCORD_INVITE_URL", ""),
+            "servers":              servers,
+            "current_server_id":    current_server_id,
+            "server_running_ids":   server_running_ids,
         }
 
     @app.after_request
@@ -240,8 +428,25 @@ def create_app():
     if not Config.RESULTS_INGEST_SECRET:
         _sec.warning("RESULTS_INGEST_SECRET non défini — /api/results/ingest accepte seulement les réseaux privés/locaux")
 
-    from app.services.process_manager import init_watchdog
-    init_watchdog(app.config["ACESERVER_EXE_PATH"])
+    from app.services.process_manager import (
+        init_watchdog, _DOCKER_CONTAINER_NAME, _ACESERVER_HOST,
+    )
+    with app.app_context():
+        from app.models import Server as _Server
+        _exe = app.config["ACESERVER_EXE_PATH"]
+        for _srv in (_Server.query
+                     .filter_by(is_enabled=True)
+                     .order_by(_Server.sort_order, _Server.id)
+                     .all()):
+            # Server 1 : utilise les alias compose (rétrocompat)
+            # Server N>1 : container_name sert de hostname Docker
+            if _srv.id == 1:
+                _cname = _DOCKER_CONTAINER_NAME
+                _hhost = _ACESERVER_HOST
+            else:
+                _cname = _srv.container_name
+                _hhost = _srv.container_name
+            init_watchdog(_exe, server_id=_srv.id, container_name=_cname, http_host=_hhost, app=app)
 
     # Crée default.json si le dossier de configs est vide (premier démarrage)
     _configs_dir = Path(app.config["CONFIGS_DIR"])
@@ -283,29 +488,37 @@ def create_app():
         _tcp_host = app.config.get("ACESERVER_TCP_HOST", "127.0.0.1")
         _tcp_port = app.config.get("ACESERVER_TCP_PORT", 9700)
         _car_model = app.config.get("ACE_BOT_CAR_MODEL", "preset_190_evo_ii")
-        from app.services.process_manager import _LOG_FILE, _DEPLOY_MODE, _DOCKER_CONTAINER_NAME
+        from app.services.process_manager import _log_file, _DEPLOY_MODE, _DOCKER_CONTAINER_NAME
+        with app.app_context():
+            from app.models import Server as _BotServer
+            from app.services.database import db as _db
+            _bot_srv = _db.session.get(_BotServer, 1)
+            _bot_srv_name = _bot_srv.name if _bot_srv else ""
         ace_tcp_client.start(
             host=_tcp_host,
             port=_tcp_port,
             steam_id=_bot_steam_id,
             car_model=_car_model,
+            server_name=_bot_srv_name,
             discord_url=app.config.get("DISCORD_INVITE_URL", ""),
             site_url=app.config.get("PANEL_URL", ""),
             msg_welcome=app.config.get("ACE_BOT_MSG_WELCOME", "Bienvenue {name} !"),
             msg_discord=app.config.get("ACE_BOT_MSG_DISCORD", "Rejoins le discord : {discord_url}"),
             msg_site=app.config.get("ACE_BOT_MSG_SITE",    "Retrouve tes resultats et evenements sur : {site_url}"),
             deploy_mode=_DEPLOY_MODE,
-            log_file=str(_LOG_FILE),
+            log_file=str(_log_file(1)),
             container_name=_DOCKER_CONTAINER_NAME,
         )
 
     @app.context_processor
     def _inject_system_warnings():
+        from flask import session as _session
         from flask_login import current_user
         from app.services.process_manager import get_system_warnings
         try:
             if current_user.is_authenticated and current_user.is_admin:
-                return {"system_warnings": get_system_warnings()}
+                sid = _session.get("current_server_id", 1)
+                return {"system_warnings": get_system_warnings(sid)}
         except Exception:
             pass
         return {"system_warnings": []}

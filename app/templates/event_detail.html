@@ -60,7 +60,7 @@
             <button class="btn-secondary" style="font-size:11px;padding:4px 10px">OK</button>
           </form>
         </td>
-        <td><span class="badge badge-{{ reg.status }}">{{ reg.status }}</span></td>
+        <td><span class="badge badge-{{ reg.status }}">{% if reg.status == 'confirmed' %}{{ _('Confirmé') }}{% elif reg.status == 'pending' %}{{ _('En attente') }}{% elif reg.status == 'rejected' %}{{ _('Refusé') }}{% else %}{{ reg.status }}{% endif %}</span></td>
         <td>
           <div class="table-actions" style="justify-content:flex-end">
             {% if reg.status != 'confirmed' %}

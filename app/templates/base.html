@@ -55,11 +55,34 @@
     <div class="topnav-right">
 
       {% if current_user.is_authenticated and current_user.is_admin %}
-      <div class="topnav-status">
-        <span class="dot" id="status-dot"></span>
-        <span id="status-label">—</span>
-        <span id="player-count-sb" class="topnav-players"></span>
+      {# ── Sélecteur de serveur ── #}
+      {% if servers %}
+      {% set cur_srv = servers | selectattr('id', 'equalto', current_server_id) | list | first | default(servers[0]) %}
+      <div class="topnav-dropdown server-selector{% if servers|length < 2 %} server-selector-single{% endif %}">
+        <button class="server-selector-btn topnav-dropdown-btn" aria-expanded="false">
+          <span class="server-selector-dot {% if cur_srv and cur_srv.id in server_running_ids %}online{% endif %}"></span>
+          <span class="server-selector-name">{{ cur_srv.name if cur_srv else _('Serveur') }}</span>
+          {% if servers|length > 1 %}
+          <svg width="9" height="9" viewBox="0 0 10 10" fill="none" aria-hidden="true"><path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          {% endif %}
+        </button>
+        {% if servers|length > 1 %}
+        <div class="topnav-dropdown-menu server-selector-menu">
+          {% for srv in servers %}
+          <form method="POST" action="{{ url_for('admin.select_server', server_id=srv.id) }}" style="margin:0">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="next" value="{{ request.url }}">
+            <button type="submit" class="server-selector-item {% if srv.id == current_server_id %}active{% endif %}">
+              <span class="server-selector-dot {% if srv.id in server_running_ids %}online{% endif %}"></span>
+              {{ srv.name }}
+            </button>
+          </form>
+          {% endfor %}
+        </div>
+        {% endif %}
       </div>
+      {% endif %}
+
       {# ── Admin dropdown ── #}
       {% set _admin_eps = ('admin.dashboard','admin.server','events_admin.drivers_list','events_admin.events_list','live.live_page','admin.settings','admin.administration') %}
       <div class="admin-nav-dropdown">
@@ -84,8 +107,20 @@
           <a href="{{ url_for('live.live_page') }}" class="admin-nav-item {% if request.endpoint == 'live.live_page' %}active{% endif %}">
             {{ _('Live') }}
           </a>
+          <a href="{{ url_for('admin.vehicles') }}" class="admin-nav-item {% if request.endpoint in ('admin.vehicles','admin.vehicle_toggle','admin.vehicle_upload_image') %}active{% endif %}">
+            {{ _('Véhicules') }}
+          </a>
+          <a href="{{ url_for('admin.circuits') }}" class="admin-nav-item {% if request.endpoint in ('admin.circuits','admin.circuit_toggle','admin.circuit_upload_image') %}active{% endif %}">
+            {{ _('Circuits') }}
+          </a>
+          <a href="{{ url_for('admin.mods') }}" class="admin-nav-item {% if request.endpoint == 'admin.mods' %}active{% endif %}">
+            {{ _('Mods') }}
+          </a>
           {% if current_user.is_superadmin %}
           <div class="admin-nav-divider"></div>
+          <a href="{{ url_for('admin.servers_list') }}" class="admin-nav-item {% if request.endpoint in ('admin.servers_list','admin.server_create','admin.server_toggle','admin.server_delete') %}active{% endif %}">
+            {{ _('Serveurs') }}
+          </a>
           <a href="{{ url_for('admin.settings') }}" class="admin-nav-item {% if request.endpoint in ('admin.settings','admin.administration') %}active{% endif %}">
             {{ _('Paramètres') }}
           </a>
@@ -199,6 +234,11 @@ const I18N = {
   serverStarted:   "{{ _('Serveur démarré') }}",
   serverStopped:   "{{ _('Serveur arrêté') }}",
   serverRestarted: "{{ _('Serveur redémarré') }}",
+  serverStarting:  "{{ _('Démarrage…') }}",
+  serverStopping:  "{{ _('Arrêt…') }}",
+  serverRestarting:"{{ _('Redémarrage…') }}",
+  confirmStop:     "{{ _('Arrêter le serveur ? Les joueurs connectés seront déconnectés.') }}",
+  confirmRestart:  "{{ _('Redémarrer le serveur ? Les joueurs connectés seront déconnectés.') }}",
   sessionsSaved:   "{{ _('Sessions sauvegardées') }}",
   carsSaved:       "{{ _('Véhicules sauvegardés') }}",
   nameRequired:    "{{ _('Nom requis') }}",
@@ -259,5 +299,56 @@ document.addEventListener('click', function(e) {
 </script>
 <script src="{{ url_for('static', filename='js/app.js', v=static_version) }}"></script>
 {% block scripts %}{% endblock %}
+
+<footer class="site-footer">
+  <div class="footer-main">
+
+    <div class="footer-brand">
+      <div class="footer-logo">AC</div>
+      <div>
+        <div class="footer-name">AC EVO Server Panel</div>
+        <div class="footer-tagline">{{ _('Panel open-source pour serveurs Assetto Corsa EVO') }}</div>
+      </div>
+    </div>
+
+    <div class="footer-version">
+      <span class="ver-pill">
+        <span class="dot"></span>
+        v{{ app_version }}
+        {% if git_hash %}<span class="ver-build"> · {{ git_hash }}</span>{% endif %}
+      </span>
+    </div>
+
+    {% if github_url %}
+    <nav class="footer-links">
+      <a href="{{ github_url }}" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.2.8-.5v-1.8c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.8 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 4.6 18.3 5 18.3 5c.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.5-2.7 5.5-5.3 5.8.4.4.8 1.1.8 2.2v3.3c0 .3.2.6.8.5 4.6-1.5 7.9-5.8 7.9-10.9C23.5 5.7 18.3.5 12 .5z"/></svg>
+        GitHub
+      </a>
+      <a href="{{ github_url }}/wiki" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 4h11a2 2 0 0 1 2 2v14H6a2 2 0 0 1-2-2V4Z"/><path d="M17 6h3v14H6"/><path d="M8 8h6M8 12h6"/></svg>
+        {{ _('Documentation') }}
+      </a>
+      <a href="{{ github_url }}/issues" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        {{ _('Signaler un bug') }}
+      </a>
+      <a href="{{ github_url }}/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v18M5 7l7-4 7 4M5 7l-2 6a4 4 0 0 0 4 0l-2-6M19 7l-2 6a4 4 0 0 0 4 0l-2-6"/></svg>
+        {{ _('Licence MIT') }}
+      </a>
+    </nav>
+    {% endif %}
+
+  </div>
+
+  <div class="footer-bottom">
+    <span>© 2026 <strong>Florian</strong> (Zyphro)</span>
+    <span class="sep">·</span>
+    <span>{{ _('Sous licence MIT') }}</span>
+    <span class="sep">·</span>
+    <span class="footer-disclaimer">{{ _('Projet non officiel, non affilié à Kunos Simulazioni ni à Assetto Corsa EVO.') }}</span>
+  </div>
+</footer>
 </body>
 </html>

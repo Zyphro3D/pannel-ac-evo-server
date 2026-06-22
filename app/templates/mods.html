@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Mods') }} — {{ panel_title }}{% endblock %}
+
+{% block content %}
+<div class="settings-page">
+  <div class="settings-header">
+    <h1>{{ _('Mods') }}</h1>
+    <p class="settings-subtitle">{{ _('Véhicules et circuits téléchargeables') }}</p>
+  </div>
+
+  <div class="coming-soon-card">
+    <div class="coming-soon-icon">🔧</div>
+    <h2>{{ _('Bientôt disponible') }}</h2>
+    <p>{{ _('La gestion des mods arrivera ici : banque de véhicules, circuits téléchargeables, installation directe depuis le panel.') }}</p>
+  </div>
+</div>
+
+<style>
+.coming-soon-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 80px 40px;
+  background: var(--surface2);
+  border-radius: 12px;
+  text-align: center;
+  margin-top: 32px;
+}
+.coming-soon-icon { font-size: 3rem; }
+.coming-soon-card h2 { font-size: 1.4rem; color: var(--text); margin: 0; }
+.coming-soon-card p  { color: var(--dim); max-width: 480px; margin: 0; }
+</style>
+{% endblock %}

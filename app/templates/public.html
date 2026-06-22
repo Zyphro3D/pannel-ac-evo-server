@@ -3,7 +3,7 @@
 
 {% block content %}
 
-{# ── Hero ── #}
+{# ── Section 1 : Hero ── #}
 <div class="h-hero" style="background-image: url('{{ url_for('serve_media', filename='banner/hero_banner.png') }}')">
   <div class="h-hero-content">
     <h1 class="h-hero-title">
@@ -23,207 +23,212 @@
 
 <div>
 
-{# ── 3-column grid ── #}
-<div class="h-grid-3">
+{# ── Section 2 : Serveurs de jeu ── #}
+{% if servers %}
+<div class="h-section-title">{{ _('Serveurs') }}</div>
+<div class="pub-servers-grid pub-servers-grid-{{ [servers|length, 3]|min }}">
+  {% for srv in servers %}
+  {% set st = statuses.get(srv.id, {}) %}
+  {% set si = server_infos.get(srv.id) %}
+  {% set has_banner = st.running and si and si.banner_image %}
+  <div class="h-panel pub-server-card{% if not st.running %} is-offline{% endif %}">
 
-  {# ── Col 1 : Événements à venir ── #}
-  <div class="h-panel">
-    <div class="h-panel-header">
-      <span class="h-panel-title">{{ _('Événements à venir') }}</span>
-      {% if current_user.is_authenticated and current_user.is_admin %}
-      <a href="{{ url_for('events_admin.events_list') }}" class="h-panel-link">{{ _('Gérer') }} ›</a>
+    {# ── Zone héro : photo circuit + header + nom + meta ── #}
+    <div class="pub-srv-hero"
+         {% if has_banner %}style="--srv-banner:url('{{ url_for('serve_media', filename=si.banner_image) }}')"{% endif %}>
+
+      <div class="pub-srv-header">
+        <span class="h-panel-title">{{ srv.name }}</span>
+        {% if st.running %}
+        <span class="pub-srv-status online">
+          <span class="dot online" style="width:8px;height:8px"></span>{{ _('En direct') }}
+        </span>
+        {% else %}
+        <span class="pub-srv-status offline">
+          <span class="dot offline" style="width:8px;height:8px"></span>{{ _('Hors ligne') }}
+        </span>
+        {% endif %}
+      </div>
+
+      {% if st.running and si %}
+      <div class="pub-srv-title">
+        <div class="pub-srv-circuit-name">{{ si.track_name }}</div>
+        {% if si.track_layout %}
+        <div class="pub-srv-circuit-sub">{{ si.track_layout }}</div>
+        {% endif %}
+        <div class="pub-srv-circuit-meta">
+          {% if si.track_km %}
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 2 22 12 12 22 2 12Z"/></svg>{{ si.track_km }}</span>
+          {% endif %}
+          {% if si.mode %}
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 22V4"/><path d="M5 4h12l-2 4 2 4H5"/></svg>{{ si.mode }}</span>
+          {% endif %}
+          {% if si.weather %}
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4"/></svg>{{ si.weather }}</span>
+          {% endif %}
+        </div>
+      </div>
+      {% else %}
+      <div class="pub-srv-title">
+        <div class="pub-srv-circuit-name" style="color:var(--dim);font-size:1.4rem">{{ _('Aucune session en cours.') }}</div>
+      </div>
       {% endif %}
     </div>
 
-    {# Ongoing events #}
-    {% for ev in ongoing %}
-    {% if current_user.is_authenticated %}
-      {% set ev_href = url_for('public.pilot_dashboard') %}
-    {% else %}
-      {% set ev_href = url_for('auth.login', next=url_for('public.pilot_dashboard')) %}
-    {% endif %}
-    <a href="{{ ev_href }}" class="h-event-row" style="border-left:3px solid var(--accent2)">
-      <div class="h-date-box">
-        <span class="h-date-day">{{ ev.date.day if ev.date else '—' }}</span>
-        <span class="h-date-month">{{ ev.date.strftime('%b')|upper if ev.date else '' }}</span>
-        <span class="h-date-time" style="color:var(--accent2)">{{ _('En cours') }}</span>
-      </div>
-      <div class="h-thumb"></div>
-      <div class="h-event-info">
-        <span class="h-event-tag" style="color:var(--accent2)">{{ _('En cours') }}</span>
-        <h3>{{ ev.title }}</h3>
-        <div class="h-event-meta">{{ ev.circuit_display or ev.circuit or '' }}</div>
-      </div>
-      <div class="h-chev">›</div>
-    </a>
-    {% endfor %}
-
-    {# Upcoming events #}
-    {% if upcoming %}
-      {% for ev in upcoming[:3] %}
-      {% if current_user.is_authenticated %}
-        {% set ev_href = url_for('public.pilot_dashboard') %}
-      {% else %}
-        {% set ev_href = url_for('auth.login', next=url_for('public.pilot_dashboard')) %}
-      {% endif %}
-      <a href="{{ ev_href }}" class="h-event-row">
-        <div class="h-date-box">
-          <span class="h-date-day">{{ ev.date.day if ev.date else '—' }}</span>
-          <span class="h-date-month">{{ ev.date.strftime('%b')|upper if ev.date else '' }}</span>
-          <span class="h-date-time">{{ ev.date.strftime('%H:%M') if ev.date else '' }}</span>
-        </div>
-        <div class="h-thumb"></div>
-        <div class="h-event-info">
-          <span class="h-event-tag">{{ _('Événement') }}</span>
-          <h3>{{ ev.title }}</h3>
-          <div class="h-event-meta">
-            {{ ev.circuit_display or ev.circuit or '—' }}
-            {% if current_user.is_authenticated and current_user.is_pilot and not current_user.is_admin %}
-              {% set my_reg = my_regs.get(ev.id) %}
-              {% if my_reg %}
-                · <span class="badge badge-{{ my_reg.status }}" style="font-size:0.6rem">{{ my_reg.status }}</span>
-              {% endif %}
-            {% endif %}
-          </div>
-        </div>
-        <div class="h-chev">›</div>
-      </a>
-      {% endfor %}
-    {% else %}
-    <div class="h-empty">{{ _('Aucun événement à venir.') }}</div>
-    {% endif %}
-
-  </div>
-
-  {# ── Col 2 : Session en cours ── #}
-  <div class="h-panel">
-    <div class="h-panel-header">
-      <span class="h-panel-title">{{ _('Session en cours') }}</span>
-      {% if status.running %}
-      <span style="display:flex;align-items:center;gap:5px;font-size:0.7rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:var(--green)">
-        <span class="dot online" style="width:7px;height:7px;flex-shrink:0"></span>
-        {{ _('En direct') }}
-      </span>
-      {% else %}
-      <span style="font-size:0.72rem;color:var(--dim)">{{ _('Hors ligne') }}</span>
-      {% endif %}
-    </div>
-
-    {% if status.running and server_info %}
-      <div class="h-session-info">
-        <div class="h-session-name">{{ server_info.server_name }}</div>
-        <div class="h-session-meta">
-          {% if server_info.circuit %}<span>{{ server_info.circuit }}</span>{% endif %}
-          {% if server_info.track_km %}<span>{{ server_info.track_km }}</span>{% endif %}
-          {% if server_info.mode %}<span>{{ server_info.mode }}</span>{% endif %}
-          {% if server_info.weather %}<span>☀ {{ server_info.weather }}</span>{% endif %}
-        </div>
-      </div>
-
-      {% if server_info.cars %}
-      <div style="padding:10px 18px;border-bottom:1px solid var(--border)">
+    {# ── Barre d'infos encadrée en bas ── #}
+    <div class="pub-srv-info-bar">
+      <div class="pub-srv-info-main">
+        {% if st.running and si %}
+        <div class="pub-srv-name">{{ si.server_name }}</div>
+        {% if si.cars %}
         <div class="si-cars">
-          {% for car in server_info.cars[:5] %}
+          {% for car in si.cars[:5] %}
           <span class="car-chip">{{ car }}</span>
           {% endfor %}
-          {% if server_info.car_count > 5 %}
-          <span class="car-chip car-chip-more">+{{ server_info.car_count - 5 }}</span>
+          {% if si.car_count > 5 %}
+          <span class="car-chip car-chip-more">+{{ si.car_count - 5 }}</span>
           {% endif %}
         </div>
+        {% endif %}
+        {% else %}
+        <div class="pub-srv-name" style="color:var(--dim)">{{ _('Serveur hors ligne') }}</div>
+        {% endif %}
+      </div>
+      <div class="pub-srv-info-side">
+        <div class="pub-srv-stats">
+          <div class="h-server-stat">
+            <span class="h-server-label">{{ _('Joueurs en ligne') }}</span>
+            <div class="h-server-big">
+              {% if st.running and st.players is not none %}{{ st.players }}<span class="h-server-max"> / {{ si.max_players }}</span>{% else %}0{% endif %}
+            </div>
+          </div>
+          <div class="h-server-stat">
+            <span class="h-server-label">{{ _('En ligne depuis') }}</span>
+            <div class="h-srv-uptime" data-started-at="{{ st.started_at or '' }}">—</div>
+          </div>
+        </div>
+        {% if st.running %}
+        <a href="{{ url_for('live.timing_page') }}" class="btn btn-timing btn-full">{{ _('Timing en direct') }} ›</a>
+        {% else %}
+        <span class="btn btn-offline btn-full">{{ _('Hors ligne') }}</span>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{# ── Section 3 : Événements à venir ── #}
+{# Macro : retourne le bon lien selon le rôle de l'utilisateur #}
+{% macro ev_link(event_id) %}
+  {%- if current_user.is_authenticated and current_user.is_admin -%}
+    {{ url_for('events_admin.event_registrations', event_id=event_id) }}
+  {%- elif current_user.is_authenticated -%}
+    {{ url_for('public.pilot_dashboard') }}
+  {%- else -%}
+    {{ url_for('auth.login', next=url_for('public.pilot_dashboard')) }}
+  {%- endif -%}
+{% endmacro %}
+
+<div class="ev-section-head">
+  <span class="ev-section-title">{{ _('Événements à venir') }}</span>
+  {% if current_user.is_authenticated and current_user.is_admin %}
+  <a href="{{ url_for('events_admin.events_list') }}" class="btn-secondary">{{ _('Gérer') }} →</a>
+  {% endif %}
+</div>
+
+{# Événements en cours — bandeau simple #}
+{% for ev in ongoing %}
+<a href="{{ ev_link(ev.id) }}" class="pub-ongoing-row">
+  <span class="pub-ongoing-dot"></span>
+  <span class="pub-ongoing-label">{{ _('En cours') }}</span>
+  <span class="pub-ongoing-title">{{ ev.title }}</span>
+  <span class="pub-ongoing-circuit">{{ ev.circuit_display or ev.circuit or '' }}</span>
+  <span class="pub-ongoing-chev">›</span>
+</a>
+{% endfor %}
+
+{% if upcoming %}
+{% if upcoming|length == 1 %}
+{% set item = upcoming[0] %}
+{% set my_reg = my_regs.get(item.ev.id) %}
+<a href="{{ ev_link(item.ev.id) }}" class="ev-card-single">
+  <div class="ev-card-single-left">
+    <div class="ev-date-block">
+      <span class="ev-day">{{ item.day }}</span>
+      <span class="ev-month">{{ item.month }}</span>
+      <span class="ev-time">{{ item.time }}</span>
+    </div>
+    <span class="ev-eyebrow">{{ item.ev.mode_display }}</span>
+    <h2 class="ev-card-single-title">{{ item.ev.title }}</h2>
+    <p class="ev-card-single-sub">{{ item.ev.circuit_display or item.ev.circuit }}</p>
+    <div class="ev-card-meta">
+      <span>{{ item.ev.weather_display }}</span>
+      <span>{{ item.duration }}</span>
+    </div>
+    {% if my_reg %}
+    <span class="badge badge-{{ my_reg.status }}" style="margin-top:auto;width:fit-content">{{ my_reg.status }}</span>
+    {% elif not item.ev.is_public %}
+    <div class="ev-reg" style="max-width:220px;margin-top:auto">
+      <div class="ev-reg-row"><span><span class="ev-reg-num">{{ item.confirmed }}</span> / {{ item.ev.max_drivers }} {{ _('Inscrits') }}</span></div>
+      <div class="ev-progress"><i style="width:{{ item.fill_pct }}%"></i></div>
+    </div>
+    {% endif %}
+  </div>
+  <div class="ev-card-single-right" {% if item.track_img %}style="background-image:url('{{ url_for('serve_media', filename=item.track_img) }}')"{% endif %}>
+    <div class="ev-card-single-infobar">
+      <div class="ev-info-cell"><span class="ev-info-label">{{ _('Type') }}</span><span class="ev-info-val">{{ item.ev.mode_display }}</span></div>
+      <div class="ev-info-cell"><span class="ev-info-label">{{ _('Circuit') }}</span><span class="ev-info-val">{{ item.ev.circuit_display or item.ev.circuit or '—' }}</span></div>
+      <div class="ev-info-cell"><span class="ev-info-label">{{ _('Météo') }}</span><span class="ev-info-val">{{ item.ev.weather_display }}</span></div>
+      <div class="ev-info-cell"><span class="ev-info-label">{{ _('Durée') }}</span><span class="ev-info-val">{{ item.duration }}</span></div>
+    </div>
+  </div>
+</a>
+{% else %}
+<div class="ev-cards-row">
+  {% for item in upcoming %}
+  {% set my_reg = my_regs.get(item.ev.id) %}
+  <a href="{{ ev_link(item.ev.id) }}" class="ev-card{% if loop.first %} ev-card--featured{% endif %}">
+    <div class="ev-card-photo" {% if item.track_img %}style="background-image:url('{{ url_for('serve_media', filename=item.track_img) }}')"{% endif %}>
+      <div class="ev-date-block">
+        <span class="ev-day">{{ item.day }}</span>
+        <span class="ev-month">{{ item.month }}</span>
+        <span class="ev-time">{{ item.time }}</span>
+      </div>
+      <span class="ev-eyebrow">{{ item.ev.mode_display }}</span>
+    </div>
+    <div class="ev-card-body">
+      <h3 class="ev-title">{{ item.ev.title }}</h3>
+      <p class="ev-sub">{{ item.ev.circuit_display or item.ev.circuit }}</p>
+      <div class="ev-card-meta">
+        <span>{{ item.ev.weather_display }}</span>
+        <span>{{ item.duration }}</span>
+      </div>
+      {% if my_reg %}
+      <span class="badge badge-{{ my_reg.status }}" style="margin-top:auto;width:fit-content;font-size:0.75rem">{{ my_reg.status }}</span>
+      {% elif not item.ev.is_public %}
+      <div class="ev-reg">
+        <div class="ev-reg-row"><span><span class="ev-reg-num">{{ item.confirmed }}</span> / {{ item.ev.max_drivers }} {{ _('Inscrits') }}</span></div>
+        <div class="ev-progress"><i style="width:{{ item.fill_pct }}%"></i></div>
       </div>
       {% endif %}
-
-      <div style="padding:16px 18px;text-align:center">
-        <a href="{{ url_for('live.timing_page') }}" class="btn btn-secondary btn-full">
-          {{ _('Timing en direct') }} ›
-        </a>
-      </div>
-
-    {% else %}
-    <div class="h-empty">
-      <div class="dot offline" style="width:14px;height:14px;margin:0 auto 12px"></div>
-      <div style="font-size:0.9rem;font-weight:600;color:var(--dim);margin-bottom:6px">{{ _('Serveur hors ligne') }}</div>
-      <div style="font-size:0.76rem">{{ _('Aucune session en cours.') }}</div>
     </div>
-    {% endif %}
-  </div>
+  </a>
+  {% endfor %}
+</div>
+{% endif %}
 
-  {# ── Col 3 : État du serveur ── #}
-  <div class="h-panel">
-    <div class="h-panel-header">
-      <span class="h-panel-title">{{ _('État du serveur') }}</span>
-      <span class="dot {% if status.running %}online{% else %}offline{% endif %}"></span>
-    </div>
+{% elif not ongoing %}
+<div class="h-panel" style="margin-bottom:2rem">
+  <div class="h-empty">{{ _('Aucun événement à venir.') }}</div>
+</div>
+{% endif %}
 
-    {# ── Joueurs / Max + Statut ── #}
-    <div class="h-server-split">
-      <div>
-        <span class="h-server-label">{{ _('Joueurs en ligne') }}</span>
-        <div class="h-server-big">
-          {% if status.running and status.players is not none %}
-            {{ status.players }}{% if server_info %}<span class="h-server-max">/ {{ server_info.max_players }}</span>{% endif %}
-          {% else %}
-            —
-          {% endif %}
-        </div>
-      </div>
-      <div>
-        <span class="h-server-label">{{ _('Statut') }}</span>
-        <div style="margin-top:8px">
-          {% if status.running %}
-          <span class="badge badge-published" style="font-size:0.78rem;padding:4px 10px">{{ _('En ligne') }}</span>
-          {% else %}
-          <span class="badge badge-rejected" style="font-size:0.78rem;padding:4px 10px">{{ _('Hors ligne') }}</span>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-
-    {% if status.running %}
-
-    {# ── En ligne depuis + sparkline ── #}
-    <div class="h-srv-row">
-      <div class="h-srv-row-left">
-        <span class="h-server-label">{{ _('En ligne depuis') }}</span>
-        <div class="h-srv-uptime"
-             id="srv-uptime"
-             data-started-at="{{ status.started_at or '' }}">—</div>
-      </div>
-      <div class="h-srv-row-right">
-        <svg id="srv-sparkline"
-             class="h-sparkline"
-             viewBox="0 0 120 32"
-             preserveAspectRatio="none"
-             data-history="{{ player_history_json | e }}"
-             data-max="{{ server_info.max_players if server_info else 20 }}">
-        </svg>
-      </div>
-    </div>
-
-    {# ── Prochaine session ── #}
-    {% if server_info and server_info.session_dur_secs %}
-    <div class="h-srv-row" style="border-top:1px solid var(--border)">
-      <div class="h-srv-row-left">
-        <span class="h-server-label">{{ server_info.current_session_label }}</span>
-        <div class="h-srv-countdown"
-             id="srv-countdown"
-             data-session-changed-at="{{ server_info.session_changed_at or status.started_at or '' }}"
-             data-session-dur="{{ server_info.session_dur_secs }}">—</div>
-      </div>
-      <div class="h-srv-row-right" style="align-items:flex-end">
-        <span style="font-size:0.72rem;color:var(--dim)">{{ _('restant') }}</span>
-      </div>
-    </div>
-    {% endif %}
-
-    {% endif %}
-
-  </div>
-
-</div>{# /h-grid-3 #}
-
-{# ── Derniers résultats ── #}
+{# ── Section 4 : Derniers résultats ── #}
 {% if recent_sessions %}
+{% set ordinals = ['1er', '2e', '3e', '4e'] %}
 <div class="h-panel">
   <div class="h-panel-header">
     <span class="h-panel-title">{{ _('Derniers résultats') }}</span>
@@ -234,21 +239,39 @@
     {% set p = s.parsed %}
     {% set winner = p.standings[0] if p.standings else none %}
     <a href="{{ url_for('public.result_detail', result_id=s.id) }}"
-       class="h-result-card"
-       style="border-top:3px solid {{ s.wkd_color }}">
-      <h4>{{ p.track or '—' }}</h4>
-      <p>
-        <span class="badge badge-session" style="font-size:0.68rem">{{ p.session_type or '—' }}</span><br>
-        {{ s.received_at | local_dt_short }}
-      </p>
-      {% if winner %}
-      <span class="h-result-driver">
-        {% if p.is_race %}{{ winner.race_time or winner.best_lap }}{% else %}{{ winner.best_lap }}{% endif %}
-        · {{ winner.nickname }}
-      </span>
-      {% else %}
-      <span class="h-result-driver" style="color:var(--dim)">{{ _('Aucun pilote') }}</span>
-      {% endif %}
+       class="h-result-card{% if loop.first %} is-first{% endif %}"
+       {% if s.track_banner %}style="--srv-banner:url('{{ url_for('serve_media', filename=s.track_banner) }}')"{% endif %}>
+
+      <span class="h-place">{{ ordinals[loop.index0] }}</span>
+
+      <div class="h-result-body">
+        <h4>{{ p.track or '—' }}</h4>
+        <div class="h-result-session">{{ p.session_type or '—' }}</div>
+
+        {% if winner %}
+        <div class="h-result-time">
+          {% if p.is_race %}{{ winner.race_time or winner.best_lap }}{% else %}{{ winner.best_lap }}{% endif %}
+        </div>
+        <span class="h-result-driver">{{ winner.nickname }}</span>
+        {% endif %}
+
+        <div class="h-result-footer">
+          <span class="h-result-date">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+            {{ s.received_at | local_dt_short }}
+          </span>
+        </div>
+
+        {% if winner and winner.car or s.car_image %}
+        <div class="h-result-carname">
+          {% if winner and winner.car %}<span>{{ winner.car }}</span>{% endif %}
+          {% if s.car_image %}
+          <img src="{{ url_for('serve_media', filename=s.car_image) }}" class="h-result-car-img" alt="">
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+
     </a>
     {% endfor %}
   </div>
@@ -260,7 +283,7 @@
 
 {% block scripts %}
 <script>
-/* ── Uptime counter ── */
+/* ── Uptime counters ── */
 function _fmtUptime(s) {
   const d = Math.floor(s / 86400);
   const h = Math.floor((s % 86400) / 3600);
@@ -269,76 +292,14 @@ function _fmtUptime(s) {
   if (h > 0) return h + 'h' + String(m).padStart(2,'0');
   return m + ' min';
 }
-function _tickUptime() {
-  const el = document.getElementById('srv-uptime');
-  if (!el) return;
-  const t = parseFloat(el.dataset.startedAt);
-  if (!t) return;
-  const secs = Math.max(0, Math.floor(Date.now()/1000 - t));
-  el.textContent = _fmtUptime(secs);
-}
-
-/* ── Session countdown ── */
-function _fmtCountdown(s) {
-  if (s <= 0) return '—';
-  const h = Math.floor(s / 3600);
-  const m = Math.floor((s % 3600) / 60);
-  const sec = s % 60;
-  if (h > 0) return h + 'h ' + String(m).padStart(2,'0') + 'm';
-  return String(m).padStart(2,'0') + 'm ' + String(sec).padStart(2,'0') + 's';
-}
-function _tickCountdown() {
-  const el = document.getElementById('srv-countdown');
-  if (!el) return;
-  const changed = parseFloat(el.dataset.sessionChangedAt);
-  const dur     = parseInt(el.dataset.sessionDur);
-  if (!changed || !dur) return;
-  const remaining = Math.max(0, Math.floor(changed + dur - Date.now()/1000));
-  el.textContent = _fmtCountdown(remaining);
-}
-
-/* ── Sparkline SVG ── */
-function _drawSparkline() {
-  const svg = document.getElementById('srv-sparkline');
-  if (!svg) return;
-  let history;
-  try { history = JSON.parse(svg.dataset.history || '[]'); } catch(_) { return; }
-  const maxP = parseInt(svg.dataset.max) || 20;
-  const pts  = history.slice(-30);
-  if (pts.length < 2) {
-    svg.innerHTML = '<text x="60" y="20" text-anchor="middle" fill="var(--dim)" font-size="9">{{ _("Pas de données") }}</text>';
-    return;
-  }
-  const W = 120, H = 32, pad = 2;
-  const iW = W - pad*2, iH = H - pad*2;
-  const step = iW / (pts.length - 1);
-  const coords = pts.map((p, i) => {
-    const x = pad + i * step;
-    const y = pad + iH - (p.count / Math.max(maxP, 1)) * iH;
-    return [x.toFixed(1), y.toFixed(1)];
+function _tickUptimes() {
+  document.querySelectorAll('.h-srv-uptime[data-started-at]').forEach(function(el) {
+    const t = parseFloat(el.dataset.startedAt);
+    if (!t) return;
+    el.textContent = _fmtUptime(Math.max(0, Math.floor(Date.now()/1000 - t)));
   });
-  const line  = coords.map(c => c.join(',')).join(' ');
-  const area  = `${pad},${H-pad} ` + line + ` ${coords[coords.length-1][0]},${H-pad}`;
-  svg.innerHTML =
-    `<polyline points="${area}" fill="var(--accent)" fill-opacity="0.12" stroke="none"/>` +
-    `<polyline points="${line}" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linejoin="round"/>`;
 }
-
-/* ── Update sparkline from status poll ── */
-window._onPublicStatusUpdate = function(data) {
-  if (data.history && data.history.length) {
-    const svg = document.getElementById('srv-sparkline');
-    if (svg) {
-      svg.dataset.history = JSON.stringify(data.history);
-      _drawSparkline();
-    }
-  }
-};
-
-/* ── Start ── */
-_drawSparkline();
-_tickUptime();
-_tickCountdown();
-setInterval(() => { _tickUptime(); _tickCountdown(); }, 1000);
+_tickUptimes();
+setInterval(_tickUptimes, 1000);
 </script>
 {% endblock %}

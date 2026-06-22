@@ -1,7 +1,11 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from app.services.database import db
+
+
+def _utcnow():
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 # ── AdminAccount (admin/superadmin stockés en DB) ────────────────────────────
@@ -15,7 +19,7 @@ class AdminAccount(UserMixin, db.Model):
     _pw_hash     = db.Column("password_hash", db.String(256), nullable=False, default="")
     role         = db.Column(db.String(20), default="admin")   # "admin" | "superadmin"
     is_active    = db.Column(db.Boolean, default=True)
-    created_at   = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at   = db.Column(db.DateTime, default=_utcnow)
     last_login   = db.Column(db.DateTime, nullable=True)
 
     def get_id(self) -> str:
@@ -54,12 +58,12 @@ class Driver(UserMixin, db.Model):
     email       = db.Column(db.String(120), unique=True, nullable=False)
     _pw_hash    = db.Column("password_hash", db.String(256), nullable=False)
     status      = db.Column(db.String(20), default="pending")  # pending/approved/rejected
-    created_at  = db.Column(db.DateTime,  default=datetime.utcnow)
+    created_at  = db.Column(db.DateTime,  default=_utcnow)
 
     reset_token         = db.Column(db.String(64),  nullable=True)
     reset_token_expires = db.Column(db.DateTime,    nullable=True)
 
-    registrations = db.relationship("EventRegistration", back_populates="driver", lazy="dynamic")
+    registrations = db.relationship("EventRegistration", back_populates="driver", lazy="select")
 
     # Flask-Login: prefix "d_" pour distinguer des admins
     def get_id(self) -> str:
@@ -110,7 +114,7 @@ class Event(db.Model):
     discord_notified  = db.Column(db.Boolean,     default=False)   # notif Discord 30min envoyée
     auto_launch       = db.Column(db.Boolean,     default=False)   # lancer le serveur automatiquement
     launched          = db.Column(db.Boolean,     default=False)   # déjà lancé par le scheduler
-    created_at      = db.Column(db.DateTime,    default=datetime.utcnow)
+    created_at      = db.Column(db.DateTime,    default=_utcnow)
     # Durées de session (minutes)
     practice_minutes   = db.Column(db.Integer, default=60)
     qualifying_minutes = db.Column(db.Integer, default=30)
@@ -122,7 +126,7 @@ class Event(db.Model):
     cars_config        = db.Column(db.Text, default="{}")
 
     registrations = db.relationship("EventRegistration", back_populates="event",
-                                    lazy="dynamic", cascade="all, delete-orphan")
+                                    lazy="select", cascade="all, delete-orphan")
 
     __table_args__ = (
         db.Index("ix_event_status_email_sent",      "status", "email_sent"),
@@ -131,11 +135,11 @@ class Event(db.Model):
 
     @property
     def confirmed_count(self) -> int:
-        return self.registrations.filter_by(status="confirmed").count()
+        return EventRegistration.query.filter_by(event_id=self.id, status="confirmed").count()
 
     @property
     def pending_count(self) -> int:
-        return self.registrations.filter_by(status="pending").count()
+        return EventRegistration.query.filter_by(event_id=self.id, status="pending").count()
 
     @property
     def is_full(self) -> bool:
@@ -163,9 +167,9 @@ class Event(db.Model):
     @property
     def weather_display(self) -> str:
         return {
-            "GameModeSelectionWeatherType_CLEAR":    "Dégagé",
-            "GameModeSelectionWeatherType_OVERCAST": "Nuageux",
-            "GameModeSelectionWeatherType_RAIN":     "Pluie",
+            "GameModeSelectionWeatherType_CLEAR":    "Clear",
+            "GameModeSelectionWeatherType_OVERCAST": "Overcast",
+            "GameModeSelectionWeatherType_RAIN":     "Rain",
         }.get(self.weather, self.weather)
 
 
@@ -181,7 +185,7 @@ class EventRegistration(db.Model):
     car_display  = db.Column(db.String(150), default="")  # car.display_name
     status       = db.Column(db.String(20),  default="pending")  # pending/confirmed/rejected
     notified     = db.Column(db.Boolean,     default=False)      # email pré-event envoyé
-    created_at   = db.Column(db.DateTime,    default=datetime.utcnow)
+    created_at   = db.Column(db.DateTime,    default=_utcnow)
 
     event  = db.relationship("Event",  back_populates="registrations")
     driver = db.relationship("Driver", back_populates="registrations")
@@ -195,13 +199,81 @@ class SessionResult(db.Model):
     __tablename__ = "session_result"
 
     id           = db.Column(db.Integer,  primary_key=True)
-    received_at  = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    received_at  = db.Column(db.DateTime, default=_utcnow, index=True)
     source       = db.Column(db.String(20),  default="webhook")   # "webhook" | "file"
     track        = db.Column(db.String(200), default="")
     session_type = db.Column(db.String(60),  default="")
     config_name  = db.Column(db.String(200), nullable=True)       # config JSON actif au moment de la réception
     run_id       = db.Column(db.String(40),  nullable=True)       # uuid du démarrage serveur (groupement fiable)
+    server_id    = db.Column(db.Integer,     nullable=True, index=True)  # server gérant ce résultat (NULL = rétrocompat)
     raw_json     = db.Column(db.Text, nullable=False)
+
+
+# ── Server (instance ACE EVO gérée par le panel) ─────────────────────────────
+
+class Server(db.Model):
+    __tablename__ = "server"
+
+    id              = db.Column(db.Integer, primary_key=True)
+    name            = db.Column(db.String(100), nullable=False)
+    slug            = db.Column(db.String(40),  unique=True, nullable=False)
+    tcp_port        = db.Column(db.Integer, default=9700)
+    udp_port        = db.Column(db.Integer, default=9700)
+    http_port       = db.Column(db.Integer, default=8080)
+    container_name  = db.Column(db.String(80),  unique=True, nullable=False)
+    driver_password = db.Column(db.String(255), default="")
+    admin_password  = db.Column(db.String(255), default="")
+    active_config           = db.Column(db.String(255), default="default.json")
+    discord_webhook_main    = db.Column(db.String(255), default="")
+    discord_webhook_pilots  = db.Column(db.String(255), default="")
+    discord_webhook_race    = db.Column(db.String(255), default="")
+    is_enabled      = db.Column(db.Boolean, default=True)
+    sort_order      = db.Column(db.Integer, default=0)
+    created_at      = db.Column(db.DateTime, default=_utcnow)
+
+
+# ── CarMeta (métadonnées enrichies des véhicules) ─────────────────────────────
+
+class CarMeta(db.Model):
+    __tablename__ = "car_meta"
+
+    id           = db.Column(db.Integer, primary_key=True)
+    slug         = db.Column(db.String(120), unique=True, nullable=False)  # car["name"] depuis cars.json
+    display_name = db.Column(db.String(150), default="")
+    category     = db.Column(db.String(60),  default="")
+    pi_min       = db.Column(db.Float,       nullable=True)
+    pi_max       = db.Column(db.Float,       nullable=True)
+    image_path   = db.Column(db.String(255), default="")                   # relatif à media/cars/
+    is_active    = db.Column(db.Boolean, default=True)
+
+
+# ── TrackMeta (métadonnées enrichies des circuits) ────────────────────────────
+
+class TrackMeta(db.Model):
+    __tablename__ = "track_meta"
+
+    id           = db.Column(db.Integer, primary_key=True)
+    track_value  = db.Column(db.String(300), unique=True, nullable=False)  # "slug|layout|label|length_m"
+    track_name   = db.Column(db.String(150), default="")
+    layout       = db.Column(db.String(100), default="")
+    length_m     = db.Column(db.Integer,     nullable=True)
+    image_path   = db.Column(db.String(255), default="")                   # relatif à media/circuits/
+    is_active    = db.Column(db.Boolean, default=True)
+
+
+# ── Mod (mods véhicules/circuits téléchargeables) ─────────────────────────────
+
+class Mod(db.Model):
+    __tablename__ = "mod"
+
+    id           = db.Column(db.Integer, primary_key=True)
+    mod_type     = db.Column(db.String(20),  nullable=False)               # "car" | "circuit"
+    name         = db.Column(db.String(150), nullable=False)
+    version      = db.Column(db.String(40),  default="")
+    source_url   = db.Column(db.String(500), default="")
+    status       = db.Column(db.String(20),  default="available")          # available|installed|updating|error
+    installed_at = db.Column(db.DateTime,    nullable=True)
+    created_at   = db.Column(db.DateTime,    default=_utcnow)
 
 
 # ── Flask-Login user_loader ───────────────────────────────────────────────────

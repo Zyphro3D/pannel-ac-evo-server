@@ -15,7 +15,15 @@ def _tod(sess: dict) -> dict:
     }
 
 
-def build_launch_args(config: dict) -> tuple[str, str]:
+def build_launch_args(config: dict,
+                      tcp_listener: int | None = None,
+                      udp_listener: int | None = None,
+                      server_name:  str | None = None) -> tuple[str, str]:
+    """Build launch args from config.
+    tcp_listener / udp_listener override the external port announced to Kunos
+    while the internal bind port stays at TcpPort/UdpPort (always 9700 in Docker).
+    server_name overrides the in-game server name for multi-server setups.
+    """
     server   = config["Server"]
     event    = config["Event"]
     sessions = config["Sessions"]
@@ -27,12 +35,12 @@ def build_launch_args(config: dict) -> tuple[str, str]:
     ]
 
     server_dict = {
-        "server_tcp_listener_port": server["TcpPort"],
-        "server_udp_listener_port": server["UdpPort"],
+        "server_tcp_listener_port": tcp_listener if tcp_listener else server["TcpPort"],
+        "server_udp_listener_port": udp_listener if udp_listener else server["UdpPort"],
         "server_tcp_internal_port": server["TcpPort"],
         "server_udp_internal_port": server["UdpPort"],
         "server_http_port": server.get("HttpPort", 8080),
-        "server_name": server["ServerName"],
+        "server_name": server_name if server_name else server["ServerName"],
         "max_players": server["MaxPlayers"],
         "cycle": server.get("IsCycleEnabled", True),
         "allowed_cars_list_full": [

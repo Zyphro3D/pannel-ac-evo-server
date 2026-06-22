@@ -1,9 +1,13 @@
 import re
 import json as _json
 from datetime import datetime, timezone, timedelta
+from pathlib import Path
 
-from flask import Blueprint, render_template, redirect, url_for, request, flash
-from flask_babel import _
+_MEDIA_ROOT = Path(__file__).parent.parent.parent / "media"
+
+from flask import Blueprint, render_template, redirect, url_for, request, flash, current_app
+from flask_babel import _, get_locale
+from sqlalchemy.orm import selectinload as _pub_selectinload
 from flask_login import current_user, login_user, login_required
 from app import limiter
 
@@ -160,25 +164,72 @@ def _now_utc():
 
 @public_bp.route("/")
 def index():
-    from app.models import SessionResult
+    from app.models import SessionResult, Server
     from app.services.results_parser import parse_result_file
-
     from app.services.process_manager import get_player_history
     import json as _j
-    status      = get_status()
-    server_info = get_running_server_info() if status["running"] else None
-    player_history_json = _j.dumps(get_player_history()[-30:]) if status["running"] else "[]"
+
+    servers = (Server.query
+               .filter_by(is_enabled=True)
+               .order_by(Server.sort_order, Server.id)
+               .all())
+
+    statuses     = {}
+    server_infos = {}
+    player_histories = {}
+    for srv in servers:
+        st = get_status(srv.id)
+        statuses[srv.id]     = st
+        server_infos[srv.id] = get_running_server_info(srv.id) if st["running"] else None
+        player_histories[srv.id] = _j.dumps(get_player_history(srv.id)[-30:]) if st["running"] else "[]"
+
+    # Enrichir les infos serveur avec l'image bannière du circuit en cours
+    for srv in servers:
+        si = server_infos.get(srv.id)
+        if si:
+            slug = si.get("track_slug", "")
+            banner = _MEDIA_ROOT / "circuits" / f"{slug}.webp"
+            si["banner_image"] = f"circuits/{slug}.webp" if slug and banner.exists() else ""
+
     now = _now_utc()
     ongoing = (Event.query
                .filter_by(status="published")
                .filter(Event.date < now)
                .order_by(Event.date.desc())
                .all())
-    upcoming = (Event.query
-                .filter_by(status="published")
-                .filter(Event.date >= now)
-                .order_by(Event.date)
-                .all())
+
+    from zoneinfo import ZoneInfo as _ZI
+    from babel.dates import format_date as _babel_fmt_date
+    _panel_tz = _ZI(current_app.config.get("PANEL_TIMEZONE", "Europe/Paris"))
+    _loc = str(get_locale())
+
+    def _ev_dict(ev):
+        local_dt = ev.date.replace(tzinfo=timezone.utc).astimezone(_panel_tz)
+        parts  = (ev.circuit or "").split("|")
+        tslug  = parts[0].strip().lower().replace(" ", "_") if parts else ""
+        tpath  = _MEDIA_ROOT / "circuits" / f"{tslug}.webp"
+        conf   = sum(1 for r in ev.registrations if r.status == "confirmed")
+        total  = ev.total_minutes
+        h, m   = divmod(total, 60)
+        return {
+            "ev":        ev,
+            "day":       local_dt.strftime("%d"),
+            "month":     _babel_fmt_date(local_dt, format="MMM", locale=_loc).rstrip("."),
+            "time":      local_dt.strftime("%H:%M"),
+            "duration":  f"{h}h{m:02d}" if h else f"{m} min",
+            "track_img": f"circuits/{tslug}.webp" if tslug and tpath.exists() else "",
+            "confirmed": conf,
+            "fill_pct":  min(100, round(conf / ev.max_drivers * 100)) if ev.max_drivers else 0,
+        }
+
+    raw_upcoming = (Event.query
+                    .filter_by(status="published")
+                    .filter(Event.date >= now)
+                    .options(_pub_selectinload(Event.registrations))
+                    .order_by(Event.date)
+                    .limit(5)
+                    .all())
+    upcoming = [_ev_dict(ev) for ev in raw_upcoming]
 
     my_regs = {}
     if current_user.is_authenticated and current_user.is_pilot:
@@ -187,27 +238,57 @@ def index():
 
     recent_rows = (SessionResult.query
                    .order_by(SessionResult.received_at.desc())
-                   .limit(4).all())
+                   .limit(50).all())
     recent_sessions = []
     for r in recent_rows:
         try:
             parsed = parse_result_file(_json.loads(r.raw_json))
         except Exception:
             parsed = {}
+        if not parsed.get("standings") or not any(
+            s.get("best_lap_ms") or s.get("fastest_lap_ms") for s in parsed["standings"]
+        ):
+            continue
         recent_sessions.append({"id": r.id, "received_at": r.received_at,
                                  "source": r.source, "parsed": parsed,
                                  "config_name": r.config_name,
                                  "run_id": r.run_id})
+        if len(recent_sessions) >= 4:
+            break
+
+    # Enrichir les résultats récents avec l'image de la voiture du vainqueur
+    if recent_sessions:
+        from app.models import CarMeta
+        for s in recent_sessions:
+            standings = s["parsed"].get("standings") or []
+            car_name = standings[0].get("car", "") if standings else ""
+            s["car_image"] = ""
+            if car_name:
+                # Essai exact puis préfixe (le résultat JSON n'a pas le suffixe de variante)
+                cm = CarMeta.query.filter_by(display_name=car_name).first()
+                if not cm:
+                    cm = CarMeta.query.filter(
+                        CarMeta.display_name.like(f"{car_name} %")
+                    ).filter(CarMeta.image_path != "").first()
+                if cm and cm.image_path:
+                    s["car_image"] = cm.image_path
+
+            # Banner du circuit pour le fond de la carte résultat
+            track_slug = (s["parsed"].get("track") or "").lower().replace(" ", "_")
+            banner = _MEDIA_ROOT / "circuits" / f"{track_slug}.webp"
+            s["track_banner"] = f"circuits/{track_slug}.webp" if track_slug and banner.exists() else ""
+
     recent_sessions, _ = _group_sessions(recent_sessions)
 
     return render_template("public.html",
-                           status=status,
-                           server_info=server_info,
+                           servers=servers,
+                           statuses=statuses,
+                           server_infos=server_infos,
+                           player_histories=player_histories,
                            ongoing=ongoing,
                            upcoming=upcoming,
                            my_regs=my_regs,
-                           recent_sessions=recent_sessions,
-                           player_history_json=player_history_json)
+                           recent_sessions=recent_sessions)
 
 
 @public_bp.route("/register", methods=["GET", "POST"])
