@@ -5,7 +5,7 @@ import hashlib
 import ipaddress
 from pathlib import Path
 
-from flask import Blueprint, jsonify, request, current_app
+from flask import Blueprint, jsonify, request, current_app, session
 from flask_login import login_required, current_user
 from app import limiter
 
@@ -19,7 +19,7 @@ from app.services.server_config import (
 from app.services.process_manager import (
     start_server, stop_server, get_status, get_server_logs,
     set_auto_restart, _ensure_race_weekend_file, try_rotation_advance,
-    update_session_state,
+    update_session_state, get_player_history,
 )
 from app.services.rotation_manager import get_rotation, save_rotation
 from app.services import config_builder, discord_notifier
@@ -33,6 +33,10 @@ log = logging.getLogger(__name__)
 api_bp = Blueprint("api", __name__)
 
 
+def _current_server_id() -> int:
+    return int(session.get("current_server_id", 1) or 1)
+
+
 def _request_from_private_network() -> bool:
     try:
         addr = ipaddress.ip_address(request.remote_addr or "")
@@ -44,7 +48,15 @@ def _request_from_private_network() -> bool:
 def _verify_ingest_signature(raw_body: bytes) -> bool:
     secret = (current_app.config.get("RESULTS_INGEST_SECRET") or "").encode()
     if not secret:
-        return _request_from_private_network()
+        from_private = _request_from_private_network()
+        if not from_private:
+            log.warning(
+                "Ingest rejeté : RESULTS_INGEST_SECRET absent et requête hors réseau privé (%s)",
+                request.remote_addr,
+            )
+        else:
+            log.debug("Ingest accepté depuis réseau privé (RESULTS_INGEST_SECRET non configuré)")
+        return from_private
     provided = (
         request.headers.get("X-ACE-Signature")
         or request.headers.get("X-Webhook-Signature")
@@ -61,18 +73,18 @@ def _verify_ingest_signature(raw_body: bytes) -> bool:
 
 @api_bp.route("/status")
 def status():
-    from app.services.process_manager import get_player_history
-    data = get_status()
+    sid  = _current_server_id()
+    data = get_status(sid)
     if not (current_user.is_authenticated and current_user.is_admin):
         data = {
             "running":    data.get("running"),
             "players":    data.get("players"),
             "started_at": data.get("started_at"),
-            "history":    get_player_history()[-30:],
+            "history":    get_player_history(sid)[-30:],
         }
     else:
         if data.get("running"):
-            info = get_running_server_info()
+            info = get_running_server_info(sid)
             if info:
                 if info.get("is_race_weekend"):
                     dur = f"Q:{info['qualifying_dur']} R:{info['race_dur']}"
@@ -87,13 +99,14 @@ def status():
 def server_logs():
     if not current_user.is_admin:
         return jsonify({"error": "forbidden"}), 403
-    return jsonify({"logs": get_server_logs()})
+    sid = _current_server_id()
+    return jsonify({"logs": get_server_logs(server_id=sid)})
 
 
-def _do_start(auto_restart: bool = False) -> dict:
-    status = get_status()
-    if status["running"] and status["config"] != get_active_config_name():
-        stop_server()
+def _do_start(auto_restart: bool = False, server_id: int = 1) -> dict:
+    st = get_status(server_id)
+    if st["running"] and st["config"] != get_active_config_name():
+        stop_server(server_id)
     config = load_config()
 
     if config["Event"].get("SelectedSessionTypeValue") == "GameModeType_RACE_WEEKEND":
@@ -104,11 +117,24 @@ def _do_start(auto_restart: bool = False) -> dict:
             log.warning("_ensure_race_weekend_file failed: %s", e)
 
     inject_global_server_settings(config)
-    sc, sd = config_builder.build_launch_args(config)
-    result = start_server(sc, sd, get_active_config_name(), auto_restart=auto_restart)
+
+    # Ports et nom propres au serveur (multi-serveur : chaque serveur a son port externe)
+    from app.models import Server as _Server
+    _srv = db.session.get(_Server, server_id)
+    _tcp = _srv.tcp_port  if _srv else None
+    _udp = _srv.udp_port  if _srv else None
+    _name = _srv.name     if _srv else None
+
+    sc, sd = config_builder.build_launch_args(config,
+                                              tcp_listener=_tcp,
+                                              udp_listener=_udp,
+                                              server_name=_name)
+    result = start_server(sc, sd, get_active_config_name(), auto_restart=auto_restart,
+                          server_id=server_id)
 
     if result.get("ok"):
-        discord_notifier.safe_notify(discord_notifier.notify_start, config, get_active_config_name())
+        discord_notifier.safe_notify(discord_notifier.notify_start, config, get_active_config_name(),
+                                     server_id=server_id, server_name=_name or "")
 
     return result
 
@@ -119,7 +145,8 @@ def _do_start(auto_restart: bool = False) -> dict:
 def server_start():
     try:
         data = request.get_json(silent=True) or {}
-        result = _do_start(auto_restart=bool(data.get("auto_restart", False)))
+        result = _do_start(auto_restart=bool(data.get("auto_restart", False)),
+                           server_id=_current_server_id())
     except Exception as e:
         log.exception("Server action failed")
         result = {"ok": False, "error": str(e)}
@@ -132,17 +159,21 @@ def server_start():
 def server_auto_restart():
     data = request.get_json(force=True) or {}
     enabled = bool(data.get("enabled", False))
-    return jsonify(set_auto_restart(enabled))
+    return jsonify(set_auto_restart(enabled, server_id=_current_server_id()))
 
 
 @api_bp.route("/server/stop", methods=["POST"])
 @login_required
 @_admin_required_json
 def server_stop():
-    config_name = get_status().get("config") or get_active_config_name()
-    result = stop_server()
+    sid = _current_server_id()
+    config_name = get_status(sid).get("config") or get_active_config_name()
+    from app.models import Server as _Server
+    _stop_srv = db.session.get(_Server, sid)
+    result = stop_server(sid)
     if result.get("ok"):
-        discord_notifier.safe_notify(discord_notifier.notify_stop, config_name)
+        discord_notifier.safe_notify(discord_notifier.notify_stop, config_name,
+                                     server_id=sid, server_name=_stop_srv.name if _stop_srv else "")
     return jsonify(result)
 
 
@@ -150,10 +181,11 @@ def server_stop():
 @login_required
 @_admin_required_json
 def server_restart():
-    prev_auto_restart = get_status().get("auto_restart", False)
-    stop_server()
+    sid = _current_server_id()
+    prev_auto_restart = get_status(sid).get("auto_restart", False)
+    stop_server(sid)
     try:
-        result = _do_start(auto_restart=prev_auto_restart)
+        result = _do_start(auto_restart=prev_auto_restart, server_id=sid)
     except Exception as e:
         log.exception("Server action failed")
         result = {"ok": False, "error": str(e)}
@@ -285,12 +317,17 @@ def get_events(mode):
 @limiter.limit("60 per hour")
 def results_ingest():
     """Reçoit la notification de fin de session d'AssettoCorsaEVOServer."""
-    # ACE EVO peut envoyer le webhook après avoir arrêté le serveur — is_running() serait
-    # False et get_status() retournerait config=None. On lit l'état brut directement pour
-    # conserver config_name et run_id même si le container vient de s'arrêter.
+    # server_id identifie quel serveur envoie ce webhook (serveur N configure
+    # ResultsPostUrl avec ?server_id=N). Défaut 1 pour rétrocompat.
+    sid = int(request.args.get("server_id", 1) or 1)
+
+    # ACE EVO peut envoyer le webhook après avoir arrêté le serveur — is_running()
+    # serait False et get_status() retournerait config=None. On lit l'état brut
+    # directement pour conserver config_name et run_id même si le container vient
+    # de s'arrêter.
     from app.services.process_manager import _read_state as _pm_read_state
-    _raw_state = _pm_read_state()
-    _st = get_status()
+    _raw_state = _pm_read_state(sid)
+    _st = get_status(sid)
     current_config = _st.get("config") or _raw_state.get("config") or None
     current_run_id = _st.get("run_id")  or _raw_state.get("run_id")  or None
 
@@ -311,6 +348,7 @@ def results_ingest():
             session_type=parsed["session_type"][:60],
             config_name=current_config,
             run_id=current_run_id,
+            server_id=sid,
         )
         db.session.add(result)
         db.session.commit()
@@ -322,7 +360,7 @@ def results_ingest():
         log.info("results/ingest: body vide, scan du dossier aceserver (run=%r)", current_run_id)
         aceserver_dir = current_app.config.get("ACESERVER_DIR", "/aceserver")
         imported = scan_and_import(aceserver_dir, config_name=current_config,
-                                   run_id=current_run_id)
+                                   run_id=current_run_id, server_id=sid)
         if not imported:
             log.warning("results/ingest: aucun nouveau fichier trouvé après scan")
         else:
@@ -334,11 +372,11 @@ def results_ingest():
                 final_session_type = last_r.session_type or ""
 
     if imported and current_config:
-        try_rotation_advance(final_session_type, current_config)
+        try_rotation_advance(final_session_type, current_config, server_id=sid)
 
     if imported and final_session_type:
         try:
-            update_session_state(final_session_type)
+            update_session_state(final_session_type, server_id=sid)
         except Exception as e:
             log.warning("update_session_state failed: %s", e)
 
@@ -377,6 +415,7 @@ def get_results():
 @_admin_required_json
 def rotation_start():
     """Démarre le serveur sur le premier fichier du roulement."""
+    sid = _current_server_id()
     rot = get_rotation()
     if not rot.get("enabled") or not rot.get("configs"):
         return jsonify({"ok": False, "error": "rotation_disabled_or_empty"}), 400
@@ -388,8 +427,8 @@ def rotation_start():
 
     cfg_data.setdefault("Server", {})["IsCycleEnabled"] = False
 
-    if get_status()["running"]:
-        stop_server()
+    if get_status(sid)["running"]:
+        stop_server(sid)
 
     if cfg_data.get("Event", {}).get("SelectedSessionTypeValue") == "GameModeType_RACE_WEEKEND":
         try:
@@ -400,11 +439,14 @@ def rotation_start():
 
     inject_global_server_settings(cfg_data)
     sc, sd = config_builder.build_launch_args(cfg_data)
-    result  = start_server(sc, sd, first_cfg, auto_restart=False)
+    result  = start_server(sc, sd, first_cfg, auto_restart=False, server_id=sid)
 
     if result.get("ok"):
+        from app.models import Server as _Server
+        _rot_srv = db.session.get(_Server, sid)
         discord_notifier.safe_notify(
-            discord_notifier.notify_rotation_start, rot["configs"], bool(rot.get("cycle"))
+            discord_notifier.notify_rotation_start, rot["configs"], bool(rot.get("cycle")),
+            server_id=sid, server_name=_rot_srv.name if _rot_srv else "",
         )
 
     return jsonify(result)
@@ -508,6 +550,9 @@ def live_admin_cmd():
         if sent:
             try:
                 from app.services import discord_notifier
+                from app.models import Server as _Server
+                _cmd_sid  = _current_server_id()
+                _cmd_srv  = db.session.get(_Server, _cmd_sid)
                 driver = ace_tcp_client.get_driver_by_num(car_num) if car_num else {}
                 discord_notifier.safe_notify(
                     discord_notifier.notify_admin_action,
@@ -516,6 +561,8 @@ def live_admin_cmd():
                     car_num,
                     extra,
                     current_user.username,
+                    server_id=_cmd_sid,
+                    server_name=_cmd_srv.name if _cmd_srv else "",
                 )
             except Exception:
                 pass

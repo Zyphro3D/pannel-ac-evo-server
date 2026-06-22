@@ -6,7 +6,7 @@ import json
 import os
 import re
 import logging
-from flask import Blueprint, render_template, Response, stream_with_context, jsonify, request
+from flask import Blueprint, render_template, Response, stream_with_context, jsonify, request, session
 from flask_login import login_required
 from flask_babel import _
 from app.utils import admin_required
@@ -52,10 +52,10 @@ def _parse_lapstr(s: str) -> int:
 def _fmt_ms(ms: int | None) -> str | None:
     if not ms:
         return None
-    m  = ms // 60000
-    s  = (ms % 60000) // 1000
-    cs = (ms % 1000) // 10
-    return f"{m}:{s:02d}.{cs:03d}"
+    m   = ms // 60000
+    s   = (ms % 60000) // 1000
+    rem = ms % 1000
+    return f"{m}:{s:02d}.{rem:03d}"
 
 
 def _fmt_sector(ms: int | None) -> str | None:
@@ -86,7 +86,15 @@ def _parse_line(line: str) -> dict | None:
     return None
 
 
-def _iter_log_lines(since_hours: int = 12):
+def _get_server_id() -> int:
+    """Returns the current server_id from session (defaults to 1)."""
+    try:
+        return int(session.get("current_server_id", 1) or 1)
+    except (ValueError, RuntimeError):
+        return 1
+
+
+def _iter_log_lines(since_hours: int = 12, server_id: int = 1):
     """Yield log lines. docker_split → Docker SDK ; native → log file."""
     if _DEPLOY_MODE == "docker_split":
         try:
@@ -104,9 +112,9 @@ def _iter_log_lines(since_hours: int = 12):
         except Exception as e:
             log.warning("live: docker logs error: %s", e)
     else:
-        from app.services.process_manager import _LOG_FILE
+        from app.services.process_manager import _log_file
         try:
-            with open(_LOG_FILE, encoding="utf-8", errors="replace") as f:
+            with open(_log_file(server_id), encoding="utf-8", errors="replace") as f:
                 yield from f
         except Exception as e:
             log.warning("live: log file error: %s", e)
@@ -129,7 +137,7 @@ def _iter_log_stream():
 
 # ── Build current session state ───────────────────────────────────────────────
 
-def _build_state() -> dict:
+def _build_state(server_id: int = 1) -> dict:
     """Parse recent logs → drivers connectés, events, leaderboard avec historique tours/secteurs."""
     car_to_steam:    dict[str, str]   = {}
     pending_connect: dict[str, dict]  = {}
@@ -139,7 +147,7 @@ def _build_state() -> dict:
     events:          list[dict]       = []
     player_count = 0
 
-    for raw_line in _iter_log_lines(since_hours=24):
+    for raw_line in _iter_log_lines(since_hours=24, server_id=server_id):
         for line in raw_line.splitlines():
             if m := _RE_NEWLAP.search(line):
                 car_id = m.group(1)
@@ -273,15 +281,15 @@ def timing_page():
 @live_bp.route("/api/live/state")
 @login_required
 def live_state():
-    return jsonify(_build_state())
+    return jsonify(_build_state(_get_server_id()))
 
 
-def _session_timing() -> dict:
+def _session_timing(server_id: int = 1) -> dict:
     """Retourne started_at et session_length_s depuis le state + config."""
     try:
         from app.services.process_manager import _read_state
         from app.services.server_config import load_config_by_name
-        st = _read_state()
+        st = _read_state(server_id)
         started_at = st.get("started_at")
         cfg_name   = st.get("config")
         if not cfg_name:
@@ -309,13 +317,14 @@ def _session_timing() -> dict:
 @live_bp.route("/api/timing")
 def timing_state():
     """API publique — classement en temps réel (pas de données sensibles)."""
-    state   = _build_state()
-    session = _session_timing()
+    sid     = _get_server_id()
+    state   = _build_state(sid)
+    timing  = _session_timing(sid)
     return jsonify({
         "leaderboard":    state["leaderboard"],
         "player_count":   state["player_count"],
-        "started_at":     session.get("started_at"),
-        "session_length_s": session.get("session_length_s"),
+        "started_at":     timing.get("started_at"),
+        "session_length_s": timing.get("session_length_s"),
     })
 
 

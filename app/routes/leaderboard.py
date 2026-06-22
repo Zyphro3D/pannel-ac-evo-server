@@ -2,16 +2,11 @@ import json
 import logging
 from flask import Blueprint, render_template
 from app.models import SessionResult
-from app.services.server_config import load_cars
+from app.services.server_config import load_cars, CAR_PROP_MAPS as _PROP_MAPS, CAR_CATEGORY_ORDER as _CAT_ORDER
 
 log = logging.getLogger(__name__)
 
 leaderboard_bp = Blueprint("leaderboard", __name__)
-
-_PROP_MAPS = {
-    "property_1": {0: "Road", 1: "Race", 2: "Track"},
-}
-_CAT_ORDER = ["Race", "Track", "Road"]
 
 
 def _build_car_lookup() -> dict:

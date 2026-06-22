@@ -1,6 +1,9 @@
 #!/bin/bash
 
-LAUNCH_CONFIG=/aceserver/.launch_config.json
+SERVER_ID=${SERVER_ID:-1}
+SUFFIX=""
+if [ "$SERVER_ID" != "1" ]; then SUFFIX="_${SERVER_ID}"; fi
+LAUNCH_CONFIG=/aceserver/.launch_config${SUFFIX}.json
 
 # Virtual display — Wine needs it even for headless server executables
 # Nettoyer un éventuel lock file laissé par un arrêt brutal

@@ -1,24 +1,28 @@
 {% extends "base.html" %}
 {% block title %}Dashboard — {{ panel_title }}{% endblock %}
 {% block content %}
+{% set has_srv_banner = status.running and server_info and server_info.banner_image %}
 <div class="admin-dash">
 
-  <!-- ── Status serveur ── -->
-  <section class="card">
+  <!-- ── Statut serveur ── -->
+  <section class="card{% if has_srv_banner %} has-banner{% endif %}"
+           {% if has_srv_banner %}style="--banner:url('{{ url_for('serve_media', filename=server_info.banner_image) }}')"{% endif %}>
     <div class="card-header">
       <h2>{{ _('Statut serveur') }}</h2>
+      <div class="dash-status-row">
+        <span class="server-status-large">
+          <span class="dot" id="main-status-dot"></span>
+          <span id="main-status-label">{{ _('Vérification...') }}</span>
+          <span id="player-count" class="player-count"></span>
+        </span>
+      </div>
       <a href="{{ url_for('admin.server') }}" class="btn-secondary">{{ _('Contrôles') }} →</a>
     </div>
-    <div class="dash-status-row">
-      <div class="server-status-large">
-        <span class="dot" id="main-status-dot"></span>
-        <span id="main-status-label">{{ _('Vérification...') }}</span>
-        <span id="player-count" class="player-count"></span>
-      </div>
-    </div>
+
+    {% if has_srv_banner %}<div class="dash-hero"></div>{% endif %}
 
     {% if status.running and server_info %}
-    <div class="server-info-grid" style="margin-top:16px">
+    <div class="server-info-grid">
       <div class="server-info-item">
         <span class="si-label">{{ _('Nom du serveur') }}</span>
         <span class="si-value">{{ server_info.server_name }}</span>
@@ -71,15 +75,15 @@
     {% endif %}
   </section>
 
-  <!-- ── Live Timing ── -->
-  <section class="card" style="margin-top:20px">
+  <!-- ── Timing en direct ── -->
+  <section class="card">
     <div class="card-header" id="dt-toggle" style="cursor:pointer;user-select:none">
       <h2 style="display:flex;align-items:center;gap:10px">
         {{ _('Timing en direct') }}
         <span class="dot offline" id="dt-dot"></span>
-        <span id="dt-count" style="font-size:13px;font-weight:400;color:var(--dim)"></span>
+        <span id="dt-count" style="font-size:0.78rem;font-weight:400;color:var(--dim)"></span>
       </h2>
-      <span id="dt-remain" style="font-size:13px;font-weight:600;color:var(--accent);margin-left:auto;margin-right:12px"></span>
+      <span id="dt-remain" style="font-size:0.78rem;font-weight:700;color:var(--accent);margin-left:auto;margin-right:12px"></span>
       <span id="dt-chev" style="color:var(--dim);font-size:16px;transition:transform .2s">▾</span>
     </div>
     <div id="dt-body">
@@ -276,68 +280,106 @@
   })();
   </script>
 
-  <div class="grid-two" style="margin-top:20px">
-
-    <!-- ── Prochains événements ── -->
-    <section class="card">
-      <div class="card-header">
-        <h2>{{ _('Prochains événements') }}</h2>
-        <a href="{{ url_for('events_admin.events_list') }}" class="btn-secondary">{{ _('Tous') }} →</a>
-      </div>
-      {% if upcoming %}
-      <table class="simple-table">
-        <tbody>
-          {% for ev in upcoming %}
-          <tr>
-            <td>
-              <span class="ev-title">{{ ev.title }}</span>
-              <span class="ev-meta">{{ ev.circuit_display or ev.circuit }}</span>
-            </td>
-            <td class="ev-date" style="white-space:nowrap">
-              {{ ev.date | local_dt_short }}
-              <span style="color:var(--text-muted);font-size:11px"> → {{ ev.end_date | local_dt_short }}</span>
-            </td>
-            <td>
-              <span class="badge badge-{{ ev.status }}">
-                {% if ev.status == 'draft' %}{{ _('Brouillon') }}
-                {% elif ev.status == 'published' %}{{ _('Publié') }}
-                {% else %}{{ _('Terminé') }}{% endif %}
-              </span>
-            </td>
-            <td style="text-align:right">
-              {% if not ev.is_public %}
-              <a href="{{ url_for('events_admin.event_registrations', event_id=ev.id) }}" class="btn-secondary" style="font-size:11px">{{ _('Inscrits') }}</a>
-              {% endif %}
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-      {% else %}
-      <p class="text-muted" style="padding:8px 20px">{{ _('Aucun événement à venir.') }}</p>
-      {% endif %}
-    </section>
-
-    <!-- ── Pilotes en attente ── -->
-    <section class="card">
-      <div class="card-header">
-        <h2>{{ _('Pilotes') }}</h2>
-        <a href="{{ url_for('events_admin.drivers_list') }}" class="btn-secondary">{{ _('Gérer') }} →</a>
-      </div>
-      {% if pending_count > 0 %}
-      <div class="pending-alert">
-        <span class="pending-badge">{{ pending_count }}</span>
-        {{ _('pilote(s)') }} {{ _('en attente de validation') }}
-      </div>
-      {% else %}
-      <p class="text-muted" style="padding:8px 20px">{{ _('Aucun pilote en attente.') }}</p>
-      {% endif %}
-    </section>
-
+  <!-- ── Événements à venir ── -->
+  <div class="ev-section-head">
+    <span class="ev-section-title">{{ _('Événements à venir') }}</span>
+    <a href="{{ url_for('events_admin.events_list') }}" class="btn-secondary">{{ _('Tous') }} →</a>
   </div>
 
+  {% if upcoming %}
+  {% if upcoming|length == 1 %}
+  {% set item = upcoming[0] %}
+  <a href="{{ url_for('events_admin.event_edit', event_id=item.ev.id) }}" class="ev-card-single">
+    <div class="ev-card-single-left">
+      <div class="ev-date-block">
+        <span class="ev-day">{{ item.day }}</span>
+        <span class="ev-month">{{ item.month }}</span>
+        <span class="ev-time">{{ item.time }}</span>
+      </div>
+      <span class="ev-eyebrow">{{ item.ev.mode_display }}</span>
+      <h2 class="ev-card-single-title">{{ item.ev.title }}</h2>
+      <p class="ev-card-single-sub">{{ item.ev.circuit_display or item.ev.circuit }}</p>
+      <div class="ev-card-meta">
+        <span>{{ item.ev.weather_display }}</span>
+        <span>{{ item.duration }}</span>
+      </div>
+      {% if not item.ev.is_public %}
+      <div class="ev-reg" style="max-width:220px;margin-top:auto">
+        <div class="ev-reg-row"><span><span class="ev-reg-num">{{ item.confirmed }}</span> / {{ item.ev.max_drivers }} {{ _('Inscrits') }}</span></div>
+        <div class="ev-progress"><i style="width:{{ item.fill_pct }}%"></i></div>
+      </div>
+      {% endif %}
+    </div>
+    <div class="ev-card-single-right" {% if item.track_img %}style="background-image:url('{{ url_for('serve_media', filename=item.track_img) }}')"{% endif %}>
+      <div class="ev-card-single-infobar">
+        <div class="ev-info-cell"><span class="ev-info-label">{{ _('Type') }}</span><span class="ev-info-val">{{ item.ev.mode_display }}</span></div>
+        <div class="ev-info-cell"><span class="ev-info-label">{{ _('Circuit') }}</span><span class="ev-info-val">{{ item.ev.circuit_display or item.ev.circuit or '—' }}</span></div>
+        <div class="ev-info-cell"><span class="ev-info-label">{{ _('Météo') }}</span><span class="ev-info-val">{{ item.ev.weather_display }}</span></div>
+        <div class="ev-info-cell"><span class="ev-info-label">{{ _('Durée') }}</span><span class="ev-info-val">{{ item.duration }}</span></div>
+      </div>
+    </div>
+  </a>
+  {% else %}
+  <div class="ev-cards-row">
+    {% for item in upcoming %}
+    <a href="{{ url_for('events_admin.event_edit', event_id=item.ev.id) }}" class="ev-card{% if loop.first %} ev-card--featured{% endif %}">
+      <div class="ev-card-photo" {% if item.track_img %}style="background-image:url('{{ url_for('serve_media', filename=item.track_img) }}')"{% endif %}>
+        <div class="ev-date-block">
+          <span class="ev-day">{{ item.day }}</span>
+          <span class="ev-month">{{ item.month }}</span>
+          <span class="ev-time">{{ item.time }}</span>
+        </div>
+        <span class="ev-eyebrow">{{ item.ev.mode_display }}</span>
+      </div>
+      <div class="ev-card-body">
+        <h3 class="ev-title">{{ item.ev.title }}</h3>
+        <p class="ev-sub">{{ item.ev.circuit_display or item.ev.circuit }}</p>
+        <div class="ev-card-meta">
+          <span>{{ item.ev.weather_display }}</span>
+          <span>{{ item.duration }}</span>
+        </div>
+        {% if not item.ev.is_public %}
+        <div class="ev-reg">
+          <div class="ev-reg-row"><span><span class="ev-reg-num">{{ item.confirmed }}</span> / {{ item.ev.max_drivers }} {{ _('Inscrits') }}</span></div>
+          <div class="ev-progress"><i style="width:{{ item.fill_pct }}%"></i></div>
+        </div>
+        {% endif %}
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="ev-cta">
+    <div class="ev-cta-text">
+      <div class="ev-cta-title">{{ _('Ne manquez aucun événement !') }}</div>
+      <div class="ev-cta-sub">{{ _('Consultez et gérez tous vos événements depuis la liste.') }}</div>
+    </div>
+    <a href="{{ url_for('events_admin.events_list') }}" class="btn btn-primary">{{ _('Voir tous les événements') }} →</a>
+  </div>
+
+  {% else %}
+  <p class="text-muted" style="padding:10px 0">{{ _('Aucun événement à venir.') }}</p>
+  {% endif %}
+
+  <!-- ── Pilotes ── -->
+  <section class="card">
+    <div class="card-header">
+      <h2>{{ _('Pilotes') }}</h2>
+      <a href="{{ url_for('events_admin.drivers_list') }}" class="btn-secondary">{{ _('Gérer') }} →</a>
+    </div>
+    {% if pending_count > 0 %}
+    <div class="pending-alert">
+      <span class="pending-badge">{{ pending_count }}</span>
+      {{ _('pilote(s)') }} {{ _('en attente de validation') }}
+    </div>
+    {% else %}
+    <p class="text-muted" style="padding:10px 18px">{{ _('Aucun pilote en attente.') }}</p>
+    {% endif %}
+  </section>
+
   <!-- ── Derniers résultats ── -->
-  <section class="card" style="margin-top:20px">
+  <section class="card">
     <div class="card-header">
       <h2>{{ _('Derniers résultats') }}</h2>
       <a href="{{ url_for('public.results') }}" class="btn-secondary">{{ _('Voir tous') }} →</a>
@@ -348,22 +390,26 @@
       {% for s in recent_results %}
       {% set p = s.parsed %}
       {% set winner = p.standings[0] if p.standings else none %}
-      <a href="{{ url_for('public.result_detail', result_id=s.id) }}" class="dash-result-card">
+      <a href="{{ url_for('public.result_detail', result_id=s.id) }}"
+         class="dash-result-card"
+         {% if s.track_banner %}style="--banner:url('{{ url_for('serve_media', filename=s.track_banner) }}')"{% endif %}>
+
         <div class="drc-header">
           <span class="badge badge-session">{{ p.session_type or '—' }}</span>
           <span class="drc-date">{{ s.received_at | local_dt_short }}</span>
         </div>
+
+        {% if winner %}
         <div class="drc-track">{{ p.track or '—' }}</div>
         {% if p.layout %}<div class="drc-layout">{{ p.layout }}</div>{% endif %}
         <div class="drc-divider"></div>
-        {% if winner %}
         <div class="drc-winner">
           <span class="drc-pos">1</span>
           <div class="drc-winner-info">
             <span class="drc-nick">{{ winner.nickname }}</span>
             <span class="drc-car">{{ winner.car or '' }}</span>
           </div>
-          <span class="drc-time mono">{{ winner.best_lap }}</span>
+          <span class="drc-time mono">{% if p.is_race %}{{ winner.race_time or winner.best_lap }}{% else %}{{ winner.best_lap }}{% endif %}</span>
         </div>
         {% if p.standings|length > 1 %}
         {% set p2 = p.standings[1] %}
@@ -376,17 +422,20 @@
         {% else %}
         <div class="drc-empty">{{ _('Aucun pilote') }}</div>
         {% endif %}
-        <div class="drc-footer">
-          {{ p.standings|length }} {{ _('pilote(s)') }}
-        </div>
+
+        <div class="drc-footer">{{ p.standings|length }} {{ _('pilote(s)') }}</div>
+
+        {% if s.car_image %}
+        <img src="{{ url_for('serve_media', filename=s.car_image) }}" class="drc-car-img" alt="">
+        {% endif %}
+
       </a>
       {% endfor %}
     </div>
     {% else %}
-    <p class="text-muted" style="padding:8px 20px">{{ _('Aucun résultat pour le moment.') }}</p>
+    <p class="text-muted" style="padding:10px 18px">{{ _('Aucun résultat pour le moment.') }}</p>
     {% endif %}
   </section>
 
 </div>
-
 {% endblock %}

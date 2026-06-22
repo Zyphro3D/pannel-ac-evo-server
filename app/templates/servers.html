@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Gestion des serveurs') }}{% endblock %}
+
+{% block content %}
+<div style="max-width:900px;margin:0 auto;display:flex;flex-direction:column;gap:14px;">
+
+  {# ── Liste des serveurs ── #}
+  <div class="settings-card">
+    <div class="settings-card-head">
+      <h2>{{ _('Serveurs ACE EVO') }}</h2>
+    </div>
+
+    <table class="servers-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>{{ _('Nom') }}</th>
+          <th>{{ _('Container') }}</th>
+          <th>{{ _('Ports') }}</th>
+          <th>{{ _('État') }}</th>
+          <th>{{ _('Actions') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for srv in servers %}
+        {% set st = statuses.get(srv.id, {}) %}
+        <tr class="{% if not srv.is_enabled %}servers-row-disabled{% endif %}">
+          <td><strong>#{{ srv.id }}</strong></td>
+          <td>
+            {{ srv.name }}
+            {% if not srv.is_enabled %}
+              <span class="badge-dim">{{ _('désactivé') }}</span>
+            {% endif %}
+          </td>
+          <td><code>{{ srv.container_name }}</code></td>
+          <td style="white-space:nowrap;">
+            TCP {{ srv.tcp_port }} / HTTP {{ srv.http_port }}
+          </td>
+          <td>
+            {% if st.get('running') %}
+              <span class="status-dot status-dot-on"></span> {{ _('En ligne') }}
+              {% if st.get('players') is not none %}
+                <span class="dim">· {{ st.players }} {{ _('joueur(s)') }}</span>
+              {% endif %}
+            {% else %}
+              <span class="status-dot status-dot-off"></span> {{ _('Arrêté') }}
+            {% endif %}
+          </td>
+          <td class="servers-actions">
+            {% if srv.id != 1 %}
+            <form method="post" action="{{ url_for('admin.server_toggle', server_id=srv.id) }}"
+                  style="display:inline;">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn btn-sm"
+                      onclick="return confirm('{{ _('Confirmer ?') }}')">
+                {% if srv.is_enabled %}{{ _('Désactiver') }}{% else %}{{ _('Activer') }}{% endif %}
+              </button>
+            </form>
+            <form method="post" action="{{ url_for('admin.server_delete', server_id=srv.id) }}"
+                  style="display:inline;">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn btn-sm btn-danger"
+                      onclick="return confirm('{{ _('Supprimer ce serveur et son container Docker ?') }}')">
+                {{ _('Supprimer') }}
+              </button>
+            </form>
+            {% else %}
+            <span class="dim">{{ _('Serveur principal') }}</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {# ── Formulaire création ── #}
+  <div class="settings-card">
+    <div class="settings-card-head">
+      <h2>{{ _('Ajouter un serveur') }}</h2>
+    </div>
+    <p class="dim" style="margin-bottom:1.2rem;">
+      {{ _('Un nouveau container Docker sera créé depuis l\'image aceserver existante.') }}
+    </p>
+
+    <form method="post" action="{{ url_for('admin.server_create') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <div class="settings-field" style="max-width:420px;margin-bottom:1rem;">
+        <label><strong>{{ _('Nom du serveur') }}</strong></label>
+        <input type="text" name="name" class="form-control"
+               placeholder="{{ _('ex : Serveur Nuit') }}" required>
+      </div>
+
+      <div style="display:flex;gap:1.5rem;flex-wrap:wrap;margin-bottom:.5rem;">
+        <div class="settings-field" style="flex:1;min-width:180px;">
+          <label><strong>{{ _('Port joueurs (TCP + UDP)') }}</strong></label>
+          <input type="number" name="tcp_port" class="form-control" value="9701" min="1024" max="65535">
+          <span class="dim">{{ _('Doit être différent du serveur #1 (9700).') }}</span>
+        </div>
+        <div class="settings-field" style="flex:1;min-width:180px;">
+          <label><strong>{{ _('Port HTTP API') }}</strong></label>
+          <input type="number" name="http_port" class="form-control" value="8081" min="1024" max="65535">
+        </div>
+      </div>
+
+      <div style="margin-top:1.5rem;">
+        <button type="submit" class="btn btn-primary">{{ _('Créer le serveur') }}</button>
+      </div>
+    </form>
+  </div>
+
+</div>
+{% endblock %}

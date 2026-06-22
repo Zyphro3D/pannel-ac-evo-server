@@ -87,12 +87,10 @@
 
     <main class="server-main">
 
-  {% if config_dirty %}
-  <div class="config-dirty-banner">
+  <div id="config-dirty-banner" class="config-dirty-banner"{% if not config_dirty %} style="display:none"{% endif %}>
     <span class="config-dirty-icon">⚠</span>
     <span>{{ _('La configuration a été modifiée. Redémarrez le serveur pour appliquer les changements.') }}</span>
   </div>
-  {% endif %}
 
   {% if view == 'status' %}
   <header class="server-status-hero">

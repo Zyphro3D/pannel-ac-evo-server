@@ -4,7 +4,7 @@ import re
 import secrets
 import threading
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from flask_babel import _
@@ -89,7 +89,7 @@ def login():
         account = AdminAccount.query.filter_by(username=identifier, is_active=True).first()
         if account and account.check_password(password):
             _bf_ok(ip)
-            account.last_login = datetime.utcnow()
+            account.last_login = datetime.now(timezone.utc).replace(tzinfo=None)
             db.session.commit()
             login_user(account)
             return redirect(url_for("admin.dashboard"))
@@ -140,7 +140,7 @@ def forgot_password():
             token      = secrets.token_urlsafe(32)
             token_hash = hashlib.sha256(token.encode()).hexdigest()
             driver.reset_token         = token_hash
-            driver.reset_token_expires = datetime.utcnow() + timedelta(hours=1)
+            driver.reset_token_expires = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=1)
             db.session.commit()
             from app.services import mailer
             mailer.send_password_reset(driver, token)
@@ -161,7 +161,7 @@ def reset_password(token):
 
     token_hash = hashlib.sha256(token.encode()).hexdigest()
     driver = Driver.query.filter_by(reset_token=token_hash).first()
-    if not driver or not driver.reset_token_expires or driver.reset_token_expires < datetime.utcnow():
+    if not driver or not driver.reset_token_expires or driver.reset_token_expires < datetime.now(timezone.utc).replace(tzinfo=None):
         flash(_("Ce lien est invalide ou a expiré."), "error")
         return redirect(url_for("auth.login"))
 

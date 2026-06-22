@@ -203,17 +203,18 @@
       {# ═══════════════════════════════════════════════════════════════════════ #}
       {% elif tab in ['server', 'gameconfig', 'conteneur'] %}
 
-      {# Config jeu globale #}
+      {# ── Paramètres spécifiques au serveur sélectionné (DB) ── #}
+      {% if current_srv %}
       <section class="settings-dashboard-grid">
         <form method="post" action="{{ url_for('admin.settings', tab='server') }}" class="settings-card settings-card-full settings-card-form">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="_tab" value="server">
+          <input type="hidden" name="_server_form" value="db">
           <div class="settings-card-head">
-            <h2>{{ _('Configuration du serveur de jeu') }}</h2>
+            <h2>{{ _('Serveur') }} — <span style="color:var(--accent)">{{ current_srv.name }}</span></h2>
           </div>
           <div class="settings-card-copy" style="background:var(--surface2);border-radius:8px;padding:14px 16px;margin-bottom:20px;font-size:0.83rem;line-height:1.6">
-            {{ _('Ces paramètres sont communs à toutes vos configurations. Ils remplacent automatiquement les valeurs des fichiers JSON au démarrage du serveur.') }}<br>
-            {{ _('Laisser un champ vide conserve la valeur par défaut.') }}
+            {{ _('Ces paramètres sont propres au serveur sélectionné. Changez de serveur via le sélecteur en haut pour modifier un autre serveur.') }}
           </div>
 
           <div class="settings-card-head" style="margin-bottom:4px">
@@ -221,8 +222,8 @@
           </div>
           <div class="settings-fields" style="margin-bottom:20px">
             <label class="settings-field">
-              <span><strong>SERVER_NAME</strong><em>{{ env_descs.get('SERVER_NAME', '') }}</em></span>
-              <input class="form-control" type="text" name="SERVER_NAME" value="{{ env_values.get('SERVER_NAME', '') }}" placeholder="ACE EVO Server">
+              <span><strong>{{ _('Nom du serveur') }}</strong><em>{{ _('Nom affiché dans la liste des serveurs ACE EVO') }}</em></span>
+              <input class="form-control" type="text" name="srv_name" value="{{ current_srv.name }}" placeholder="ACE EVO Server">
             </label>
             <label class="settings-field">
               <span><strong>SERVER_MAX_PLAYERS</strong><em>{{ env_descs.get('SERVER_MAX_PLAYERS', '') }}</em></span>
@@ -235,12 +236,12 @@
           </div>
           <div class="settings-fields" style="margin-bottom:20px">
             <label class="settings-field">
-              <span><strong>SERVER_TCP_PORT</strong><em>{{ env_descs.get('SERVER_TCP_PORT', '') }}</em></span>
-              <input class="form-control" type="number" name="SERVER_TCP_PORT" min="1" max="65535" value="{{ env_values.get('SERVER_TCP_PORT', '') }}" placeholder="9700">
+              <span><strong>{{ _('Port TCP/UDP joueurs') }}</strong><em>{{ _('Port externe annoncé aux joueurs et à Kunos (doit être ouvert dans le pare-feu)') }}</em></span>
+              <input class="form-control" type="number" name="srv_tcp_port" min="1024" max="65535" value="{{ current_srv.tcp_port }}">
             </label>
             <label class="settings-field">
-              <span><strong>SERVER_UDP_PORT</strong><em>{{ env_descs.get('SERVER_UDP_PORT', '') }}</em></span>
-              <input class="form-control" type="number" name="SERVER_UDP_PORT" min="1" max="65535" value="{{ env_values.get('SERVER_UDP_PORT', '') }}" placeholder="9700">
+              <span><strong>{{ _('Port HTTP API') }}</strong><em>{{ _('Port de l\'API HTTP du serveur de jeu (état, joueurs)') }}</em></span>
+              <input class="form-control" type="number" name="srv_http_port" min="1024" max="65535" value="{{ current_srv.http_port }}">
             </label>
           </div>
 
@@ -272,9 +273,31 @@
             </label>
           </div>
 
+          <div class="settings-card-head" style="margin-bottom:4px">
+            <h2 style="font-size:0.85rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text2)">Discord</h2>
+          </div>
+          <div class="settings-card-copy" style="background:var(--surface2);border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:0.82rem;line-height:1.5">
+            {{ _('Webhooks propres à ce serveur. Laisser vide = utilise les webhooks globaux configurés dans l\'onglet Notifications.') }}
+          </div>
+          <div class="settings-fields" style="margin-bottom:20px">
+            <label class="settings-field">
+              <span><strong>{{ _('Webhook principal') }}</strong><em>{{ _('Démarrage, arrêt, crash du serveur') }}</em></span>
+              <input class="form-control" type="text" name="srv_discord_main" value="{{ current_srv.discord_webhook_main or '' }}" placeholder="{{ _('Laisser vide = webhook global') }}">
+            </label>
+            <label class="settings-field">
+              <span><strong>{{ _('Webhook pilotes') }}</strong><em>{{ _('Connexions, déconnexions, changements de véhicule') }}</em></span>
+              <input class="form-control" type="text" name="srv_discord_pilots" value="{{ current_srv.discord_webhook_pilots or '' }}" placeholder="{{ _('Laisser vide = webhook global') }}">
+            </label>
+            <label class="settings-field">
+              <span><strong>{{ _('Webhook course') }}</strong><em>{{ _('Meilleur tour, actions admin (kick, pénalités…)') }}</em></span>
+              <input class="form-control" type="text" name="srv_discord_race" value="{{ current_srv.discord_webhook_race or '' }}" placeholder="{{ _('Laisser vide = webhook global') }}">
+            </label>
+          </div>
+
           <button type="submit" class="btn btn-primary settings-save-btn">{{ _('Enregistrer les modifications') }}</button>
         </form>
       </section>
+      {% endif %}
 
       {# Infrastructure ACE #}
       <section class="settings-dashboard-grid" style="margin-top:1.5rem">
@@ -283,7 +306,7 @@
           <input type="hidden" name="_tab" value="server">
           <div class="settings-card-head"><h2>{{ _('Infrastructure ACE EVO') }}</h2></div>
           <div class="settings-fields">
-            {% for k in ['ACESERVER_HTTP_PORT', 'ACESERVER_TCP_HOST', 'ACESERVER_TCP_PORT', 'ACESERVER_DIR', 'CONFIGS_DIR'] %}
+            {% for k in ['ACESERVER_TCP_HOST', 'ACESERVER_TCP_PORT', 'ACESERVER_DIR', 'CONFIGS_DIR'] %}
             <label class="settings-field">
               <span>
                 <strong>{{ k }}</strong>

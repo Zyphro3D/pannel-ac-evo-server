@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Véhicules') }} — {{ panel_title }}{% endblock %}
+
+{% block content %}
+<div style="max-width:1200px;margin:0 auto;">
+
+  <div class="settings-card-head" style="display:flex;align-items:center;gap:1rem;margin-bottom:1.2rem;flex-wrap:wrap;">
+    <h1 style="margin:0;font-size:1.3rem;">{{ _('Véhicules') }}</h1>
+    <span class="dim" style="font-size:.85rem;">{{ cars|length }} {{ _('affiché(s)') }}</span>
+  </div>
+
+  {# ── Filtres ── #}
+  <div class="veh-filters">
+    <a href="{{ url_for('admin.vehicles') }}"
+       class="veh-tab {% if not cat_filter %}veh-tab-active{% endif %}">
+      {{ _('Tous') }} <span class="veh-tab-count">{{ counts.values()|sum }}</span>
+    </a>
+    {% for cat in categories %}
+    <a href="{{ url_for('admin.vehicles', cat=cat) }}"
+       class="veh-tab {% if cat_filter == cat %}veh-tab-active{% endif %}">
+      {{ _(cat) }} <span class="veh-tab-count">{{ counts[cat] }}</span>
+    </a>
+    {% endfor %}
+    <form method="get" action="{{ url_for('admin.vehicles') }}" class="veh-search">
+      {% if cat_filter %}<input type="hidden" name="cat" value="{{ cat_filter }}">{% endif %}
+      <input type="text" name="q" value="{{ search }}"
+             placeholder="{{ _('Rechercher…') }}" class="form-control veh-search-input">
+    </form>
+  </div>
+
+  {# ── Grille voitures ── #}
+  {% if cars %}
+  <div class="veh-grid">
+    {% for car in cars %}
+    <div class="veh-card {% if not car.is_active %}veh-card-inactive{% endif %}"
+         id="veh-{{ car.slug }}">
+
+      {# Image #}
+      <div class="veh-img-wrap">
+        {% if car.image_path %}
+        <img src="{{ url_for('serve_media', filename=car.image_path) }}"
+             alt="{{ car.display_name }}" class="veh-img" loading="lazy">
+        {% else %}
+        <div class="veh-img-placeholder">
+          <span>{{ car.display_name[:2].upper() }}</span>
+        </div>
+        {% endif %}
+        {# Overlay upload #}
+        {% if current_user.is_superadmin %}
+        <label class="veh-img-upload" title="{{ _('Changer l\'image') }}">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <input type="file" accept=".jpg,.jpeg,.png,.webp" class="veh-file-input"
+                 data-slug="{{ car.slug }}"
+                 data-url="{{ url_for('admin.vehicle_upload_image', slug=car.slug) }}">
+        </label>
+        {% endif %}
+      </div>
+
+      {# Infos #}
+      <div class="veh-info">
+        <div class="veh-name">{{ car.display_name }}</div>
+        <div class="veh-badges">
+          <span class="veh-badge veh-badge-{{ car.category | lower }}">{{ _(car.category) }}</span>
+          {% if car.pi_min is not none %}
+          <span class="veh-badge veh-badge-pi">PI {{ "%.1f"|format(car.pi_min) }}</span>
+          {% endif %}
+        </div>
+      </div>
+
+      {# Toggle actif #}
+      <button class="veh-toggle btn btn-sm {% if not car.is_active %}btn-dim{% endif %}"
+              data-slug="{{ car.slug }}"
+              data-url="{{ url_for('admin.vehicle_toggle', slug=car.slug) }}"
+              title="{{ _('Activer / Désactiver') }}">
+        {% if car.is_active %}{{ _('Actif') }}{% else %}{{ _('Inactif') }}{% endif %}
+      </button>
+
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="h-empty" style="margin-top:3rem;">{{ _('Aucun véhicule trouvé.') }}</div>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const _csrf = '{{ csrf_token() }}';
+
+/* ── Toggle actif/inactif ── */
+document.querySelectorAll('.veh-toggle').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const res  = await fetch(btn.dataset.url, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': _csrf, 'Content-Type': 'application/json' },
+    });
+    const data = await res.json();
+    if (!data.ok) return;
+    const card = document.getElementById('veh-' + btn.dataset.slug);
+    card.classList.toggle('veh-card-inactive', !data.is_active);
+    btn.textContent = data.is_active ? '{{ _("Actif") }}' : '{{ _("Inactif") }}';
+    btn.classList.toggle('btn-dim', !data.is_active);
+  });
+});
+
+/* ── Upload image ── */
+document.querySelectorAll('.veh-file-input').forEach(input => {
+  input.addEventListener('change', async () => {
+    if (!input.files.length) return;
+    const form = new FormData();
+    form.append('file', input.files[0]);
+    const res  = await fetch(input.dataset.url, {
+      method: 'POST', headers: { 'X-CSRFToken': _csrf }, body: form,
+    });
+    const data = await res.json();
+    if (!data.ok) { alert(data.error); return; }
+    const card = document.getElementById('veh-' + input.dataset.slug);
+    const wrap = card.querySelector('.veh-img-wrap');
+    let img = wrap.querySelector('.veh-img');
+    if (!img) {
+      img = document.createElement('img');
+      img.className = 'veh-img';
+      wrap.querySelector('.veh-img-placeholder')?.remove();
+      wrap.insertBefore(img, wrap.firstChild);
+    }
+    img.src = '/media/' + data.image_path + '?t=' + Date.now();
+  });
+});
+</script>
+{% endblock %}

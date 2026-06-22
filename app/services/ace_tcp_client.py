@@ -20,24 +20,44 @@ import logging
 
 log = logging.getLogger(__name__)
 
-# ── État global ────────────────────────────────────────────────────────────────
+# Per-server client state (keyed by server_id)
+_clients: dict    = {}
+_clients_lock     = threading.Lock()
 
-_host: str = "127.0.0.1"
-_port: int = 9700
-_steam_id: str = ""
-_car_model: str = "preset_190_evo_ii"
 
-_sock: socket.socket | None = None
-_lock = threading.Lock()
-_connected = False
-_running   = False
-
-# Leaderboard en mémoire : steam_id_str → {name, num, sector, time_ms, sectors}
-_leaderboard: dict[str, dict] = {}
-_lb_lock = threading.Lock()
-
-# Callbacks externes (optionnels)
-_on_event = None   # callable(dict) — appelé pour chaque événement parsé
+def _get_client(server_id: int) -> dict:
+    """Returns per-server state dict, creating it on first access."""
+    with _clients_lock:
+        if server_id not in _clients:
+            _clients[server_id] = {
+                "host":                  "127.0.0.1",
+                "port":                  9700,
+                "steam_id":              "",
+                "car_model":             "preset_190_evo_ii",
+                "server_name":           "",
+                "sock":                  None,
+                "lock":                  threading.Lock(),
+                "connected":             False,
+                "running":               False,
+                "leaderboard":           {},
+                "lb_lock":               threading.Lock(),
+                "on_event":              None,
+                "join_times":            {},
+                "car_id_to_sid":         {},
+                "num_to_sid":            {},
+                "sid_car_raw":           {},
+                "recently_disconnected": {},
+                "race_state":            {"server_best_ms": None},
+                "welcome_discord":       "",
+                "welcome_site":          "",
+                "deploy_mode":           "native",
+                "log_file":              "",
+                "container_name":        "ace-server",
+                "msg_welcome":           "Bienvenue {name} !",
+                "msg_discord":           "Rejoins le discord : {discord_url}",
+                "msg_site":              "Retrouve tes resultats et evenements sur : {site_url}",
+            }
+        return _clients[server_id]
 
 
 # ── Encodage protobuf minimal ─────────────────────────────────────────────────
@@ -138,13 +158,13 @@ def _wrap(name: str, payload: bytes) -> bytes:
     return struct.pack('<H', len(content)) + content
 
 
-def _build_connection_request() -> bytes:
+def _build_connection_request(c: dict) -> bytes:
     payload = (
         _field_varint(1, 1) +
         _field_varint(5, 8) +
         _field_varint(6, 5) +
-        _field_str(7, _steam_id) +
-        _field_str(9, _get_car_model())
+        _field_str(7, c["steam_id"]) +
+        _field_str(9, _get_car_model(c))
     )
     return _wrap('ClientConnectionRequest', payload)
 
@@ -157,15 +177,16 @@ def _build_chat(text: str) -> bytes:
 
 # ── Parsing des messages entrants ─────────────────────────────────────────────
 
-def _parse_broadcast(payload: bytes):
+def _parse_broadcast(payload: bytes, server_id: int):
     """BroadcastStateMessage → extrait PlatformRaceLeaderboard."""
-    f = _parse_proto(payload)
+    c        = _get_client(server_id)
+    f        = _parse_proto(payload)
     any_data = f.get(2, [None])[0]
     if not any_data:
         log.info("broadcast: pas de field 2 — fields=%s", list(f.keys()))
         return
 
-    af = _parse_proto(any_data)
+    af       = _parse_proto(any_data)
     type_url = af.get(1, [b''])[0]
     type_str = type_url.decode('utf-8', errors='replace') if isinstance(type_url, bytes) else str(type_url)
     log.info("broadcast reçu: %s", type_str.split('/')[-1])
@@ -211,46 +232,48 @@ def _parse_broadcast(payload: bytes):
                   steam_id, sector, int(time_ms) if time_ms else None, driver_id_bytes.hex())
 
     if updates:
-        with _lb_lock:
+        with c["lb_lock"]:
             for sid, data in updates.items():
-                if sid in _leaderboard:
-                    _leaderboard[sid].update(data)
+                if sid in c["leaderboard"]:
+                    c["leaderboard"][sid].update(data)
                 else:
-                    _leaderboard[sid] = data
+                    c["leaderboard"][sid] = data
 
-        if _on_event:
+        if c["on_event"]:
             try:
-                _on_event({'type': 'leaderboard', 'entries': list(updates.values())})
+                c["on_event"]({'type': 'leaderboard', 'entries': list(updates.values())})
             except Exception:
                 pass
 
 
-def _parse_split(payload: bytes):
+def _parse_split(payload: bytes, server_id: int):
     """SplitFromRemoteMessage — passage de secteur."""
-    f = _parse_proto(payload)
+    c          = _get_client(server_id)
+    f          = _parse_proto(payload)
     driver_id_bytes = f.get(1, [b''])[0]
-    steam_id = _extract_steam_id(driver_id_bytes)
-    sector_idx = (f.get(3, [0])[0])
+    steam_id   = _extract_steam_id(driver_id_bytes)
+    sector_idx = f.get(3, [0])[0]
 
-    if _on_event:
+    if c["on_event"]:
         try:
-            _on_event({'type': 'split_tcp', 'steam_id': steam_id, 'sector': sector_idx})
+            c["on_event"]({'type': 'split_tcp', 'steam_id': steam_id, 'sector': sector_idx})
         except Exception:
             pass
 
 
-def _handle_message(name: str, payload: bytes):
+def _handle_message(name: str, payload: bytes, server_id: int):
     if name == 'BroadcastStateMessage':
-        _parse_broadcast(payload)
+        _parse_broadcast(payload, server_id)
     elif name == 'SplitFromRemoteMessage':
-        _parse_split(payload)
+        _parse_split(payload, server_id)
 
 
 # ── Boucle de réception ───────────────────────────────────────────────────────
 
-def _recv_loop(sock: socket.socket):
+def _recv_loop(sock: socket.socket, server_id: int):
+    c   = _get_client(server_id)
     buf = b''
-    while _running:
+    while c["running"]:
         try:
             chunk = sock.recv(8192)
             if not chunk:
@@ -272,59 +295,63 @@ def _recv_loop(sock: socket.socket):
                 payload  = buf[5+name_len:total_len]
                 buf      = buf[total_len:]
                 try:
-                    _handle_message(name, payload)
+                    _handle_message(name, payload, server_id)
                 except Exception as e:
                     log.debug("handle_message %s error: %s", name, e)
         except OSError:
             break
-    log.info("ace_tcp_client: connexion terminée")
+    log.info("ace_tcp_client: connexion terminée (server=%d)", server_id)
 
 
 # ── Thread de connexion avec reconnexion auto ─────────────────────────────────
 
-def _connect_loop():
-    global _sock, _connected
-    while _running:
+def _connect_loop(server_id: int):
+    c = _get_client(server_id)
+    while c["running"]:
+        sock = None
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.settimeout(10)
-            sock.connect((_host, _port))
+            sock.connect((c["host"], c["port"]))
             sock.settimeout(None)
-            sock.sendall(_build_connection_request())
-            log.info("ace_tcp_client: connecté à %s:%d (steam=%s)", _host, _port, _steam_id)
-            with _lock:
-                _sock = sock
-                _connected = True
+            sock.sendall(_build_connection_request(c))
+            log.info("ace_tcp_client: connecté à %s:%d (steam=%s, server=%d)",
+                     c["host"], c["port"], c["steam_id"], server_id)
+            with c["lock"]:
+                c["sock"]      = sock
+                c["connected"] = True
             # S'élever admin dès la connexion si configuré
             _pwd = _get_admin_password()
             if _pwd:
                 time.sleep(1)
-                send_chat(f"\\admin {_pwd}")
-                log.info("ace_tcp_client: élévation admin envoyée")
-            _recv_loop(sock)
+                send_chat(f"\\admin {_pwd}", server_id)
+                log.info("ace_tcp_client: élévation admin envoyée (server=%d)", server_id)
+            _recv_loop(sock, server_id)
         except Exception as e:
-            log.debug("ace_tcp_client: erreur connexion %s:%d — %s", _host, _port, e)
+            log.debug("ace_tcp_client: erreur connexion %s:%d — %s", c["host"], c["port"], e)
         finally:
-            with _lock:
-                _sock = None
-                _connected = False
-            try:
-                sock.close()
-            except Exception:
-                pass
-        if _running:
+            with c["lock"]:
+                c["sock"]      = None
+                c["connected"] = False
+            if sock:
+                try:
+                    sock.close()
+                except Exception:
+                    pass
+        if c["running"]:
             time.sleep(5)
 
 
 # ── API publique ──────────────────────────────────────────────────────────────
 
-def send_chat(text: str) -> bool:
+def send_chat(text: str, server_id: int = 1) -> bool:
     """Envoie un message dans le tchat du jeu. Retourne True si envoyé."""
-    with _lock:
-        if _sock is None:
+    c = _get_client(server_id)
+    with c["lock"]:
+        if c["sock"] is None:
             return False
         try:
-            _sock.sendall(_build_chat(text))
+            c["sock"].sendall(_build_chat(text))
             log.info("ace_tcp_client: chat envoyé : %r", text)
             return True
         except Exception as e:
@@ -332,19 +359,22 @@ def send_chat(text: str) -> bool:
             return False
 
 
-def is_connected() -> bool:
-    return _connected
+def is_connected(server_id: int = 1) -> bool:
+    return _get_client(server_id)["connected"]
 
 
-def get_leaderboard() -> list[dict]:
-    with _lb_lock:
-        return list(_leaderboard.values())
+def get_leaderboard(server_id: int = 1) -> list[dict]:
+    c = _get_client(server_id)
+    with c["lb_lock"]:
+        return list(c["leaderboard"].values())
 
 
-def update_driver_info(steam_id: str, name: str | None = None, num: str | None = None):
+def update_driver_info(steam_id: str, name: str | None = None,
+                       num: str | None = None, server_id: int = 1):
     """Met à jour les infos d'un pilote (nom/numéro) depuis les logs."""
-    with _lb_lock:
-        entry = _leaderboard.setdefault(steam_id, {'steam_id': steam_id})
+    c = _get_client(server_id)
+    with c["lb_lock"]:
+        entry = c["leaderboard"].setdefault(steam_id, {'steam_id': steam_id})
         if name:
             entry['name'] = name
         if num:
@@ -364,26 +394,9 @@ _RE_DISCONN_LOG = re.compile(r'\[gameplay\] \[info\] (\d+) disconnected')
 _RE_NEWLAP_LOG  = re.compile(r'\[gameplay\] \[info\] New lap carId ([0-9a-f-]+): (\d+:\d+\.\d+)')
 _RE_PLAYERS_LOG = re.compile(r'\[server\] \[info\] Server updated: (\d+) players')
 
-# État supplémentaire pour les notifs Discord (protégé par _lb_lock)
-_join_times:           dict[str, float] = {}  # steam_id → timestamp connexion
-_car_id_to_sid:        dict[str, str]   = {}  # car_id → steam_id (pour les tours)
-_num_to_sid:           dict[str, str]   = {}  # car_num → steam_id (pour actions admin)
-_sid_car_raw:          dict[str, str]   = {}  # steam_id → modèle voiture
-_recently_disconnected: dict[str, dict] = {}  # steam_id → {name, car_raw, ts} pour détecter changement véhicule
-_race_state:           dict              = {"server_best_ms": None}  # best lap serveur
 
-_welcome_discord: str = ""
-_welcome_site: str    = ""
-_deploy_mode: str     = "native"
-_log_file: str        = ""
-_container_name: str  = "ace-server"
-_msg_welcome: str     = "Bienvenue {name} !"
-_msg_discord: str     = "Rejoins le discord : {discord_url}"
-_msg_site: str        = "Retrouve tes resultats et evenements sur : {site_url}"
-
-
-def _get_car_model() -> str:
-    """Lit la première voiture de la config active. Fallback sur _car_model si introuvable."""
+def _get_car_model(c: dict) -> str:
+    """Lit la première voiture de la config active. Fallback sur c['car_model']."""
     try:
         configs_dir = os.environ.get("CONFIGS_DIR", "/aceserver/configs")
         active_file = os.path.join(configs_dir, ".active_config")
@@ -394,7 +407,7 @@ def _get_car_model() -> str:
             files = sorted(glob.glob(os.path.join(configs_dir, "*.json")))
             name = os.path.basename(files[0]) if files else ""
         if not name:
-            return _car_model
+            return c["car_model"]
         with open(os.path.join(configs_dir, name), encoding="utf-8") as f:
             cfg = json.load(f)
         cars = cfg.get("Event", {}).get("Cars", [])
@@ -405,7 +418,7 @@ def _get_car_model() -> str:
                 return model
     except Exception as e:
         log.debug("ace_tcp_client: erreur lecture car_model: %s", e)
-    return _car_model
+    return c["car_model"]
 
 
 def _get_admin_password() -> str:
@@ -429,18 +442,19 @@ def _get_admin_password() -> str:
         return ""
 
 
-def _send_welcome(name: str):
+def _send_welcome(name: str, server_id: int):
+    c    = _get_client(server_id)
     time.sleep(2)   # laisser le temps au joueur de charger
-    vars = {"name": name, "discord_url": _welcome_discord, "site_url": _welcome_site}
-    if _msg_welcome:
-        send_chat(_msg_welcome.format_map(vars))
-    if _welcome_discord and _msg_discord:
+    vars = {"name": name, "discord_url": c["welcome_discord"], "site_url": c["welcome_site"]}
+    if c["msg_welcome"]:
+        send_chat(c["msg_welcome"].format_map(vars), server_id)
+    if c["welcome_discord"] and c["msg_discord"]:
         time.sleep(1)
-        send_chat(_msg_discord.format_map(vars))
-    if _welcome_site and _msg_site:
+        send_chat(c["msg_discord"].format_map(vars), server_id)
+    if c["welcome_site"] and c["msg_site"]:
         time.sleep(1)
-        send_chat(_msg_site.format_map(vars))
-    log.info("ace_tcp_client: bienvenue envoyé à %s", name)
+        send_chat(c["msg_site"].format_map(vars), server_id)
+    log.info("ace_tcp_client: bienvenue envoyé à %s (server=%d)", name, server_id)
 
 
 def _parse_lap_ms(s: str) -> int:
@@ -452,29 +466,32 @@ def _parse_lap_ms(s: str) -> int:
         return 0
 
 
-def get_driver_by_num(num: str) -> dict:
+def get_driver_by_num(num: str, server_id: int = 1) -> dict:
     """Retourne {name, steam_id, car_raw} du pilote par numéro de voiture, ou {}."""
-    with _lb_lock:
-        sid = _num_to_sid.get(str(num))
+    c = _get_client(server_id)
+    with c["lb_lock"]:
+        sid = c["num_to_sid"].get(str(num))
         if not sid:
             return {}
         return {
-            "name":     _leaderboard.get(sid, {}).get("name", "?"),
+            "name":     c["leaderboard"].get(sid, {}).get("name", "?"),
             "steam_id": sid,
-            "car_raw":  _sid_car_raw.get(sid, ""),
+            "car_raw":  c["sid_car_raw"].get(sid, ""),
         }
 
 
-def _process_log_line(line: str, seen: set):
+def _process_log_line(line: str, seen: set, server_id: int):
+    c = _get_client(server_id)
+
     # Gameplay: connexion — stocke car_raw + car_id avant le log server
     m = _RE_CONNECT_LOG.search(line)
     if m:
         sid, car_raw, car_id = m.group(1), m.group(2), m.group(3) or ""
-        with _lb_lock:
-            _join_times[sid]  = time.time()
-            _sid_car_raw[sid] = car_raw
+        with c["lb_lock"]:
+            c["join_times"][sid]  = time.time()
+            c["sid_car_raw"][sid] = car_raw
             if car_id:
-                _car_id_to_sid[car_id] = sid
+                c["car_id_to_sid"][car_id] = sid
         return
 
     # Server: nom + numéro (arrive après le connect log)
@@ -482,15 +499,15 @@ def _process_log_line(line: str, seen: set):
     if m:
         num, name, sid = m.group(1), m.group(2), m.group(3)
         now = time.time()
-        with _lb_lock:
-            _num_to_sid[num] = sid
-            car_raw = _sid_car_raw.get(sid, "")
-            recent  = _recently_disconnected.pop(sid, None)
-            stale   = [k for k, v in _recently_disconnected.items() if now - v["ts"] > 600]
+        with c["lb_lock"]:
+            c["num_to_sid"][num] = sid
+            car_raw = c["sid_car_raw"].get(sid, "")
+            recent  = c["recently_disconnected"].pop(sid, None)
+            stale   = [k for k, v in c["recently_disconnected"].items() if now - v["ts"] > 600]
         # Purge hors du lock — évite O(N) pendant la section critique
         for k in stale:
-            with _lb_lock:
-                _recently_disconnected.pop(k, None)
+            with c["lb_lock"]:
+                c["recently_disconnected"].pop(k, None)
 
         vehicle_changed = (
             recent is not None
@@ -500,24 +517,29 @@ def _process_log_line(line: str, seen: set):
             and (now - recent["ts"]) < 600
         )
 
+        _srv_name = c.get("server_name", "")
         if vehicle_changed:
             seen.add(sid)  # bloque la notif "join" standard
-            threading.Thread(target=_send_welcome, args=(name,), daemon=True).start()
+            threading.Thread(target=_send_welcome, args=(name, server_id),
+                             daemon=True).start()
             try:
                 from app.services import discord_notifier
                 discord_notifier.safe_notify(
                     discord_notifier.notify_vehicle_change,
-                    name, num, recent["car_raw"], car_raw
+                    name, num, recent["car_raw"], car_raw,
+                    server_id=server_id, server_name=_srv_name,
                 )
             except Exception:
                 pass
         elif sid not in seen:
             seen.add(sid)
-            threading.Thread(target=_send_welcome, args=(name,), daemon=True).start()
+            threading.Thread(target=_send_welcome, args=(name, server_id),
+                             daemon=True).start()
             try:
                 from app.services import discord_notifier
                 discord_notifier.safe_notify(
-                    discord_notifier.notify_player_join, name, num, car_raw, sid
+                    discord_notifier.notify_player_join, name, num, car_raw, sid,
+                    server_id=server_id, server_name=_srv_name,
                 )
             except Exception:
                 pass
@@ -528,20 +550,21 @@ def _process_log_line(line: str, seen: set):
     if m:
         sid = m.group(1)
         seen.discard(sid)
-        with _lb_lock:
-            joined   = _join_times.pop(sid, None)
-            old_car  = _sid_car_raw.pop(sid, "")
-            name     = _leaderboard.get(sid, {}).get("name", sid)
-            num      = _leaderboard.get(sid, {}).get("num")
+        with c["lb_lock"]:
+            joined  = c["join_times"].pop(sid, None)
+            old_car = c["sid_car_raw"].pop(sid, "")
+            name    = c["leaderboard"].get(sid, {}).get("name", sid)
+            num     = c["leaderboard"].get(sid, {}).get("num")
             if num:
-                _num_to_sid.pop(str(num), None)
+                c["num_to_sid"].pop(str(num), None)
             # Mémorise pour détecter un éventuel changement de véhicule à la reconnexion
-            _recently_disconnected[sid] = {"name": name, "car_raw": old_car, "ts": time.time()}
+            c["recently_disconnected"][sid] = {"name": name, "car_raw": old_car, "ts": time.time()}
         duration_s = int(time.time() - joined) if joined else None
         try:
             from app.services import discord_notifier
             discord_notifier.safe_notify(
-                discord_notifier.notify_player_disconnect, name, sid, duration_s
+                discord_notifier.notify_player_disconnect, name, sid, duration_s,
+                server_id=server_id, server_name=c.get("server_name", ""),
             )
         except Exception:
             pass
@@ -554,19 +577,20 @@ def _process_log_line(line: str, seen: set):
         lap_ms = _parse_lap_ms(lap_str)
         if lap_ms > 0:
             notify = False
-            with _lb_lock:
-                sid     = _car_id_to_sid.get(car_id, "")
-                name    = _leaderboard.get(sid, {}).get("name", "?") if sid else "?"
-                car_raw = _sid_car_raw.get(sid, "") if sid else ""
-                best    = _race_state["server_best_ms"]
+            with c["lb_lock"]:
+                sid     = c["car_id_to_sid"].get(car_id, "")
+                name    = c["leaderboard"].get(sid, {}).get("name", "?") if sid else "?"
+                car_raw = c["sid_car_raw"].get(sid, "") if sid else ""
+                best    = c["race_state"]["server_best_ms"]
                 if best is None or lap_ms < best:
-                    _race_state["server_best_ms"] = lap_ms
+                    c["race_state"]["server_best_ms"] = lap_ms
                     notify = True
             if notify:
                 try:
                     from app.services import discord_notifier
                     discord_notifier.safe_notify(
-                        discord_notifier.notify_best_lap, name, lap_str, car_raw
+                        discord_notifier.notify_best_lap, name, lap_str, car_raw,
+                        server_id=server_id, server_name=c.get("server_name", ""),
                     )
                 except Exception:
                     pass
@@ -575,26 +599,27 @@ def _process_log_line(line: str, seen: set):
     # Server: reset de session (0 joueurs = nouveau démarrage serveur)
     m = _RE_PLAYERS_LOG.search(line)
     if m and m.group(1) == '0':
-        with _lb_lock:
-            _car_id_to_sid.clear()
-            _num_to_sid.clear()
-            _sid_car_raw.clear()
-            _join_times.clear()
-            _recently_disconnected.clear()
-            _race_state["server_best_ms"] = None
+        with c["lb_lock"]:
+            c["car_id_to_sid"].clear()
+            c["num_to_sid"].clear()
+            c["sid_car_raw"].clear()
+            c["join_times"].clear()
+            c["recently_disconnected"].clear()
+            c["race_state"]["server_best_ms"] = None
         seen.clear()
 
 
-def _welcome_loop_native():
+def _welcome_loop_native(server_id: int):
+    c    = _get_client(server_id)
     seen: set[str] = set()
-    while _running:
+    while c["running"]:
         try:
-            with open(_log_file, encoding='utf-8', errors='replace') as f:
+            with open(c["log_file"], encoding='utf-8', errors='replace') as f:
                 f.seek(0, 2)
-                while _running:
+                while c["running"]:
                     line = f.readline()
                     if line:
-                        _process_log_line(line, seen)
+                        _process_log_line(line, seen, server_id)
                     else:
                         time.sleep(0.3)
         except Exception as e:
@@ -602,30 +627,31 @@ def _welcome_loop_native():
             time.sleep(5)
 
 
-def _welcome_loop_docker():
+def _welcome_loop_docker(server_id: int):
+    c    = _get_client(server_id)
     seen: set[str] = set()
-    while _running:
+    while c["running"]:
         try:
             import docker as _docker
             client    = _docker.from_env()
-            container = client.containers.get(_container_name)
+            container = client.containers.get(c["container_name"])
             for chunk in container.logs(stream=True, follow=True,
                                         since=int(time.time()) - 5):
-                if not _running:
+                if not c["running"]:
                     break
                 for line in chunk.decode('utf-8', errors='replace').splitlines():
-                    _process_log_line(line, seen)
+                    _process_log_line(line, seen, server_id)
         except Exception as e:
             log.debug("welcome_loop_docker error: %s", e)
-            if _running:
+            if c["running"]:
                 time.sleep(5)
 
 
 # ── API publique ──────────────────────────────────────────────────────────────
 
 def start(host: str, port: int, steam_id: str,
-          car_model: str   = "preset_190_evo_ii",
-          discord_url: str = "",
+          car_model: str      = "preset_190_evo_ii",
+          discord_url: str    = "",
           site_url: str       = "",
           msg_welcome: str    = "Bienvenue {name} !",
           msg_discord: str    = "Rejoins le discord : {discord_url}",
@@ -633,47 +659,49 @@ def start(host: str, port: int, steam_id: str,
           deploy_mode: str    = "native",
           log_file: str       = "",
           container_name: str = "ace-server",
-          on_event=None):
+          on_event=None,
+          server_id: int      = 1,
+          server_name: str    = ""):
     """Démarre le client TCP (+ moniteur de bienvenue) en arrière-plan."""
-    global _host, _port, _steam_id, _car_model
-    global _on_event, _running
-    global _welcome_discord, _welcome_site, _deploy_mode, _log_file, _container_name
-    global _msg_welcome, _msg_discord, _msg_site
-    _host            = host
-    _port            = port
-    _steam_id        = steam_id
-    _car_model       = car_model
-    _welcome_discord = discord_url
-    _welcome_site     = site_url
-    _msg_welcome      = msg_welcome
-    _msg_discord      = msg_discord
-    _msg_site         = msg_site
-    _deploy_mode      = deploy_mode
-    _log_file         = log_file
-    _container_name   = container_name
-    _on_event         = on_event
-    _running          = True
+    c = _get_client(server_id)
+    c["host"]            = host
+    c["port"]            = port
+    c["steam_id"]        = steam_id
+    c["car_model"]       = car_model
+    c["server_name"]     = server_name
+    c["welcome_discord"] = discord_url
+    c["welcome_site"]    = site_url
+    c["msg_welcome"]     = msg_welcome
+    c["msg_discord"]     = msg_discord
+    c["msg_site"]        = msg_site
+    c["deploy_mode"]     = deploy_mode
+    c["log_file"]        = log_file
+    c["container_name"]  = container_name
+    c["on_event"]        = on_event
+    c["running"]         = True
 
-    threading.Thread(target=_connect_loop, daemon=True, name="ace-tcp-client").start()
+    threading.Thread(target=_connect_loop, args=(server_id,),
+                     daemon=True, name=f"ace-tcp-client-{server_id}").start()
 
     has_welcome = msg_welcome or (discord_url and msg_discord) or (site_url and msg_site)
     if has_welcome:
         if deploy_mode == "docker_split":
-            threading.Thread(target=_welcome_loop_docker, daemon=True,
-                             name="ace-welcome-bot").start()
+            threading.Thread(target=_welcome_loop_docker, args=(server_id,),
+                             daemon=True, name=f"ace-welcome-bot-{server_id}").start()
         elif log_file:
-            threading.Thread(target=_welcome_loop_native, daemon=True,
-                             name="ace-welcome-bot").start()
+            threading.Thread(target=_welcome_loop_native, args=(server_id,),
+                             daemon=True, name=f"ace-welcome-bot-{server_id}").start()
 
-    log.info("ace_tcp_client: démarrage vers %s:%d", host, port)
+    log.info("ace_tcp_client: démarrage vers %s:%d (server=%d)", host, port, server_id)
 
 
-def elevate_admin() -> str | None:
+def elevate_admin(server_id: int = 1) -> str | None:
     """Envoie \\admin <password> au serveur avec le mot de passe de la config active.
     Ignore ACE_BOT_IS_ADMIN — appelé explicitement par l'admin via le panel.
     Retourne None si ok, message d'erreur sinon.
     """
-    if not _connected:
+    c = _get_client(server_id)
+    if not c["connected"]:
         return "Bot TCP non connecté"
     try:
         configs_dir = os.environ.get("CONFIGS_DIR", "/aceserver/configs")
@@ -692,19 +720,19 @@ def elevate_admin() -> str | None:
             return "Aucun mot de passe admin configuré dans la session active"
     except Exception as e:
         return f"Erreur lecture config : {e}"
-    sent = send_chat(f"\\admin {pwd}")
+    sent = send_chat(f"\\admin {pwd}", server_id)
     if not sent:
         return "Échec envoi — bot TCP non connecté"
-    log.info("ace_tcp_client: élévation admin manuelle envoyée")
+    log.info("ace_tcp_client: élévation admin manuelle envoyée (server=%d)", server_id)
     return None
 
 
-def stop():
-    global _running
-    _running = False
-    with _lock:
-        if _sock:
+def stop(server_id: int = 1):
+    c = _get_client(server_id)
+    c["running"] = False
+    with c["lock"]:
+        if c["sock"]:
             try:
-                _sock.close()
+                c["sock"].close()
             except Exception:
                 pass

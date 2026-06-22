@@ -1,3 +1,4 @@
+import html as _html
 import smtplib
 import socket
 import threading
@@ -6,6 +7,8 @@ from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import formatdate, make_msgid
+
+_e = _html.escape  # short alias for escaping user-supplied data in HTML emails
 
 log = logging.getLogger(__name__)
 
@@ -106,11 +109,11 @@ def send_new_registration(driver):
     html = f"""
 <p>Un nouveau pilote s'est inscrit et attend validation&nbsp;:</p>
 <ul>
-  <li><strong>Nom in-game&nbsp;:</strong> {driver.ingame_name}</li>
-  <li><strong>Email&nbsp;:</strong> {driver.email}</li>
+  <li><strong>Nom in-game&nbsp;:</strong> {_e(driver.ingame_name)}</li>
+  <li><strong>Email&nbsp;:</strong> {_e(driver.email)}</li>
   <li><strong>Inscrit le&nbsp;:</strong> {date} UTC</li>
 </ul>
-<p><a href="{url}">Voir les pilotes en attente</a></p>
+<p><a href="{_e(url)}">Voir les pilotes en attente</a></p>
 """
     subject = f"[ACE EVO] Nouvelle inscription — {driver.ingame_name}"
     for admin in admins:
@@ -120,16 +123,16 @@ def send_new_registration(driver):
 def send_registration_approved(driver):
     url  = f"{_cfg['panel_url']}/login"
     html = f"""
-<p>Bonjour <strong>{driver.ingame_name}</strong>,</p>
+<p>Bonjour <strong>{_e(driver.ingame_name)}</strong>,</p>
 <p>Votre compte pilote a été <strong>validé</strong>. Vous pouvez maintenant vous connecter et vous inscrire aux événements.</p>
-<p><a href="{url}">Se connecter</a></p>
+<p><a href="{_e(url)}">Se connecter</a></p>
 """
     _send(driver.email, "[ACE EVO] Compte validé — Bienvenue !", html)
 
 
 def send_registration_rejected(driver):
     html = f"""
-<p>Bonjour <strong>{driver.ingame_name}</strong>,</p>
+<p>Bonjour <strong>{_e(driver.ingame_name)}</strong>,</p>
 <p>Votre demande d'inscription a été <strong>refusée</strong>.</p>
 <p>Si vous pensez qu'il s'agit d'une erreur, contactez l'administrateur.</p>
 """
@@ -139,11 +142,11 @@ def send_registration_rejected(driver):
 def send_password_reset(driver, token: str):
     url  = f"{_cfg['panel_url']}/reset-password/{token}"
     html = f"""
-<p>Bonjour <strong>{driver.ingame_name}</strong>,</p>
+<p>Bonjour <strong>{_e(driver.ingame_name)}</strong>,</p>
 <p>Une demande de réinitialisation de mot de passe a été effectuée pour votre compte.</p>
-<p><a href="{url}" style="background:#c0392b;color:#fff;padding:10px 20px;border-radius:6px;text-decoration:none;display:inline-block">Réinitialiser mon mot de passe</a></p>
+<p><a href="{_e(url)}" style="background:#c0392b;color:#fff;padding:10px 20px;border-radius:6px;text-decoration:none;display:inline-block">Réinitialiser mon mot de passe</a></p>
 <p style="color:#888;font-size:12px">Ce lien est valable <strong>1 heure</strong>. Si vous n'êtes pas à l'origine de cette demande, ignorez cet email.</p>
-<p style="color:#888;font-size:12px">Lien : {url}</p>
+<p style="color:#888;font-size:12px">Lien : {_e(url)}</p>
 """
     _send(driver.email, "[ACE EVO] Réinitialisation de mot de passe", html)
 
@@ -152,21 +155,21 @@ def send_event_reminder(driver, event, registration):
     date_str = event.date.strftime("%d/%m/%Y à %H:%M") + " UTC"
     car_info = registration.car_display or registration.assigned_car or "Non assignée"
     pwd_line = (
-        f"<li><strong>Mot de passe serveur&nbsp;:</strong> <code>{event.password}</code></li>"
+        f"<li><strong>Mot de passe serveur&nbsp;:</strong> <code>{_e(event.password)}</code></li>"
         if event.password else ""
     )
     url  = _cfg["panel_url"]
     html = f"""
-<p>Bonjour <strong>{driver.ingame_name}</strong>,</p>
-<p>L'événement <strong>{event.title}</strong> commence bientôt&nbsp;!</p>
+<p>Bonjour <strong>{_e(driver.ingame_name)}</strong>,</p>
+<p>L'événement <strong>{_e(event.title)}</strong> commence bientôt&nbsp;!</p>
 <ul>
   <li><strong>Date&nbsp;:</strong> {date_str}</li>
-  <li><strong>Circuit&nbsp;:</strong> {event.circuit_display or event.circuit}</li>
-  <li><strong>Mode&nbsp;:</strong> {event.mode_display}</li>
-  <li><strong>Météo&nbsp;:</strong> {event.weather_display}</li>
-  <li><strong>Voiture assignée&nbsp;:</strong> {car_info}</li>
+  <li><strong>Circuit&nbsp;:</strong> {_e(event.circuit_display or event.circuit)}</li>
+  <li><strong>Mode&nbsp;:</strong> {_e(event.mode_display)}</li>
+  <li><strong>Météo&nbsp;:</strong> {_e(event.weather_display)}</li>
+  <li><strong>Voiture assignée&nbsp;:</strong> {_e(car_info)}</li>
   {pwd_line}
 </ul>
-<p><a href="{url}">Accéder au panel</a></p>
+<p><a href="{_e(url)}">Accéder au panel</a></p>
 """
     _send(driver.email, f"[ACE EVO] Rappel — {event.title} commence bientôt", html)

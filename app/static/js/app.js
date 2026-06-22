@@ -237,6 +237,15 @@ async function toggleAutoRestart(enabled) {
 }
 
 function updateStatusUI(running, runningConfig, autoRestart, players) {
+  const wasRunning = _serverRunning;
+  _serverRunning = !!running;
+
+  // Dirty banner : cacher quand le serveur s'arrête ou vient de (re)démarrer
+  const banner = document.getElementById('config-dirty-banner');
+  if (banner && (!running || (!wasRunning && running))) {
+    banner.style.display = 'none';
+  }
+
   _rotIsRunning  = !!running;
   _rotRunningCfg = runningConfig || '';
   updateRotationStatus();
@@ -274,8 +283,16 @@ function updateStatusUI(running, runningConfig, autoRestart, players) {
   const btnStop    = document.getElementById('btn-stop');
   const btnRestart = document.getElementById('btn-restart');
 
-  // Réactiver tous les boutons (ils sont désactivés pendant l'action)
-  [btnStart, btnStop, btnRestart].forEach(b => { if (b) b.disabled = false; });
+  // Réactiver tous les boutons et restaurer leur label d'origine
+  [btnStart, btnStop, btnRestart].forEach(b => {
+    if (!b) return;
+    b.disabled = false;
+    if (b.dataset.origLabel) {
+      const strong = b.querySelector('strong');
+      (strong || b).textContent = b.dataset.origLabel;
+      delete b.dataset.origLabel;
+    }
+  });
 
   const editMode = document.getElementById('server-control')?.dataset.barMode === 'edit';
   if (editMode) {
@@ -292,6 +309,11 @@ function updateStatusUI(running, runningConfig, autoRestart, players) {
 
   const chk = document.getElementById('chk-auto-restart');
   if (chk) chk.checked = !!autoRestart;
+
+  const chkCard = document.getElementById('srv-auto-restart-card');
+  const lblCard = document.getElementById('srv-auto-restart-label');
+  if (chkCard) chkCard.checked = !!autoRestart;
+  if (lblCard) lblCard.textContent = autoRestart ? I18N.autoRestartOn : I18N.autoRestartOff;
 }
 
 async function fetchStatus() {
@@ -330,7 +352,20 @@ function openLogs() {
 const _serverBtns = () => ['start','stop','restart'].map(id => document.getElementById(`btn-${id}`));
 
 async function serverAction(action) {
-  _serverBtns().forEach(b => { if (b) b.disabled = true; });
+  if (action === 'stop'    && !confirm(I18N.confirmStop))    return;
+  if (action === 'restart' && !confirm(I18N.confirmRestart)) return;
+
+  const loadingLabel = { start: I18N.serverStarting, stop: I18N.serverStopping, restart: I18N.serverRestarting };
+  _serverBtns().forEach(b => {
+    if (!b) return;
+    b.disabled = true;
+    if (b.id === `btn-${action}`) {
+      const strong = b.querySelector('strong');
+      const target = strong || b;
+      if (!b.dataset.origLabel) b.dataset.origLabel = target.textContent;
+      target.textContent = loadingLabel[action] || '…';
+    }
+  });
 
   const labels = { start: I18N.serverStarted, stop: I18N.serverStopped, restart: I18N.serverRestarted };
   try {
@@ -408,7 +443,13 @@ async function saveAll() {
       body: JSON.stringify(data),
     });
     const d = await r.json();
-    showToast(d.ok ? I18N.saved : I18N.error, d.ok ? 'success' : 'error');
+    if (d.ok) {
+      showToast(I18N.saved, 'success');
+      const banner = document.getElementById('config-dirty-banner');
+      if (banner && _serverRunning) banner.style.display = '';
+    } else {
+      showToast(I18N.error, 'error');
+    }
   } catch (_) {
     showToast(I18N.networkError, 'error');
   }
@@ -568,6 +609,7 @@ updateSelectedCount();
 })();
 
 /* ── Roulement de configurations ── */
+let _serverRunning = false;
 let _rotConfigs    = [];
 let _rotIsRunning  = false;
 let _rotRunningCfg = '';

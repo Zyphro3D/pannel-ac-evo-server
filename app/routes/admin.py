@@ -1,14 +1,19 @@
 import json
+import os
 import re
+import threading
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
-from flask import Blueprint, current_app, render_template, redirect, url_for, request, flash, jsonify
-from flask_babel import _, lazy_gettext as _l
+_env_write_lock = threading.Lock()  # protects concurrent os.environ writes in settings POST
+
+from flask import Blueprint, current_app, render_template, redirect, url_for, request, flash, jsonify, session
+from flask_babel import _, lazy_gettext as _l, get_locale
 from flask_login import current_user
 
-from app.models import AdminAccount, Driver, Event, SessionResult
+from sqlalchemy.orm import selectinload as _ev_selectinload
+from app.models import AdminAccount, Driver, Event, SessionResult, Server, CarMeta, TrackMeta
 from app.services.database import db
 from app.services.server_config import (
     load_config, load_cars, load_events,
@@ -22,26 +27,55 @@ from app.utils import admin_required as _admin_required, superadmin_required as 
 
 admin_bp = Blueprint("admin", __name__)
 
-_PROP_MAPS = {
-    "property_1": {0: "Road", 1: "Race", 2: "Track"},
-    "property_2": {0: "Modern", 1: "Vintage", 2: "YT"},
-    "property_3": {0: "ICE", 1: "EV", 2: "Hybrid"},
-}
-_CATEGORY_ORDER = ["Road", "Race", "Track", "Modern", "Vintage", "YT", "ICE", "EV", "Hybrid"]
+from app.services.server_config import CAR_PROP_MAPS as _PROP_MAPS, CAR_CATEGORY_ORDER as _CATEGORY_ORDER
+
+
+_DASH_MEDIA_ROOT = Path(__file__).parent.parent.parent / "media"
 
 
 @admin_bp.route("/dashboard")
 @_admin_required
 def dashboard():
+    sid            = session.get("current_server_id", 1)
     now            = datetime.now(timezone.utc).replace(tzinfo=None)
-    status         = get_status()
-    server_info    = get_running_server_info()
-    upcoming       = (Event.query
-                      .filter_by(status="published")
-                      .filter(Event.date >= now)
-                      .order_by(Event.date)
-                      .limit(5)
-                      .all())
+    status         = get_status(sid)
+    server_info    = get_running_server_info(sid)
+
+    if server_info:
+        slug   = server_info.get("track_slug", "")
+        banner = _DASH_MEDIA_ROOT / "circuits" / f"{slug}.webp"
+        server_info["banner_image"] = f"circuits/{slug}.webp" if slug and banner.exists() else ""
+
+    from zoneinfo import ZoneInfo as _ZI
+    from babel.dates import format_date as _babel_fmt_date
+    panel_tz = _ZI(current_app.config.get("PANEL_TIMEZONE", "Europe/Paris"))
+    _loc     = str(get_locale())
+    raw_ev   = (Event.query
+                .filter_by(status="published")
+                .filter(Event.date >= now)
+                .options(_ev_selectinload(Event.registrations))
+                .order_by(Event.date)
+                .limit(5)
+                .all())
+    upcoming = []
+    for ev in raw_ev:
+        local_dt = ev.date.replace(tzinfo=timezone.utc).astimezone(panel_tz)
+        parts    = (ev.circuit or "").split("|")
+        tslug    = parts[0].strip().lower().replace(" ", "_") if parts else ""
+        tpath    = _DASH_MEDIA_ROOT / "circuits" / f"{tslug}.webp"
+        conf     = sum(1 for r in ev.registrations if r.status == "confirmed")
+        total    = ev.total_minutes
+        h, m     = divmod(total, 60)
+        upcoming.append({
+            "ev":        ev,
+            "day":       local_dt.strftime("%d"),
+            "month":     _babel_fmt_date(local_dt, format="MMM", locale=_loc).rstrip("."),
+            "time":      local_dt.strftime("%H:%M"),
+            "duration":  f"{h}h{m:02d}" if h else f"{m} min",
+            "track_img": f"circuits/{tslug}.webp" if tslug and tpath.exists() else "",
+            "confirmed": conf,
+            "fill_pct":  min(100, round(conf / ev.max_drivers * 100)) if ev.max_drivers else 0,
+        })
     pending_count  = Driver.query.filter_by(status="pending").count()
     recent_results = []
     for r in SessionResult.query.order_by(SessionResult.received_at.desc()).limit(4).all():
@@ -49,7 +83,23 @@ def dashboard():
             p = parse_result_file(json.loads(r.raw_json))
         except Exception:
             p = {}
-        recent_results.append({"id": r.id, "received_at": r.received_at, "parsed": p})
+        entry = {"id": r.id, "received_at": r.received_at, "parsed": p,
+                 "car_image": "", "track_banner": ""}
+        standings = p.get("standings") or []
+        car_name  = standings[0].get("car", "") if standings else ""
+        if car_name:
+            cm = CarMeta.query.filter_by(display_name=car_name).first()
+            if not cm:
+                cm = CarMeta.query.filter(
+                    CarMeta.display_name.like(f"{car_name} %")
+                ).filter(CarMeta.image_path != "").first()
+            if cm and cm.image_path:
+                entry["car_image"] = cm.image_path
+        track_slug = (p.get("track") or "").lower().replace(" ", "_")
+        tb = _DASH_MEDIA_ROOT / "circuits" / f"{track_slug}.webp"
+        entry["track_banner"] = f"circuits/{track_slug}.webp" if track_slug and tb.exists() else ""
+        recent_results.append(entry)
+
     return render_template("admin_dashboard.html",
                            status=status,
                            server_info=server_info,
@@ -107,13 +157,14 @@ def test_webhook():
 @admin_bp.route("/server")
 @_admin_required
 def server():
+    sid           = session.get("current_server_id", 1)
     configs       = list_configs()
     active_config = get_active_config_name()
     server_view   = request.args.get("view", "status")
     if not configs:
         flash(_("Aucun fichier de configuration trouvé dans CONFIGS_DIR. Créez-en un via le bouton ci-dessous."), "warning")
         return render_template("server.html", config=None, cars=[], events_practice=[], events_race=[],
-                               status=get_status(), configs=[], active_config="",
+                               status=get_status(sid), configs=[], active_config="",
                                car_categories=[], pi_min=0.0, pi_max=999.0,
                                server_view=server_view, config_summaries=[],
                                server_events=[], current_track={})
@@ -121,7 +172,7 @@ def server():
     cars            = load_cars()
     events_practice = load_events("practice")
     events_race     = load_events("race")
-    status          = get_status()
+    status          = get_status(sid)
 
     present: set[str] = set()
     for car in cars:
@@ -188,7 +239,7 @@ def server():
         "GameModeType_RACE_WEEKEND": _("Race Weekend"),
     }
 
-    running_status = get_status()
+    running_status = status  # reuse the get_status() result from above — avoid double call
     running_config = running_status.get("config", "") if running_status.get("running") else ""
 
     config_dirty = False
@@ -230,7 +281,7 @@ def server():
             "connexion", "déconnexion", "deconnexion", "pilote", "joueur",
         )
         items: list[dict] = []
-        for raw in reversed((get_server_logs(180) or "").splitlines()):
+        for raw in reversed((get_server_logs(180, server_id=sid) or "").splitlines()):
             line = raw.strip()
             if not line:
                 continue
@@ -265,7 +316,7 @@ def server():
         pi_min=pi_min,
         pi_max=pi_max,
         server_view=server_view,
-        server_info=get_running_server_info(),
+        server_info=get_running_server_info(sid),
         config_summaries=config_summaries,
         server_events=Event.query.order_by(Event.date.asc()).all(),
         current_track=current_track,
@@ -287,11 +338,10 @@ _ENV_SECTIONS = [
     ]),
     ("accounts", _l("Comptes"), []),  # Géré via AdminAccount en base de données
     ("server", _l("Serveur"), [
-        "SERVER_NAME", "SERVER_MAX_PLAYERS",
-        "SERVER_TCP_PORT", "SERVER_UDP_PORT",
+        "SERVER_MAX_PLAYERS",
         "SERVER_DRIVER_PASSWORD", "SERVER_ADMIN_PASSWORD",
         "SERVER_ENTRY_LIST_PATH", "SERVER_RESULTS_PATH",
-        "ACESERVER_HTTP_PORT", "ACESERVER_TCP_HOST", "ACESERVER_TCP_PORT",
+        "ACESERVER_TCP_HOST", "ACESERVER_TCP_PORT",
         "ACESERVER_DIR", "CONFIGS_DIR",
         "STEAM_USERNAME",
     ]),
@@ -426,9 +476,52 @@ def settings():
     env_values, env_path = _read_env_file()
     saved = False
     tab = request.args.get("tab", "panel")
+    sid = session.get("current_server_id", 1)
+    current_srv = db.session.get(Server, sid) or Server.query.order_by(Server.id).first()
 
     if request.method == "POST":
         tab = request.form.get("_tab", "panel")
+
+        # ── Sauvegarde des champs par-serveur (DB) + env vars du même formulaire ─
+        if request.form.get("_server_form") == "db" and current_srv:
+            _name = request.form.get("srv_name", "").strip()
+            _tcp  = request.form.get("srv_tcp_port", "").strip()
+            _http = request.form.get("srv_http_port", "").strip()
+            if _name:
+                current_srv.name = _name
+            if _tcp and _tcp.isdigit():
+                current_srv.tcp_port = int(_tcp)
+                current_srv.udp_port = int(_tcp)  # UDP = TCP
+            if _http and _http.isdigit():
+                current_srv.http_port = int(_http)
+            current_srv.discord_webhook_main   = request.form.get("srv_discord_main",   "").strip()
+            current_srv.discord_webhook_pilots = request.form.get("srv_discord_pilots", "").strip()
+            current_srv.discord_webhook_race   = request.form.get("srv_discord_race",   "").strip()
+            db.session.commit()
+            # Sauvegarde aussi les champs env vars du même formulaire
+            _env_keys_in_server_form = [
+                "SERVER_MAX_PLAYERS", "SERVER_DRIVER_PASSWORD", "SERVER_ADMIN_PASSWORD",
+                "SERVER_ENTRY_LIST_PATH", "SERVER_RESULTS_PATH",
+            ]
+            new_vals = {}
+            for k in _env_keys_in_server_form:
+                val = request.form.get(k)
+                if val is not None:
+                    stripped = val.strip()
+                    if stripped == "" and k in _SKIP_IF_EMPTY:
+                        pass
+                    else:
+                        new_vals[k] = stripped
+            if new_vals:
+                with _env_write_lock:
+                    _write_env_file(new_vals)
+                    for _k, _v in new_vals.items():
+                        os.environ[_k] = _v
+                        current_app.config[_k] = _v
+            flash(_("Paramètres du serveur sauvegardés."), "success")
+            return redirect(url_for("admin.settings", tab=tab))
+
+        # ── Sauvegarde des variables d'environnement globales ─────────────────
         new_vals = {}
         for _sec_id, _sec_label, keys in _ENV_SECTIONS:
             for k in keys:
@@ -442,13 +535,13 @@ def settings():
                             pass  # mot de passe laissé vide → conserver la valeur actuelle
                         else:
                             new_vals[k] = stripped
-        _write_env_file(new_vals)
-        env_values.update(new_vals)
-        # Applique immédiatement sans redémarrage
-        import os as _os
-        for _k, _v in new_vals.items():
-            _os.environ[_k] = _v
-            current_app.config[_k] = _v
+        with _env_write_lock:
+            _write_env_file(new_vals)
+            env_values.update(new_vals)
+            # Applique immédiatement sans redémarrage
+            for _k, _v in new_vals.items():
+                os.environ[_k] = _v
+                current_app.config[_k] = _v
         flash(_("Paramètres sauvegardés — redémarrez le panel pour les appliquer."), "success")
         saved = True
         return redirect(url_for("admin.settings", tab=tab))
@@ -483,33 +576,46 @@ def settings():
                            admin_accounts=admin_accounts,
                            bot_cars=bot_cars,
                            bot_admin_password_set=bot_admin_password_set,
-                           server_status=get_status())
+                           current_srv=current_srv,
+                           server_status=get_status(sid))
 
 
-@admin_bp.route("/settings/upload-media", methods=["POST"])
-@_admin_required
-@_superadmin_required_json
-def upload_media():
+def _validate_image_upload(allowed_exts=None):
+    """Valide un upload image : Content-Length, extension, signature magic bytes.
+    Retourne (file_object, ext) si valide, ou (None, response_json) si invalide.
+    """
+    if allowed_exts is None:
+        allowed_exts = {".jpg", ".jpeg", ".png", ".webp"}
     if request.content_length and request.content_length > 5 * 1024 * 1024:
-        return jsonify({"ok": False, "error": _("Fichier trop volumineux (max 5 Mo)")}), 413
+        return None, (jsonify({"ok": False, "error": _("Fichier trop volumineux (max 5 Mo)")}), 413)
     f = request.files.get("file")
     if not f or not f.filename:
-        return jsonify({"ok": False, "error": _("Aucun fichier fourni")}), 400
+        return None, (jsonify({"ok": False, "error": _("Aucun fichier fourni")}), 400)
     ext = Path(f.filename).suffix.lower()
-    allowed = {".jpg", ".jpeg", ".png", ".gif", ".webp"}
-    if ext not in allowed:
-        return jsonify({"ok": False, "error": _("Type non autorisé")}), 400
-    header = f.stream.read(16)
-    f.stream.seek(0)
-    signatures = {
+    if ext not in allowed_exts:
+        return None, (jsonify({"ok": False, "error": _("Type non autorisé")}), 400)
+    sigs = {
         ".jpg":  [b"\xff\xd8\xff"],
         ".jpeg": [b"\xff\xd8\xff"],
         ".png":  [b"\x89PNG\r\n\x1a\n"],
         ".gif":  [b"GIF87a", b"GIF89a"],
         ".webp": [b"RIFF"],
     }
-    if not any(header.startswith(sig) for sig in signatures[ext]):
-        return jsonify({"ok": False, "error": _("Signature de fichier invalide")}), 400
+    header = f.stream.read(16)
+    f.stream.seek(0)
+    if not any(header.startswith(s) for s in sigs.get(ext, [])):
+        return None, (jsonify({"ok": False, "error": _("Signature de fichier invalide")}), 400)
+    return f, ext
+
+
+@admin_bp.route("/settings/upload-media", methods=["POST"])
+@_admin_required
+@_superadmin_required_json
+def upload_media():
+    f, err = _validate_image_upload(allowed_exts={".jpg", ".jpeg", ".png", ".gif", ".webp"})
+    if f is None:
+        return err
+    ext = Path(f.filename).suffix.lower()
     safe_stem = re.sub(r"[^a-zA-Z0-9_-]", "_", Path(f.filename).stem)[:40].strip("_")
     safe_name = f"{uuid.uuid4().hex}_{safe_stem or 'banner'}{ext}"
     dest = Path(__file__).parent.parent.parent / "media" / "banner" / safe_name
@@ -615,3 +721,256 @@ def account_delete(account_id):
     db.session.commit()
     flash(_("Compte supprimé."), "success")
     return redirect(url_for("admin.settings", tab="accounts"))
+
+
+# ── Sélection du serveur actif ────────────────────────────────────────────────
+
+@admin_bp.route("/server/select/<int:server_id>", methods=["POST"])
+@_admin_required
+def select_server(server_id):
+    srv = db.session.get(Server, server_id)
+    if srv and srv.is_enabled:
+        session["current_server_id"] = server_id
+    raw_next = request.form.get("next") or request.referrer or ""
+    # Restrict to relative paths to prevent open redirect
+    if raw_next and (raw_next.startswith("/") and not raw_next.startswith("//")
+                     and not raw_next.lower().startswith("/\\")
+                     and "://" not in raw_next):
+        next_url = raw_next
+    else:
+        next_url = url_for("admin.dashboard")
+    return redirect(next_url)
+
+
+# ── Gestion des serveurs (superadmin) ─────────────────────────────────────────
+
+@admin_bp.route("/servers")
+@_admin_required
+@_superadmin_required
+def servers_list():
+    from app.services.process_manager import get_status
+    servers = Server.query.order_by(Server.sort_order, Server.id).all()
+    statuses = {}
+    for srv in servers:
+        try:
+            statuses[srv.id] = get_status(srv.id)
+        except Exception:
+            statuses[srv.id] = {"running": False}
+    return render_template("servers.html", servers=servers, statuses=statuses)
+
+
+@admin_bp.route("/servers/create", methods=["POST"])
+@_admin_required
+@_superadmin_required
+def server_create():
+    name = request.form.get("name", "").strip()
+    if not name:
+        flash(_("Le nom est requis."), "error")
+        return redirect(url_for("admin.servers_list"))
+
+    # Ports — parse + validation de plage côté serveur
+    try:
+        tcp_port  = int(request.form.get("tcp_port")  or 9701)
+        http_port = int(request.form.get("http_port") or 8081)
+    except (ValueError, TypeError):
+        flash(_("Port invalide (1024–65535)."), "error")
+        return redirect(url_for("admin.servers_list"))
+    udp_port = tcp_port  # TCP et UDP utilisent toujours le même numéro
+    for port in (tcp_port, http_port):
+        if not (1024 <= port <= 65535):
+            flash(_("Port invalide (1024–65535)."), "error")
+            return redirect(url_for("admin.servers_list"))
+
+    # Slug unique : base + suffixe numérique si collision
+    base_slug = re.sub(r"-+", "-", re.sub(r"[^a-z0-9-]", "-", name.lower())).strip("-") or "server"
+    slug, counter = base_slug, 1
+    while Server.query.filter_by(slug=slug).first():
+        slug = f"{base_slug}-{counter}"
+        counter += 1
+
+    # container_name : toujours auto-généré depuis le slug, jamais fourni par l'utilisateur
+    container_name = f"ace-server-{slug}"
+    # suffixe numérique si collision (très rare)
+    cnt_base, cnt_i = container_name, 1
+    while Server.query.filter_by(container_name=container_name).first():
+        container_name = f"{cnt_base}-{cnt_i}"
+        cnt_i += 1
+
+    if Server.query.filter_by(container_name=container_name).first():
+        flash(_("Un serveur avec ce nom de container existe déjà."), "error")
+        return redirect(url_for("admin.servers_list"))
+
+    # Vérifie si le container Docker existe déjà
+    from app.services.server_docker import container_exists, create_server_container
+    if container_exists(container_name):
+        flash(_("Un container Docker nommé '%(name)s' existe déjà.", name=container_name), "error")
+        return redirect(url_for("admin.servers_list"))
+
+    # Crée l'entrée en DB
+    srv = Server(
+        name           = name,
+        slug           = slug,
+        tcp_port       = tcp_port,
+        udp_port       = udp_port,
+        http_port      = http_port,
+        container_name = container_name,
+        active_config  = "default.json",
+        is_enabled     = True,
+        sort_order     = Server.query.count(),
+    )
+    db.session.add(srv)
+    db.session.flush()  # obtient srv.id avant le commit
+
+    # Crée le container Docker
+    result = create_server_container(srv)
+    if not result["ok"]:
+        db.session.rollback()
+        flash(_("Erreur lors de la création du container : %(err)s", err=result["error"]), "error")
+        return redirect(url_for("admin.servers_list"))
+
+    db.session.commit()
+
+    # Démarre le watchdog pour ce nouveau serveur
+    from flask import current_app as _ca
+    from app.services.process_manager import init_watchdog
+    init_watchdog(
+        _ca.config["ACESERVER_EXE_PATH"],
+        server_id      = srv.id,
+        container_name = srv.container_name,
+        http_host      = srv.container_name,
+    )
+
+    flash(_("Serveur '%(name)s' créé avec succès.", name=name), "success")
+    return redirect(url_for("admin.servers_list"))
+
+
+@admin_bp.route("/servers/<int:server_id>/toggle", methods=["POST"])
+@_admin_required
+@_superadmin_required
+def server_toggle(server_id):
+    if server_id == 1:
+        flash(_("Le serveur principal ne peut pas être désactivé."), "error")
+        return redirect(url_for("admin.servers_list"))
+    srv = db.session.get(Server, server_id)
+    if not srv:
+        flash(_("Serveur introuvable."), "error")
+        return redirect(url_for("admin.servers_list"))
+    srv.is_enabled = not srv.is_enabled
+    db.session.commit()
+    if srv.is_enabled:
+        flash(_("Serveur '%(name)s' activé.", name=srv.name), "success")
+    else:
+        flash(_("Serveur '%(name)s' désactivé.", name=srv.name), "success")
+    return redirect(url_for("admin.servers_list"))
+
+
+@admin_bp.route("/servers/<int:server_id>/delete", methods=["POST"])
+@_admin_required
+@_superadmin_required
+def server_delete(server_id):
+    if server_id == 1:
+        flash(_("Le serveur principal ne peut pas être supprimé."), "error")
+        return redirect(url_for("admin.servers_list"))
+    srv = db.session.get(Server, server_id)
+    if not srv:
+        flash(_("Serveur introuvable."), "error")
+        return redirect(url_for("admin.servers_list"))
+
+    # Arrête et supprime le container Docker
+    from app.services.server_docker import remove_server_container
+    remove_server_container(srv.container_name)
+
+    db.session.delete(srv)
+    db.session.commit()
+    flash(_("Serveur '%(name)s' supprimé.", name=srv.name), "success")
+    return redirect(url_for("admin.servers_list"))
+
+
+# ── Véhicules ─────────────────────────────────────────────────────────────────
+
+_CAR_CATEGORIES = ["Road", "Race", "Track"]
+
+@admin_bp.route("/vehicles")
+@_admin_required
+def vehicles():
+    cat_filter = request.args.get("cat", "")
+    search     = request.args.get("q", "").strip().lower()
+    q = CarMeta.query.order_by(CarMeta.category, CarMeta.display_name)
+    if cat_filter in _CAR_CATEGORIES:
+        q = q.filter_by(category=cat_filter)
+    cars = q.all()
+    if search:
+        cars = [c for c in cars if search in c.display_name.lower() or search in c.slug.lower()]
+    counts = {cat: CarMeta.query.filter_by(category=cat).count() for cat in _CAR_CATEGORIES}
+    return render_template("vehicles.html", cars=cars, cat_filter=cat_filter,
+                           search=search, counts=counts, categories=_CAR_CATEGORIES)
+
+
+@admin_bp.route("/vehicles/<slug>/toggle", methods=["POST"])
+@_admin_required
+def vehicle_toggle(slug):
+    car = CarMeta.query.filter_by(slug=slug).first_or_404()
+    car.is_active = not car.is_active
+    db.session.commit()
+    return jsonify({"ok": True, "is_active": car.is_active})
+
+
+@admin_bp.route("/vehicles/<slug>/upload-image", methods=["POST"])
+@_admin_required
+@_superadmin_required_json
+def vehicle_upload_image(slug):
+    car = CarMeta.query.filter_by(slug=slug).first_or_404()
+    f, err = _validate_image_upload()
+    if f is None:
+        return err
+    ext = Path(f.filename).suffix.lower()
+    dest = Path(__file__).parent.parent.parent / "media" / "cars" / f"{slug}{ext}"
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    f.save(str(dest))
+    car.image_path = f"cars/{slug}{ext}"
+    db.session.commit()
+    return jsonify({"ok": True, "image_path": car.image_path})
+
+
+# ── Circuits ───────────────────────────────────────────────────────────────────
+
+@admin_bp.route("/circuits")
+@_admin_required
+def circuits():
+    tracks = TrackMeta.query.order_by(TrackMeta.track_name, TrackMeta.layout).all()
+    return render_template("circuits.html", tracks=tracks)
+
+
+@admin_bp.route("/circuits/<int:track_id>/toggle", methods=["POST"])
+@_admin_required
+def circuit_toggle(track_id):
+    track = TrackMeta.query.get_or_404(track_id)
+    track.is_active = not track.is_active
+    db.session.commit()
+    return jsonify({"ok": True, "is_active": track.is_active})
+
+
+@admin_bp.route("/circuits/<int:track_id>/upload-image", methods=["POST"])
+@_admin_required
+@_superadmin_required_json
+def circuit_upload_image(track_id):
+    track = TrackMeta.query.get_or_404(track_id)
+    f, err = _validate_image_upload()
+    if f is None:
+        return err
+    ext = Path(f.filename).suffix.lower()
+    safe = re.sub(r"[^a-z0-9_-]", "_", track.track_name.lower())
+    dest = Path(__file__).parent.parent.parent / "media" / "circuits" / f"{safe}{ext}"
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    f.save(str(dest))
+    track.image_path = f"circuits/{safe}{ext}"
+    db.session.commit()
+    return jsonify({"ok": True, "image_path": track.image_path})
+
+
+# ── Mods ──────────────────────────────────────────────────────────────────────
+
+@admin_bp.route("/mods")
+@_admin_required
+def mods():
+    return render_template("mods.html")

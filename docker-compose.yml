@@ -36,6 +36,8 @@ services:
       - ./aceserver:/aceserver
       # Base de données et données persistantes du panel
       - panel_data:/panel/data
+      # Images véhicules et circuits uploadées manuellement
+      - ./media:/panel/media
       # Fichier de configuration .env — monté pour que la page Paramètres lise/écrive les vraies valeurs
       - ./.env:/panel/.env
       # SteamCMD (mise à jour du serveur de jeu depuis le panel)

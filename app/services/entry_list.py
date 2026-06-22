@@ -17,7 +17,8 @@ def generate(event) -> bool:
         log.warning("entry_list: ACESERVER_DIR non configuré")
         return False
 
-    confirmed = event.registrations.filter_by(status="confirmed").all()
+    from app.models import EventRegistration
+    confirmed = EventRegistration.query.filter_by(event_id=event.id, status="confirmed").all()
     entries = [
         {
             "driverName": reg.driver.ingame_name,

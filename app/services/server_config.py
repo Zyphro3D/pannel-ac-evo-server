@@ -1,8 +1,24 @@
 import json
+import os
 import re
 import shutil
 from pathlib import Path
 from flask import current_app, session
+
+
+def _atomic_write_json(path: Path, data: dict):
+    """Write JSON atomically (tmp file + os.replace) to avoid partial reads on crash."""
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    try:
+        tmp.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+        os.replace(str(tmp), str(path))
+    except Exception:
+        tmp.unlink(missing_ok=True)
+        raise
+
+
+def _current_server_id() -> int:
+    return int(session.get("current_server_id", 1) or 1)
 
 
 # ── Helpers dossier ──────────────────────────────────────────────────────────
@@ -36,22 +52,34 @@ def list_configs() -> list[str]:
 
 
 def get_active_config_name() -> str:
-    """Config active stockée en session ; fallback sur le premier fichier trouvé."""
+    """Config active stockée en DB par serveur ; fallback sur le premier fichier trouvé."""
+    from app.models import Server
+    from app.services.database import db
     configs = list_configs()
     if not configs:
         return ""
-    name = session.get("active_config")
+    sid = _current_server_id()
+    srv = db.session.get(Server, sid)
+    name = srv.active_config if srv else None
     if name and name in configs:
         return name
-    session["active_config"] = configs[0]
+    if srv:
+        srv.active_config = configs[0]
+        db.session.commit()
     return configs[0]
 
 
 def set_active_config(name: str) -> bool:
+    from app.models import Server
+    from app.services.database import db
     configs = list_configs()
     if name not in configs:
         return False
-    session["active_config"] = name
+    sid = _current_server_id()
+    srv = db.session.get(Server, sid)
+    if srv:
+        srv.active_config = name
+        db.session.commit()
     return True
 
 
@@ -90,9 +118,12 @@ def delete_config(name: str) -> dict:
 
     (_configs_dir() / name).unlink()
 
-    if session.get("active_config") == name:
-        remaining = [c for c in configs if c != name]
-        session["active_config"] = remaining[0]
+    from app.models import Server
+    from app.services.database import db
+    remaining = [c for c in configs if c != name]
+    for srv in Server.query.filter_by(active_config=name).all():
+        srv.active_config = remaining[0]
+    db.session.commit()
 
     return {"ok": True}
 
@@ -108,8 +139,13 @@ def rename_config(old_name: str, new_name: str) -> dict:
     if new_name in configs:
         return {"ok": False, "error": "file_exists"}
     (_configs_dir() / old_name).rename(_configs_dir() / new_name)
-    if session.get("active_config") == old_name:
-        session["active_config"] = new_name
+
+    from app.models import Server
+    from app.services.database import db
+    for srv in Server.query.filter_by(active_config=old_name).all():
+        srv.active_config = new_name
+    db.session.commit()
+
     return {"ok": True, "name": new_name}
 
 
@@ -201,17 +237,17 @@ def _fmt_dur(seconds: int) -> str:
     return f"{h}h{m:02d}" if h else f"{m} min"
 
 
-def get_running_server_info() -> dict | None:
+def get_running_server_info(server_id: int = 1) -> dict | None:
     """
     Retourne les infos affichables de la session en cours (circuit, mode, météo,
     véhicules sélectionnés, durée de session…) ou None si le serveur est arrêté.
     Fonctionne sans contexte de session utilisateur.
     """
     from app.services.process_manager import _read_state, is_running
-    if not is_running():
+    if not is_running(server_id):
         return None
 
-    state = _read_state()
+    state = _read_state(server_id)
     config_name = state.get("config", "")
     if not config_name:
         return None
@@ -228,6 +264,7 @@ def get_running_server_info() -> dict | None:
     parts = track_raw.split("|") if track_raw else []
     circuit = f"{parts[0]} — {parts[1]}" if len(parts) >= 2 else "—"
     track_km = f"{float(parts[3]) / 1000:.2f} km" if len(parts) >= 4 else ""
+    track_slug = parts[0].lower().replace(" ", "_") if parts else ""
 
     mode    = _MODE_LABELS.get(ev.get("SelectedSessionTypeValue", ""), ev.get("SelectedSessionTypeValue", "—"))
     weather = _WEATHER_LABELS.get(ev.get("SelectedWeatherTypeValue", ""), "—")
@@ -263,6 +300,8 @@ def get_running_server_info() -> dict | None:
         "server_name":            srv.get("ServerName", "—"),
         "config_file":            config_name,
         "circuit":                circuit,
+        "track_name":             parts[0] if parts else "—",
+        "track_layout":           parts[1] if len(parts) >= 2 else "",
         "track_km":               track_km,
         "mode":                   mode,
         "weather":                weather,
@@ -277,6 +316,7 @@ def get_running_server_info() -> dict | None:
         "session_dur_secs":       session_dur_secs,
         "session_changed_at":     session_changed_at,
         "current_session_label":  cur_sess_label,
+        "track_slug":             track_slug,
     }
 
 
@@ -346,19 +386,26 @@ def save_event_config(event, cfg: dict) -> str:
     """Sauvegarde la config d'un événement dans CONFIGS_DIR. Retourne le nom du fichier."""
     slug = re.sub(r"[^\w\-]", "_", event.title)[:40].strip("_")
     name = f"event_{event.id}_{slug}.json"
-    path = _configs_dir() / name
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(cfg, f, indent=2, ensure_ascii=False)
+    _atomic_write_json(_configs_dir() / name, cfg)
     return name
 
 
 def save_config(data: dict):
-    with open(_active_path(), "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
+    _atomic_write_json(_active_path(), data)
 
 
 # Champs réservés aux superadmins (ports réseau)
 _SUPERADMIN_ONLY_FIELDS = {"TcpPort", "UdpPort", "HttpPort"}
+
+# ── Car category constants (shared by admin, events_admin, leaderboard routes) ──
+CAR_PROP_MAPS: dict[str, dict[int, str]] = {
+    "property_1": {0: "Road", 1: "Race", 2: "Track"},
+    "property_2": {0: "Modern", 1: "Vintage", 2: "YT"},
+    "property_3": {0: "ICE", 1: "EV", 2: "Hybrid"},
+}
+CAR_CATEGORY_ORDER: list[str] = [
+    "Road", "Race", "Track", "Modern", "Vintage", "YT", "ICE", "EV", "Hybrid"
+]
 
 # Champs numériques avec leurs contraintes (min, max)
 _INT_FIELDS: dict[str, tuple[int, int]] = {
