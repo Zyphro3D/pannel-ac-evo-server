@@ -63,7 +63,7 @@ services:
       dockerfile: Dockerfile.aceserver
     container_name: ace-server
     ports:
-      - "8080:8080"       # API HTTP du serveur de jeu
+      - "8081:8081"       # API HTTP du serveur de jeu (port officiel ACE EVO)
       - "9700:9700/tcp"   # Connexions joueurs TCP
       - "9700:9700/udp"   # Connexions joueurs UDP
     volumes:

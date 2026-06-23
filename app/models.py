@@ -219,7 +219,7 @@ class Server(db.Model):
     slug            = db.Column(db.String(40),  unique=True, nullable=False)
     tcp_port        = db.Column(db.Integer, default=9700)
     udp_port        = db.Column(db.Integer, default=9700)
-    http_port       = db.Column(db.Integer, default=8080)
+    http_port       = db.Column(db.Integer, default=8081)
     container_name  = db.Column(db.String(80),  unique=True, nullable=False)
     driver_password = db.Column(db.String(255), default="")
     admin_password  = db.Column(db.String(255), default="")

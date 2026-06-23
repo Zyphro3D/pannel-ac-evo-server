@@ -7,7 +7,7 @@
     "MaxPlayersLimit": 32,
     "TcpPort": 9700,
     "UdpPort": 9700,
-    "HttpPort": 8080,
+    "HttpPort": 8081,
     "IsCycleEnabled": true,
     "DriverPassword": "",
     "SpectatorPassword": "",

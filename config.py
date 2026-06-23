@@ -42,7 +42,7 @@ class Config:
         os.path.join(ACESERVER_DIR, "events_race_weekend.json"),
     )
 
-    ACESERVER_HTTP_PORT = int(os.environ.get("ACESERVER_HTTP_PORT") or 8080)
+    ACESERVER_HTTP_PORT = int(os.environ.get("ACESERVER_HTTP_PORT") or 8081)
     ACESERVER_TCP_HOST  = os.environ.get("ACESERVER_TCP_HOST", "127.0.0.1")
     ACESERVER_TCP_PORT  = int(os.environ.get("ACESERVER_TCP_PORT")  or 9700)
 

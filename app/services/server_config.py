@@ -539,7 +539,7 @@ def _default_config() -> dict:
             "MaxPlayersLimit": 32,
             "TcpPort":        _env_int("SERVER_TCP_PORT",    9700),
             "UdpPort":        _env_int("SERVER_UDP_PORT",    9700),
-            "HttpPort": 8080,
+            "HttpPort": 8081,
             "IsCycleEnabled": True,
             "DriverPassword": _os.environ.get("SERVER_DRIVER_PASSWORD", ""),
             "SpectatorPassword": "",

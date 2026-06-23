@@ -124,7 +124,7 @@ def _read_state(server_id: int) -> dict:
 
 
 def _write_state(pid: int, config_name: str, sc_b64: str, sd_b64: str,
-                 auto_restart: bool, http_port: int = 8080, run_id: str = "",
+                 auto_restart: bool, http_port: int = 8081, run_id: str = "",
                  server_id: int = 1):
     import time as _t
     sf       = _state_file(server_id)
@@ -352,7 +352,7 @@ def _watchdog_rotate_docker(container, next_cfg: str, auto_restart: bool,
             container.restart(timeout=10)
         else:
             container.start()
-        http_port = int(os.environ.get("ACESERVER_HTTP_PORT", "8080"))
+        http_port = int(os.environ.get("ACESERVER_HTTP_PORT", "8081"))
         _write_state(0, next_cfg, sc_b64, sd_b64, auto_restart, http_port,
                      run_id=new_run_id, server_id=server_id)
         log.info("Rotation: started %r (run=%s)", next_cfg, new_run_id)
@@ -719,11 +719,11 @@ def is_running(server_id: int = 1) -> bool:
 def get_player_count(server_id: int = 1) -> int | None:
     state = _read_state(server_id)
     if _DEPLOY_MODE == "docker_split":
-        port      = state.get("http_port", 8080)
+        port      = state.get("http_port", 8081)
         http_host = _get_server(server_id)["http_host"] or _ACESERVER_HOST
         url       = f"http://{http_host}:{port}/"
     else:
-        port = state.get("http_port", 8080)
+        port = state.get("http_port", 8081)
         url  = f"http://127.0.0.1:{port}/"
     try:
         with urllib.request.urlopen(url, timeout=1) as r:
@@ -760,7 +760,7 @@ def start_server(serverconfig_b64: str, seasondefinition_b64: str,
                 container.restart(timeout=10)
             else:
                 container.start()
-            http_port = int(os.environ.get("ACESERVER_HTTP_PORT", "8080"))
+            http_port = int(os.environ.get("ACESERVER_HTTP_PORT", "8081"))
             _write_state(0, config_name, serverconfig_b64, seasondefinition_b64,
                          auto_restart, http_port, run_id=run_id, server_id=server_id)
             return {"ok": True, "pid": 0, "config": config_name, "run_id": run_id}
@@ -770,7 +770,7 @@ def start_server(serverconfig_b64: str, seasondefinition_b64: str,
 
     # native / docker
     exe       = Path(current_app.config["ACESERVER_EXE_PATH"])
-    http_port = current_app.config.get("ACESERVER_HTTP_PORT", 8080)
+    http_port = current_app.config.get("ACESERVER_HTTP_PORT", 8081)
     proc = _launch(exe, serverconfig_b64, seasondefinition_b64, server_id)
     if not proc:
         return {"ok": False, "error": "launch_failed"}

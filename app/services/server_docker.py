@@ -78,9 +78,9 @@ def create_server_container(server) -> dict:
     env_vars = dict(info["env_vars"])
     env_vars["SERVER_ID"] = str(server.id)
 
-    # Ports : le container écoute toujours sur 8080 (HTTP) et 9700 (TCP/UDP) en interne
+    # Ports : le container écoute toujours sur 8081 (HTTP) et 9700 (TCP/UDP) en interne
     port_bindings = {
-        "8080/tcp": server.http_port,
+        "8081/tcp": server.http_port,
         "9700/tcp": server.tcp_port,
         "9700/udp": server.udp_port,
     }

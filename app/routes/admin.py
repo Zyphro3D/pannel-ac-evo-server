@@ -367,7 +367,7 @@ _ENV_DESCS = {
     "SECRET_KEY":       _l("Clé de session Flask — générer avec python -c \"import secrets; print(secrets.token_hex(32))\""),
     "SESSION_COOKIE_SECURE": _l("true si HTTPS, false si HTTP local"),
     "RESULTS_INGEST_SECRET": _l("Secret HMAC du webhook résultats (/api/results/ingest)"),
-    "ACESERVER_HTTP_PORT": _l("Port HTTP de l'API du serveur (défaut 8080)"),
+    "ACESERVER_HTTP_PORT": _l("Port HTTP de l'API du serveur (défaut 8081)"),
     "ACESERVER_TCP_HOST":  _l("Hôte TCP ACE EVO (défaut 127.0.0.1)"),
     "ACESERVER_TCP_PORT":  _l("Port TCP ACE EVO (défaut 9700)"),
     "ACESERVER_DIR":    _l("Dossier d'installation ACE EVO"),
@@ -771,7 +771,7 @@ def server_create():
     # Ports — parse + validation de plage côté serveur
     try:
         tcp_port  = int(request.form.get("tcp_port")  or 9701)
-        http_port = int(request.form.get("http_port") or 8081)
+        http_port = int(request.form.get("http_port") or 8082)
     except (ValueError, TypeError):
         flash(_("Port invalide (1024–65535)."), "error")
         return redirect(url_for("admin.servers_list"))

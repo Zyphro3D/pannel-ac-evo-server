@@ -86,7 +86,7 @@ def _seed_servers(db):
         slug            = "server-1",
         tcp_port        = tcp,
         udp_port        = udp,
-        http_port       = 8080,
+        http_port       = 8081,
         container_name  = os.environ.get("ACESERVER_CONTAINER_NAME", "ace-server"),
         driver_password = os.environ.get("SERVER_DRIVER_PASSWORD", ""),
         admin_password  = os.environ.get("SERVER_ADMIN_PASSWORD",  ""),
