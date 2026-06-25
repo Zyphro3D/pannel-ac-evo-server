@@ -225,41 +225,62 @@ def _sync_car_meta(db):
 
 
 def _sync_track_meta(db):
-    """Synchronise TrackMeta depuis les configs JSON au démarrage (upsert)."""
+    """Synchronise TrackMeta depuis les fichiers events au démarrage (upsert)."""
     import logging, json as _json, re as _re
     from pathlib import Path as _Path
     log = logging.getLogger(__name__)
     try:
         from app.models import TrackMeta
+        from app.services.server_config import load_events
         from flask import current_app
-        _configs_dir  = _Path(current_app.config["CONFIGS_DIR"])
-        _media_circ   = _Path(__file__).parent.parent / "media" / "circuits"
+        _configs_dir = _Path(current_app.config["CONFIGS_DIR"])
+        _media_circ  = _Path(__file__).parent.parent / "media" / "circuits"
 
         def _slug_img(s):
             return _re.sub(r"[^a-z0-9]+", "_", s.lower()).strip("_")
 
-        track_values = set()
+        # Collect tracks from the full events catalogue (practice + race)
+        # Key: (track_name, layout) → (track_value, length_m)  — first seen wins
+        track_map: dict = {}
+        for mode in ("practice", "race"):
+            try:
+                events = load_events(mode)
+            except Exception:
+                continue
+            for ev in events:
+                tn = ev.get("track", "")
+                ly = ev.get("layout", "")
+                en = ev.get("event_name", "")
+                lm = ev.get("track_length")
+                if not tn:
+                    continue
+                tv = f"{tn}|{ly}|{en}|{lm}" if lm else f"{tn}|{ly}|{en}"
+                if (tn, ly) not in track_map:
+                    track_map[(tn, ly)] = (tv, lm)
+
+        # Also scan existing configs for custom tracks not in the events catalogue
         for cfg_path in _configs_dir.glob("*.json"):
             try:
                 with open(cfg_path, "r", encoding="utf-8") as f:
                     cfg = _json.load(f)
                 tv = cfg.get("Event", {}).get("SelectedTrackValue", "")
-                if tv:
-                    track_values.add(tv)
+                if not tv:
+                    continue
+                parts = tv.split("|")
+                tn = parts[0] if parts else ""
+                ly = parts[1] if len(parts) > 1 else ""
+                if tn and (tn, ly) not in track_map:
+                    try:
+                        lm = int(parts[3]) if len(parts) > 3 else None
+                    except (ValueError, IndexError):
+                        lm = None
+                    track_map[(tn, ly)] = (tv, lm)
             except Exception:
                 continue
 
-        for tv in track_values:
+        for (track_name, layout), (tv, length_m) in track_map.items():
             if TrackMeta.query.filter_by(track_value=tv).first():
                 continue
-            parts      = tv.split("|")
-            track_name = parts[0] if len(parts) > 0 else ""
-            layout     = parts[1] if len(parts) > 1 else ""
-            try:
-                length_m = int(parts[3]) if len(parts) > 3 else None
-            except (ValueError, IndexError):
-                length_m = None
-            # Cherche l'image correspondante
             img = ""
             for candidate in (
                 f"{_slug_img(track_name)}_{_slug_img(layout)}.webp",
@@ -273,7 +294,7 @@ def _sync_track_meta(db):
                 length_m=length_m, image_path=img,
             ))
         db.session.commit()
-        log.info("TrackMeta synchronisé : %d circuits", len(track_values))
+        log.info("TrackMeta synchronisé : %d circuits", len(track_map))
     except Exception as e:
         import logging as _l2
         _l2.getLogger(__name__).warning("_sync_track_meta ignoré : %s", e)
@@ -482,33 +503,13 @@ def create_app():
     init_scheduler(app)
 
     # ── Client TCP ACE EVO (chat in-game + leaderboard temps réel) ───────────
-    _bot_steam_id = app.config.get("ACE_BOT_STEAM_ID", "")
-    if _bot_steam_id:
+    if app.config.get("ACE_BOT_STEAM_ID", ""):
         from app.services import ace_tcp_client
-        _tcp_host = app.config.get("ACESERVER_TCP_HOST", "127.0.0.1")
-        _tcp_port = app.config.get("ACESERVER_TCP_PORT", 9700)
-        _car_model = app.config.get("ACE_BOT_CAR_MODEL", "preset_190_evo_ii")
-        from app.services.process_manager import _log_file, _DEPLOY_MODE, _DOCKER_CONTAINER_NAME
         with app.app_context():
             from app.models import Server as _BotServer
             from app.services.database import db as _db
-            _bot_srv = _db.session.get(_BotServer, 1)
-            _bot_srv_name = _bot_srv.name if _bot_srv else ""
-        ace_tcp_client.start(
-            host=_tcp_host,
-            port=_tcp_port,
-            steam_id=_bot_steam_id,
-            car_model=_car_model,
-            server_name=_bot_srv_name,
-            discord_url=app.config.get("DISCORD_INVITE_URL", ""),
-            site_url=app.config.get("PANEL_URL", ""),
-            msg_welcome=app.config.get("ACE_BOT_MSG_WELCOME", "Bienvenue {name} !"),
-            msg_discord=app.config.get("ACE_BOT_MSG_DISCORD", "Rejoins le discord : {discord_url}"),
-            msg_site=app.config.get("ACE_BOT_MSG_SITE",    "Retrouve tes resultats et evenements sur : {site_url}"),
-            deploy_mode=_DEPLOY_MODE,
-            log_file=str(_log_file(1)),
-            container_name=_DOCKER_CONTAINER_NAME,
-        )
+            for _srv in _BotServer.query.filter_by(is_enabled=True).order_by(_BotServer.id).all():
+                ace_tcp_client.start_for_server(_srv, app.config)
 
     @app.context_processor
     def _inject_system_warnings():

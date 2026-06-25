@@ -1,6 +1,6 @@
 import json
 import logging
-from flask import Blueprint, render_template
+from flask import Blueprint, redirect, url_for
 from app.models import SessionResult
 from app.services.server_config import load_cars, CAR_PROP_MAPS as _PROP_MAPS, CAR_CATEGORY_ORDER as _CAT_ORDER
 
@@ -25,13 +25,11 @@ def _build_car_lookup() -> dict:
     return lookup
 
 
-@leaderboard_bp.route("/leaderboard")
-def leaderboard():
+def build_circuits() -> list:
+    """Construit la liste des meilleurs temps par circuit, utilisable depuis d'autres routes."""
     from app.services.results_parser import parse_result_file
 
     car_lookup = _build_car_lookup()
-
-    # best[(circuit, car_name)] = {time_ms, time, driver, p1, pi}
     best: dict[tuple, dict] = {}
 
     rows = SessionResult.query.order_by(SessionResult.received_at.asc()).limit(2000).all()
@@ -77,7 +75,6 @@ def leaderboard():
                     "pi":      info.get("pi", 0),
                 }
 
-    # Group by circuit
     circuit_map: dict[str, list] = {}
     for (circuit, _), entry in best.items():
         circuit_map.setdefault(circuit, []).append(entry)
@@ -102,4 +99,9 @@ def leaderboard():
             "total":      len(entries),
         })
 
-    return render_template("leaderboard.html", circuits=circuits)
+    return circuits
+
+
+@leaderboard_bp.route("/leaderboard")
+def leaderboard():
+    return redirect(url_for("public.results", v="leaderboard"))

@@ -1,47 +1,172 @@
 {% extends "base.html" %}
-{% block title %}{{ _('Classement en direct') }} — AC EVO{% endblock %}
+{% block title %}{{ _('Classement en direct') }}{% if active_server %} — {{ active_server.name }}{% endif %} — AC EVO{% endblock %}
+
+{% block head %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+{% endblock %}
+
 {% block content %}
-<div class="timing-page">
+<div class="timing-layout">
 
-  <div class="timing-header">
-    <div>
-      <h1 class="timing-title">{{ _('Classement en direct') }}</h1>
-      <p class="timing-subtitle">
-        {{ _('Mis à jour toutes les 15s') }} ·
-        <span id="t-last">—</span> ·
-        <span id="t-count">0</span> {{ _('pilote(s)') }}
-      </p>
+  {% if public_servers and public_servers|length > 1 %}
+  <aside class="timing-sidebar">
+    <div class="timing-sidebar-title">{{ _('Serveurs') }}</div>
+    {% for srv in public_servers %}
+    <a href="{{ url_for('live.timing_page') }}?server={{ srv.id }}"
+       class="timing-srv-item {% if active_server and srv.id == active_server.id %}active{% endif %}">
+      <span class="timing-srv-dot {% if srv.id in server_running_ids %}online{% endif %}"></span>
+      <span class="timing-srv-name">{{ srv.name }}</span>
+    </a>
+    {% endfor %}
+  </aside>
+  {% endif %}
+
+  <div class="timing-page">
+
+    <div class="timing-header">
+      <div>
+        <h1 class="timing-title">{{ _('Classement en direct') }}</h1>
+        <p class="timing-subtitle">
+          {% if active_server %}<strong>{{ active_server.name }}</strong> · {% endif %}
+          {{ _('Mis à jour toutes les 15s') }} ·
+          <span id="t-last">—</span> ·
+          <span id="t-count">0</span> {{ _('pilote(s)') }}
+        </p>
+      </div>
+      <div class="timing-badge" id="t-badge">
+        <span class="dot offline" id="t-dot"></span>
+        <span id="t-label">{{ _('Chargement…') }}</span>
+      </div>
     </div>
-    <div class="timing-badge" id="t-badge">
-      <span class="dot offline" id="t-dot"></span>
-      <span id="t-label">{{ _('Chargement…') }}</span>
+
+    <div class="timing-wrap">
+      <table class="timing-table" id="timing-table">
+        <thead>
+          <tr>
+            <th class="t-pos">{{ _('Pos') }}</th>
+            <th class="t-name">{{ _('Pilote') }}</th>
+            <th class="t-car">{{ _('Voiture') }}</th>
+            <th class="t-best">{{ _('Meilleur tour') }}</th>
+            <th class="t-sector">S1</th>
+            <th class="t-sector">S2</th>
+            <th class="t-sector">S3</th>
+            <th class="t-gap">{{ _('Écart') }}</th>
+          </tr>
+        </thead>
+        <tbody id="timing-body">
+          <tr><td colspan="8" class="timing-empty">{{ _('Chargement…') }}</td></tr>
+        </tbody>
+      </table>
     </div>
-  </div>
 
-  <div class="timing-wrap">
-    <table class="timing-table" id="timing-table">
-      <thead>
-        <tr>
-          <th class="t-pos">{{ _('Pos') }}</th>
-          <th class="t-name">{{ _('Pilote') }}</th>
-          <th class="t-car">{{ _('Voiture') }}</th>
-          <th class="t-best">{{ _('Meilleur tour') }}</th>
-          <th class="t-gap">{{ _('Écart') }}</th>
-        </tr>
-      </thead>
-      <tbody id="timing-body">
-        <tr><td colspan="5" class="timing-empty">{{ _('Chargement…') }}</td></tr>
-      </tbody>
-    </table>
-  </div>
+    <!-- Chat en direct (lecture seule) + réactions -->
+    <div class="timing-chat-wrap">
+      <div class="timing-chat-title">{{ _('Chat en direct') }}</div>
+      <div id="timing-chat-log" class="timing-chat-log">
+        <div class="timing-chat-empty">{{ _('Aucun message récent') }}</div>
+      </div>
 
+      <!-- Sélecteur de pilote -->
+      <div class="timing-react-target">
+        <label class="timing-react-label" for="timing-react-driver">{{ _('Pour') }} :</label>
+        <select id="timing-react-driver" class="timing-react-select" onchange="_updateReactTitles()">
+          <option value="">{{ _('Tout le monde') }}</option>
+        </select>
+      </div>
+
+      <!-- Boutons de réaction emoji -->
+      <div class="timing-react-wrap">
+        <span class="timing-react-label">{{ _('Réagir') }} :</span>
+        <div class="timing-react-btns">
+          <button class="timing-react-btn" data-emoji="🏁" onclick="sendReaction('🏁')" title="{{ _('Beau tour !') }}">🏁</button>
+          <button class="timing-react-btn" data-emoji="👍" onclick="sendReaction('👍')" title="{{ _('Bien joué !') }}">👍</button>
+          <button class="timing-react-btn" data-emoji="❤️" onclick="sendReaction('❤️')" title="{{ _('Courage !') }}">❤️</button>
+          <button class="timing-react-btn" data-emoji="🔥" onclick="sendReaction('🔥')" title="{{ _('En feu !') }}">🔥</button>
+          <button class="timing-react-btn" data-emoji="💪" onclick="sendReaction('💪')" title="{{ _('Bravo !') }}">💪</button>
+          <button class="timing-react-btn" data-emoji="⚡" onclick="sendReaction('⚡')" title="{{ _('Allez !') }}">⚡</button>
+        </div>
+        <span class="timing-react-status" id="timing-react-status"></span>
+      </div>
+    </div>
+
+    {% if current_user.is_authenticated and current_user.is_admin %}
+    <!-- Section administration (visible uniquement pour les admins) -->
+    <div class="timing-admin-wrap">
+      <div class="timing-admin-header">
+        <span class="timing-admin-title">{{ _('Administration in-game') }}</span>
+        <div class="timing-admin-badge" id="admin-tcp-badge" title="{{ _('Connexion TCP directe au serveur de jeu') }}">
+          <span class="dot offline" id="admin-tcp-dot"></span>
+          <span id="admin-tcp-label">TCP —</span>
+        </div>
+        <button class="btn btn-ghost btn-sm" id="btn-elevate-admin" onclick="elevateAdmin()"
+                title="{{ _('Envoyer \\admin <password> via le bot TCP') }}" style="display:none">
+          {{ _('Élever admin') }}
+        </button>
+      </div>
+      <div class="timing-admin-chat-form">
+        <select id="admin-cmd-select" class="form-control timing-admin-select" onchange="onCmdSelect(this)" disabled>
+          <option value="">— {{ _('Commande admin…') }} —</option>
+          <optgroup label="{{ _('Session') }}">
+            <option value="\skip">{{ _('Phase suivante') }} (\skip)</option>
+          </optgroup>
+          <optgroup label="{{ _('Joueur') }} [#num]">
+            <option value="\kick ">\kick [#num] — {{ _('Expulser') }}</option>
+            <option value="\mute ">\mute [#num] — {{ _('Muet') }}</option>
+            <option value="\unmute ">\unmute [#num] — {{ _('Retirer le muet') }}</option>
+            <option value="\to_pit ">\to_pit [#num] — {{ _('Envoyer aux stands') }}</option>
+            <option value="\add_time ">\add_time [#num] [sec] — {{ _('Ajouter du temps') }}</option>
+            <option value="\ballast ">\ballast [#num] [−100…100] — {{ _('Ballast') }}</option>
+            <option value="\restrictor ">\restrictor [#num] [0.0…0.2] — {{ _('Restricteur') }}</option>
+          </optgroup>
+          <optgroup label="{{ _('Pénalités') }} [#num]">
+            <option value="\add_penalty  disq">\add_penalty [#num] disq — {{ _('Disqualification') }}</option>
+            <option value="\add_penalty  dt">\add_penalty [#num] dt — {{ _('Drive-through') }}</option>
+            <option value="\add_penalty  sg">\add_penalty [#num] sg — {{ _('Stop &amp; Go') }}</option>
+            <option value="\del_penalty  disq">\del_penalty [#num] disq — {{ _('Retirer disq') }}</option>
+            <option value="\del_penalty  dt">\del_penalty [#num] dt — {{ _('Retirer drive-through') }}</option>
+            <option value="\del_penalty  sg">\del_penalty [#num] sg — {{ _('Retirer stop &amp; go') }}</option>
+          </optgroup>
+        </select>
+        <select id="admin-car-select" class="form-control timing-admin-select" onchange="onCarSelect(this)" style="display:none" disabled>
+          <option value="">— {{ _('Pilote…') }} —</option>
+        </select>
+        <input type="text" id="admin-chat-input" class="form-control timing-admin-input"
+               placeholder="{{ _('Tapez un message ou commande…') }}" maxlength="200" disabled>
+        <button class="btn btn-primary" id="admin-chat-send" onclick="sendAdminChat()" disabled>{{ _('Envoyer') }}</button>
+      </div>
+      <div id="admin-chat-log" class="timing-admin-log"></div>
+    </div>
+    {% endif %}
+
+  </div>
 </div>
 
 <script>
+const SERVER_ID  = {{ active_server_id | default(1) }};
+const _CACHE_LB  = `timing_lb_${SERVER_ID}`;
+const _CACHE_CHT = `timing_chat_${SERVER_ID}`;
+
 const T = {
-  live:      "{{ _('En direct') }}",
-  loading:   "{{ _('Chargement…') }}",
-  noDrivers: "{{ _('Aucun pilote connecté') }}",
+  live:        "{{ _('En direct') }}",
+  loading:     "{{ _('Chargement…') }}",
+  noDrivers:   "{{ _('Aucun pilote connecté') }}",
+  noChat:      "{{ _('Aucun message récent') }}",
+  panelLabel:  "Panel",
+  reactOk:     "{{ _('Réaction envoyée !') }}",
+  reactErr:    "{{ _('Serveur non connecté') }}",
+  everyone:    "{{ _('Tout le monde') }}",
+  invalidLap:  "{{ _('Tour invalide') }}",
+};
+
+const REACTION_LABELS = {
+  "🏁": "{{ _('Beau tour !') }}",
+  "👍": "{{ _('Bien joué !') }}",
+  "❤️": "{{ _('Courage !') }}",
+  "🔥": "{{ _('En feu !') }}",
+  "💪": "{{ _('Bravo !') }}",
+  "⚡": "{{ _('Allez !') }}",
 };
 
 function _carLabel(raw) {
@@ -53,47 +178,346 @@ function _carLabel(raw) {
             .replace(/\b\w/g, c => c.toUpperCase());
 }
 
+let _refreshTimer = null;
+let _sess = {s1: null, s2: null, s3: null};
+
+function _sectorClass(val_ms, pb_ms, sess_ms) {
+  if (!val_ms) return 't-sector-empty';
+  if (sess_ms && val_ms <= sess_ms) return 't-sector-purple';
+  if (!pb_ms || val_ms <= pb_ms)   return 't-sector-green';
+  return 't-sector-slow';
+}
+
+function _sectorCell(pb_ms, pb_str, curr_ms, curr_str, sess_ms) {
+  if (curr_ms) {
+    const cls = _sectorClass(curr_ms, pb_ms, sess_ms);
+    return `<span class="${cls} t-sector-live">${curr_str}</span>`;
+  }
+  if (pb_ms) {
+    const cls = _sectorClass(pb_ms, pb_ms, sess_ms);
+    return `<span class="${cls}">${pb_str}</span>`;
+  }
+  return '<span class="t-sector-empty">—</span>';
+}
+
+// ── Sélecteur pilote ──────────────────────────────────────────────────────────
+let _lastLeaderboard = [];
+
+function _populateDriverSelect(lb) {
+  _lastLeaderboard = lb;
+  const sel  = document.getElementById('timing-react-driver');
+  const prev = sel.value;
+  sel.innerHTML = `<option value="">${T.everyone}</option>`;
+  for (const e of lb) {
+    if (!e.name) continue;
+    const opt = document.createElement('option');
+    opt.value       = e.name;
+    opt.textContent = e.name;
+    sel.appendChild(opt);
+  }
+  if (prev && [...sel.options].some(o => o.value === prev)) sel.value = prev;
+  _updateReactTitles();
+}
+
+function _updateReactTitles() {
+  const sel        = document.getElementById('timing-react-driver');
+  const driverName = sel.value ? sel.options[sel.selectedIndex].text : '';
+  document.querySelectorAll('.timing-react-btn').forEach(btn => {
+    const text   = REACTION_LABELS[btn.dataset.emoji] || '';
+    const prefix = driverName ? `@${driverName} ` : '';
+    btn.title = `${prefix}${text} [Spec]`;
+  });
+}
+
+// ── Rendu leaderboard ─────────────────────────────────────────────────────────
+function _renderLeaderboard(d) {
+  _sess = {s1: d.sess_s1_ms, s2: d.sess_s2_ms, s3: d.sess_s3_ms};
+
+  document.getElementById('t-dot').className     = 'dot online';
+  document.getElementById('t-label').textContent  = T.live;
+  document.getElementById('t-count').textContent  = d.player_count || (d.leaderboard || []).length;
+  document.getElementById('t-last').textContent   = new Date().toLocaleTimeString('fr-FR');
+
+  const tbody = document.getElementById('timing-body');
+  const lb    = d.leaderboard || [];
+
+  if (!lb.length) {
+    tbody.innerHTML = `<tr><td colspan="8" class="timing-empty">${T.noDrivers}</td></tr>`;
+    _populateDriverSelect([]);
+    return;
+  }
+
+  tbody.innerHTML = lb.map((e, i) => {
+    const pos      = i + 1;
+    const isLeader = pos === 1;
+    const hasBest  = !!e.best_lap_str;
+    const invalid  = !!e.lap_invalid;
+    const posClass = isLeader ? 'pos-gold' : pos === 2 ? 'pos-silver' : pos === 3 ? 'pos-bronze' : '';
+    return `
+      <tr class="t-row ${isLeader && hasBest ? 't-leader' : ''} ${invalid ? 't-invalid' : ''}">
+        <td class="t-pos"><span class="pos-badge ${posClass}">${pos}</span></td>
+        <td class="t-name">${e.name || '—'}${invalid ? ' <span class="invalid-badge" title="${T.invalidLap}">⚠</span>' : ''}</td>
+        <td class="t-car">${_carLabel(e.car_raw)}</td>
+        <td class="t-best ${hasBest ? 'has-time' : ''}">${e.best_lap_str || '—'}</td>
+        <td class="t-sector">${_sectorCell(e.pb_s1_ms, e.pb_s1_str, e.curr_s1_ms, e.curr_s1_str, _sess.s1)}</td>
+        <td class="t-sector">${_sectorCell(e.pb_s2_ms, e.pb_s2_str, e.curr_s2_ms, e.curr_s2_str, _sess.s2)}</td>
+        <td class="t-sector">${_sectorCell(e.pb_s3_ms, e.pb_s3_str, null,          null,           _sess.s3)}</td>
+        <td class="t-gap">${isLeader && hasBest ? `<span class="leader-badge">${I18N.leader}</span>` : (e.gap_str || '—')}</td>
+      </tr>`;
+  }).join('');
+
+  _populateDriverSelect(lb);
+}
+
+// ── Rendu chat ────────────────────────────────────────────────────────────────
+function _renderChat(msgs) {
+  const log = document.getElementById('timing-chat-log');
+  if (!msgs.length) {
+    log.innerHTML = `<div class="timing-chat-empty">${T.noChat}</div>`;
+    return;
+  }
+  log.innerHTML = msgs.slice().reverse().map(m => {
+    const isPanel = m.source === 'panel';
+    return `<div class="timing-chat-row ${isPanel ? 'timing-chat-panel' : ''}">
+      <span class="timing-chat-ts">${m.ts || ''}</span>
+      <span class="timing-chat-author">${isPanel ? T.panelLabel : m.author}</span>
+      <span class="timing-chat-text">${m.text}</span>
+    </div>`;
+  }).join('');
+}
+
+// ── Polling ───────────────────────────────────────────────────────────────────
 async function refresh() {
   try {
-    const r = await fetch('/api/timing');
+    const r = await fetch(`/api/timing?server=${SERVER_ID}`);
     if (!r.ok) throw new Error(r.status);
     const d = await r.json();
-
-    document.getElementById('t-dot').className    = 'dot online';
-    document.getElementById('t-label').textContent = T.live;
-    document.getElementById('t-count').textContent = d.player_count || d.leaderboard.length;
-    document.getElementById('t-last').textContent  = new Date().toLocaleTimeString('fr-FR');
-
-    const tbody = document.getElementById('timing-body');
-    const lb    = d.leaderboard || [];
-
-    if (!lb.length) {
-      tbody.innerHTML = `<tr><td colspan="5" class="timing-empty">${T.noDrivers}</td></tr>`;
-      return;
-    }
-
-    tbody.innerHTML = lb.map((e, i) => {
-      const pos     = i + 1;
-      const isLeader = pos === 1;
-      const hasBest  = !!e.best_lap_str;
-      const posClass = isLeader ? 'pos-gold' : pos === 2 ? 'pos-silver' : pos === 3 ? 'pos-bronze' : '';
-      return `
-        <tr class="t-row ${isLeader && hasBest ? 't-leader' : ''}">
-          <td class="t-pos"><span class="pos-badge ${posClass}">${pos}</span></td>
-          <td class="t-name">${e.name || '—'}</td>
-          <td class="t-car">${_carLabel(e.car_raw)}</td>
-          <td class="t-best ${hasBest ? 'has-time' : ''}">${e.best_lap_str || '—'}</td>
-          <td class="t-gap">${isLeader && hasBest ? `<span class="leader-badge">${I18N.leader}</span>` : (e.gap_str || '—')}</td>
-        </tr>`;
-    }).join('');
+    try { localStorage.setItem(_CACHE_LB, JSON.stringify({
+      leaderboard: d.leaderboard, player_count: d.player_count,
+      sess_s1_ms: d.sess_s1_ms, sess_s2_ms: d.sess_s2_ms, sess_s3_ms: d.sess_s3_ms,
+    })); } catch(e) {}
+    _renderLeaderboard(d);
   } catch(e) {
     document.getElementById('t-dot').className    = 'dot offline';
     document.getElementById('t-label').textContent = I18N.error;
-    if (typeof showToast === 'function') showToast(I18N.networkError, 'error');
+    clearTimeout(_refreshTimer);
+    _refreshTimer = setTimeout(refresh, 3000);
   }
 }
 
+async function refreshChat() {
+  try {
+    const r = await fetch(`/api/live/chat-history?server=${SERVER_ID}`);
+    if (!r.ok) return;
+    const d = await r.json();
+    try { localStorage.setItem(_CACHE_CHT, JSON.stringify(d)); } catch(e) {}
+    _renderChat(d.messages || []);
+  } catch(e) {}
+}
+
+// ── Réactions emoji ───────────────────────────────────────────────────────────
+async function sendReaction(emoji) {
+  const driver = document.getElementById('timing-react-driver').value;
+  const btn    = document.querySelector(`.timing-react-btn[data-emoji="${emoji}"]`);
+  const status = document.getElementById('timing-react-status');
+  if (btn) btn.classList.add('timing-react-active');
+  try {
+    const r = await fetch(`/api/timing/react?server=${SERVER_ID}`, {
+      method:  'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken':  document.querySelector('meta[name="csrf-token"]').content,
+      },
+      body: JSON.stringify({ reaction: emoji, driver }),
+    });
+    const d = await r.json();
+    status.textContent = d.ok ? T.reactOk : (d.error === 'not_connected' ? T.reactErr : '');
+  } catch(e) {
+    status.textContent = T.reactErr;
+  } finally {
+    if (btn) setTimeout(() => btn.classList.remove('timing-react-active'), 800);
+    setTimeout(() => { status.textContent = ''; }, 3000);
+  }
+}
+
+// ── Init : cache local immédiat puis API ──────────────────────────────────────
+_updateReactTitles();
+
+try {
+  const c = JSON.parse(localStorage.getItem(_CACHE_LB));
+  if (c && c.leaderboard) _renderLeaderboard(c);
+} catch(e) {}
+try {
+  const c = JSON.parse(localStorage.getItem(_CACHE_CHT));
+  if (c && c.messages) _renderChat(c.messages);
+} catch(e) {}
+
 refresh();
-setInterval(refresh, 15000);
+refreshChat();
+setInterval(refresh, 10000);
+setInterval(refreshChat, 5000);
+
+{% if current_user.is_authenticated and current_user.is_admin %}
+// ── Administration in-game (admin uniquement) ─────────────────────────────────
+const I18N_ADMIN = {
+  tcpConnected:    "{{ _('TCP connecté') }}",
+  tcpDisconnected: "{{ _('TCP déconnecté') }}",
+  tcpNotConnected: "{{ _('non connecté') }}",
+  errNetwork:      "{{ _('erreur réseau') }}",
+  elevateOk:       "{{ _('Bot élevé admin') }}",
+  elevateErr:      "{{ _('Échec élévation admin') }}",
+};
+
+async function pollTcpStatus() {
+  try {
+    const r = await fetch(`/api/live/tcp_status?server=${SERVER_ID}`);
+    if (!r.ok) return;
+    const d = await r.json();
+
+    const dot      = document.getElementById('admin-tcp-dot');
+    const label    = document.getElementById('admin-tcp-label');
+    const input    = document.getElementById('admin-chat-input');
+    const btn      = document.getElementById('admin-chat-send');
+    const sel      = document.getElementById('admin-cmd-select');
+    const carSel   = document.getElementById('admin-car-select');
+    const elevateBtn = document.getElementById('btn-elevate-admin');
+
+    if (d.connected) {
+      dot.className     = 'dot online';
+      label.textContent = I18N_ADMIN.tcpConnected;
+      input.disabled    = false;
+      btn.disabled      = false;
+      sel.disabled      = false;
+      carSel.disabled   = false;
+      if (elevateBtn) elevateBtn.style.display = '';
+    } else {
+      dot.className     = 'dot offline';
+      label.textContent = I18N_ADMIN.tcpDisconnected;
+      input.disabled    = true;
+      btn.disabled      = true;
+      sel.disabled      = true;
+      carSel.disabled   = true;
+      carSel.style.display = 'none';
+      if (elevateBtn) elevateBtn.style.display = 'none';
+    }
+  } catch(e) {
+    const badge = document.getElementById('admin-tcp-badge');
+    if (badge) badge.style.display = 'none';
+  }
+}
+
+async function sendAdminChat() {
+  const input = document.getElementById('admin-chat-input');
+  const log   = document.getElementById('admin-chat-log');
+  const text  = input.value.trim();
+  if (!text) return;
+  input.value = '';
+
+  const row = document.createElement('div');
+  row.className = 'timing-admin-row sending';
+  row.textContent = `[${new Date().toLocaleTimeString()}] ${text}`;
+  log.insertBefore(row, log.firstChild);
+
+  try {
+    const r = await fetch(`/api/live/chat?server=${SERVER_ID}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content
+      },
+      body: JSON.stringify({ message: text })
+    });
+    const d = await r.json();
+    row.className = d.ok ? 'timing-admin-row sent' : 'timing-admin-row error';
+    if (!d.ok) row.textContent += ` ✗ ${d.error || ''}`;
+  } catch(e) {
+    row.className = 'timing-admin-row error';
+    row.textContent += ` ✗ ${I18N_ADMIN.errNetwork}`;
+  }
+  while (log.children.length > 20) log.lastChild.remove();
+}
+
+let _pendingCmd = '';
+
+function _refreshCarSelect() {
+  const sel = document.getElementById('admin-car-select');
+  sel.innerHTML = '<option value="">— {{ _("Pilote…") }} —</option>';
+  for (const e of _lastLeaderboard) {
+    if (!e.num) continue;
+    const opt = document.createElement('option');
+    opt.value = e.num;
+    opt.textContent = `#${e.num} — ${e.name || '?'}`;
+    sel.appendChild(opt);
+  }
+}
+
+function onCmdSelect(sel) {
+  const val = sel.value;
+  sel.value = '';
+  const carSel = document.getElementById('admin-car-select');
+  const input  = document.getElementById('admin-chat-input');
+
+  if (!val) { carSel.style.display = 'none'; return; }
+
+  if (val === '\\skip') {
+    carSel.style.display = 'none';
+    input.value = val;
+    input.focus();
+    return;
+  }
+
+  _pendingCmd = val;
+  _refreshCarSelect();
+  carSel.style.display = '';
+  carSel.value = '';
+  carSel.focus();
+}
+
+function onCarSelect(sel) {
+  const num = sel.value;
+  sel.value = '';
+  sel.style.display = 'none';
+  if (!num || !_pendingCmd) return;
+
+  const input = document.getElementById('admin-chat-input');
+  const doubleSpace = _pendingCmd.indexOf('  ');
+  if (doubleSpace !== -1) {
+    input.value = _pendingCmd.slice(0, doubleSpace + 1) + num + ' ' + _pendingCmd.slice(doubleSpace + 2);
+  } else {
+    input.value = _pendingCmd + num;
+  }
+  _pendingCmd = '';
+  input.focus();
+  input.setSelectionRange(input.value.length, input.value.length);
+}
+
+document.getElementById('admin-chat-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') sendAdminChat();
+});
+
+async function elevateAdmin() {
+  const btn = document.getElementById('btn-elevate-admin');
+  btn.disabled = true;
+  try {
+    const r = await fetch('/api/live/bot/elevate-admin', {
+      method: 'POST',
+      headers: { 'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content },
+    });
+    const d = await r.json();
+    if (d.ok) {
+      showToast(I18N_ADMIN.elevateOk, 'success');
+    } else {
+      showToast(`${I18N_ADMIN.elevateErr} : ${d.error || ''}`, 'error');
+    }
+  } catch(e) {
+    showToast(I18N_ADMIN.elevateErr, 'error');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+pollTcpStatus();
+setInterval(pollTcpStatus, 5000);
+{% endif %}
 </script>
 {% endblock %}

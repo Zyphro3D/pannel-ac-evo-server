@@ -73,7 +73,7 @@ def _validate_password(pwd: str) -> list[str]:
 @limiter.limit("10 per minute; 40 per hour", methods=["POST"])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for("public.pilot_dashboard") if current_user.is_pilot else url_for("admin.dashboard"))
+        return redirect(url_for("public.pilot_dashboard") if current_user.is_pilot else url_for("admin.server"))
 
     if request.method == "POST":
         ip        = request.remote_addr or "unknown"
@@ -92,7 +92,7 @@ def login():
             account.last_login = datetime.now(timezone.utc).replace(tzinfo=None)
             db.session.commit()
             login_user(account)
-            return redirect(url_for("admin.dashboard"))
+            return redirect(url_for("admin.server"))
 
         driver = (Driver.query.filter_by(email=identifier.lower()).first()
                   or Driver.query.filter_by(ingame_name=identifier).first())

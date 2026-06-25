@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Live — {{ panel_title }}{% endblock %}
+{% block title %}Live Admin — {{ panel_title }}{% endblock %}
 {% block content %}
 <div class="live-page">
 
@@ -82,7 +82,7 @@
       </select>
       <input type="text" id="live-chat-input" class="live-chat-input"
              placeholder="{{ _('Tapez un message ou commande…') }}" maxlength="200" disabled>
-      <button class="btn-primary" id="live-chat-send" onclick="sendChat()" disabled>{{ _('Envoyer') }}</button>
+      <button class="btn btn-primary" id="live-chat-send" onclick="sendChat()" disabled>{{ _('Envoyer') }}</button>
     </div>
     <div id="live-chat-log" class="live-chat-log"></div>
   </div>
@@ -90,6 +90,8 @@
 </div>
 
 <script>
+const SERVER_ID = {{ current_server_id | default(1) | int }};
+
 const _CAR_LABELS = {
   'ks_mercedes_190e_evo_ii': 'Mercedes 190E Evo II',
 };
@@ -130,7 +132,7 @@ function _fmtMs(ms) {
 }
 
 // ── Leaderboard TCP ───────────────────────────────────────────────────────────
-let _tcpLb = {};  // steam_id → {time_ms, sector, name, num}
+let _tcpLb = {};
 
 function _mergeTcpLb(entries) {
   for (const e of entries) {
@@ -191,7 +193,7 @@ function _addEvent(ev) {
 // ── État initial ──────────────────────────────────────────────────────────────
 async function loadState() {
   try {
-    const r = await fetch('/api/live/state');
+    const r = await fetch(`/api/live/state?server=${SERVER_ID}`);
     const d = await r.json();
     for (const driver of d.drivers || []) {
       if (driver.steam_id) _drivers[String(driver.steam_id)] = driver;
@@ -215,7 +217,7 @@ let _drivers = {};
 
 function connectSSE() {
   if (_es) _es.close();
-  _es = new EventSource('/api/live/stream');
+  _es = new EventSource(`/api/live/stream?server=${SERVER_ID}`);
 
   _es.onopen = () => {
     document.getElementById('live-dot').className = 'dot online';
@@ -248,7 +250,7 @@ function connectSSE() {
 // ── Statut TCP ────────────────────────────────────────────────────────────────
 async function pollTcpStatus() {
   try {
-    const r = await fetch('/api/live/tcp_status');
+    const r = await fetch(`/api/live/tcp_status?server=${SERVER_ID}`);
     if (!r.ok) return;
     const d = await r.json();
 
@@ -257,10 +259,10 @@ async function pollTcpStatus() {
     const input = document.getElementById('live-chat-input');
     const btn   = document.getElementById('live-chat-send');
     const hint  = document.getElementById('live-chat-hint');
-
     const sel    = document.getElementById('live-cmd-select');
     const carSel = document.getElementById('live-car-select');
     const elevateBtn = document.getElementById('btn-elevate-admin');
+
     if (d.connected) {
       dot.className     = 'dot online';
       label.textContent = I18N_LIVE.tcpConnected;
@@ -284,7 +286,7 @@ async function pollTcpStatus() {
 
     if (d.leaderboard && d.leaderboard.length) {
       _mergeTcpLb(d.leaderboard);
-      const st = await fetch('/api/live/state');
+      const st = await fetch(`/api/live/state?server=${SERVER_ID}`);
       const sd = await st.json();
       _renderDrivers(sd.drivers || []);
     }
@@ -308,7 +310,7 @@ async function sendChat() {
   log.insertBefore(row, log.firstChild);
 
   try {
-    const r = await fetch('/api/live/chat', {
+    const r = await fetch(`/api/live/chat?server=${SERVER_ID}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content },
       body: JSON.stringify({ message: text })
@@ -346,7 +348,6 @@ function onCmdSelect(sel) {
 
   if (!val) { carSel.style.display = 'none'; return; }
 
-  // \skip n'a pas besoin de numéro de voiture
   if (val === '\\skip') {
     carSel.style.display = 'none';
     input.value = val;
@@ -354,7 +355,6 @@ function onCmdSelect(sel) {
     return;
   }
 
-  // Toutes les autres commandes nécessitent un numéro de voiture
   _pendingCmd = val;
   _refreshCarSelect();
   carSel.style.display = '';
@@ -369,7 +369,6 @@ function onCarSelect(sel) {
   if (!num || !_pendingCmd) return;
 
   const input = document.getElementById('live-chat-input');
-  // Commandes avec double espace : \add_penalty  disq → \add_penalty 5 disq
   const doubleSpace = _pendingCmd.indexOf('  ');
   if (doubleSpace !== -1) {
     input.value = _pendingCmd.slice(0, doubleSpace + 1) + num + ' ' + _pendingCmd.slice(doubleSpace + 2);
@@ -406,8 +405,28 @@ async function elevateAdmin() {
   }
 }
 
-// Init
+async function loadChatHistory() {
+  try {
+    const r = await fetch(`/api/live/chat-history?server=${SERVER_ID}`);
+    if (!r.ok) return;
+    const d = await r.json();
+    const log  = document.getElementById('live-chat-log');
+    const msgs = d.messages || [];
+    if (!msgs.length) return;
+    log.innerHTML = '';
+    for (const m of msgs) {
+      const row    = document.createElement('div');
+      const isPanel = m.source === 'panel';
+      row.className = isPanel ? 'live-chat-row live-chat-sent' : 'live-chat-row live-chat-recv';
+      const who = isPanel ? 'Panel' : (m.author || '?');
+      row.textContent = `[${m.ts || ''}] ${who}: ${m.text}`;
+      log.insertBefore(row, log.firstChild);
+    }
+  } catch(e) {}
+}
+
 loadState();
+loadChatHistory();
 connectSSE();
 pollTcpStatus();
 setInterval(loadState, 30000);

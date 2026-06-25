@@ -132,8 +132,11 @@ def _with_mention(env_key: str, embeds: list) -> dict:
 
 
 def _footer(server_name: str = "") -> dict:
-    text = f"[{server_name}]  {_local_now()}" if server_name else _local_now()
-    return {"text": text}
+    return {"text": _local_now()}
+
+
+def _srv(title: str, server_name: str) -> str:
+    return f"[{server_name}] {title}" if server_name else title
 
 
 def _car_label(raw: str) -> str:
@@ -199,8 +202,8 @@ def notify_start(config: dict, config_name: str, server_id: int | None = None, s
 
     fields.append({"name": "Véhicules", "value": car_names, "inline": False})
 
-    title = _tmpl("DISCORD_MSG_SERVER_START", "🏁 Serveur démarré",
-                  config=config_name, mode=mode_lbl, circuit=circuit)
+    title = _srv(_tmpl("DISCORD_MSG_SERVER_START", "🏁 Serveur démarré",
+                       config=config_name, mode=mode_lbl, circuit=circuit), server_name)
     _send(_with_mention("DISCORD_MENTION_MAIN", [{
         "title":  title,
         "color":  _COLOR_GREEN,
@@ -213,7 +216,7 @@ def notify_rotation_start(configs: list, cycle: bool, server_id: int | None = No
     queue = "\n".join(f"{i+1}. {c}" for i, c in enumerate(configs)) or "—"
     cycle_txt = "Oui — retour au début après le dernier" if cycle else "Non — s'arrête après le dernier"
     _send({"embeds": [{
-        "title":  "🔄 Cycle de roulement lancé",
+        "title":  _srv("🔄 Cycle de roulement lancé", server_name),
         "color":  _COLOR_GREEN,
         "fields": [
             {"name": "File d'attente",   "value": queue,     "inline": False},
@@ -259,7 +262,7 @@ def notify_rotation_advance(from_cfg: str, next_cfg: str, next_config_data: dict
         fields.append({"name": "Durée", "value": _fmt_duration(sess.get("Length", 300)), "inline": True})
 
     _send({"embeds": [{
-        "title":  "⏭️ Changement de config",
+        "title":  _srv("⏭️ Changement de config", server_name),
         "color":  _COLOR_GREEN,
         "fields": fields,
         "footer": _footer(server_name),
@@ -267,7 +270,7 @@ def notify_rotation_advance(from_cfg: str, next_cfg: str, next_config_data: dict
 
 
 def notify_stop(config_name: str, server_id: int | None = None, server_name: str = ""):
-    title = _tmpl("DISCORD_MSG_SERVER_STOP", "⏹ Serveur arrêté", config=config_name or "—")
+    title = _srv(_tmpl("DISCORD_MSG_SERVER_STOP", "⏹ Serveur arrêté", config=config_name or "—"), server_name)
     _send(_with_mention("DISCORD_MENTION_MAIN", [{
         "title":  title,
         "color":  _COLOR_ORANGE,
@@ -278,7 +281,7 @@ def notify_stop(config_name: str, server_id: int | None = None, server_name: str
 
 def notify_crash(config_name: str, restarting: bool = True, server_id: int | None = None, server_name: str = ""):
     default = "💥 Crash détecté — Relance auto" if restarting else "💥 Crash détecté"
-    title = _tmpl("DISCORD_MSG_SERVER_CRASH", default, config=config_name or "—")
+    title = _srv(_tmpl("DISCORD_MSG_SERVER_CRASH", default, config=config_name or "—"), server_name)
     _send(_with_mention("DISCORD_MENTION_MAIN", [{
         "title":  title,
         "color":  _COLOR_RED,
@@ -341,7 +344,6 @@ def notify_new_registration(driver):
         "color":  0x3498DB,
         "fields": [
             {"name": "Nom in-game", "value": driver.ingame_name, "inline": True},
-            {"name": "Email",       "value": driver.email,       "inline": True},
         ],
         "footer": {"text": _local_now()},
     }]})
@@ -349,8 +351,8 @@ def notify_new_registration(driver):
 
 def notify_player_join(name: str, num: str, car_raw: str, steam_id: str, server_id: int | None = None, server_name: str = ""):
     car   = _car_label(car_raw)
-    title = _tmpl("DISCORD_MSG_PLAYER_JOIN", "🟢 {num} — {name}",
-                  name=name, num=num, car=car, steam_id=steam_id)
+    title = _srv(_tmpl("DISCORD_MSG_PLAYER_JOIN", "🟢 {num} — {name}",
+                       name=name, num=num, car=car, steam_id=steam_id), server_name)
     _send_pilots(_with_mention("DISCORD_MENTION_PILOTS", [{
         "title":  title,
         "color":  _COLOR_GREEN,
@@ -367,8 +369,8 @@ def notify_player_disconnect(name: str, steam_id: str, duration_s: int | None = 
     if duration_s and duration_s > 0:
         h, m, s = duration_s // 3600, (duration_s % 3600) // 60, duration_s % 60
         dur_str = f"{h}h{m:02d}" if h else (f"{m}min {s:02d}s" if m else f"{s}s")
-    title  = _tmpl("DISCORD_MSG_PLAYER_DISCONNECT", "🔴 {name}",
-                   name=name, duration=dur_str, steam_id=steam_id)
+    title  = _srv(_tmpl("DISCORD_MSG_PLAYER_DISCONNECT", "🔴 {name}",
+                        name=name, duration=dur_str, steam_id=steam_id), server_name)
     fields = [{"name": "Pilote", "value": name, "inline": True}]
     if dur_str:
         fields.append({"name": "Durée", "value": dur_str, "inline": True})
@@ -383,8 +385,8 @@ def notify_player_disconnect(name: str, steam_id: str, duration_s: int | None = 
 def notify_vehicle_change(name: str, num: str, old_car_raw: str, new_car_raw: str, server_id: int | None = None, server_name: str = ""):
     old_car = _car_label(old_car_raw)
     new_car = _car_label(new_car_raw)
-    title   = _tmpl("DISCORD_MSG_VEHICLE_CHANGE", "🔄 {name} — Changement de véhicule",
-                    name=name, num=num, old_car=old_car, new_car=new_car)
+    title   = _srv(_tmpl("DISCORD_MSG_VEHICLE_CHANGE", "🔄 {name} — Changement de véhicule",
+                         name=name, num=num, old_car=old_car, new_car=new_car), server_name)
     _send_pilots(_with_mention("DISCORD_MENTION_PILOTS", [{
         "title":  title,
         "color":  0x3498DB,
@@ -399,8 +401,8 @@ def notify_vehicle_change(name: str, num: str, old_car_raw: str, new_car_raw: st
 
 def notify_best_lap(name: str, lap_str: str, car_raw: str, server_id: int | None = None, server_name: str = ""):
     car   = _car_label(car_raw)
-    title = _tmpl("DISCORD_MSG_BEST_LAP", "⏱ Meilleur tour du serveur",
-                  name=name, lap=lap_str, car=car)
+    title = _srv(_tmpl("DISCORD_MSG_BEST_LAP", "⏱ Meilleur tour du serveur",
+                       name=name, lap=lap_str, car=car), server_name)
     _send_race(_with_mention("DISCORD_MENTION_RACE", [{
         "title":       title,
         "color":       0x9B59B6,
@@ -433,8 +435,8 @@ def notify_admin_action(cmd: str, target_name: str, car_num: str, extra: str, by
     label, color = _CMD_LABELS.get(cmd, (cmd, _COLOR_ORANGE))
     target = f"#{car_num} — {target_name}" if (car_num and target_name) else (target_name or f"#{car_num}" if car_num else "—")
     detail = _PENALTY_LABELS.get(extra, extra) if extra else ""
-    title  = _tmpl("DISCORD_MSG_ADMIN_ACTION", "⚙️ {action} — {target}",
-                   action=label, target=target, admin=by_admin, detail=detail)
+    title  = _srv(_tmpl("DISCORD_MSG_ADMIN_ACTION", "⚙️ {action} — {target}",
+                        action=label, target=target, admin=by_admin, detail=detail), server_name)
     fields = [{"name": "Action", "value": label, "inline": True}]
     if target_name or car_num:
         fields.append({"name": "Cible", "value": target, "inline": True})

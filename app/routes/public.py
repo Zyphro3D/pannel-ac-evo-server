@@ -327,6 +327,7 @@ def register():
             db.session.commit()
             from app.services import mailer, discord_notifier
             mailer.send_new_registration(driver)
+            mailer.send_registration_received(driver)
             discord_notifier.notify_new_registration(driver)
             flash(_("Inscription reçue ! Votre compte sera activé par un administrateur."), "success")
             return redirect(url_for("auth.login"))
@@ -342,23 +343,30 @@ def pilot_dashboard():
     if not current_user.is_authenticated:
         return redirect(url_for("auth.login"))
     if not current_user.is_pilot:
-        return redirect(url_for("admin.dashboard"))
+        return redirect(url_for("admin.server"))
 
     regs = (EventRegistration.query
             .filter_by(driver_id=current_user.id)
             .join(Event)
-            .order_by(Event.date.desc())
+            .order_by(Event.date.asc())
             .all())
+
+    now = _now_utc()
+    upcoming_regs = [r for r in regs if r.event.date >= now]
+    past_regs     = sorted([r for r in regs if r.event.date < now], key=lambda r: r.event.date, reverse=True)
 
     registered_ids = {r.event_id for r in regs}
     q = (Event.query
          .filter_by(status="published", is_public=False)
-         .filter(Event.date >= _now_utc()))
+         .filter(Event.date >= now))
     if registered_ids:
         q = q.filter(Event.id.notin_(registered_ids))
     available = q.order_by(Event.date).all()
 
-    return render_template("pilot_dashboard.html", regs=regs, available=available)
+    return render_template("pilot_dashboard.html",
+                           upcoming_regs=upcoming_regs,
+                           past_regs=past_regs,
+                           available=available)
 
 
 @public_bp.route("/pilot/events/<int:event_id>/register", methods=["POST"])
@@ -392,9 +400,14 @@ def pilot_register(event_id):
 
 @public_bp.route("/results")
 def results():
-
     from app.models import SessionResult
     from app.services.results_parser import parse_result_file
+    from app.routes.leaderboard import build_circuits
+
+    initial_view = request.args.get("v", "overview")
+    if initial_view not in ("overview", "results", "leaderboard"):
+        initial_view = "overview"
+
     rows = (SessionResult.query
             .order_by(SessionResult.received_at.desc())
             .limit(50).all())
@@ -409,7 +422,18 @@ def results():
                          "config_name": r.config_name,
                          "run_id": r.run_id})
     sessions, groups = _group_sessions(sessions)
-    return render_template("results.html", sessions=sessions, groups=groups)
+
+    for s in sessions:
+        track_slug = (s["parsed"].get("track") or "").lower().replace(" ", "_")
+        banner = _MEDIA_ROOT / "circuits" / f"{track_slug}.webp"
+        s["track_banner"] = f"circuits/{track_slug}.webp" if track_slug and banner.exists() else ""
+
+    circuits = build_circuits()
+
+    return render_template("results.html",
+                           sessions=sessions, groups=groups,
+                           circuits=circuits,
+                           initial_view=initial_view)
 
 
 @public_bp.route("/results/<int:result_id>")

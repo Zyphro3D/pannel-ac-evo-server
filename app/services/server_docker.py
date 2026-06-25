@@ -90,6 +90,16 @@ def create_server_container(server) -> dict:
         volumes[info["aceserver_host_path"]] = {"bind": "/aceserver", "mode": "rw"}
     volumes[wine_volume] = {"bind": "/root/.wine", "mode": "rw"}
 
+    if info["network_name"] == "host":
+        return {
+            "ok": False,
+            "error": (
+                "network_mode 'host' is incompatible with multi-server port bindings. "
+                "Remove 'network_mode: host' from your docker-compose.yml and recreate "
+                "the base container with: docker compose up -d --build"
+            ),
+        }
+
     try:
         client    = _get_docker_client()
         container = client.containers.create(

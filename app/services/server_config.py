@@ -1,9 +1,82 @@
 import json
+import logging
 import os
 import re
 import shutil
 from pathlib import Path
 from flask import current_app, session
+
+log = logging.getLogger(__name__)
+
+
+class ConfigJsonError(Exception):
+    """Raised when the active config file contains invalid JSON."""
+    def __init__(self, filename: str, line: int, col: int, msg: str):
+        self.filename = filename
+        self.line     = line
+        self.col      = col
+        super().__init__(f"{filename}: line {line} col {col} — {msg}")
+
+
+def _configs_base() -> Path:
+    """Dossier partagé des configs (source de vérité). Fonctionne avec ou sans app context."""
+    try:
+        return Path(current_app.config["CONFIGS_DIR"])
+    except RuntimeError:
+        return Path(os.environ.get("CONFIGS_DIR", "/aceserver/configs"))
+
+
+# ── Runtime : dossier de configs déployées par serveur ───────────────────────
+
+def _runtime_dir(server_id: int) -> Path:
+    """Dossier server-{id}/ contenant les copies déployées pour ce serveur."""
+    d = _configs_base() / f"server-{server_id}"
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
+def deploy_config(config_name: str, server_id: int) -> None:
+    """Copie config_name depuis la bibliothèque partagée vers server-{id}/,
+    en injectant TcpPort/UdpPort/HttpPort propres à ce serveur."""
+    base = _configs_base()
+    src  = base / config_name
+    if not src.exists():
+        log.warning("deploy_config: source introuvable : %s", config_name)
+        return
+    runtime = base / f"server-{server_id}"
+    runtime.mkdir(parents=True, exist_ok=True)
+    dst  = runtime / config_name
+    data = json.loads(src.read_text(encoding="utf-8"))
+    try:
+        from app.models import Server
+        from app.services.database import db
+        srv = db.session.get(Server, server_id)
+        if srv:
+            data.setdefault("Server", {}).update({
+                "TcpPort":  srv.tcp_port,
+                "UdpPort":  srv.udp_port,
+                "HttpPort": srv.http_port,
+            })
+    except Exception as e:
+        log.warning("deploy_config: DB lookup échouée pour server %d: %s", server_id, e)
+    _atomic_write_json(dst, data)
+    log.info("deploy_config: %s → server-%d/", config_name, server_id)
+
+
+def deployed_configs(server_id: int) -> set[str]:
+    """Noms des configs déjà déployées pour ce serveur (présentes dans server-{id}/)."""
+    d = _configs_base() / f"server-{server_id}"
+    if not d.exists():
+        return set()
+    return {f.name for f in d.glob("*.json") if f.is_file()}
+
+
+def delete_server_runtime_dir(server_id: int) -> None:
+    """Supprime server-{id}/ lors de la suppression d'un serveur."""
+    d = _configs_base() / f"server-{server_id}"
+    if d.exists():
+        shutil.rmtree(str(d))
+        log.info("delete_server_runtime_dir: server-%d/ supprimé", server_id)
 
 
 def _atomic_write_json(path: Path, data: dict):
@@ -24,7 +97,7 @@ def _current_server_id() -> int:
 # ── Helpers dossier ──────────────────────────────────────────────────────────
 
 def _configs_dir() -> Path:
-    return Path(current_app.config["CONFIGS_DIR"])
+    return _configs_base()
 
 def _cars_path() -> Path:
     return Path(current_app.config["CARS_JSON_PATH"])
@@ -202,9 +275,17 @@ def repair_config() -> dict:
 # ── Lecture / écriture de la config active ───────────────────────────────────
 
 def load_config() -> dict:
-    with open(_active_path(), "r", encoding="utf-8") as f:
-        raw = json.load(f)
+    path = _active_path()
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            raw = json.load(f)
+    except json.JSONDecodeError as e:
+        raise ConfigJsonError(path.name, e.lineno, e.colno, e.msg) from e
     return _deep_merge(_default_config(), raw)
+
+
+def default_config() -> dict:
+    return _default_config()
 
 
 def load_config_by_name(name: str) -> dict | None:

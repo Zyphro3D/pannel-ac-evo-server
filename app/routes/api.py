@@ -14,12 +14,12 @@ from app.services.server_config import (
     list_configs, get_active_config_name, set_active_config,
     create_config, delete_config, check_config, repair_config,
     get_running_server_info, load_config_by_name, rename_config,
-    inject_global_server_settings,
+    inject_global_server_settings, deploy_config,
 )
 from app.services.process_manager import (
     start_server, stop_server, get_status, get_server_logs,
     set_auto_restart, _ensure_race_weekend_file, try_rotation_advance,
-    update_session_state, get_player_history,
+    update_session_state, get_player_history, get_container_stats,
 )
 from app.services.rotation_manager import get_rotation, save_rotation
 from app.services import config_builder, discord_notifier
@@ -103,6 +103,18 @@ def server_logs():
     return jsonify({"logs": get_server_logs(server_id=sid)})
 
 
+@api_bp.route("/server/container-stats")
+@login_required
+def server_container_stats():
+    if not current_user.is_admin:
+        return jsonify({"error": "forbidden"}), 403
+    sid   = _current_server_id()
+    stats = get_container_stats(sid)
+    if stats is None:
+        return jsonify({"available": False})
+    return jsonify({"available": True, **stats})
+
+
 def _do_start(auto_restart: bool = False, server_id: int = 1) -> dict:
     st = get_status(server_id)
     if st["running"] and st["config"] != get_active_config_name():
@@ -124,6 +136,9 @@ def _do_start(auto_restart: bool = False, server_id: int = 1) -> dict:
     _tcp = _srv.tcp_port  if _srv else None
     _udp = _srv.udp_port  if _srv else None
     _name = _srv.name     if _srv else None
+
+    # Déploie la config dans server-{id}/ avec les bons ports (tracking + rotation)
+    deploy_config(get_active_config_name(), server_id)
 
     sc, sd = config_builder.build_launch_args(config,
                                               tcp_listener=_tcp,
@@ -427,6 +442,10 @@ def rotation_start():
 
     cfg_data.setdefault("Server", {})["IsCycleEnabled"] = False
 
+    # Déploie toutes les configs du cycle dans server-{id}/ avec les bons ports
+    for _cfg_name in rot["configs"]:
+        deploy_config(_cfg_name, sid)
+
     if get_status(sid)["running"]:
         stop_server(sid)
 
@@ -498,7 +517,8 @@ def live_chat():
         return jsonify({"ok": False, "error": "too_long"}), 400
     try:
         from app.services import ace_tcp_client
-        sent = ace_tcp_client.send_chat(text)
+        sid  = max(1, int(request.args.get("server") or session.get("current_server_id") or 1))
+        sent = ace_tcp_client.send_chat(text, sid)
         return jsonify({"ok": sent, "error": None if sent else "not_connected"})
     except Exception as e:
         log.warning("live_chat error: %s", e)
@@ -512,9 +532,10 @@ def live_tcp_status():
         return jsonify({"ok": False, "error": "forbidden"}), 403
     try:
         from app.services import ace_tcp_client
+        sid = max(1, int(request.args.get("server") or session.get("current_server_id") or 1))
         return jsonify({
-            "connected": ace_tcp_client.is_connected(),
-            "leaderboard": ace_tcp_client.get_leaderboard(),
+            "connected":   ace_tcp_client.is_connected(sid),
+            "leaderboard": ace_tcp_client.get_leaderboard(sid),
         })
     except Exception as e:
         return jsonify({"connected": False, "leaderboard": [], "error": str(e)})

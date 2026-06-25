@@ -1160,19 +1160,16 @@ Nouvelles clés ajoutées dans les 5 langues : Mods, Serveur, véhicules/circuit
 - `app/__init__.py` : migration `("session_result", "server_id", "INTEGER")` dans `_migrate_db()`
 - `api.py/results_ingest` : lit `?server_id=N` (query param ACE EVO) et persiste en DB
 
-#### Phase 2 — Création de serveurs depuis le panel
+#### Phase 2 — Création de serveurs depuis le panel ✅ DONE
 - Formulaire (nom, ports, container_name) → INSERT Server
-- Docker : créer dynamiquement un container `ace-server-2`
-- **Dockerproxy vérifié** (2026-06-20) : `POST=1` + `CONTAINERS=1` → création possible
-  - `IMAGES=0` → pas de pull, mais l'image `aceserver` built existe déjà
-  - Approche : `docker.from_env().containers.create(image, name, ports, environment, volumes)`
-- `init_watchdog` multi : boucle sur `Server.query.filter_by(is_enabled=True)` dans `create_app()`
-- `_DOCKER_CONTAINER_NAME` → lire depuis `Server.container_name` (DB) par server_id
+- Docker : création dynamique de containers depuis le panel
+- Watchdog multi-serveur opérationnel
+- [x] Bot TCP multi-serveur : `start_for_server(srv, cfg)` dans `ace_tcp_client.py`, appelé au boot (tous les serveurs activés) et à la création d'un nouveau serveur. En mode `docker_split` : host = container_name, port = 9700 interne (pas le port host-mappé)
 
 #### Phase 4 — Banque de données véhicules/circuits (indépendant)
 - Population `CarMeta` depuis `cars.json` au démarrage (scan + upsert)
 - Upload images véhicules (`media/cars/<slug>.jpg`)
-- Population `TrackMeta` depuis les configs existantes
+- [x] Population `TrackMeta` depuis les fichiers events (`events_practice.json` + `events_race_weekend.json`) — 36 circuits, fallback configs pour tracks custom
 - Images circuits : déjà dans `media/circuits/*.webp`
 - Refonte page véhicules avec images et filtres
 
@@ -1300,8 +1297,8 @@ def _sync_car_meta(db):
 - Upload via `/settings/upload-car-image` ou drag&drop sur la page véhicules
 
 **Population TrackMeta** :
-- Lire toutes les configs JSON, extraire `SelectedTrackValue` → unique values
-- Format : `"brand_hatch|GP|GP Time Attack|3916"` → track_name="brand_hatch", layout="GP", length_m=3916
+- [x] Source : `events_practice.json` + `events_race_weekend.json` (catalogue complet), fallback configs pour tracks custom
+- Format : `"Brands Hatch|GP|GP Time Attack|3916"` → track_name, layout, length_m
 
 ---
 
@@ -1480,3 +1477,55 @@ Multi-serveur complet = MINOR minimum (nouvelles tables, nouvelles clés .env).
 
 *Document généré le 2026-06-20 — Version codebase 1.7.1 — Branche feat/multi-server*
 *Prochaine étape : Phase 2 (création container ace-server-2 depuis le panel) — dockerproxy vérifié OK (POST+CONTAINERS)*
+
+---
+
+## 18. TODO — Points en suspens
+
+### Notifications Discord
+- [x] **Numéro de serveur dans le titre** — `[Nom du serveur]` préfixé dans le titre de chaque embed. Helper `_srv(title, server_name)` dans `discord_notifier.py`. Footer simplifié (heure seulement).
+
+### Pages publiques pilote
+- [x] **Refaire "Mes inscriptions"** — lien navbar limité aux pilotes uniquement. Page restructurée en 3 sections : événements disponibles / inscriptions à venir / historique (passé). Route `pilot_dashboard()` dans `public.py` sépare `upcoming_regs` et `past_regs`.
+
+### Pages à refaire
+- [x] **Refaire la page Résultats** — refonte visuelle et UX complète
+- [x] **Refaire la page Classement** — refonte visuelle et UX complète
+
+### Documentation
+- [ ] **Screenshots pour le README** — faire des captures d'écran de l'état actuel du panel pour illustrer le README (navbar, page serveur, résultats, classement, live...)
+
+### Page Serveur — onglet Status
+- [x] **Performances du container** — métriques CPU %, RAM utilisée/limite via API Docker dans l'onglet Status.
+
+### Page Véhicules & Tracks
+- [x] **Renommer "Circuits" en "Tracks"** dans la nav et les titres — route `/admin/tracks`, template `tracks.html`, clé i18n ajoutée (5 langues)
+- [x] **Retravailler la page Véhicules et Tracks** :
+  - Toggle désactiver supprimé complètement (routes `vehicle_toggle` et `circuit_toggle` supprimées)
+  - Suppression non implémentée — viendra avec la gestion des mods (Phase 5)
+
+### Navbar — reorganisation
+- [x] **Fusionner Résultats + Classement** — dropdown `.admin-nav-dropdown` avec deux sous-items (Résultats → `/results`, Classement → `/leaderboard`). État actif sur les deux endpoints.
+- [x] **Renommer "Timing" en "Live"** — desktop + mobile.
+- [ ] **Refaire la page Live** (ex-Timing) en page publique :
+  - Temps en direct (leaderboard live)
+  - Visualisation du tchat en direct (lecture seule — page publique, pas de saisie)
+
+### Page Live — timing secteurs couleur rouge (tour/secteur invalidé)
+- [ ] **Trouver le pattern de log ACE EVO pour tour/secteur invalidé**
+  - Quand un tour est invalidé (sortie de piste, collision, track limits...), ACE EVO log une ligne spécifique
+  - Pour l'identifier : rouler intentionnellement hors piste puis copier la ligne exacte via `docker compose logs ace-server --tail=50`
+  - Une fois le pattern connu, ajouter `_RE_LAP_INVALID` dans `live.py` et colorier les secteurs concernés en rouge dans `timing.html`
+  - La donnée de coloration devrait être propagée dans la réponse `/api/timing` (champ `invalid_laps` ou flag par secteur)
+
+### Page Live — mémoire de session (persistance au rafraîchissement)
+- [x] **Conserver l'historique entre les chargements de page** ✓
+  - `timing.html` : cache localStorage par serveur (`timing_lb_{id}`, `timing_chat_{id}`) — affiché instantanément au chargement, mis à jour à chaque poll
+  - `live.html` : `loadChatHistory()` appelée au démarrage, pré-remplit `#live-chat-log` depuis `/api/live/chat-history`
+  - Leaderboard et events déjà reconstruits depuis les logs à chaque appel → OK au refresh
+
+### Page Live — modification chat
+- [x] que les spectateur public ou même connecter puissent envoyer dans le chat des emo icone prés configuré , ultra securisé ✓
+  - Endpoint POST `/api/timing/react` : whitelist stricte `{🏁 👍 ❤️ 🔥 💪 ⚡}`, rate-limit 10/min par IP, CSRF requis
+  - `timing.html` : boutons emoji sous le chat, feedback visuel (flash violet + message statut)
+  - Message envoyé en jeu : `{emoji} [Spectateur]`

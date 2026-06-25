@@ -32,8 +32,7 @@
   {% if cars %}
   <div class="veh-grid">
     {% for car in cars %}
-    <div class="veh-card {% if not car.is_active %}veh-card-inactive{% endif %}"
-         id="veh-{{ car.slug }}">
+    <div class="veh-card" id="veh-{{ car.slug }}">
 
       {# Image #}
       <div class="veh-img-wrap">
@@ -67,14 +66,6 @@
         </div>
       </div>
 
-      {# Toggle actif #}
-      <button class="veh-toggle btn btn-sm {% if not car.is_active %}btn-dim{% endif %}"
-              data-slug="{{ car.slug }}"
-              data-url="{{ url_for('admin.vehicle_toggle', slug=car.slug) }}"
-              title="{{ _('Activer / Désactiver') }}">
-        {% if car.is_active %}{{ _('Actif') }}{% else %}{{ _('Inactif') }}{% endif %}
-      </button>
-
     </div>
     {% endfor %}
   </div>
@@ -88,22 +79,6 @@
 {% block scripts %}
 <script>
 const _csrf = '{{ csrf_token() }}';
-
-/* ── Toggle actif/inactif ── */
-document.querySelectorAll('.veh-toggle').forEach(btn => {
-  btn.addEventListener('click', async () => {
-    const res  = await fetch(btn.dataset.url, {
-      method: 'POST',
-      headers: { 'X-CSRFToken': _csrf, 'Content-Type': 'application/json' },
-    });
-    const data = await res.json();
-    if (!data.ok) return;
-    const card = document.getElementById('veh-' + btn.dataset.slug);
-    card.classList.toggle('veh-card-inactive', !data.is_active);
-    btn.textContent = data.is_active ? '{{ _("Actif") }}' : '{{ _("Inactif") }}';
-    btn.classList.toggle('btn-dim', !data.is_active);
-  });
-});
 
 /* ── Upload image ── */
 document.querySelectorAll('.veh-file-input').forEach(input => {

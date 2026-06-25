@@ -6,27 +6,40 @@ import json
 import os
 import re
 import logging
-from flask import Blueprint, render_template, Response, stream_with_context, jsonify, request, session
+from flask import Blueprint, render_template, Response, stream_with_context, jsonify, request, session, redirect, url_for
 from flask_login import login_required
 from flask_babel import _
+from app import limiter
 from app.utils import admin_required
 
 log = logging.getLogger(__name__)
 
 live_bp = Blueprint("live", __name__)
 
-_DEPLOY_MODE = os.environ.get("DEPLOY_MODE", "native")
-_CONTAINER   = os.environ.get("ACESERVER_CONTAINER_NAME", "ace-server")
+_DEPLOY_MODE       = os.environ.get("DEPLOY_MODE", "native")
+_CONTAINER         = os.environ.get("ACESERVER_CONTAINER_NAME", "ace-server")
+# Clés i18n des messages de réaction — Flask-Babel traduit selon Accept-Language du spectateur
+_REACTION_MSGIDS = {
+    "🏁": "Beau tour !",
+    "👍": "Bien joué !",
+    "❤️": "Courage !",
+    "🔥": "En feu !",
+    "💪": "Bravo !",
+    "⚡": "Allez !",
+}
+_ALLOWED_REACTIONS  = set(_REACTION_MSGIDS.keys())
+_RE_DRIVER_SAFE     = re.compile(r'[^\w\s\-\'\.]', re.UNICODE)
 
 # ── Log parsers ───────────────────────────────────────────────────────────────
 
 _RE_TS      = re.compile(r'^\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3})\]')
 # connect : capture steam_id, car_model, car_id (optionnel)
 _RE_CONNECT = re.compile(
-    r'\[gameplay\] \[info\] (\d+) connected \(\d+\) on car ([^,\s]+)'
+    r'\[gameplay\] \[info\] (\d+) connected \([^)]+\) on car ([^,\s]+)'
     r'(?:, with new carId ([0-9a-f-]+))?'
 )
-_RE_DRIVER  = re.compile(r'\[server\] \[info\] Car \[[^\]]+\] #(\d+) for driver (.+?) \[(\d+)\]')
+# Capture car_id depuis Car [<uuid>] pour fallback si connect ne matche pas
+_RE_DRIVER  = re.compile(r'\[server\] \[info\] Car \[([0-9a-f-]+)\] #(\d+) for driver (.+?) \[(\d+)\]')
 _RE_PLAYERS = re.compile(r'\[server\] \[info\] Server updated: (\d+) players')
 _RE_DISCONN = re.compile(r'\[gameplay\] \[info\] (\d+) disconnected')
 _RE_SPLIT   = re.compile(r'\[gameplay\] \[info\] Outplap split')
@@ -76,7 +89,8 @@ def _parse_line(line: str) -> dict | None:
                 "car_id": m.group(3) or ""}
     if m := _RE_DRIVER.search(line):
         return {"type": "driver", "ts": ts,
-                "num": m.group(1), "name": m.group(2), "steam_id": m.group(3)}
+                "car_id": m.group(1), "num": m.group(2),
+                "name": m.group(3), "steam_id": m.group(4)}
     if m := _RE_DISCONN.search(line):
         return {"type": "disconnect", "ts": ts, "steam_id": m.group(1)}
     if m := _RE_PLAYERS.search(line):
@@ -87,11 +101,31 @@ def _parse_line(line: str) -> dict | None:
 
 
 def _get_server_id() -> int:
-    """Returns the current server_id from session (defaults to 1)."""
+    """Returns the current server_id.
+    Query param ?server=<id> takes priority (for public/spectator pages),
+    then falls back to session (admin pages).
+    """
     try:
+        qp = request.args.get("server")
+        if qp:
+            return max(1, int(qp))
         return int(session.get("current_server_id", 1) or 1)
     except (ValueError, RuntimeError):
         return 1
+
+
+def _container_name(server_id: int) -> str:
+    """Retourne le nom du container Docker pour le server_id donné."""
+    if server_id == 1:
+        return _CONTAINER
+    try:
+        from app.models import Server
+        srv = Server.query.get(server_id)
+        if srv and srv.container_name:
+            return srv.container_name
+    except Exception:
+        pass
+    return _CONTAINER
 
 
 def _iter_log_lines(since_hours: int = 12, server_id: int = 1):
@@ -101,7 +135,7 @@ def _iter_log_lines(since_hours: int = 12, server_id: int = 1):
             import docker as _docker
             import time as _time
             client    = _docker.from_env()
-            container = client.containers.get(_CONTAINER)
+            container = client.containers.get(_container_name(server_id))
             since_ts  = int(_time.time()) - since_hours * 3600
             raw = container.logs(stream=False, since=since_ts)
             if isinstance(raw, bytes):
@@ -110,17 +144,17 @@ def _iter_log_lines(since_hours: int = 12, server_id: int = 1):
                 for chunk in raw:
                     yield chunk.decode("utf-8", errors="replace")
         except Exception as e:
-            log.warning("live: docker logs error: %s", e)
+            log.warning("live: docker logs error (server=%d): %s", server_id, e)
     else:
         from app.services.process_manager import _log_file
         try:
             with open(_log_file(server_id), encoding="utf-8", errors="replace") as f:
                 yield from f
         except Exception as e:
-            log.warning("live: log file error: %s", e)
+            log.warning("live: log file error (server=%d): %s", server_id, e)
 
 
-def _iter_log_stream():
+def _iter_log_stream(server_id: int = 1):
     """Generator that yields new log lines indefinitely (docker_split only)."""
     if _DEPLOY_MODE != "docker_split":
         return
@@ -128,7 +162,7 @@ def _iter_log_stream():
         import docker as _docker
         import time as _time
         client    = _docker.from_env()
-        container = client.containers.get(_CONTAINER)
+        container = client.containers.get(_container_name(server_id))
         for chunk in container.logs(stream=True, follow=True, since=int(_time.time()) - 5):
             yield chunk.decode("utf-8", errors="replace")
     except Exception as e:
@@ -172,18 +206,22 @@ def _build_state(server_id: int = 1) -> dict:
                 if ev.get("car_id"):
                     car_to_steam[ev["car_id"]] = ev["steam_id"]
             elif t == "driver":
-                sid = ev["steam_id"]
-                pc  = pending_connect.pop(sid, {})
+                sid    = ev["steam_id"]
+                pc     = pending_connect.pop(sid, {})
+                car_id = pc.get("car_id") or ev.get("car_id", "")
+                car_raw = pc.get("car_raw", "")
+                if car_id:
+                    car_to_steam[car_id] = sid
                 drivers[sid] = {
                     "steam_id":  sid,
                     "name":      ev["name"],
                     "num":       ev["num"],
-                    "car_raw":   pc.get("car_raw", ""),
-                    "car_id":    pc.get("car_id", ""),
+                    "car_raw":   car_raw,
+                    "car_id":    car_id,
                     "joined_ts": pc.get("ts") or ev["ts"],
                 }
                 events.append({"type": "connect", "ts": ev["ts"],
-                                "name": ev["name"], "car_raw": pc.get("car_raw", "")})
+                                "name": ev["name"], "car_raw": car_raw})
             elif t == "disconnect":
                 sid = ev["steam_id"]
                 driver = drivers.pop(sid, {})
@@ -231,9 +269,13 @@ def _build_state(server_id: int = 1) -> dict:
     leaderboard = []
     for sid, d in drivers.items():
         laps, cs1, cs2 = _car_laps(d.get("car_id", ""))
-        lap_times  = [l["lap_ms"] for l in laps if l["lap_ms"]]
-        best_ms    = min(lap_times, default=None)
-        last_ms    = laps[-1]["lap_ms"] if laps else None
+        lap_times = [l["lap_ms"] for l in laps if l["lap_ms"]]
+        best_ms   = min(lap_times, default=None)
+        last_ms   = laps[-1]["lap_ms"] if laps else None
+        # Personal best par secteur (min individuel, pas forcément du meilleur tour)
+        pb_s1_ms  = min((l["s1_ms"] for l in laps if l.get("s1_ms")), default=None)
+        pb_s2_ms  = min((l["s2_ms"] for l in laps if l.get("s2_ms")), default=None)
+        pb_s3_ms  = min((l["s3_ms"] for l in laps if l.get("s3_ms")), default=None)
         leaderboard.append({
             **d,
             "laps":         laps,
@@ -242,11 +284,26 @@ def _build_state(server_id: int = 1) -> dict:
             "best_lap_str": _fmt_ms(best_ms),
             "last_lap_ms":  last_ms,
             "last_lap_str": _fmt_ms(last_ms),
-            "curr_s1_ms":   cs1,  "curr_s1_str": _fmt_sector(cs1),
-            "curr_s2_ms":   cs2,  "curr_s2_str": _fmt_sector(cs2),
+            # Personal bests secteur (pour coloration violet/vert)
+            "pb_s1_ms": pb_s1_ms, "pb_s1_str": _fmt_sector(pb_s1_ms),
+            "pb_s2_ms": pb_s2_ms, "pb_s2_str": _fmt_sector(pb_s2_ms),
+            "pb_s3_ms": pb_s3_ms, "pb_s3_str": _fmt_sector(pb_s3_ms),
+            # Secteurs du tour en cours
+            "curr_s1_ms": cs1, "curr_s1_str": _fmt_sector(cs1),
+            "curr_s2_ms": cs2, "curr_s2_str": _fmt_sector(cs2),
         })
 
     leaderboard.sort(key=lambda x: (x["best_lap_ms"] is None, x["best_lap_ms"] or 0))
+
+    # Merge lap_invalid depuis le client TCP (keyed by steam_id)
+    try:
+        from app.services.ace_tcp_client import get_leaderboard as _tcp_lb
+        tcp_by_sid = {e["steam_id"]: e for e in _tcp_lb(server_id)}
+        for entry in leaderboard:
+            tcp = tcp_by_sid.get(entry["steam_id"], {})
+            entry["lap_invalid"] = tcp.get("lap_invalid", False)
+    except Exception:
+        pass
 
     leader_ms = leaderboard[0]["best_lap_ms"] if leaderboard and leaderboard[0]["best_lap_ms"] else None
     for entry in leaderboard:
@@ -256,11 +313,19 @@ def _build_state(server_id: int = 1) -> dict:
         else:
             entry["gap_str"] = None
 
+    # Session bests (meilleur secteur tous pilotes confondus)
+    sess_s1 = min((e["pb_s1_ms"] for e in leaderboard if e.get("pb_s1_ms")), default=None)
+    sess_s2 = min((e["pb_s2_ms"] for e in leaderboard if e.get("pb_s2_ms")), default=None)
+    sess_s3 = min((e["pb_s3_ms"] for e in leaderboard if e.get("pb_s3_ms")), default=None)
+
     return {
         "drivers":      list(drivers.values()),
         "leaderboard":  leaderboard,
         "events":       events[-50:],
         "player_count": player_count,
+        "sess_s1_ms":   sess_s1,
+        "sess_s2_ms":   sess_s2,
+        "sess_s3_ms":   sess_s3,
     }
 
 
@@ -269,13 +334,25 @@ def _build_state(server_id: int = 1) -> dict:
 @live_bp.route("/live")
 @login_required
 def live_page():
-    return render_template("live.html")
+    return redirect(url_for('live.timing_page'))
 
 
 @live_bp.route("/timing")
 def timing_page():
     """Page publique de classement en temps réel."""
-    return render_template("timing.html")
+    from app.models import Server
+    from app.services.process_manager import is_running
+    sid            = _get_server_id()
+    public_servers = Server.query.filter_by(is_enabled=True).order_by(Server.sort_order).all()
+    active_server  = next((s for s in public_servers if s.id == sid), None) or (public_servers[0] if public_servers else None)
+    if active_server:
+        sid = active_server.id
+    running_ids = {s.id for s in public_servers if is_running(s.id)}
+    return render_template("timing.html",
+                           active_server=active_server,
+                           active_server_id=sid,
+                           public_servers=public_servers,
+                           server_running_ids=running_ids)
 
 
 @live_bp.route("/api/live/state")
@@ -321,10 +398,13 @@ def timing_state():
     state   = _build_state(sid)
     timing  = _session_timing(sid)
     return jsonify({
-        "leaderboard":    state["leaderboard"],
-        "player_count":   state["player_count"],
-        "started_at":     timing.get("started_at"),
+        "leaderboard":      state["leaderboard"],
+        "player_count":     state["player_count"],
+        "started_at":       timing.get("started_at"),
         "session_length_s": timing.get("session_length_s"),
+        "sess_s1_ms":       state.get("sess_s1_ms"),
+        "sess_s2_ms":       state.get("sess_s2_ms"),
+        "sess_s3_ms":       state.get("sess_s3_ms"),
     })
 
 
@@ -339,13 +419,49 @@ def bot_elevate_admin():
     return jsonify({"ok": True})
 
 
+@live_bp.route("/api/live/chat-history")
+def live_chat_history():
+    """API publique — historique récent du chat in-game."""
+    try:
+        from app.services.ace_tcp_client import get_chat_history
+        sid = _get_server_id()
+        return jsonify({"messages": get_chat_history(sid)})
+    except Exception as e:
+        log.warning("live_chat_history error: %s", e)
+        return jsonify({"messages": []})
+
+
+@live_bp.route("/api/timing/react", methods=["POST"])
+@limiter.limit("10 per minute")
+def timing_react():
+    """Réaction emoji spectateur → tchat in-game. Whitelist stricte, rate-limitée."""
+    data     = request.get_json(silent=True) or {}
+    reaction = str(data.get("reaction", "")).strip()
+    if reaction not in _ALLOWED_REACTIONS:
+        return jsonify({"ok": False, "error": "invalid_reaction"}), 400
+    sid = _get_server_id()
+    from app.services.ace_tcp_client import send_chat, is_connected
+    if not is_connected(sid):
+        return jsonify({"ok": False, "error": "not_connected"}), 503
+    msg_text   = _(_REACTION_MSGIDS[reaction])   # traduit selon Accept-Language du spectateur
+    driver_raw = str(data.get("driver", "")).strip()
+    if driver_raw:
+        driver = _RE_DRIVER_SAFE.sub("", driver_raw)[:30].strip()
+        msg = f"@{driver} {msg_text} [Spec]" if driver else f"{msg_text} [Spec]"
+    else:
+        msg = f"{msg_text} [Spec]"
+    ok = send_chat(msg, sid)
+    return jsonify({"ok": ok})
+
+
 @live_bp.route("/api/live/stream")
 @login_required
 def live_stream():
     """SSE endpoint — envoie les nouveaux événements au fil des logs."""
+    sid = _get_server_id()
     def _generate():
         yield "data: {\"type\":\"connected\"}\n\n"
-        for raw_line in _iter_log_stream():
+        for raw_line in _iter_log_stream(sid):
             for line in raw_line.splitlines():
                 ev = _parse_line(line)
                 if ev:

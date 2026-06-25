@@ -179,6 +179,7 @@ def reg_approve(event_id, rid):
     reg = EventRegistration.query.filter_by(id=rid, event_id=event_id).first_or_404()
     reg.status = "confirmed"
     db.session.commit()
+    mailer.send_event_registration_confirmed(reg.driver, reg.event)
     flash(_("%(name)s confirmé(e).", name=reg.driver.ingame_name), "success")
     return redirect(url_for("events_admin.event_registrations", event_id=event_id))
 
@@ -189,6 +190,7 @@ def reg_reject(event_id, rid):
     reg = EventRegistration.query.filter_by(id=rid, event_id=event_id).first_or_404()
     reg.status = "rejected"
     db.session.commit()
+    mailer.send_event_registration_rejected(reg.driver, reg.event)
     flash(_("%(name)s refusé.", name=reg.driver.ingame_name), "success")
     return redirect(url_for("events_admin.event_registrations", event_id=event_id))
 

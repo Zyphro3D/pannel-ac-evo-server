@@ -93,30 +93,46 @@
   </div>
 
   {% if view == 'status' %}
-  <header class="server-status-hero">
-    <div>
-      <h1>{{ _('Contrôle Practice/Race') }}</h1>
-      <strong>{{ _('Gérez votre serveur et vos sessions de jeu') }}</strong>
+  {% set hero_img = url_for('serve_media', filename=current_track.image) if current_track.image else url_for('static', filename='img/circuit_placeholder.svg') %}
+
+  <!-- HERO -->
+  <header class="server-status-hero" style="--banner:url('{{ hero_img }}')">
+    <div class="hero-left">
+      <div class="hero-title"><h1>{{ current_track.track or _('Serveur ACE EVO') }}</h1></div>
+      <div class="hero-session">{{ current_mode }}</div>
+      <div class="hero-meta">
+        <div>
+          <div class="hero-online">
+            <span class="dot" id="main-status-dot"></span>
+            <span id="main-status-label">{{ _('Vérification...') }}</span>
+          </div>
+          <div class="hero-players">
+            <span id="player-count-number">0</span><em> / {{ max_players }}</em>
+            <small>{{ _('joueurs connectés') }}</small>
+          </div>
+        </div>
+        <div class="hero-config">
+          <small>{{ _('Configuration') }}</small>
+          <strong>{{ active_config }}</strong>
+        </div>
+      </div>
     </div>
-    <section class="srv-top-status">
-      <div class="srv-top-card srv-top-card-status">
-        <span>{{ _('Statut serveur') }}</span>
-        <strong><span class="dot" id="main-status-dot"></span><span id="main-status-label">{{ _('Vérification...') }}</span></strong>
-        <small>{{ active_config }}</small>
+    <div class="hero-right">
+      <div class="hero-right-info">
+        <div>
+          <div class="hero-ri-label">{{ _('Session') }}</div>
+          <div class="hero-ri-val">{{ current_mode }}</div>
+        </div>
+        <div>
+          <div class="hero-ri-label">{{ _('Circuit') }}</div>
+          <div class="hero-ri-val">{{ current_track.track }}</div>
+          {% if current_track.layout %}<div class="hero-ri-sub">{{ current_track.layout }}</div>{% endif %}
+        </div>
       </div>
-      <div class="srv-top-card">
-        <span>{{ _('Joueurs en ligne') }}</span>
-        <strong><span id="player-count-number">0</span><em>/ {{ max_players }}</em></strong>
-        <small>{{ _('Max joueurs') }} : {{ max_players }}</small>
-      </div>
-      <div class="srv-top-card">
-        <span>{{ _('Session') }}</span>
-        <strong>{{ current_mode }}</strong>
-        <small>{{ current_track.track }}{% if current_track.layout %} — {{ current_track.layout }}{% endif %}</small>
-      </div>
-    </section>
+    </div>
   </header>
 
+  <!-- ACTIONS -->
   <section class="srv-action-grid">
     <button class="srv-action-card srv-action-start" id="btn-start" onclick="serverAction('start')">
       <span>▶</span><strong>{{ _('Démarrer le serveur') }}</strong>
@@ -132,8 +148,47 @@
     </button>
   </section>
 
+  <!-- GRILLE -->
   <section class="srv-status-grid">
-    <article class="srv-card srv-card-wide">
+
+    <!-- Circuit -->
+    <article class="srv-card srv-card--circuit">
+      <div class="srv-card-head"><h2>{{ _('Circuit actuel') }}</h2></div>
+      <img class="srv-track-img" src="{{ hero_img }}" alt="{{ current_track.track }}">
+      <div class="srv-track-name">{{ current_track.track }}</div>
+      <div class="srv-track-layout">{{ current_track.layout or current_track.length_km }}</div>
+    </article>
+
+    <!-- Météo & Heure & Auto-restart -->
+    <article class="srv-card srv-card--weather">
+      <div class="srv-card-head"><h2>{{ _('Météo & Heure') }}</h2></div>
+      <div class="srv-weather-main">
+        <div class="srv-weather-mark {% if current_weather == _('Pluie') %}rain{% elif current_weather == _('Nuageux') %}cloud{% endif %}"></div>
+        <div class="srv-weather-text">
+          <strong class="srv-big-value">{{ current_weather }}</strong>
+          <span class="srv-track-layout">{{ current_weather_behavior }}</span>
+        </div>
+        <div class="srv-weather-time">
+          <div class="srv-weather-time-label">{{ _('Heure in-game') }}</div>
+          <div class="srv-weather-time-val">{{ (config.Sessions.PracticeSession.Hour|string).zfill(2) }}:00</div>
+        </div>
+      </div>
+      <div class="srv-mini" style="margin-top:auto">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5M21 12a9 9 0 0 1-15 6.7L3 16M3 21v-5h5"/></svg>
+        <div style="flex:1">
+          <div class="l">{{ _('Auto-restart') }}</div>
+          <div class="v" id="srv-auto-restart-label" style="font-size:0.82rem;font-family:'Inter',sans-serif;font-weight:700;text-transform:uppercase;color:var(--dim)">{{ _('Désactivé') }}</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="srv-auto-restart-card" onchange="toggleAutoRestart(this.checked)">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <span style="font-size:0.72rem;color:var(--dim);margin-top:8px">{{ _('Redémarre en cas de crash') }}</span>
+    </article>
+
+    <!-- Session en cours -->
+    <article class="srv-card srv-card--session">
       <div class="srv-card-head"><h2>{{ _('Session en cours') }}</h2><b>{{ current_mode }}</b></div>
       <div class="srv-session-table">
         <span>{{ _('Configuration') }}</span><strong>{{ active_config }}</strong>
@@ -143,44 +198,66 @@
         <span>{{ _('Circuit') }}</span><strong>{{ current_track.track }}{% if current_track.layout %} — {{ current_track.layout }}{% endif %}</strong>
       </div>
     </article>
-    <article class="srv-card">
-      <div class="srv-card-head"><h2>{{ _('Circuit actuel') }}</h2></div>
-      <img class="srv-track-img" src="{{ url_for('serve_media', filename=current_track.image) if current_track.image else url_for('static', filename='img/circuit_placeholder.svg') }}" alt="{{ current_track.track }}">
-      <strong class="srv-track-name">{{ current_track.track }}</strong>
-      <span class="srv-track-layout">{{ current_track.layout or current_track.length_km }}</span>
-    </article>
-    <article class="srv-card">
-      <div class="srv-card-head"><h2>{{ _('Météo actuelle') }}</h2></div>
-      <div class="srv-weather-mark {% if current_weather == _('Pluie') %}rain{% elif current_weather == _('Nuageux') %}cloud{% endif %}"></div>
-      <strong class="srv-big-value">{{ current_weather }}</strong>
-      <span class="srv-track-layout">{{ current_weather_behavior }}</span>
-    </article>
-    <article class="srv-card">
-      <div class="srv-card-head"><h2>{{ _('Heure actuelle') }}</h2></div>
-      <strong class="srv-big-value">{{ (config.Sessions.PracticeSession.Hour|string).zfill(2) }}:00</strong>
-      <span class="srv-track-layout">{{ _('Heure in-game') }}</span>
-    </article>
-    <article class="srv-card">
-      <div class="srv-card-head"><h2>{{ _('Auto-restart') }}</h2></div>
-      <div class="toggle-label" style="margin-top:12px">
-        <label class="toggle">
-          <input type="checkbox" id="srv-auto-restart-card" onchange="toggleAutoRestart(this.checked)">
-          <span class="slider"></span>
-        </label>
-        <span id="srv-auto-restart-label" style="font-size:0.82rem;color:var(--dim)">{{ _('Désactivé') }}</span>
+
+    <!-- Performances serveur -->
+    <article class="srv-card srv-card--perf" id="srv-container-stats-card">
+      <div class="srv-card-head">
+        <h2>{{ _('Performances serveur') }}</h2>
+        <span id="srv-stats-age"></span>
       </div>
-      <span class="srv-track-layout" style="margin-top:8px;font-size:0.75rem;color:var(--dim)">{{ _('Redémarre en cas de crash') }}</span>
+      <div id="srv-stats-unavailable" style="color:var(--dim);font-size:0.85rem;padding:4px 0">
+        {{ _('Données indisponibles (serveur arrêté ou non Docker)') }}
+      </div>
+      <div id="srv-stats-body" style="display:none">
+        <div class="srv-perf-grid">
+          <div class="srv-perf-item">
+            <span class="srv-perf-label">CPU</span>
+            <strong id="srv-cpu-val">—</strong>
+            <svg class="spark" viewBox="0 0 100 40" preserveAspectRatio="none">
+              <polyline id="srv-cpu-fill" stroke="none" fill="rgba(224,53,53,0.12)"/>
+              <polyline id="srv-cpu-line" fill="none" stroke="#e03535" stroke-width="2"/>
+            </svg>
+          </div>
+          <div class="srv-perf-item">
+            <span class="srv-perf-label">{{ _('Mémoire RAM') }}</span>
+            <strong id="srv-mem-val">—</strong>
+            <div class="perf-bar" style="margin-top:auto"><i id="srv-mem-bar" style="width:0%"></i></div>
+          </div>
+          <div class="srv-perf-item">
+            <span class="srv-perf-label">{{ _('Réseau (total)') }}</span>
+            <strong id="srv-net-val">—</strong>
+            <svg class="spark" viewBox="0 0 100 40" preserveAspectRatio="none">
+              <polyline id="srv-net-fill" stroke="none" fill="rgba(59,130,246,0.12)"/>
+              <polyline id="srv-net-line" fill="none" stroke="#3b82f6" stroke-width="2"/>
+            </svg>
+          </div>
+          <div class="srv-perf-item">
+            <span class="srv-perf-label">{{ _('Processus') }}</span>
+            <strong id="srv-pids-val">—</strong>
+            <svg class="spark" viewBox="0 0 100 40" preserveAspectRatio="none">
+              <polyline id="srv-pids-fill" stroke="none" fill="rgba(168,85,247,0.12)"/>
+              <polyline id="srv-pids-line" fill="none" stroke="#a855f7" stroke-width="2"/>
+            </svg>
+          </div>
+        </div>
+      </div>
     </article>
-    <article class="srv-card srv-card-wide">
+
+    <!-- Activité récente -->
+    <article class="srv-card srv-card--activity">
       <div class="srv-card-head"><h2>{{ _('Activité récente') }}</h2></div>
       <div class="srv-activity-list">
         {% for item in recent_server_activity %}
-        <div><time>{{ item.time }}</time><span>{{ item.message }}</span><strong>log</strong></div>
+        <div><time>{{ item.time }}</time><span>{{ item.message }}</span></div>
         {% else %}
         <p>{{ _('Aucune activité serveur récente.') }}</p>
         {% endfor %}
       </div>
+      <button class="srv-logs-btn" onclick="openLogs()">
+        <span class="arr">›</span> {{ _('Voir tous les logs') }}
+      </button>
     </article>
+
   </section>
   {% endif %}
 
@@ -191,12 +268,20 @@
   </header>
   <section class="srv-config-grid">
     {% for item in config_summaries %}
+    {% set is_deployed = item.name in deployed_configs %}
     <article class="srv-config-card {% if item.running %}running{% elif item.active %}active{% endif %}">
+      {% if not is_deployed and not item.running %}
+      <div class="srv-config-watermark">{{ _('Non utilisé') }}</div>
+      {% endif %}
       <img src="{{ url_for('serve_media', filename=item.track.image) if item.track.image else url_for('static', filename='img/circuit_placeholder.svg') }}" alt="{{ item.track.track }}">
       <div class="srv-config-body">
         <div class="srv-config-title">
           <h2>{{ item.server_name }}</h2>
-          {% if item.running %}<span class="badge-running">{{ _('En ligne') }}</span>{% endif %}
+          {% if item.running %}
+          <span class="badge-running">{{ _('En ligne') }}</span>
+          {% elif is_deployed %}
+          <span class="badge-deployed">{{ _('Prêt') }}</span>
+          {% endif %}
         </div>
         <p>{{ item.name }}</p>
         {% if item.running %}<p class="running-players-info"><span id="card-players">—</span> {{ _('joueur(s)') }}</p>{% endif %}
@@ -598,5 +683,71 @@ function serverSelectConfig(name) {
   const select = document.getElementById('config-select');
   if (select) select.value = name;
 }
+
+{% if view == 'status' %}
+(function pollContainerStats() {
+  const card    = document.getElementById('srv-container-stats-card');
+  if (!card) return;
+  const body    = document.getElementById('srv-stats-body');
+  const unavail = document.getElementById('srv-stats-unavailable');
+  const ageEl   = document.getElementById('srv-stats-age');
+
+  function fmtKb(kb) {
+    return kb >= 1024 ? (kb / 1024).toFixed(1) + ' MB' : kb.toFixed(0) + ' KB';
+  }
+
+  function sparkPts(vals) {
+    if (vals.length < 2) return '';
+    const max = Math.max(...vals, 0.01);
+    return vals.map((v, i) => {
+      const x = (i / (vals.length - 1)) * 100;
+      const y = 40 - (v / max) * 36;
+      return x.toFixed(1) + ',' + y.toFixed(1);
+    }).join(' ');
+  }
+
+  function setSpark(lineId, fillId, vals) {
+    const pts  = sparkPts(vals);
+    const line = document.getElementById(lineId);
+    const fill = document.getElementById(fillId);
+    if (!pts || !line || !fill) return;
+    const first = pts.split(' ')[0];
+    const last  = pts.split(' ').pop();
+    line.setAttribute('points', pts);
+    fill.setAttribute('points', '0,40 ' + pts + ' 100,40');
+  }
+
+  async function update() {
+    try {
+      const d = await (await fetch('/api/server/container-stats')).json();
+      if (!d.available) {
+        body.style.display    = 'none';
+        unavail.style.display = '';
+        ageEl.textContent     = '';
+        return;
+      }
+      body.style.display    = '';
+      unavail.style.display = 'none';
+
+      const hist = d.history || [];
+      document.getElementById('srv-cpu-val').textContent  = d.cpu_pct.toFixed(1) + '%';
+      document.getElementById('srv-mem-val').innerHTML    = d.mem_mb + ' <small>MB / ' + d.mem_lim_mb + ' MB (' + d.mem_pct.toFixed(1) + '%)</small>';
+      document.getElementById('srv-net-val').innerHTML    = '↑ ' + fmtKb(d.tx_kb) + ' <small>↓ ' + fmtKb(d.rx_kb) + '</small>';
+      document.getElementById('srv-pids-val').textContent = d.pids;
+      document.getElementById('srv-mem-bar').style.width  = Math.min(d.mem_pct, 100) + '%';
+
+      setSpark('srv-cpu-line', 'srv-cpu-fill',  hist.map(h => h.cpu));
+      setSpark('srv-net-line', 'srv-net-fill',  hist.map(h => h.tx));
+      setSpark('srv-pids-line','srv-pids-fill', hist.map(h => h.pids));
+
+      const age = Math.round((Date.now() / 1000) - d.sampled_at);
+      ageEl.textContent = age + 's';
+    } catch (_) {}
+  }
+
+  update();
+  setInterval(update, 30000);
+})();
+{% endif %}
 </script>
 {% endblock %}

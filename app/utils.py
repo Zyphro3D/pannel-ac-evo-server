@@ -26,11 +26,11 @@ def admin_required_json(f):
 
 
 def superadmin_required(f):
-    """Redirige vers /dashboard si l'utilisateur n'est pas superadmin."""
+    """Redirige vers /server si l'utilisateur n'est pas superadmin."""
     @wraps(f)
     def decorated(*args, **kwargs):
         if not current_user.is_authenticated or not current_user.is_superadmin:
-            return redirect(url_for("admin.dashboard"))
+            return redirect(url_for("admin.server"))
         return f(*args, **kwargs)
     return decorated
 

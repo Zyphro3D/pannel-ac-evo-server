@@ -743,6 +743,12 @@ msgstr "Diese Website verwendet nur technisch notwendige Cookies."
 msgid "En ligne"
 msgstr "Online"
 
+msgid "Prêt"
+msgstr "Bereit"
+
+msgid "Non utilisé"
+msgstr "Nicht bereitgestellt"
+
 #: app/templates/base.html:230 app/templates/public.html:48
 #: app/templates/public.html:113 app/templates/settings.html:78
 msgid "Hors ligne"
@@ -1600,6 +1606,15 @@ msgstr ""
 #: app/templates/pilot_dashboard.html:15
 msgid "Événements disponibles"
 msgstr "Verfügbare Veranstaltungen"
+
+msgid "Inscriptions à venir"
+msgstr "Bevorstehende Anmeldungen"
+
+msgid "Aucune inscription à venir."
+msgstr "Keine bevorstehenden Anmeldungen."
+
+msgid "Historique"
+msgstr "Verlauf"
 
 #: app/templates/pilot_dashboard.html:27
 msgid "Complet"
@@ -2845,6 +2860,106 @@ msgstr "MIT-lizenziert"
 
 msgid "Projet non officiel, non affilié à Kunos Simulazioni ni à Assetto Corsa EVO."
 msgstr "Inoffizielles Projekt, nicht mit Kunos Simulazioni oder Assetto Corsa EVO verbunden."
+
+msgid "Navigation"
+msgstr "Navigation"
+
+msgid "Vue d'ensemble"
+msgstr "Übersicht"
+
+msgid "Résumé des dernières sessions et meilleurs temps"
+msgstr "Zusammenfassung der letzten Sessions und Bestzeiten"
+
+msgid "Voir tous les résultats →"
+msgstr "Alle Ergebnisse anzeigen →"
+
+msgid "Aperçu du classement"
+msgstr "Ranglisten-Übersicht"
+
+msgid "Voir le classement complet →"
+msgstr "Vollständige Rangliste anzeigen →"
+
+msgid "Meilleur temps"
+msgstr "Bestzeit"
+
+msgid "Performances serveur"
+msgstr "Container-Leistung"
+
+msgid "Mémoire RAM"
+msgstr "RAM-Speicher"
+
+msgid "Réseau (total)"
+msgstr "Netzwerk (gesamt)"
+
+msgid "Processus"
+msgstr "Prozesse"
+
+msgid "Données indisponibles (serveur arrêté ou non Docker)"
+msgstr "Daten nicht verfügbar (Server gestoppt oder kein Docker)"
+
+msgid "joueurs connectés"
+msgstr "verbundene Spieler"
+
+msgid "Météo & Heure"
+msgstr "Wetter & Uhrzeit"
+
+msgid "Voir tous les logs"
+msgstr "Alle Logs anzeigen"
+
+msgid "Chat en direct"
+msgstr "Live-Chat"
+
+msgid "Aucun message récent"
+msgstr "Keine aktuellen Nachrichten"
+
+msgid "Réagir"
+msgstr "Reagieren"
+
+msgid "Réaction envoyée !"
+msgstr "Reaktion gesendet!"
+
+msgid "Serveur non connecté"
+msgstr "Server nicht verbunden"
+
+msgid "Drapeau"
+msgstr "Zielflagge"
+
+msgid "Pouce levé"
+msgstr "Daumen hoch"
+
+msgid "Cœur"
+msgstr "Herz"
+
+msgid "Force"
+msgstr "Stark"
+
+msgid "Éclair"
+msgstr "Blitz"
+
+msgid "Beau tour !"
+msgstr "Schöne Runde!"
+
+msgid "Bien joué !"
+msgstr "Gut gemacht!"
+
+msgid "Courage !"
+msgstr "Weiter so!"
+
+msgid "En feu !"
+msgstr "Feuer!"
+
+msgid "Bravo !"
+msgstr "Bravo!"
+
+msgid "Allez !"
+msgstr "Los geht's!"
+
+msgid "Pour"
+msgstr "An"
+
+msgid "Tout le monde"
+msgstr "Alle"
+
 #~ msgid "Administration serveur"
 #~ msgstr "Serververwaltung"
 
@@ -3401,3 +3516,18 @@ msgstr "Inoffizielles Projekt, nicht mit Kunos Simulazioni oder Assetto Corsa EV
 #~ msgid "Track"
 #~ msgstr "Rennstrecke"
 
+
+msgid "Fichier de configuration invalide (%(name)s) : erreur JSON ligne %(line)s colonne %(col)s. Corrigez et sauvegardez depuis l'onglet Configuration."
+msgstr "Ungültige Konfigurationsdatei (%(name)s): JSON-Fehler in Zeile %(line)s, Spalte %(col)s. Korrigieren und im Tab Konfiguration speichern."
+
+msgid "Tracks"
+msgstr "Tracks"
+
+msgid "track(s)"
+msgstr "track(s)"
+
+msgid "Aucun track trouvé."
+msgstr "Keine Strecke gefunden."
+
+msgid "Tour invalide"
+msgstr "Ungültige Runde"

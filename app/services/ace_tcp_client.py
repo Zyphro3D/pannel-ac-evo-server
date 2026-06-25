@@ -8,6 +8,7 @@ Messages pris en charge :
   S2C  BroadcastStateMessage    — état courant (PlatformRaceLeaderboard, etc.)
   S2C  SplitFromRemoteMessage   — passage de secteur
 """
+import collections
 import glob
 import json
 import os
@@ -48,6 +49,7 @@ def _get_client(server_id: int) -> dict:
                 "sid_car_raw":           {},
                 "recently_disconnected": {},
                 "race_state":            {"server_best_ms": None},
+                "chat_buffer":           collections.deque(maxlen=50),
                 "welcome_discord":       "",
                 "welcome_site":          "",
                 "deploy_mode":           "native",
@@ -254,6 +256,12 @@ def _parse_split(payload: bytes, server_id: int):
     steam_id   = _extract_steam_id(driver_id_bytes)
     sector_idx = f.get(3, [0])[0]
 
+    # Passage du secteur 0 = nouveau tour entamé → réinitialise l'invalidation
+    if sector_idx == 0:
+        with c["lb_lock"]:
+            if steam_id in c["leaderboard"]:
+                c["leaderboard"][steam_id]["lap_invalid"] = False
+
     if c["on_event"]:
         try:
             c["on_event"]({'type': 'split_tcp', 'steam_id': steam_id, 'sector': sector_idx})
@@ -353,10 +361,17 @@ def send_chat(text: str, server_id: int = 1) -> bool:
         try:
             c["sock"].sendall(_build_chat(text))
             log.info("ace_tcp_client: chat envoyé : %r", text)
+            ts = time.strftime("%H:%M:%S")
+            c["chat_buffer"].append({"author": "Panel", "text": text, "ts": ts, "source": "panel"})
             return True
         except Exception as e:
             log.warning("ace_tcp_client: erreur envoi chat : %s", e)
             return False
+
+
+def get_chat_history(server_id: int = 1) -> list:
+    """Retourne l'historique récent du chat (messages joueurs + panel)."""
+    return list(_get_client(server_id)["chat_buffer"])
 
 
 def is_connected(server_id: int = 1) -> bool:
@@ -392,7 +407,9 @@ _RE_CONNECT_LOG = re.compile(
 )
 _RE_DISCONN_LOG = re.compile(r'\[gameplay\] \[info\] (\d+) disconnected')
 _RE_NEWLAP_LOG  = re.compile(r'\[gameplay\] \[info\] New lap carId ([0-9a-f-]+): (\d+:\d+\.\d+)')
+_RE_LAP_INVALID = re.compile(r'\[gameplay\] \[error\] Couldn\'t create lap from opensplits \(carId ([0-9a-f-]+)\)')
 _RE_PLAYERS_LOG = re.compile(r'\[server\] \[info\] Server updated: (\d+) players')
+_RE_CHAT_LOG    = re.compile(r'\[server\] \[info\] Chat from (.+?) \[(\d+)\]: (.+)')
 
 
 def _get_car_model(c: dict) -> str:
@@ -503,6 +520,15 @@ def _process_log_line(line: str, seen: set, server_id: int):
             c["num_to_sid"][num] = sid
             car_raw = c["sid_car_raw"].get(sid, "")
             recent  = c["recently_disconnected"].pop(sid, None)
+            # Fallback par nom : couvre les serveurs qui tournent les steam_ids à chaque connexion
+            if recent is None:
+                stale_sid = next(
+                    (k for k, v in c["recently_disconnected"].items()
+                     if v.get("name") == name and (now - v["ts"]) < 600),
+                    None,
+                )
+                if stale_sid:
+                    recent = c["recently_disconnected"].pop(stale_sid, None)
             stale   = [k for k, v in c["recently_disconnected"].items() if now - v["ts"] > 600]
         # Purge hors du lock — évite O(N) pendant la section critique
         for k in stale:
@@ -594,6 +620,24 @@ def _process_log_line(line: str, seen: set, server_id: int):
                     )
                 except Exception:
                     pass
+        return
+
+    # Gameplay: tour invalide (track limits, split manqué…)
+    m = _RE_LAP_INVALID.search(line)
+    if m:
+        car_id = m.group(1)
+        with c["lb_lock"]:
+            sid = c["car_id_to_sid"].get(car_id, "")
+            if sid and sid in c["leaderboard"]:
+                c["leaderboard"][sid]["lap_invalid"] = True
+        return
+
+    # Chat entrant depuis un joueur
+    m = _RE_CHAT_LOG.search(line)
+    if m:
+        ts_m = re.match(r'^\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})', line)
+        ts   = ts_m.group(1)[11:] if ts_m else ""
+        c["chat_buffer"].append({"author": m.group(1), "text": m.group(3), "ts": ts, "source": "player"})
         return
 
     # Server: reset de session (0 joueurs = nouveau démarrage serveur)
@@ -725,6 +769,38 @@ def elevate_admin(server_id: int = 1) -> str | None:
         return "Échec envoi — bot TCP non connecté"
     log.info("ace_tcp_client: élévation admin manuelle envoyée (server=%d)", server_id)
     return None
+
+
+def start_for_server(srv, cfg: dict):
+    """Démarre le bot TCP pour un objet Server de la DB, si ACE_BOT_STEAM_ID est configuré."""
+    steam_id = cfg.get("ACE_BOT_STEAM_ID", "")
+    if not steam_id or _get_client(srv.id)["running"]:
+        return
+    from app.services.process_manager import _log_file, _DEPLOY_MODE
+    # En mode docker_split, chaque container ACE EVO écoute sur son port interne 9700.
+    # On rejoint le container par son nom (hostname Docker), pas par le port host-mappé.
+    if _DEPLOY_MODE == "docker_split":
+        tcp_host = srv.container_name
+        tcp_port = 9700
+    else:
+        tcp_host = cfg.get("ACESERVER_TCP_HOST", "127.0.0.1")
+        tcp_port = srv.tcp_port or cfg.get("ACESERVER_TCP_PORT", 9700)
+    start(
+        host           = tcp_host,
+        port           = tcp_port,
+        steam_id       = steam_id,
+        car_model      = cfg.get("ACE_BOT_CAR_MODEL", "preset_190_evo_ii"),
+        server_name    = srv.name,
+        discord_url    = cfg.get("DISCORD_INVITE_URL", ""),
+        site_url       = cfg.get("PANEL_URL", ""),
+        msg_welcome    = cfg.get("ACE_BOT_MSG_WELCOME", "Bienvenue {name} !"),
+        msg_discord    = cfg.get("ACE_BOT_MSG_DISCORD", "Rejoins le discord : {discord_url}"),
+        msg_site       = cfg.get("ACE_BOT_MSG_SITE",    "Retrouve tes resultats et evenements sur : {site_url}"),
+        deploy_mode    = _DEPLOY_MODE,
+        log_file       = str(_log_file(srv.id)),
+        container_name = srv.container_name,
+        server_id      = srv.id,
+    )
 
 
 def stop(server_id: int = 1):

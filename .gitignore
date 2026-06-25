@@ -48,9 +48,10 @@ aceserver/_CommonRedist/
 aceserver/content/
 aceserver/serverConfig/
 aceserver/results/
-# Garder les configs versionnées
+# Garder les configs-templates versionnées ; exclure les dossiers runtime par serveur
 !aceserver/configs/
 !aceserver/configs/*.json
+aceserver/configs/server-*/
 
 # Assets uploadés (générés à l'exécution, pas versionnés)
 media/

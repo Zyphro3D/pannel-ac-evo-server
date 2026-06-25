@@ -6,57 +6,27 @@
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <title>{% block title %}{{ panel_title }}{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css', v=static_version) }}">
+  {% block head %}{% endblock %}
 </head>
 <body>
 
 <nav class="topnav" id="topnav">
   <div class="topnav-inner">
 
-    {# ── Brand ── #}
-    <a href="{{ url_for('public.index') }}" class="topnav-brand">
-      {% if panel_logo_img %}
-        <img src="{{ url_for('serve_media', filename='banner/' ~ panel_logo_img) }}" class="topnav-logo-img" alt="{{ panel_title }}">
-      {% elif panel_banner_img %}
-        <img src="{{ url_for('serve_media', filename='banner/' ~ panel_banner_img) }}" class="topnav-banner-img" alt="{{ panel_title }}">
-      {% else %}
-        <span class="b-evo">EVO</span>
-        <span class="b-panel">Panel</span>
-      {% endif %}
-    </a>
+    {# ── Brand + sélecteur de serveur (gauche) ── #}
+    <div class="topnav-left">
+      <a href="{{ url_for('public.index') }}" class="topnav-brand">
+        {% if panel_logo_img %}
+          <img src="{{ url_for('serve_media', filename='banner/' ~ panel_logo_img) }}" class="topnav-logo-img" alt="{{ panel_title }}">
+        {% elif panel_banner_img %}
+          <img src="{{ url_for('serve_media', filename='banner/' ~ panel_banner_img) }}" class="topnav-banner-img" alt="{{ panel_title }}">
+        {% else %}
+          <span class="b-evo">EVO</span>
+          <span class="b-panel">Panel</span>
+        {% endif %}
+      </a>
 
-    {# ── Links (desktop) ── #}
-    <div class="topnav-links">
-      <a href="{{ url_for('public.index') }}"
-         class="topnav-link {% if request.endpoint == 'public.index' %}active{% endif %}">
-        {{ _('Accueil') }}
-      </a>
-      <a href="{{ url_for('public.results') }}"
-         class="topnav-link {% if request.endpoint in ('public.results', 'public.result_detail') %}active{% endif %}">
-        {{ _('Résultats') }}
-      </a>
-      <a href="{{ url_for('leaderboard.leaderboard') }}"
-         class="topnav-link {% if request.endpoint == 'leaderboard.leaderboard' %}active{% endif %}">
-        {{ _('Classement') }}
-      </a>
-      <a href="{{ url_for('live.timing_page') }}"
-         class="topnav-link {% if request.endpoint == 'live.timing_page' %}active{% endif %}">
-        {{ _('Timing') }}
-      </a>
-      {% if current_user.is_authenticated %}
-      <a href="{{ url_for('public.pilot_dashboard') }}"
-         class="topnav-link {% if request.endpoint == 'public.pilot_dashboard' %}active{% endif %}">
-        {{ _('Mes inscriptions') }}
-      </a>
-      {% endif %}
-
-    </div>
-
-    {# ── Right side ── #}
-    <div class="topnav-right">
-
-      {% if current_user.is_authenticated and current_user.is_admin %}
-      {# ── Sélecteur de serveur ── #}
-      {% if servers %}
+      {% if current_user.is_authenticated and current_user.is_admin and servers %}
       {% set cur_srv = servers | selectattr('id', 'equalto', current_server_id) | list | first | default(servers[0]) %}
       <div class="topnav-dropdown server-selector{% if servers|length < 2 %} server-selector-single{% endif %}">
         <button class="server-selector-btn topnav-dropdown-btn" aria-expanded="false">
@@ -71,7 +41,6 @@
           {% for srv in servers %}
           <form method="POST" action="{{ url_for('admin.select_server', server_id=srv.id) }}" style="margin:0">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <input type="hidden" name="next" value="{{ request.url }}">
             <button type="submit" class="server-selector-item {% if srv.id == current_server_id %}active{% endif %}">
               <span class="server-selector-dot {% if srv.id in server_running_ids %}online{% endif %}"></span>
               {{ srv.name }}
@@ -82,18 +51,43 @@
         {% endif %}
       </div>
       {% endif %}
+    </div>
 
+    {# ── Links (desktop) ── #}
+    <div class="topnav-links">
+      <a href="{{ url_for('public.index') }}"
+         class="topnav-link {% if request.endpoint == 'public.index' %}active{% endif %}">
+        {{ _('Accueil') }}
+      </a>
+      <a href="{{ url_for('public.results') }}"
+         class="topnav-link {% if request.endpoint in ('public.results', 'public.result_detail', 'leaderboard.leaderboard') %}active{% endif %}">
+        {{ _('Résultats') }}
+      </a>
+      <a href="{{ url_for('live.timing_page') }}"
+         class="topnav-link {% if request.endpoint == 'live.timing_page' %}active{% endif %}">
+        {{ _('Live') }}
+      </a>
+      {% if current_user.is_authenticated and current_user.is_pilot %}
+      <a href="{{ url_for('public.pilot_dashboard') }}"
+         class="topnav-link {% if request.endpoint == 'public.pilot_dashboard' %}active{% endif %}">
+        {{ _('Mes inscriptions') }}
+      </a>
+      {% endif %}
+
+    </div>
+
+    {# ── Right side ── #}
+    <div class="topnav-right">
+
+      {% if current_user.is_authenticated and current_user.is_admin %}
       {# ── Admin dropdown ── #}
-      {% set _admin_eps = ('admin.dashboard','admin.server','events_admin.drivers_list','events_admin.events_list','live.live_page','admin.settings','admin.administration') %}
+      {% set _admin_eps = ('admin.server','events_admin.drivers_list','events_admin.events_list','live.live_page','admin.settings','admin.administration') %}
       <div class="admin-nav-dropdown">
         <button class="admin-nav-btn {% if request.endpoint in _admin_eps %}admin-nav-btn-active{% endif %}">
           Admin
           <svg width="9" height="9" viewBox="0 0 10 10" fill="none" aria-hidden="true"><path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
         <div class="admin-nav-menu">
-          <a href="{{ url_for('admin.dashboard') }}" class="admin-nav-item {% if request.endpoint == 'admin.dashboard' %}active{% endif %}">
-            {{ _('Dashboard') }}
-          </a>
           <a href="{{ url_for('admin.server') }}" class="admin-nav-item {% if request.endpoint == 'admin.server' %}active{% endif %}">
             {{ _('Serveur') }}
           </a>
@@ -104,14 +98,11 @@
           <a href="{{ url_for('events_admin.events_list') }}" class="admin-nav-item {% if request.endpoint == 'events_admin.events_list' %}active{% endif %}">
             {{ _('Événements') }}
           </a>
-          <a href="{{ url_for('live.live_page') }}" class="admin-nav-item {% if request.endpoint == 'live.live_page' %}active{% endif %}">
-            {{ _('Live') }}
-          </a>
-          <a href="{{ url_for('admin.vehicles') }}" class="admin-nav-item {% if request.endpoint in ('admin.vehicles','admin.vehicle_toggle','admin.vehicle_upload_image') %}active{% endif %}">
+          <a href="{{ url_for('admin.vehicles') }}" class="admin-nav-item {% if request.endpoint in ('admin.vehicles','admin.vehicle_upload_image') %}active{% endif %}">
             {{ _('Véhicules') }}
           </a>
-          <a href="{{ url_for('admin.circuits') }}" class="admin-nav-item {% if request.endpoint in ('admin.circuits','admin.circuit_toggle','admin.circuit_upload_image') %}active{% endif %}">
-            {{ _('Circuits') }}
+          <a href="{{ url_for('admin.tracks') }}" class="admin-nav-item {% if request.endpoint in ('admin.tracks','admin.track_upload_image') %}active{% endif %}">
+            {{ _('Tracks') }}
           </a>
           <a href="{{ url_for('admin.mods') }}" class="admin-nav-item {% if request.endpoint == 'admin.mods' %}active{% endif %}">
             {{ _('Mods') }}
@@ -174,21 +165,20 @@
     <a href="{{ url_for('public.index') }}" class="topnav-mob-link">{{ _('Accueil') }}</a>
     <a href="{{ url_for('public.results') }}" class="topnav-mob-link">{{ _('Résultats') }}</a>
     <a href="{{ url_for('leaderboard.leaderboard') }}" class="topnav-mob-link">{{ _('Classement') }}</a>
-    <a href="{{ url_for('live.timing_page') }}" class="topnav-mob-link">{{ _('Timing') }}</a>
+    <a href="{{ url_for('live.timing_page') }}" class="topnav-mob-link">{{ _('Live') }}</a>
     {% if current_user.is_authenticated %}
-      <a href="{{ url_for('public.pilot_dashboard') }}" class="topnav-mob-link">{{ _('Mes inscriptions') }}</a>
+      {% if current_user.is_pilot %}<a href="{{ url_for('public.pilot_dashboard') }}" class="topnav-mob-link">{{ _('Mes inscriptions') }}</a>{% endif %}
     {% endif %}
     {% if current_user.is_authenticated and current_user.is_admin %}
       <div class="topnav-mob-sep"></div>
       <span class="topnav-mob-section">Admin</span>
-      <a href="{{ url_for('admin.dashboard') }}" class="topnav-mob-link topnav-mob-sub">{{ _('Dashboard') }}</a>
       <a href="{{ url_for('admin.server') }}" class="topnav-mob-link topnav-mob-sub">{{ _('Serveur') }}</a>
       <a href="{{ url_for('events_admin.drivers_list') }}" class="topnav-mob-link topnav-mob-sub">
         {{ _('Pilotes') }}
         {% if pending_pilots_count > 0 %}<span class="topnav-badge">{{ pending_pilots_count }}</span>{% endif %}
       </a>
       <a href="{{ url_for('events_admin.events_list') }}" class="topnav-mob-link topnav-mob-sub">{{ _('Événements admin') }}</a>
-      <a href="{{ url_for('live.live_page') }}" class="topnav-mob-link topnav-mob-sub">{{ _('Live Admin') }}</a>
+      <a href="{{ url_for('live.timing_page') }}" class="topnav-mob-link topnav-mob-sub">{{ _('Live') }}</a>
       {% if current_user.is_superadmin %}
       <a href="{{ url_for('admin.settings') }}" class="topnav-mob-link topnav-mob-sub">{{ _('Paramètres') }}</a>
       {% endif %}

@@ -744,6 +744,12 @@ msgstr ""
 msgid "En ligne"
 msgstr "En ligne"
 
+msgid "Prêt"
+msgstr "Prêt"
+
+msgid "Non utilisé"
+msgstr "Non utilisé"
+
 #: app/templates/base.html:230 app/templates/public.html:48
 #: app/templates/public.html:113 app/templates/settings.html:78
 msgid "Hors ligne"
@@ -1601,6 +1607,15 @@ msgstr ""
 #: app/templates/pilot_dashboard.html:15
 msgid "Événements disponibles"
 msgstr "Événements disponibles"
+
+msgid "Inscriptions à venir"
+msgstr "Inscriptions à venir"
+
+msgid "Aucune inscription à venir."
+msgstr "Aucune inscription à venir."
+
+msgid "Historique"
+msgstr "Historique"
 
 #: app/templates/pilot_dashboard.html:27
 msgid "Complet"
@@ -2845,6 +2860,106 @@ msgstr "Sous licence MIT"
 
 msgid "Projet non officiel, non affilié à Kunos Simulazioni ni à Assetto Corsa EVO."
 msgstr "Projet non officiel, non affilié à Kunos Simulazioni ni à Assetto Corsa EVO."
+
+msgid "Navigation"
+msgstr "Navigation"
+
+msgid "Vue d'ensemble"
+msgstr "Vue d'ensemble"
+
+msgid "Résumé des dernières sessions et meilleurs temps"
+msgstr "Résumé des dernières sessions et meilleurs temps"
+
+msgid "Voir tous les résultats →"
+msgstr "Voir tous les résultats →"
+
+msgid "Aperçu du classement"
+msgstr "Aperçu du classement"
+
+msgid "Voir le classement complet →"
+msgstr "Voir le classement complet →"
+
+msgid "Meilleur temps"
+msgstr "Meilleur temps"
+
+msgid "Performances serveur"
+msgstr "Performances container"
+
+msgid "Mémoire RAM"
+msgstr "Mémoire RAM"
+
+msgid "Réseau (total)"
+msgstr "Réseau (total)"
+
+msgid "Processus"
+msgstr "Processus"
+
+msgid "Données indisponibles (serveur arrêté ou non Docker)"
+msgstr "Données indisponibles (serveur arrêté ou non Docker)"
+
+msgid "joueurs connectés"
+msgstr "joueurs connectés"
+
+msgid "Météo & Heure"
+msgstr "Météo & Heure"
+
+msgid "Voir tous les logs"
+msgstr "Voir tous les logs"
+
+msgid "Chat en direct"
+msgstr "Chat en direct"
+
+msgid "Aucun message récent"
+msgstr "Aucun message récent"
+
+msgid "Réagir"
+msgstr "Réagir"
+
+msgid "Réaction envoyée !"
+msgstr "Réaction envoyée !"
+
+msgid "Serveur non connecté"
+msgstr "Serveur non connecté"
+
+msgid "Drapeau"
+msgstr "Drapeau"
+
+msgid "Pouce levé"
+msgstr "Pouce levé"
+
+msgid "Cœur"
+msgstr "Cœur"
+
+msgid "Force"
+msgstr "Force"
+
+msgid "Éclair"
+msgstr "Éclair"
+
+msgid "Beau tour !"
+msgstr "Beau tour !"
+
+msgid "Bien joué !"
+msgstr "Bien joué !"
+
+msgid "Courage !"
+msgstr "Courage !"
+
+msgid "En feu !"
+msgstr "En feu !"
+
+msgid "Bravo !"
+msgstr "Bravo !"
+
+msgid "Allez !"
+msgstr "Allez !"
+
+msgid "Pour"
+msgstr "Pour"
+
+msgid "Tout le monde"
+msgstr "Tout le monde"
+
 #~ msgid "Administration serveur"
 #~ msgstr "Administration serveur"
 
@@ -3410,3 +3525,18 @@ msgstr "Projet non officiel, non affilié à Kunos Simulazioni ni à Assetto Cor
 #~ msgid "Track"
 #~ msgstr "Piste"
 
+
+msgid "Fichier de configuration invalide (%(name)s) : erreur JSON ligne %(line)s colonne %(col)s. Corrigez et sauvegardez depuis l'onglet Configuration."
+msgstr "Fichier de configuration invalide (%(name)s) : erreur JSON ligne %(line)s colonne %(col)s. Corrigez et sauvegardez depuis l'onglet Configuration."
+
+msgid "Tracks"
+msgstr "Tracks"
+
+msgid "track(s)"
+msgstr "track(s)"
+
+msgid "Aucun track trouvé."
+msgstr "Aucun track trouvé."
+
+msgid "Tour invalide"
+msgstr "Tour invalide"

@@ -72,8 +72,11 @@ def _get_server(server_id: int) -> dict:
                 "player_history_lock": threading.Lock(),
                 "system_warnings":     [],
                 "last_history_sample": 0.0,
-                "container_name":      "",  # populated by init_watchdog
-                "http_host":           "",  # hostname used for HTTP player-count API
+                "last_stats_sample":   0.0,
+                "container_stats":     None,          # dict or None; updated by watchdog every ~60s
+                "container_stats_hist": collections.deque(maxlen=20),  # for sparklines
+                "container_name":      "",    # populated by init_watchdog
+                "http_host":           "",    # hostname used for HTTP player-count API
             }
         return _servers[server_id]
 
@@ -173,6 +176,71 @@ def _sample_player_history(server_id: int):
     if count is not None:
         with srv["player_history_lock"]:
             srv["player_history"].append({"ts": int(now), "count": count})
+
+
+def _sample_container_stats(server_id: int):
+    """Appelle Docker stats sur le container ace-server et met en cache le résultat."""
+    srv = _get_server(server_id)
+    now = time.time()
+    if now - srv["last_stats_sample"] < 60:
+        return
+    srv["last_stats_sample"] = now
+    try:
+        container = _get_aceserver_container(server_id)
+        if not container:
+            return
+        raw = container.stats(stream=False)
+
+        # CPU %
+        cpu      = raw["cpu_stats"]["cpu_usage"]["total_usage"]
+        precpu   = raw["precpu_stats"]["cpu_usage"]["total_usage"]
+        sys_cpu  = raw["cpu_stats"].get("system_cpu_usage", 0)
+        presys   = raw["precpu_stats"].get("system_cpu_usage", 0)
+        n_cpus   = raw["cpu_stats"].get("online_cpus") or len(raw["cpu_stats"]["cpu_usage"].get("percpu_usage", [1]))
+        cpu_delta = cpu - precpu
+        sys_delta = sys_cpu - presys
+        cpu_pct   = round((cpu_delta / sys_delta) * n_cpus * 100, 1) if sys_delta > 0 else 0.0
+
+        # RAM (usage sans page cache)
+        mem       = raw["memory_stats"]
+        mem_usage = mem["usage"] - mem.get("stats", {}).get("cache", 0)
+        mem_limit = mem.get("limit", 0)
+        mem_mb    = round(mem_usage / 1_048_576, 1)
+        mem_lim   = round(mem_limit / 1_048_576, 1)
+        mem_pct   = round(mem_usage / mem_limit * 100, 1) if mem_limit > 0 else 0.0
+
+        # Réseau (somme de toutes les interfaces)
+        nets    = raw.get("networks", {})
+        rx_kb   = round(sum(v.get("rx_bytes", 0) for v in nets.values()) / 1024, 1)
+        tx_kb   = round(sum(v.get("tx_bytes", 0) for v in nets.values()) / 1024, 1)
+
+        # PIDs
+        pids    = raw.get("pids_stats", {}).get("current", 0)
+
+        srv["container_stats"] = {
+            "cpu_pct":    cpu_pct,
+            "mem_mb":     mem_mb,
+            "mem_lim_mb": mem_lim,
+            "mem_pct":    mem_pct,
+            "rx_kb":      rx_kb,
+            "tx_kb":      tx_kb,
+            "pids":       pids,
+            "sampled_at": now,
+        }
+        srv["container_stats_hist"].append({
+            "cpu": cpu_pct, "mem": mem_pct, "tx": round(tx_kb), "pids": pids,
+        })
+    except Exception as e:
+        log.debug("container_stats échec (server=%d): %s", server_id, e)
+
+
+def get_container_stats(server_id: int = 1) -> dict | None:
+    """Retourne les dernières métriques Docker mises en cache (+ historique sparklines), ou None."""
+    srv   = _get_server(server_id)
+    stats = srv["container_stats"]
+    if stats is None:
+        return None
+    return {**stats, "history": list(srv["container_stats_hist"])}
 
 
 def get_player_history(server_id: int = 1) -> list:
@@ -327,8 +395,10 @@ def _watchdog_rotate_docker(container, next_cfg: str, auto_restart: bool,
         from app.services import config_builder
         from app.models import Server as _Server
         from app.services.database import db as _db
+        from app.services.server_config import deploy_config as _deploy_config
         with _db_context():
             _srv = _db.session.get(_Server, server_id)
+            _deploy_config(next_cfg, server_id)
         sc_b64, sd_b64 = config_builder.build_launch_args(
             cfg_data,
             tcp_listener=_srv.tcp_port if _srv else None,
@@ -389,8 +459,10 @@ def _watchdog_rotate_native(exe: Path, next_cfg: str, auto_restart: bool,
         from app.services import config_builder
         from app.models import Server as _Server
         from app.services.database import db as _db
+        from app.services.server_config import deploy_config as _deploy_config
         with _db_context():
             _srv = _db.session.get(_Server, server_id)
+            _deploy_config(next_cfg, server_id)
         sc_b64, sd_b64 = config_builder.build_launch_args(
             cfg_data,
             tcp_listener=_srv.tcp_port if _srv else None,
@@ -514,6 +586,8 @@ def _watchdog_loop(server_id: int):
     while not srv["watchdog_stop"].wait(timeout=10):
         if is_running(server_id):
             _sample_player_history(server_id)
+            if _DEPLOY_MODE == "docker_split":
+                _sample_container_stats(server_id)
         state = _read_state(server_id)
         if not state:
             continue

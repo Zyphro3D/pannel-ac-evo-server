@@ -120,6 +120,15 @@ def send_new_registration(driver):
         _send(admin, subject, html)
 
 
+def send_registration_received(driver):
+    html = f"""
+<p>Bonjour <strong>{_e(driver.ingame_name)}</strong>,</p>
+<p>Votre demande d'inscription a bien été reçue. Un administrateur va examiner votre compte et vous recevrez un email de confirmation dès qu'il sera validé.</p>
+<p style="color:#888;font-size:12px">Si vous n'êtes pas à l'origine de cette inscription, ignorez cet email.</p>
+"""
+    _send(driver.email, "[ACE EVO] Demande d'inscription reçue", html)
+
+
 def send_registration_approved(driver):
     url  = f"{_cfg['panel_url']}/login"
     html = f"""
@@ -137,6 +146,31 @@ def send_registration_rejected(driver):
 <p>Si vous pensez qu'il s'agit d'une erreur, contactez l'administrateur.</p>
 """
     _send(driver.email, "[ACE EVO] Inscription refusée", html)
+
+
+def send_event_registration_confirmed(driver, event):
+    date_str = event.date.strftime("%d/%m/%Y à %H:%M") + " UTC"
+    url = _cfg["panel_url"]
+    html = f"""
+<p>Bonjour <strong>{_e(driver.ingame_name)}</strong>,</p>
+<p>Votre inscription à l'événement <strong>{_e(event.title)}</strong> a été <strong>confirmée</strong>&nbsp;!</p>
+<ul>
+  <li><strong>Date&nbsp;:</strong> {date_str}</li>
+  <li><strong>Circuit&nbsp;:</strong> {_e(event.circuit_display or event.circuit or "—")}</li>
+  <li><strong>Mode&nbsp;:</strong> {_e(event.mode_display)}</li>
+</ul>
+<p><a href="{_e(url)}">Accéder au panel</a></p>
+"""
+    _send(driver.email, f"[ACE EVO] Inscription confirmée — {event.title}", html)
+
+
+def send_event_registration_rejected(driver, event):
+    html = f"""
+<p>Bonjour <strong>{_e(driver.ingame_name)}</strong>,</p>
+<p>Votre inscription à l'événement <strong>{_e(event.title)}</strong> a été <strong>refusée</strong>.</p>
+<p>Si vous pensez qu'il s'agit d'une erreur, contactez l'administrateur.</p>
+"""
+    _send(driver.email, f"[ACE EVO] Inscription refusée — {event.title}", html)
 
 
 def send_password_reset(driver, token: str):

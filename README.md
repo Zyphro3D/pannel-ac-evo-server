@@ -19,19 +19,46 @@
 
 ---
 
+## Aperçu
+
+<table>
+  <tr>
+    <td><img src="docs/screenshots/home.png" alt="Page d'accueil" title="Page d'accueil publique"></td>
+    <td><img src="docs/screenshots/live-timing.png" alt="Timing en direct" title="Timing en direct"></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/results-overview.png" alt="Résultats" title="Résultats de session"></td>
+    <td><img src="docs/screenshots/results.png" alt="Détail résultats" title="Détail d'un résultat"></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/leaderboard.png" alt="Classement global" title="Classement global de la saison"></td>
+    <td><img src="docs/screenshots/server-status.png" alt="Statut serveur" title="Onglet statut du serveur"></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/config.png" alt="Configuration" title="Éditeur de configuration serveur"></td>
+    <td><img src="docs/screenshots/scheduling.png" alt="Programmation" title="Programmation des sessions"></td>
+  </tr>
+  <tr>
+    <td colspan="2"><img src="docs/screenshots/server-create.png" alt="Création de serveur" title="Création d'un serveur additionnel"></td>
+  </tr>
+</table>
+
+---
+
 ## Fonctionnalités
 
 **Serveur de jeu**
 - Démarrage, arrêt et restart depuis l'interface — pas d'accès SSH nécessaire
 - Auto-restart watchdog (relance automatique en cas de crash)
-- Statut en temps réel : joueurs connectés, uptime, logs en direct
+- Statut en temps réel : joueurs connectés, uptime, métriques CPU/RAM du container, logs en direct
 - Support multi-serveurs : chaque serveur ACE EVO tourne dans son propre container Docker
+- Création de serveurs supplémentaires depuis le panel (superadmin)
 - Sélecteur de serveur actif dans la navbar
 
 **Configuration**
 - Éditeur de config JSON complet : circuit, météo, sessions (Practice / Qualifying / Warmup / Race), voitures
 - Banque de véhicules (94 voitures, catégories Road/Race/Track, filtres, images)
-- Banque de circuits (grille avec images, toggle actif/inactif)
+- Banque de circuits (36 circuits avec layout et longueur, images)
 - Roulement de configs avec file d'attente et glisser-déposer, option cycle
 
 **Événements**
@@ -41,7 +68,8 @@
 - Emails transactionnels (approbation, rejet, rappel)
 
 **Live & Résultats**
-- Timing en direct mis à jour toutes les 15 secondes via l'API TCP du serveur
+- Timing en direct mis à jour toutes les 15 secondes via le bot TCP du serveur
+- Tours invalides signalés en temps réel (track limits, split manqué)
 - Import automatique des résultats en fin de session (webhook)
 - Classement détaillé : drapeaux, meilleurs tours, secteurs color-codés, gap au leader
 - Leaderboard global de la saison par voiture
@@ -240,6 +268,21 @@ Référence complète des variables `.env` (voir aussi `.env.example`) :
 | `ACESERVER_TCP_PORT` | Port TCP ACE EVO | `9700` |
 | `SERVER_NAME` | Nom affiché dans la liste des serveurs ACE EVO | `ACE EVO Server` |
 | `SERVER_MAX_PLAYERS` | Nombre maximum de joueurs | `8` |
+
+### Bot TCP in-game *(optionnel)*
+
+Le bot TCP se connecte au serveur ACE EVO pour envoyer des messages de bienvenue, détecter les meilleurs tours et alimenter le timing en direct.
+
+| Variable | Description | Défaut |
+|---|---|---|
+| `ACE_BOT_STEAM_ID` | Steam ID du compte bot — **laisser vide pour désactiver** | — |
+| `ACE_BOT_CAR_MODEL` | Modèle de voiture utilisé par le bot pour la connexion | `preset_190_evo_ii` |
+| `ACE_BOT_IS_ADMIN` | `true` pour envoyer automatiquement `\admin <password>` à la connexion | `false` |
+| `ACE_BOT_MSG_WELCOME` | Message de bienvenue (variables : `{name}`, `{discord_url}`, `{site_url}`) | — |
+| `ACE_BOT_MSG_DISCORD` | Message Discord envoyé si `DISCORD_INVITE_URL` est défini | — |
+| `ACE_BOT_MSG_SITE` | Message site envoyé si `PANEL_URL` est défini | — |
+
+> **Multi-serveur** : un bot indépendant est démarré automatiquement pour chaque serveur activé. Chaque bot se connecte au container ACE EVO correspondant sur son port interne.
 
 ### HTTPS / SSL *(optionnel)*
 

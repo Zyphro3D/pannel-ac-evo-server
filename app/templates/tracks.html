@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Tracks') }} — {{ panel_title }}{% endblock %}
+
+{% block content %}
+<div style="max-width:1100px;margin:0 auto;">
+
+  <div class="settings-card-head" style="display:flex;align-items:center;gap:1rem;margin-bottom:1.2rem;">
+    <h1 style="margin:0;font-size:1.3rem;">{{ _('Tracks') }}</h1>
+    <span class="dim" style="font-size:.85rem;">{{ tracks|length }} {{ _('track(s)') }}</span>
+  </div>
+
+  {% if tracks %}
+  <div class="cir-grid">
+    {% for tr in tracks %}
+    <div class="cir-card" id="cir-{{ tr.id }}">
+
+      <div class="cir-img-wrap">
+        {% if tr.image_path %}
+        <img src="{{ url_for('serve_media', filename=tr.image_path) }}"
+             alt="{{ tr.track_name }}" class="cir-img" loading="lazy">
+        {% else %}
+        <div class="cir-img-placeholder">
+          <span>{{ tr.track_name[:3].upper() }}</span>
+        </div>
+        {% endif %}
+        {% if current_user.is_superadmin %}
+        <label class="cir-img-upload" title="{{ _('Changer l\'image') }}">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <input type="file" accept=".jpg,.jpeg,.png,.webp" class="cir-file-input"
+                 data-id="{{ tr.id }}"
+                 data-url="{{ url_for('admin.track_upload_image', track_id=tr.id) }}">
+        </label>
+        {% endif %}
+      </div>
+
+      <div class="cir-info">
+        <div class="cir-name">{{ tr.track_name }}</div>
+        <div class="cir-layout">{{ tr.layout }}</div>
+        {% if tr.length_m %}
+        <div class="cir-length dim">{{ "%.2f"|format(tr.length_m / 1000) }} km</div>
+        {% endif %}
+      </div>
+
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="h-empty" style="margin-top:3rem;">{{ _('Aucun track trouvé.') }}</div>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const _csrf = '{{ csrf_token() }}';
+
+document.querySelectorAll('.cir-file-input').forEach(input => {
+  input.addEventListener('change', async () => {
+    if (!input.files.length) return;
+    const form = new FormData();
+    form.append('file', input.files[0]);
+    const res  = await fetch(input.dataset.url, {
+      method: 'POST', headers: { 'X-CSRFToken': _csrf }, body: form,
+    });
+    const data = await res.json();
+    if (!data.ok) { alert(data.error); return; }
+    const card = document.getElementById('cir-' + input.dataset.id);
+    const wrap = card.querySelector('.cir-img-wrap');
+    let img = wrap.querySelector('.cir-img');
+    if (!img) {
+      img = document.createElement('img');
+      img.className = 'cir-img';
+      wrap.querySelector('.cir-img-placeholder')?.remove();
+      wrap.insertBefore(img, wrap.firstChild);
+    }
+    img.src = '/media/' + data.image_path + '?t=' + Date.now();
+  });
+});
+</script>
+{% endblock %}

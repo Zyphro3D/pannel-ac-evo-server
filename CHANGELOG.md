@@ -1,5 +1,46 @@
 # Changelog
 
+### v1.8.1 — 25/06/2026
+
+**Bot TCP multi-serveur**
+- Un bot TCP indépendant est démarré pour chaque serveur activé en base de données (au boot et à la création d'un nouveau serveur)
+- En mode `docker_split` : chaque bot se connecte au container ACE EVO par son nom (hostname Docker) sur le port interne 9700 — plus de confusion avec les ports host-mappés
+- Nouvelle fonction `start_for_server(srv, cfg)` dans `ace_tcp_client.py` — centralisée, appelée depuis `create_app()` et `server_create()`
+
+**Banque de circuits — catalogue complet**
+- `_sync_track_meta()` lit désormais `events_practice.json` + `events_race_weekend.json` (36 circuits au lieu des 3 extraits des configs existantes)
+- Fallback sur les configs existantes pour les tracks personnalisés non présents dans les fichiers events
+
+**Timing en direct — tours invalides**
+- Pattern de log ACE EVO identifié : `[gameplay] [error] Couldn't create lap from opensplits`
+- Regex `_RE_LAP_INVALID` dans `ace_tcp_client.py` : détecte l'invalidation via le `carId`, mappe vers le `steam_id`, pose `lap_invalid = True` dans le leaderboard TCP
+- Reset automatique à `False` au passage du secteur 0 (nouveau tour)
+- Leaderboard `/api/timing` inclut le champ `lap_invalid` par pilote
+- `timing.html` : ligne du pilote en rouge + icône ⚠ à côté du nom si tour invalide
+
+**Page Tracks (ex-Circuits)**
+- Renommée "Tracks" dans la navigation, la route (`/admin/tracks`) et le template
+- Toggle actif/inactif supprimé (ne servait à rien)
+- Suppression réservée à la Phase 5 (gestion mods)
+
+**Page Véhicules**
+- Toggle actif/inactif supprimé
+
+**Page Timing publique**
+- Fusion avec les fonctionnalités admin : la section TCP (statut bot, chat, commandes) n'est visible que pour les admins connectés
+- La route `/live` redirige vers `/timing`
+- "Live" supprimé du menu déroulant admin
+
+**Documentation**
+- Nouveau README avec section captures d'écran (9 screenshots), section Bot TCP dans la configuration
+- CHANGELOG complet
+
+**Corrections**
+- Création d'un serveur additionnel : détection précoce du mode réseau `host` avec message d'erreur explicite (incompatible avec les port bindings requis pour le multi-serveur)
+- Config JSON corrompue : la page principale ne crash plus en 500 — le panel charge avec les valeurs par défaut et affiche un bandeau indiquant le fichier concerné et la ligne/colonne de l'erreur JSON
+
+---
+
 ### v1.8.0 — 22/06/2026
 
 **Multi-serveur — Phase 2 : gestion des serveurs depuis le panel**

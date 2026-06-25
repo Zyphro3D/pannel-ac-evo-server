@@ -3,22 +3,23 @@ import os
 import re
 import threading
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
 
 _env_write_lock = threading.Lock()  # protects concurrent os.environ writes in settings POST
 
 from flask import Blueprint, current_app, render_template, redirect, url_for, request, flash, jsonify, session
-from flask_babel import _, lazy_gettext as _l, get_locale
+from flask_babel import _, lazy_gettext as _l
 from flask_login import current_user
 
-from sqlalchemy.orm import selectinload as _ev_selectinload
+
 from app.models import AdminAccount, Driver, Event, SessionResult, Server, CarMeta, TrackMeta
 from app.services.database import db
 from app.services.server_config import (
     load_config, load_cars, load_events,
     list_configs, get_active_config_name, get_running_server_info,
-    load_config_by_name,
+    load_config_by_name, deployed_configs, delete_server_runtime_dir,
+    ConfigJsonError, default_config,
 )
 from app.services.process_manager import get_status, get_server_logs
 from app.services.results_parser import parse_result_file
@@ -30,82 +31,7 @@ admin_bp = Blueprint("admin", __name__)
 from app.services.server_config import CAR_PROP_MAPS as _PROP_MAPS, CAR_CATEGORY_ORDER as _CATEGORY_ORDER
 
 
-_DASH_MEDIA_ROOT = Path(__file__).parent.parent.parent / "media"
 
-
-@admin_bp.route("/dashboard")
-@_admin_required
-def dashboard():
-    sid            = session.get("current_server_id", 1)
-    now            = datetime.now(timezone.utc).replace(tzinfo=None)
-    status         = get_status(sid)
-    server_info    = get_running_server_info(sid)
-
-    if server_info:
-        slug   = server_info.get("track_slug", "")
-        banner = _DASH_MEDIA_ROOT / "circuits" / f"{slug}.webp"
-        server_info["banner_image"] = f"circuits/{slug}.webp" if slug and banner.exists() else ""
-
-    from zoneinfo import ZoneInfo as _ZI
-    from babel.dates import format_date as _babel_fmt_date
-    panel_tz = _ZI(current_app.config.get("PANEL_TIMEZONE", "Europe/Paris"))
-    _loc     = str(get_locale())
-    raw_ev   = (Event.query
-                .filter_by(status="published")
-                .filter(Event.date >= now)
-                .options(_ev_selectinload(Event.registrations))
-                .order_by(Event.date)
-                .limit(5)
-                .all())
-    upcoming = []
-    for ev in raw_ev:
-        local_dt = ev.date.replace(tzinfo=timezone.utc).astimezone(panel_tz)
-        parts    = (ev.circuit or "").split("|")
-        tslug    = parts[0].strip().lower().replace(" ", "_") if parts else ""
-        tpath    = _DASH_MEDIA_ROOT / "circuits" / f"{tslug}.webp"
-        conf     = sum(1 for r in ev.registrations if r.status == "confirmed")
-        total    = ev.total_minutes
-        h, m     = divmod(total, 60)
-        upcoming.append({
-            "ev":        ev,
-            "day":       local_dt.strftime("%d"),
-            "month":     _babel_fmt_date(local_dt, format="MMM", locale=_loc).rstrip("."),
-            "time":      local_dt.strftime("%H:%M"),
-            "duration":  f"{h}h{m:02d}" if h else f"{m} min",
-            "track_img": f"circuits/{tslug}.webp" if tslug and tpath.exists() else "",
-            "confirmed": conf,
-            "fill_pct":  min(100, round(conf / ev.max_drivers * 100)) if ev.max_drivers else 0,
-        })
-    pending_count  = Driver.query.filter_by(status="pending").count()
-    recent_results = []
-    for r in SessionResult.query.order_by(SessionResult.received_at.desc()).limit(4).all():
-        try:
-            p = parse_result_file(json.loads(r.raw_json))
-        except Exception:
-            p = {}
-        entry = {"id": r.id, "received_at": r.received_at, "parsed": p,
-                 "car_image": "", "track_banner": ""}
-        standings = p.get("standings") or []
-        car_name  = standings[0].get("car", "") if standings else ""
-        if car_name:
-            cm = CarMeta.query.filter_by(display_name=car_name).first()
-            if not cm:
-                cm = CarMeta.query.filter(
-                    CarMeta.display_name.like(f"{car_name} %")
-                ).filter(CarMeta.image_path != "").first()
-            if cm and cm.image_path:
-                entry["car_image"] = cm.image_path
-        track_slug = (p.get("track") or "").lower().replace(" ", "_")
-        tb = _DASH_MEDIA_ROOT / "circuits" / f"{track_slug}.webp"
-        entry["track_banner"] = f"circuits/{track_slug}.webp" if track_slug and tb.exists() else ""
-        recent_results.append(entry)
-
-    return render_template("admin_dashboard.html",
-                           status=status,
-                           server_info=server_info,
-                           upcoming=upcoming,
-                           pending_count=pending_count,
-                           recent_results=recent_results)
 
 
 @admin_bp.route("/administration")
@@ -168,7 +94,15 @@ def server():
                                car_categories=[], pi_min=0.0, pi_max=999.0,
                                server_view=server_view, config_summaries=[],
                                server_events=[], current_track={})
-    config          = load_config()
+    try:
+        config = load_config()
+    except ConfigJsonError as e:
+        flash(
+            _("Fichier de configuration invalide (%(name)s) : erreur JSON ligne %(line)s colonne %(col)s. Corrigez et sauvegardez depuis l'onglet Configuration.",
+              name=e.filename, line=e.line, col=e.col),
+            "error",
+        )
+        config = default_config()
     cars            = load_cars()
     events_practice = load_events("practice")
     events_race     = load_events("race")
@@ -325,6 +259,7 @@ def server():
         current_mode=mode_labels.get(current_event.get("SelectedSessionTypeValue"), "—"),
         recent_server_activity=_recent_server_activity(),
         config_dirty=config_dirty,
+        deployed_configs=deployed_configs(sid),
     )
 
 
@@ -731,15 +666,7 @@ def select_server(server_id):
     srv = db.session.get(Server, server_id)
     if srv and srv.is_enabled:
         session["current_server_id"] = server_id
-    raw_next = request.form.get("next") or request.referrer or ""
-    # Restrict to relative paths to prevent open redirect
-    if raw_next and (raw_next.startswith("/") and not raw_next.startswith("//")
-                     and not raw_next.lower().startswith("/\\")
-                     and "://" not in raw_next):
-        next_url = raw_next
-    else:
-        next_url = url_for("admin.dashboard")
-    return redirect(next_url)
+    return redirect(url_for("admin.server"))
 
 
 # ── Gestion des serveurs (superadmin) ─────────────────────────────────────────
@@ -840,6 +767,10 @@ def server_create():
         http_host      = srv.container_name,
     )
 
+    # Démarre le bot TCP pour ce nouveau serveur
+    from app.services import ace_tcp_client
+    ace_tcp_client.start_for_server(srv, _ca.config)
+
     flash(_("Serveur '%(name)s' créé avec succès.", name=name), "success")
     return redirect(url_for("admin.servers_list"))
 
@@ -880,6 +811,9 @@ def server_delete(server_id):
     from app.services.server_docker import remove_server_container
     remove_server_container(srv.container_name)
 
+    # Supprime le dossier de configs déployées pour ce serveur
+    delete_server_runtime_dir(server_id)
+
     db.session.delete(srv)
     db.session.commit()
     flash(_("Serveur '%(name)s' supprimé.", name=srv.name), "success")
@@ -906,15 +840,6 @@ def vehicles():
                            search=search, counts=counts, categories=_CAR_CATEGORIES)
 
 
-@admin_bp.route("/vehicles/<slug>/toggle", methods=["POST"])
-@_admin_required
-def vehicle_toggle(slug):
-    car = CarMeta.query.filter_by(slug=slug).first_or_404()
-    car.is_active = not car.is_active
-    db.session.commit()
-    return jsonify({"ok": True, "is_active": car.is_active})
-
-
 @admin_bp.route("/vehicles/<slug>/upload-image", methods=["POST"])
 @_admin_required
 @_superadmin_required_json
@@ -932,28 +857,19 @@ def vehicle_upload_image(slug):
     return jsonify({"ok": True, "image_path": car.image_path})
 
 
-# ── Circuits ───────────────────────────────────────────────────────────────────
+# ── Tracks ────────────────────────────────────────────────────────────────────
 
-@admin_bp.route("/circuits")
+@admin_bp.route("/tracks")
 @_admin_required
-def circuits():
-    tracks = TrackMeta.query.order_by(TrackMeta.track_name, TrackMeta.layout).all()
-    return render_template("circuits.html", tracks=tracks)
+def tracks():
+    all_tracks = TrackMeta.query.order_by(TrackMeta.track_name, TrackMeta.layout).all()
+    return render_template("tracks.html", tracks=all_tracks)
 
 
-@admin_bp.route("/circuits/<int:track_id>/toggle", methods=["POST"])
-@_admin_required
-def circuit_toggle(track_id):
-    track = TrackMeta.query.get_or_404(track_id)
-    track.is_active = not track.is_active
-    db.session.commit()
-    return jsonify({"ok": True, "is_active": track.is_active})
-
-
-@admin_bp.route("/circuits/<int:track_id>/upload-image", methods=["POST"])
+@admin_bp.route("/tracks/<int:track_id>/upload-image", methods=["POST"])
 @_admin_required
 @_superadmin_required_json
-def circuit_upload_image(track_id):
+def track_upload_image(track_id):
     track = TrackMeta.query.get_or_404(track_id)
     f, err = _validate_image_upload()
     if f is None:
