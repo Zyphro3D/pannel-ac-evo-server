@@ -19,6 +19,18 @@
 
 ---
 
+<p align="center">
+  <strong>Ce projet est gratuit et open source.</strong><br>
+  Si le panel tourne sur votre serveur et vous fait gagner du temps, un café est toujours apprécié ☕<br>
+  Chaque soutien encourage le développement de nouvelles fonctionnalités.
+</p>
+
+<p align="center">
+  <a href="https://ko-fi.com/zyphro3d"><img src="https://ko-fi.com/img/githubbutton_sm.svg" alt="Soutenir sur Ko-fi"></a>
+</p>
+
+---
+
 ## Aperçu
 
 <table>
@@ -341,7 +353,10 @@ Voir [CHANGELOG.md](CHANGELOG.md) pour l'historique complet des versions.
 
 ## Soutenir le projet
 
-[![Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/zyphro3d)
+Le panel est développé sur le temps libre, distribué gratuitement, et maintenu activement.
+Si vous l'utilisez pour vos courses ou votre club, un café aide à garder la motivation et à financer les prochaines fonctionnalités.
+
+<a href="https://ko-fi.com/zyphro3d"><img src="https://ko-fi.com/img/githubbutton_sm.svg" alt="Soutenir sur Ko-fi"></a>
 
 ---
 
