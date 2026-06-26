@@ -41,6 +41,18 @@
       </div>
     </div>
 
+    <!-- Carte du circuit -->
+    <div class="timing-track-wrap" id="timing-track-wrap" style="display:none">
+      <div class="timing-track-card">
+        <div class="timing-track-info">
+          <span class="timing-track-label" id="timing-track-label"></span>
+        </div>
+        <div class="timing-track-map">
+          <img id="timing-track-svg" src="" alt="" class="timing-track-img" loading="lazy">
+        </div>
+      </div>
+    </div>
+
     <div class="timing-wrap">
       <table class="timing-table" id="timing-table">
         <thead>
@@ -169,10 +181,14 @@ const REACTION_LABELS = {
   "⚡": "{{ _('Allez !') }}",
 };
 
-function _carLabel(raw) {
+function _esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function _carLabel(entry) {
+  if (entry.car_display_name) return entry.car_display_name;
+  const raw = entry.car_raw || '';
   if (!raw) return '—';
-  const map = { 'ks_mercedes_190e_evo_ii': 'Mercedes 190E Evo II' };
-  if (map[raw]) return map[raw];
   return raw.replace(/^ks_/, '').replace(/^preset_/, '')
             .replace(/_mech_\d+$/, '').replace(/_/g, ' ')
             .replace(/\b\w/g, c => c.toUpperCase());
@@ -229,9 +245,24 @@ function _updateReactTitles() {
   });
 }
 
+// ── Carte du circuit ──────────────────────────────────────────────────────────
+function _renderTrackMap(d) {
+  const wrap  = document.getElementById('timing-track-wrap');
+  const img   = document.getElementById('timing-track-svg');
+  const label = document.getElementById('timing-track-label');
+  if (d.track_svg_url) {
+    if (img.getAttribute('src') !== d.track_svg_url) img.src = d.track_svg_url;
+    if (label) label.textContent = d.track_label || '';
+    wrap.style.display = '';
+  } else {
+    wrap.style.display = 'none';
+  }
+}
+
 // ── Rendu leaderboard ─────────────────────────────────────────────────────────
 function _renderLeaderboard(d) {
   _sess = {s1: d.sess_s1_ms, s2: d.sess_s2_ms, s3: d.sess_s3_ms};
+  _renderTrackMap(d);
 
   document.getElementById('t-dot').className     = 'dot online';
   document.getElementById('t-label').textContent  = T.live;
@@ -256,8 +287,8 @@ function _renderLeaderboard(d) {
     return `
       <tr class="t-row ${isLeader && hasBest ? 't-leader' : ''} ${invalid ? 't-invalid' : ''}">
         <td class="t-pos"><span class="pos-badge ${posClass}">${pos}</span></td>
-        <td class="t-name">${e.name || '—'}${invalid ? ' <span class="invalid-badge" title="${T.invalidLap}">⚠</span>' : ''}</td>
-        <td class="t-car">${_carLabel(e.car_raw)}</td>
+        <td class="t-name">${_esc(e.name) || '—'}${invalid ? `<span class="invalid-badge" title="${T.invalidLap}">⚠</span>` : ''}</td>
+        <td class="t-car">${_carLabel(e)}</td>
         <td class="t-best ${hasBest ? 'has-time' : ''}">${e.best_lap_str || '—'}</td>
         <td class="t-sector">${_sectorCell(e.pb_s1_ms, e.pb_s1_str, e.curr_s1_ms, e.curr_s1_str, _sess.s1)}</td>
         <td class="t-sector">${_sectorCell(e.pb_s2_ms, e.pb_s2_str, e.curr_s2_ms, e.curr_s2_str, _sess.s2)}</td>
@@ -280,8 +311,8 @@ function _renderChat(msgs) {
     const isPanel = m.source === 'panel';
     return `<div class="timing-chat-row ${isPanel ? 'timing-chat-panel' : ''}">
       <span class="timing-chat-ts">${m.ts || ''}</span>
-      <span class="timing-chat-author">${isPanel ? T.panelLabel : m.author}</span>
-      <span class="timing-chat-text">${m.text}</span>
+      <span class="timing-chat-author">${isPanel ? T.panelLabel : _esc(m.author)}</span>
+      <span class="timing-chat-text">${_esc(m.text)}</span>
     </div>`;
   }).join('');
 }

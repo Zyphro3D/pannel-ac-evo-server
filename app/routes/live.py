@@ -5,6 +5,7 @@ et expose une API de l'état courant de la session.
 import json
 import os
 import re
+import time
 import logging
 from flask import Blueprint, render_template, Response, stream_with_context, jsonify, request, session, redirect, url_for
 from flask_login import login_required
@@ -29,6 +30,8 @@ _REACTION_MSGIDS = {
 }
 _ALLOWED_REACTIONS  = set(_REACTION_MSGIDS.keys())
 _RE_DRIVER_SAFE     = re.compile(r'[^\w\s\-\'\.]', re.UNICODE)
+# Champs internes non exposés sur l'API publique /api/timing
+_TIMING_STRIP_FIELDS = {"steam_id", "car_id", "joined_ts"}
 
 # ── Log parsers ───────────────────────────────────────────────────────────────
 
@@ -170,6 +173,21 @@ def _iter_log_stream(server_id: int = 1):
 
 
 # ── Build current session state ───────────────────────────────────────────────
+
+_state_cache: dict[int, tuple[float, dict]] = {}
+_STATE_TTL = 10.0  # seconds — aligns with the 15s client poll interval
+
+
+def _build_state_cached(server_id: int = 1) -> dict:
+    """Returns a cached _build_state() result, re-parsed at most every _STATE_TTL seconds."""
+    now = time.monotonic()
+    cached = _state_cache.get(server_id)
+    if cached and now - cached[0] < _STATE_TTL:
+        return cached[1]
+    state = _build_state(server_id)
+    _state_cache[server_id] = (now, state)
+    return state
+
 
 def _build_state(server_id: int = 1) -> dict:
     """Parse recent logs → drivers connectés, events, leaderboard avec historique tours/secteurs."""
@@ -358,7 +376,7 @@ def timing_page():
 @live_bp.route("/api/live/state")
 @login_required
 def live_state():
-    return jsonify(_build_state(_get_server_id()))
+    return jsonify(_build_state_cached(_get_server_id()))
 
 
 def _session_timing(server_id: int = 1) -> dict:
@@ -392,19 +410,45 @@ def _session_timing(server_id: int = 1) -> dict:
 
 
 @live_bp.route("/api/timing")
+@limiter.limit("120 per minute")
 def timing_state():
     """API publique — classement en temps réel (pas de données sensibles)."""
+    from flask import url_for
+    from app.services.server_config import get_running_server_info
+    from app.services.track_map import get_track_svg_name
+    from app.services.kspkg_reader import get_car_name
+
     sid     = _get_server_id()
-    state   = _build_state(sid)
+    state   = _build_state_cached(sid)
     timing  = _session_timing(sid)
+
+    for entry in state["leaderboard"]:
+        entry["car_display_name"] = get_car_name(entry.get("car_raw", ""))
+
+    track_svg_url = None
+    track_label   = None
+    srv_info = get_running_server_info(sid)
+    if srv_info:
+        svg_name = get_track_svg_name(srv_info.get("track_name", ""),
+                                      srv_info.get("track_layout", ""))
+        if svg_name:
+            track_svg_url = url_for("static", filename=f"img/tracks/{svg_name}.svg")
+        track_label = srv_info.get("circuit")
+
+    safe_lb = [
+        {k: v for k, v in entry.items() if k not in _TIMING_STRIP_FIELDS}
+        for entry in state["leaderboard"]
+    ]
     return jsonify({
-        "leaderboard":      state["leaderboard"],
+        "leaderboard":      safe_lb,
         "player_count":     state["player_count"],
         "started_at":       timing.get("started_at"),
         "session_length_s": timing.get("session_length_s"),
         "sess_s1_ms":       state.get("sess_s1_ms"),
         "sess_s2_ms":       state.get("sess_s2_ms"),
         "sess_s3_ms":       state.get("sess_s3_ms"),
+        "track_svg_url":    track_svg_url,
+        "track_label":      track_label,
     })
 
 
@@ -420,6 +464,7 @@ def bot_elevate_admin():
 
 
 @live_bp.route("/api/live/chat-history")
+@limiter.limit("60 per minute")
 def live_chat_history():
     """API publique — historique récent du chat in-game."""
     try:

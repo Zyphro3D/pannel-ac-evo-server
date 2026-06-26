@@ -135,11 +135,11 @@ class Event(db.Model):
 
     @property
     def confirmed_count(self) -> int:
-        return EventRegistration.query.filter_by(event_id=self.id, status="confirmed").count()
+        return sum(1 for r in self.registrations if r.status == "confirmed")
 
     @property
     def pending_count(self) -> int:
-        return EventRegistration.query.filter_by(event_id=self.id, status="pending").count()
+        return sum(1 for r in self.registrations if r.status == "pending")
 
     @property
     def is_full(self) -> bool:

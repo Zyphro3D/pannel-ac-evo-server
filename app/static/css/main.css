@@ -3231,6 +3231,42 @@ body::before {
 .timing-empty { text-align: center; padding: 40px 12px; color: var(--dim); font-size: 1rem; }
 
 /* ─── Chat lecture seule (page timing/live publique) ──────────── */
+.timing-track-wrap {
+  margin-top: 20px;
+}
+.timing-track-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.timing-track-info {
+  flex-shrink: 0;
+}
+.timing-track-label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.timing-track-map {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+.timing-track-img {
+  width: 100%;
+  max-width: 420px;
+  max-height: 180px;
+  object-fit: contain;
+  opacity: 0.9;
+  filter: drop-shadow(0 0 8px rgba(77, 184, 255, 0.25));
+}
+
 .timing-chat-wrap {
   margin-top: 24px;
   background: var(--surface);

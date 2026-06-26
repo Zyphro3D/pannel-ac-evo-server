@@ -46,6 +46,8 @@ services:
       - ${HOME}/Steam:/root/Steam
       # HTTPS intégré (Let's Encrypt) — décommentez et adaptez SSL_CERTFILE/SSL_KEYFILE dans .env
       # - /etc/letsencrypt:/etc/letsencrypt:ro
+      # Fichier override Docker Compose — le panel le régénère à chaque création/suppression de serveur
+      - ./docker-compose.override.yml:/panel/docker-compose.override.yml
     environment:
       DOCKER_HOST: tcp://dockerproxy:2375
     env_file:

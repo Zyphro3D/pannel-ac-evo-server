@@ -14,7 +14,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 RUN mkdir -p /panel/data /panel/logs /aceserver/configs && \
-    pybabel compile -d /panel/translations
+    pybabel compile -d /panel/translations && \
+    chmod +x /panel/entrypoint.sh
 
 ENV DEPLOY_MODE=docker_split \
     ACESERVER_DIR=/aceserver \
@@ -26,7 +27,4 @@ ENV DEPLOY_MODE=docker_split \
 
 EXPOSE 4300
 
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/panel/entrypoint.sh"]

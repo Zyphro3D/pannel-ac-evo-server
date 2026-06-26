@@ -1,5 +1,49 @@
 # Changelog
 
+### v1.8.2 — 26/06/2026
+
+**Noms de voitures depuis le jeu**
+- Nouveau service `app/services/kspkg_reader.py` : lit `content.kspkg` (binaire XOR propriétaire Kunos) et extrait les noms d'affichage officiels des 68 voitures et 95 presets mécaniques
+- Chargement lazy au premier appel, mise en cache en mémoire, thread-safe
+- Fallback automatique `slug_to_name()` pour les voitures ajoutées dans les futures mises à jour du jeu
+- `/api/timing` : chaque entrée du leaderboard inclut désormais `car_display_name` (ex : `"BMW M4 GT3 Evo"` au lieu de `"preset_m4gt3_mech_1"`)
+- Page timing publique : colonne *Voiture* affiche le nom officiel
+
+**Cartes de circuit haute résolution**
+- 16 SVGs régénérés depuis les `splinedata.json` extraits du `content.kspkg` (centerline officielle Kunos, 337 à 14 739 points de donnée)
+- Précision 5× supérieure aux versions précédentes issues des `trackcontrolpoints` (ex : Imola 2 KB → 9,5 KB, Nordschleife 11 567 points)
+- Circuits mis à jour : Imola, Monza, Mount Panorama, Nürburgring (24h / GP / Nordschleife / Sprint), Oulton Park (Fosters / International), Paul Ricard (4 layouts), Road Atlanta, Sebring, Watkins Glen GP Inner Loop
+
+**Multi-serveur — rebuild complet (`docker compose up --build`)**
+- `docker-compose.override.yml` auto-généré par le panel : tous les serveurs additionnels (id > 1) sont inclus dans la gestion Docker Compose
+- Synchronisation automatique au démarrage du panel et à chaque création/suppression de serveur
+- Les volumes Wine (`wine_prefix_N`) sont déclarés `external: true` — l'installation Wine est préservée lors du rebuild
+- À chaque rebuild, les containers additionnels utilisent automatiquement la nouvelle image `aceserver`
+
+**Git — fin des conflits de `git pull`**
+- `aceserver/configs/*.json` retirés du tracking git : plus de conflits entre les configs utilisateur et les mises à jour du repo
+- Template `aceserver/configs/default.json.example` fourni pour les nouvelles installations
+- Le panel crée `default.json` automatiquement au premier démarrage s'il est absent
+
+**Sécurité (audit interne)**
+- XSS : fonction `_esc()` appliquée sur tous les champs injectés via `innerHTML` dans `timing.html` et `live.html` (noms de pilotes, messages chat)
+- API publique `/api/timing` : filtrage des champs sensibles (`steam_id`, `car_id`, `joined_ts`) avant la réponse JSON
+- Rate limiting ajouté sur `/api/timing` (120/min) et `/api/live/chat-history` (60/min)
+- Route `/api/container/info` passée de `@login_required` à `@admin_required`
+- Webhooks Discord affichés en `type="password"` dans les Paramètres
+- `event_scheduler` : notifications Discord via `safe_notify()` — une erreur Discord n'interrompt plus la boucle
+
+**Performance**
+- `Event.confirmed_count` / `pending_count` / `is_full` : ne font plus de requête SQL si `registrations` est déjà chargé — les pages liste utilisent `selectinload(Event.registrations)` (2 requêtes au lieu de N+1)
+- `/api/timing` et `/api/live/state` : résultat de `_build_state()` mis en cache 10 s — le parsing des logs Docker (24h) n'est plus rejoué à chaque poll client (toutes les 15s)
+
+**Docker / DevOps**
+- `.dockerignore` : ajout de `aceserver/` et `media/` — contexte de build réduit de ~580 MB à ~157 KB (build en ~14 s au lieu de plusieurs minutes)
+- `requirements.txt` : toutes les dépendances maintenant pinées à une version exacte
+- `Dockerfile.panel` : correction d'un `COPY entrypoint.sh` redondant qui générait un fichier en doublon
+
+---
+
 ### v1.8.1 — 25/06/2026
 
 **Bot TCP multi-serveur**

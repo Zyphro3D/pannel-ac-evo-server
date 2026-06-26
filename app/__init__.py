@@ -490,6 +490,13 @@ def create_app():
     except Exception as _e:
         _logging.getLogger(__name__).warning("scan_and_import ignoré : %s", _e)
 
+    try:
+        from app.services.server_docker import sync_compose_override
+        with app.app_context():
+            sync_compose_override()
+    except Exception as _e:
+        _logging.getLogger(__name__).warning("sync_compose_override ignoré : %s", _e)
+
     from app.services import discord_notifier
     discord_notifier.init(panel_timezone=app.config.get("PANEL_TIMEZONE", "Europe/Paris"))
 

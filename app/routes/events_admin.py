@@ -6,6 +6,7 @@ from zoneinfo import ZoneInfo
 from flask import Blueprint, render_template, redirect, url_for, request, flash, current_app
 from flask_babel import _
 from flask_login import current_user
+from sqlalchemy.orm import selectinload
 
 from app.models import Event, EventRegistration, Driver
 from app.services.database import db
@@ -68,7 +69,7 @@ def _event_from_form(event, form):
 @events_admin_bp.route("/events")
 @_admin_required
 def events_list():
-    events = Event.query.order_by(Event.date.desc()).all()
+    events = Event.query.options(selectinload(Event.registrations)).order_by(Event.date.desc()).all()
     return render_template("events_admin.html", events=events)
 
 

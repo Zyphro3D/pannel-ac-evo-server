@@ -282,15 +282,15 @@
           <div class="settings-fields" style="margin-bottom:20px">
             <label class="settings-field">
               <span><strong>{{ _('Webhook principal') }}</strong><em>{{ _('Démarrage, arrêt, crash du serveur') }}</em></span>
-              <input class="form-control" type="text" name="srv_discord_main" value="{{ current_srv.discord_webhook_main or '' }}" placeholder="{{ _('Laisser vide = webhook global') }}">
+              <input class="form-control" type="password" name="srv_discord_main" value="{{ current_srv.discord_webhook_main or '' }}" autocomplete="off" placeholder="{{ _('Laisser vide = webhook global') }}">
             </label>
             <label class="settings-field">
               <span><strong>{{ _('Webhook pilotes') }}</strong><em>{{ _('Connexions, déconnexions, changements de véhicule') }}</em></span>
-              <input class="form-control" type="text" name="srv_discord_pilots" value="{{ current_srv.discord_webhook_pilots or '' }}" placeholder="{{ _('Laisser vide = webhook global') }}">
+              <input class="form-control" type="password" name="srv_discord_pilots" value="{{ current_srv.discord_webhook_pilots or '' }}" autocomplete="off" placeholder="{{ _('Laisser vide = webhook global') }}">
             </label>
             <label class="settings-field">
               <span><strong>{{ _('Webhook course') }}</strong><em>{{ _('Meilleur tour, actions admin (kick, pénalités…)') }}</em></span>
-              <input class="form-control" type="text" name="srv_discord_race" value="{{ current_srv.discord_webhook_race or '' }}" placeholder="{{ _('Laisser vide = webhook global') }}">
+              <input class="form-control" type="password" name="srv_discord_race" value="{{ current_srv.discord_webhook_race or '' }}" autocomplete="off" placeholder="{{ _('Laisser vide = webhook global') }}">
             </label>
           </div>
 

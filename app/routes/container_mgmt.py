@@ -69,7 +69,7 @@ def _get_container_status() -> dict:
 
 
 @container_mgmt_bp.route("/api/container/info")
-@login_required
+@admin_required
 def container_info():
     acf    = _parse_acf()
     status = _get_container_status()

@@ -34,7 +34,7 @@ def _loop(app):
                 for event in Event.query.filter_by(status="published", discord_notified=False).all():
                     delta_min = (event.date - now).total_seconds() / 60
                     if 29 <= delta_min <= 31:
-                        discord_notifier.notify_event_soon(event)
+                        discord_notifier.safe_notify(discord_notifier.notify_event_soon, event)
                         event.discord_notified = True
                         db.session.commit()
                         log.info("Discord 30min envoyé pour '%s'", event.title)

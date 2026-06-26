@@ -757,6 +757,9 @@ def server_create():
 
     db.session.commit()
 
+    from app.services.server_docker import sync_compose_override
+    sync_compose_override()
+
     # Démarre le watchdog pour ce nouveau serveur
     from flask import current_app as _ca
     from app.services.process_manager import init_watchdog
@@ -808,7 +811,7 @@ def server_delete(server_id):
         return redirect(url_for("admin.servers_list"))
 
     # Arrête et supprime le container Docker
-    from app.services.server_docker import remove_server_container
+    from app.services.server_docker import remove_server_container, sync_compose_override
     remove_server_container(srv.container_name)
 
     # Supprime le dossier de configs déployées pour ce serveur
@@ -816,6 +819,7 @@ def server_delete(server_id):
 
     db.session.delete(srv)
     db.session.commit()
+    sync_compose_override()
     flash(_("Serveur '%(name)s' supprimé.", name=srv.name), "success")
     return redirect(url_for("admin.servers_list"))
 

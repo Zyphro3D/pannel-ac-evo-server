@@ -112,6 +112,10 @@ const I18N_LIVE = {
   elevateErr:       "{{ _('Échec élévation admin') }}",
 };
 
+function _esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 function _carLabel(raw) {
   if (!raw) return '—';
   if (_CAR_LABELS[raw]) return _CAR_LABELS[raw];
@@ -157,7 +161,7 @@ function _renderDrivers(drivers) {
     <div class="live-driver-row">
       <span class="live-driver-num">#${d.num}</span>
       <div class="live-driver-info">
-        <span class="live-driver-name">${d.name}</span>
+        <span class="live-driver-name">${_esc(d.name)}</span>
         <span class="live-driver-car">${_carLabel(d.car_raw)}</span>
       </div>
       ${tStr !== '—' ? `<span class="live-driver-time">${sStr} ${tStr}</span>` : ''}
@@ -173,8 +177,8 @@ function _addEvent(ev) {
 
   const icons = { connect: '🟢', disconnect: '🔴', split: '⏱', players: '👥' };
   const texts = {
-    connect:    ev => `${ev.name || ev.steam_id} ${I18N_LIVE.joined} · ${_carLabel(ev.car_raw)}`,
-    disconnect: ev => `${ev.name || ev.steam_id} ${I18N_LIVE.left}`,
+    connect:    ev => `${_esc(ev.name) || ev.steam_id} ${I18N_LIVE.joined} · ${_carLabel(ev.car_raw)}`,
+    disconnect: ev => `${_esc(ev.name) || ev.steam_id} ${I18N_LIVE.left}`,
     split:      ev => `S${(ev.sector||0)+1}`,
     players:    ev => `${ev.count} ${I18N_LIVE.online}`,
   };

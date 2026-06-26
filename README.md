@@ -245,8 +245,10 @@ aceserver/
 ├── cars.json                   ← liste des voitures disponibles
 ├── events_practice.json        ← modèles de sessions practice
 ├── events_race_weekend.json    ← modèles de sessions race weekend
-├── configs/                    ← fichiers de config JSON — versionnés
-│   └── default.json
+├── configs/                    ← fichiers de config JSON — créés par le panel, non versionnés
+│   ├── default.json            ← créé automatiquement au premier démarrage
+│   ├── *.json                  ← configs créées depuis l'interface
+│   └── default.json.example   ← template fourni dans le repo
 └── results/                    ← résultats de session — non versionnés
     └── result*.json
 ```
@@ -334,14 +336,19 @@ cd /opt/pannel-ac-evo-server
 git pull
 
 # Rebuild uniquement le panel (sans toucher au serveur de jeu)
-docker compose build panel
-docker compose up -d panel
+docker compose up -d --build panel
 
-# Rebuild complet si docker-compose.yml ou Dockerfile.aceserver a changé
+# Rebuild complet (panel + serveur de jeu + tous les serveurs additionnels)
 docker compose up -d --build
 ```
 
 Le `.env` et la base de données ne sont jamais modifiés par une mise à jour. Les migrations de schéma s'appliquent automatiquement au démarrage.
+
+> **Rebuild complet et multi-serveur** : `docker-compose.override.yml` est auto-généré par le panel et référence tous vos serveurs additionnels. Un `docker compose up -d --build` reconstruit **tous** les containers (principal + additionnels) sans intervention manuelle.
+
+> **Personnalisations Docker locales** : ne modifiez pas `docker-compose.yml` directement — vos changements créeraient des conflits à chaque `git pull`. Utilisez `docker-compose.override.yml` à la place (Docker Compose le fusionne automatiquement). Notez que le panel régénère ce fichier pour la section `services` des serveurs additionnels ; ajoutez vos surcharges dans une section séparée.
+
+> **Configs serveur** : les fichiers `aceserver/configs/*.json` sont créés et gérés par le panel, ils ne sont pas versionnés dans git. Un `git pull` ne les modifiera jamais.
 
 ---
 

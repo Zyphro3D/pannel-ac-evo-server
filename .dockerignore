@@ -1,6 +1,8 @@
 .venv/
 .git/
 *.db
+aceserver/
+media/
 .server_state
 .server_output.log
 .server_pid

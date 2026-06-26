@@ -358,7 +358,8 @@ def pilot_dashboard():
     registered_ids = {r.event_id for r in regs}
     q = (Event.query
          .filter_by(status="published", is_public=False)
-         .filter(Event.date >= now))
+         .filter(Event.date >= now)
+         .options(_pub_selectinload(Event.registrations)))
     if registered_ids:
         q = q.filter(Event.id.notin_(registered_ids))
     available = q.order_by(Event.date).all()

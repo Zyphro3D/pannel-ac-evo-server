@@ -9,4 +9,4 @@ psutil==6.1.1
 waitress==3.0.2
 gunicorn==23.0.0
 tzdata==2025.1
-docker>=7.0.0
+docker==7.0.0

@@ -48,9 +48,10 @@ aceserver/_CommonRedist/
 aceserver/content/
 aceserver/serverConfig/
 aceserver/results/
-# Garder les configs-templates versionnées ; exclure les dossiers runtime par serveur
-!aceserver/configs/
-!aceserver/configs/*.json
+# Configs serveur — éditées par l'utilisateur, non versionnées (le panel les génère au démarrage)
+aceserver/configs/*.json
+# Les templates .example sont versionnés pour guider la première installation
+!aceserver/configs/*.json.example
 aceserver/configs/server-*/
 
 # Assets uploadés (générés à l'exécution, pas versionnés)
@@ -61,6 +62,10 @@ media/
 .idea/
 *.swp
 *.swo
+
+# Claude Code
+CLAUDE.md
+.claude/
 
 # OS
 Thumbs.db
