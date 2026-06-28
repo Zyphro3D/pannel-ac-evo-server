@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 {% block title %}{{ panel_title }}{% endblock %}
 
+{% macro reg_status_label(s) %}{% if s == 'pending' %}{{ _('En attente') }}{% elif s == 'confirmed' %}{{ _('Confirmé') }}{% elif s == 'rejected' %}{{ _('Refusé') }}{% else %}{{ s }}{% endif %}{% endmacro %}
+
 {% block content %}
 
 {# ── Section 1 : Hero ── #}
@@ -135,7 +137,7 @@
 <div class="ev-section-head">
   <span class="ev-section-title">{{ _('Événements à venir') }}</span>
   {% if current_user.is_authenticated and current_user.is_admin %}
-  <a href="{{ url_for('events_admin.events_list') }}" class="btn-secondary">{{ _('Gérer') }} →</a>
+  <a href="{{ url_for('events_admin.events_list') }}" class="btn btn-secondary">{{ _('Gérer') }} →</a>
   {% endif %}
 </div>
 
@@ -169,7 +171,7 @@
       <span>{{ item.duration }}</span>
     </div>
     {% if my_reg %}
-    <span class="badge badge-{{ my_reg.status }}" style="margin-top:auto;width:fit-content">{{ my_reg.status }}</span>
+    <span class="badge badge-{{ my_reg.status }}" style="margin-top:auto;width:fit-content">{{ reg_status_label(my_reg.status) }}</span>
     {% elif not item.ev.is_public %}
     <div class="ev-reg" style="max-width:220px;margin-top:auto">
       <div class="ev-reg-row"><span><span class="ev-reg-num">{{ item.confirmed }}</span> / {{ item.ev.max_drivers }} {{ _('Inscrits') }}</span></div>
@@ -207,7 +209,7 @@
         <span>{{ item.duration }}</span>
       </div>
       {% if my_reg %}
-      <span class="badge badge-{{ my_reg.status }}" style="margin-top:auto;width:fit-content;font-size:0.75rem">{{ my_reg.status }}</span>
+      <span class="badge badge-{{ my_reg.status }}" style="margin-top:auto;width:fit-content;font-size:0.75rem">{{ reg_status_label(my_reg.status) }}</span>
       {% elif not item.ev.is_public %}
       <div class="ev-reg">
         <div class="ev-reg-row"><span><span class="ev-reg-num">{{ item.confirmed }}</span> / {{ item.ev.max_drivers }} {{ _('Inscrits') }}</span></div>
@@ -282,7 +284,7 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
+<script nonce="{{ csp_nonce }}">
 /* ── Uptime counters ── */
 function _fmtUptime(s) {
   const d = Math.floor(s / 86400);

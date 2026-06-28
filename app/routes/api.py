@@ -14,7 +14,7 @@ from app.services.server_config import (
     list_configs, get_active_config_name, set_active_config,
     create_config, delete_config, check_config, repair_config,
     get_running_server_info, load_config_by_name, rename_config,
-    inject_global_server_settings, deploy_config,
+    inject_global_server_settings, deploy_config, _current_server_id,
 )
 from app.services.process_manager import (
     start_server, stop_server, get_status, get_server_logs,
@@ -25,16 +25,12 @@ from app.services.rotation_manager import get_rotation, save_rotation
 from app.services import config_builder, discord_notifier
 from app.models import SessionResult
 from app.services.database import db
-from app.services.results_parser import parse_result_file, scan_and_import
+from app.services.results_parser import parse_result_file, scan_and_import, get_parsed
 from app.utils import admin_required_json as _admin_required_json
 
 log = logging.getLogger(__name__)
 
 api_bp = Blueprint("api", __name__)
-
-
-def _current_server_id() -> int:
-    return int(session.get("current_server_id", 1) or 1)
 
 
 def _request_from_private_network() -> bool:
@@ -48,15 +44,11 @@ def _request_from_private_network() -> bool:
 def _verify_ingest_signature(raw_body: bytes) -> bool:
     secret = (current_app.config.get("RESULTS_INGEST_SECRET") or "").encode()
     if not secret:
-        from_private = _request_from_private_network()
-        if not from_private:
-            log.warning(
-                "Ingest rejeté : RESULTS_INGEST_SECRET absent et requête hors réseau privé (%s)",
-                request.remote_addr,
-            )
-        else:
-            log.debug("Ingest accepté depuis réseau privé (RESULTS_INGEST_SECRET non configuré)")
-        return from_private
+        log.warning(
+            "Ingest rejeté : RESULTS_INGEST_SECRET non configuré — définir dans les paramètres (%s)",
+            request.remote_addr,
+        )
+        return False
     provided = (
         request.headers.get("X-ACE-Signature")
         or request.headers.get("X-Webhook-Signature")
@@ -72,6 +64,7 @@ def _verify_ingest_signature(raw_body: bytes) -> bool:
 # ── Serveur ──────────────────────────────────────────────────────────────────
 
 @api_bp.route("/status")
+@limiter.limit("120 per minute")
 def status():
     sid  = _current_server_id()
     data = get_status(sid)
@@ -408,7 +401,7 @@ def get_results():
     out = []
     for r in rows:
         try:
-            parsed = parse_result_file(json.loads(r.raw_json))
+            parsed = get_parsed(r)
         except Exception as e:
             log.warning("Failed to parse result id=%s: %s", r.id, e)
             parsed = {}
@@ -492,7 +485,7 @@ def post_rotation_route():
 def get_result(result_id):
     """Retourne le détail complet d'une session."""
     r = SessionResult.query.get_or_404(result_id)
-    parsed = parse_result_file(json.loads(r.raw_json))
+    parsed = get_parsed(r)
     return jsonify({
         "id":           r.id,
         "received_at":  r.received_at.isoformat(),
@@ -566,13 +559,13 @@ def live_admin_cmd():
 
     try:
         from app.services import ace_tcp_client
-        sent = ace_tcp_client.send_chat(msg)
+        _cmd_sid = _current_server_id()
+        sent = ace_tcp_client.send_chat(msg, _cmd_sid)
         log.info("admin_cmd: %r → sent=%s", msg, sent)
         if sent:
             try:
                 from app.services import discord_notifier
                 from app.models import Server as _Server
-                _cmd_sid  = _current_server_id()
                 _cmd_srv  = db.session.get(_Server, _cmd_sid)
                 driver = ace_tcp_client.get_driver_by_num(car_num) if car_num else {}
                 discord_notifier.safe_notify(
@@ -585,8 +578,8 @@ def live_admin_cmd():
                     server_id=_cmd_sid,
                     server_name=_cmd_srv.name if _cmd_srv else "",
                 )
-            except Exception:
-                pass
+            except Exception as _e:
+                log.debug("Discord admin_action notification skipped : %s", _e)
         return jsonify({"ok": sent, "cmd": msg,
                         "error": None if sent else "not_connected"})
     except Exception as e:
@@ -601,8 +594,8 @@ def live_tcp_debug():
         return jsonify({"error": "forbidden"}), 403
     try:
         from app.services import ace_tcp_client
-        from app.routes.live import _build_state
-        state     = _build_state()
+        from app.routes.live import _build_state_cached
+        state     = _build_state_cached()
         tcp_lb    = ace_tcp_client.get_leaderboard()
         log_sids  = [d.get('steam_id') for d in state.get('drivers', [])]
         tcp_sids  = [e.get('steam_id') for e in tcp_lb]

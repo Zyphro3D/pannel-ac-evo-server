@@ -4,7 +4,7 @@
 {% set view = server_view or request.args.get('view', 'status') %}
 {% set max_players = config.Server.MaxPlayers if config else 0 %}
 {% set selected_cars = config.Event.Cars | selectattr('IsSelected') | list if config else [] %}
-<script>document.body.dataset.activeConfig = "{{ active_config|default('') }}";</script>
+<script nonce="{{ csp_nonce }}">document.body.dataset.activeConfig = "{{ active_config|default('') }}";</script>
 <div class="dashboard server-admin-page server-hub-page">
 
   <select id="config-select" class="server-hidden-select" aria-hidden="true">
@@ -23,8 +23,8 @@
       </div>
       <input type="hidden" id="modal-copy-from">
       <div class="modal-actions">
-        <button class="btn-secondary" onclick="closeModal()">{{ _('Annuler') }}</button>
-        <button class="btn-primary"   onclick="submitCreate()">{{ _('Créer') }}</button>
+        <button class="btn btn-secondary" onclick="closeModal()">{{ _('Annuler') }}</button>
+        <button class="btn btn-primary"   onclick="submitCreate()">{{ _('Créer') }}</button>
       </div>
     </div>
   </div>
@@ -40,8 +40,8 @@
                onkeydown="if(event.key==='Enter') submitRename()">
       </div>
       <div class="modal-actions">
-        <button class="btn-secondary" onclick="closeRenameModal()">{{ _('Annuler') }}</button>
-        <button class="btn-primary"   onclick="submitRename()">{{ _('Renommer') }}</button>
+        <button class="btn btn-secondary" onclick="closeRenameModal()">{{ _('Annuler') }}</button>
+        <button class="btn btn-primary"   onclick="submitRename()">{{ _('Renommer') }}</button>
       </div>
     </div>
   </div>
@@ -53,8 +53,8 @@
       <p style="margin:10px 0 6px;color:var(--dim);font-size:13px">{{ _('Ce fichier contient des erreurs :') }}</p>
       <ul id="modal-error-list" style="margin:0 0 16px 16px;font-size:12px;color:var(--dim);line-height:1.8"></ul>
       <div class="modal-actions">
-        <button class="btn-secondary" onclick="closeConfigErrorModal()">{{ _('Choisir autre') }}</button>
-        <button class="btn-primary"   onclick="doRepairConfig()"><span class="icon-gear"></span> {{ _('Réparer') }}</button>
+        <button class="btn btn-secondary" onclick="closeConfigErrorModal()">{{ _('Choisir autre') }}</button>
+        <button class="btn btn-primary"   onclick="doRepairConfig()"><span class="icon-gear"></span> {{ _('Réparer') }}</button>
       </div>
     </div>
   </div>
@@ -65,8 +65,8 @@
       <h3><span class="icon-logs"></span> {{ _('Logs serveur') }}</h3>
       <pre id="logs-content" class="logs-pre">{{ _('Chargement...') }}</pre>
       <div class="modal-actions">
-        <button class="btn-secondary" onclick="document.getElementById('modal-logs').style.display='none'">{{ _('Fermer') }}</button>
-        <button class="btn-secondary" onclick="loadLogs()">&#8635; {{ _('Actualiser') }}</button>
+        <button class="btn btn-secondary" onclick="document.getElementById('modal-logs').style.display='none'">{{ _('Fermer') }}</button>
+        <button class="btn btn-secondary" onclick="loadLogs()">&#8635; {{ _('Actualiser') }}</button>
       </div>
     </div>
   </div>
@@ -163,7 +163,7 @@
     <article class="srv-card srv-card--weather">
       <div class="srv-card-head"><h2>{{ _('Météo & Heure') }}</h2></div>
       <div class="srv-weather-main">
-        <div class="srv-weather-mark {% if current_weather == _('Pluie') %}rain{% elif current_weather == _('Nuageux') %}cloud{% endif %}"></div>
+        <div class="srv-weather-mark {% if 'RAIN' in current_weather_key %}rain{% elif 'OVERCAST' in current_weather_key %}cloud{% endif %}"></div>
         <div class="srv-weather-text">
           <strong class="srv-big-value">{{ current_weather }}</strong>
           <span class="srv-track-layout">{{ current_weather_behavior }}</span>
@@ -520,7 +520,7 @@
           <option value="{{ cfg }}">{{ cfg }}</option>
           {% endfor %}
         </select>
-        <button class="btn-secondary" onclick="rotAddConfig()">+ {{ _('Ajouter') }}</button>
+        <button class="btn btn-secondary" onclick="rotAddConfig()">+ {{ _('Ajouter') }}</button>
       </div>
 
       <div class="rot-cycle-row">
@@ -569,8 +569,8 @@
             <input type="checkbox" id="show-selected-only" onchange="filterCars()">
             <span>{{ _('Sélectionnés seulement') }}</span>
           </label>
-          <button class="btn-secondary" onclick="selectAllVisible(true)">{{ _('Tout sélectionner') }}</button>
-          <button class="btn-secondary" onclick="selectAllVisible(false)">{{ _('Tout désélectionner') }}</button>
+          <button class="btn btn-secondary" onclick="selectAllVisible(true)">{{ _('Tout sélectionner') }}</button>
+          <button class="btn btn-secondary" onclick="selectAllVisible(false)">{{ _('Tout désélectionner') }}</button>
         </div>
 
         <div class="pi-filter">
@@ -657,13 +657,13 @@
   <!-- ── Bouton unique Sauvegarder tout ── -->
   {% if view == 'config_edit' %}
   <div class="save-dock">
-    <button class="btn-primary save-dock-btn" onclick="saveAll()">{{ _('Sauvegarder tout') }}</button>
+    <button class="btn btn-primary save-dock-btn" onclick="saveAll()">{{ _('Sauvegarder tout') }}</button>
   </div>
   {% endif %}
 
 </div>
 
-<script>
+<script nonce="{{ csp_nonce }}">
 {% if view == 'configuration' %}
 (function pollCardPlayers() {
   const el = document.getElementById('card-players');

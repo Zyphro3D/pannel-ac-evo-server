@@ -2180,7 +2180,7 @@ msgstr "Servidores ACE EVO"
 
 #: app/templates/servers.html:17
 msgid "Nom"
-msgstr ""
+msgstr "Nombre"
 
 #: app/templates/servers.html:18
 msgid "Container"
@@ -2589,7 +2589,7 @@ msgstr "Administración"
 
 #: app/templates/settings.html:564
 msgid "Affiché sur le dashboard public"
-msgstr ""
+msgstr "Mostrado en el panel público"
 
 #: app/templates/settings.html:573
 msgid "Mentions"
@@ -3543,3 +3543,57 @@ msgstr "No se encontraron pistas."
 
 msgid "Tour invalide"
 msgstr "Vuelta inválida"
+
+msgid "Le port %(port)d est déjà utilisé par un autre serveur."
+msgstr "El puerto %(port)d ya está siendo usado por otro servidor."
+
+msgid "Le port %(port)d est déjà utilisé par '%(name)s'."
+msgstr "El puerto %(port)d ya está siendo usado por '%(name)s'."
+
+msgid "Connexion..."
+msgstr "Conectando..."
+
+msgid "Erreur HTTP"
+msgstr "Error HTTP"
+
+msgid "Envoi..."
+msgstr "Enviando..."
+
+msgid "Erreur upload"
+msgstr "Error de subida"
+
+msgid " uploadé. Rechargez la page pour le voir."
+msgstr " subido. Recargue la página para verlo."
+
+msgid "Race"
+msgstr "Carrera"
+
+msgid "Qualifying"
+msgstr "Clasificación"
+
+msgid "Warmup"
+msgstr "Calentamiento"
+
+msgid "Road"
+msgstr "Carretera"
+
+msgid "Track"
+msgstr "Pista"
+
+msgid "Modern"
+msgstr "Moderno"
+
+msgid "Vintage"
+msgstr "Vintage"
+
+msgid "YT"
+msgstr "Young Timer"
+
+msgid "ICE"
+msgstr "Combustión"
+
+msgid "EV"
+msgstr "Eléctrico"
+
+msgid "Hybrid"
+msgstr "Híbrido"

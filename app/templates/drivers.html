@@ -23,15 +23,15 @@
           <div class="table-actions actions-end">
             <form method="post" action="{{ url_for('events_admin.driver_approve', driver_id=d.id) }}" class="form-inline">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-              <button class="btn-secondary btn-approve">✓ {{ _('Approuver') }}</button>
+              <button class="btn btn-secondary btn-approve">✓ {{ _('Approuver') }}</button>
             </form>
             <form method="post" action="{{ url_for('events_admin.driver_reject', driver_id=d.id) }}" class="form-inline">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-              <button class="btn-secondary btn-reject" onclick="return confirm('{{ _("Refuser") }} ' + {{ d.ingame_name | tojson }} + ' ?')">✕ {{ _('Refuser') }}</button>
+              <button class="btn btn-secondary btn-reject" onclick="return confirm('{{ _("Refuser") }} ' + {{ d.ingame_name | tojson }} + ' ?')">✕ {{ _('Refuser') }}</button>
             </form>
             <form method="post" action="{{ url_for('events_admin.driver_delete', driver_id=d.id) }}" class="form-inline">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-              <button class="btn-danger btn-sm" onclick="return confirm('{{ _("Supprimer définitivement") }} ' + {{ d.ingame_name | tojson }} + ' ?')"><span class="icon-trash"></span></button>
+              <button class="btn btn-danger btn-sm" onclick="return confirm('{{ _("Supprimer définitivement") }} ' + {{ d.ingame_name | tojson }} + ' ?')"><span class="icon-trash"></span></button>
             </form>
           </div>
         </td>
@@ -65,7 +65,7 @@
           <div class="table-actions actions-end">
             <form method="post" action="{{ url_for('events_admin.driver_delete', driver_id=d.id) }}" class="form-inline">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-              <button class="btn-danger btn-sm" onclick="return confirm('{{ _("Supprimer définitivement") }} ' + {{ d.ingame_name | tojson }} + ' ?')"><span class="icon-trash"></span> {{ _('Supprimer définitivement') }}</button>
+              <button class="btn btn-danger btn-sm" onclick="return confirm('{{ _("Supprimer définitivement") }} ' + {{ d.ingame_name | tojson }} + ' ?')"><span class="icon-trash"></span> {{ _('Supprimer définitivement') }}</button>
             </form>
           </div>
         </td>

@@ -9,16 +9,16 @@
         <button class="view-btn active" data-view="calendar" onclick="setView('calendar')">{{ _('Calendrier') }}</button>
         <button class="view-btn" data-view="list" onclick="setView('list')">{{ _('Liste') }}</button>
       </div>
-      <a href="{{ url_for('events_admin.event_create') }}" class="btn-primary" style="font-size:13px">+ {{ _('Créer') }}</a>
+      <a href="{{ url_for('events_admin.event_create') }}" class="btn btn-primary" style="font-size:13px">+ {{ _('Créer') }}</a>
     </div>
   </div>
 
   <!-- ── Vue Calendrier ── -->
   <div id="view-calendar">
     <div class="cal-nav">
-      <button class="btn-secondary" onclick="prevMonth()">‹</button>
+      <button class="btn btn-secondary" onclick="prevMonth()">‹</button>
       <span class="cal-nav-label" id="cal-month-label"></span>
-      <button class="btn-secondary" onclick="nextMonth()">›</button>
+      <button class="btn btn-secondary" onclick="nextMonth()">›</button>
       <div class="cal-legend">
         <span class="cal-legend-item"><span class="cal-legend-dot private"></span>{{ _('Privé') }}</span>
         <span class="cal-legend-item"><span class="cal-legend-dot public"></span>{{ _('Public') }}</span>
@@ -41,7 +41,7 @@
     <div class="cal-day-detail" id="cal-day-detail" style="display:none">
       <div class="cal-detail-header">
         <span class="cal-detail-title" id="cal-detail-title"></span>
-        <a id="cal-detail-create-btn" href="#" class="btn-primary" style="font-size:12px">+ {{ _('Créer ce jour') }}</a>
+        <a id="cal-detail-create-btn" href="#" class="btn btn-primary" style="font-size:12px">+ {{ _('Créer ce jour') }}</a>
         <button class="cal-detail-close" onclick="closeDayDetail()" title="{{ _('Fermer') }}">×</button>
       </div>
       <div class="cal-detail-body" id="cal-detail-body"></div>
@@ -84,13 +84,13 @@
           <td>
             <div class="table-actions">
               {% if not ev.is_public %}
-              <a href="{{ url_for('events_admin.event_registrations', event_id=ev.id) }}" class="btn-secondary" style="font-size:11px">{{ _('Inscrits') }}</a>
+              <a href="{{ url_for('events_admin.event_registrations', event_id=ev.id) }}" class="btn btn-secondary" style="font-size:11px">{{ _('Inscrits') }}</a>
               {% endif %}
-              <a href="{{ url_for('events_admin.event_edit', event_id=ev.id) }}" class="btn-secondary" style="font-size:11px">{{ _('Modifier') }}</a>
+              <a href="{{ url_for('events_admin.event_edit', event_id=ev.id) }}" class="btn btn-secondary" style="font-size:11px">{{ _('Modifier') }}</a>
               {% if ev.status != 'finished' %}
               <form method="post" action="{{ url_for('events_admin.event_publish', event_id=ev.id) }}" style="display:inline">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button class="btn-secondary" style="font-size:11px">
+                <button class="btn btn-secondary" style="font-size:11px">
                   {{ _('Dépublier') if ev.status == 'published' else _('Publier') }}
                 </button>
               </form>
@@ -98,12 +98,12 @@
               {% if ev.status == 'published' %}
               <form method="post" action="{{ url_for('events_admin.event_finish', event_id=ev.id) }}" style="display:inline">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button class="btn-secondary" style="font-size:11px" onclick="return confirm('{{ _("Marquer comme terminé ?") }}')">{{ _('Terminer') }}</button>
+                <button class="btn btn-secondary" style="font-size:11px" onclick="return confirm('{{ _("Marquer comme terminé ?") }}')">{{ _('Terminer') }}</button>
               </form>
               {% endif %}
               <form method="post" action="{{ url_for('events_admin.event_delete', event_id=ev.id) }}" style="display:inline">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button class="btn-danger" style="font-size:11px;padding:5px 10px" onclick="return confirm('{{ _("Supprimer cet événement ?") }}')"><span class="icon-trash"></span></button>
+                <button class="btn btn-danger" style="font-size:11px;padding:5px 10px" onclick="return confirm('{{ _("Supprimer cet événement ?") }}')"><span class="icon-trash"></span></button>
               </form>
             </div>
           </td>
@@ -119,7 +119,10 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
+<script nonce="{{ csp_nonce }}">
+function _esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
 // Données événements (dates en heure locale via local_dt_input)
 const CAL_EVENTS = [
   {% for ev in events %}
@@ -185,9 +188,9 @@ function renderCalendar() {
       const statusClass = (ev.status === 'draft' || ev.status === 'finished') ? ev.status : '';
       const time        = ev.date.substring(11, 16);
       chips += `<span class="cal-event-chip ${typeClass} ${statusClass}"
-        data-url="${ev.url_edit}"
+        data-url="${_esc(ev.url_edit)}"
         onclick="event.stopPropagation(); window.location=this.dataset.url"
-        title="${ev.title} — ${ev.status}">${time} ${ev.title}</span>`;
+        title="${_esc(ev.title)} — ${_esc(ev.status)}">${time} ${_esc(ev.title)}</span>`;
     });
 
     html += `<div class="cal-day${isToday ? ' today' : ''}"
@@ -249,9 +252,9 @@ function openDayDetail(dateKey) {
       const tc = ev.is_public ? 'public' : 'private';
       const sc = (ev.status === 'draft' || ev.status === 'finished') ? ev.status : '';
       evHtml += `<div class="cal-hour-event ${tc} ${sc}"
-        data-url="${ev.url_edit}"
+        data-url="${_esc(ev.url_edit)}"
         onclick="event.stopPropagation(); window.location=this.dataset.url"
-        title="${ev.title}">${start}→${end} ${ev.title}</div>`;
+        title="${_esc(ev.title)}">${start}→${end} ${_esc(ev.title)}</div>`;
     });
     const hint = evs.length === 0 ? `<span class="cal-hour-hint">+ {{ _('créer') }}</span>` : '';
     html += `<div class="cal-hour-row" data-url="/events/create?date=${dateKey}T${hPad}:00"

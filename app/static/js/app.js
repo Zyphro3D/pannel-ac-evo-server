@@ -551,19 +551,17 @@ function filterCars(autoSelect = false) {
   const piMin = minR ? parseFloat(minR.value) : 0;
   const piMax = maxR ? parseFloat(maxR.value) : 999;
 
-  // Catégories : OR à l'intérieur de chaque colonne, AND entre colonnes.
-  const COL = { Road:'p1',Race:'p1',Track:'p1', Modern:'p2',Vintage:'p2',YT:'p2', ICE:'p3',EV:'p3',Hybrid:'p3' };
-  const active = { p1: new Set(), p2: new Set(), p3: new Set() };
-  document.querySelectorAll('.cat-btn').forEach(btn => {
-    const col = COL[btn.dataset.cat];
-    if (col && btn.classList.contains('active')) active[col].add(btn.dataset.cat);
+  // Catégories : OR global — la voiture s'affiche si l'un de ses badges est actif.
+  const activeSet = new Set();
+  document.querySelectorAll('.cat-btn.active').forEach(btn => {
+    if (btn.dataset.cat) activeSet.add(btn.dataset.cat);
   });
-  const colOk = (val, col) => active[col].size === 0 || !val || active[col].has(val);
 
   document.querySelectorAll('.car-row').forEach(row => {
     const name = row.dataset.name;
     const pi   = parseFloat(row.dataset.pi);
-    const matchCat      = colOk(row.dataset.p1,'p1') && colOk(row.dataset.p2,'p2') && colOk(row.dataset.p3,'p3');
+    const matchCat = activeSet.size === 0 ||
+      [row.dataset.p1, row.dataset.p2, row.dataset.p3].some(v => v && activeSet.has(v));
     const matchPi       = pi >= piMin && pi <= piMax;
     const matchSearch   = name.includes(search);
     const matchSelected = !showSelected || row.querySelector('.car-check')?.checked;

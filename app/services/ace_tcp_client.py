@@ -375,7 +375,9 @@ def get_chat_history(server_id: int = 1) -> list:
 
 
 def is_connected(server_id: int = 1) -> bool:
-    return _get_client(server_id)["connected"]
+    c = _get_client(server_id)
+    with c["lb_lock"]:
+        return c["connected"]
 
 
 def get_leaderboard(server_id: int = 1) -> list[dict]:
@@ -530,10 +532,11 @@ def _process_log_line(line: str, seen: set, server_id: int):
                 if stale_sid:
                     recent = c["recently_disconnected"].pop(stale_sid, None)
             stale   = [k for k, v in c["recently_disconnected"].items() if now - v["ts"] > 600]
-        # Purge hors du lock — évite O(N) pendant la section critique
-        for k in stale:
+        # Purge en une seule acquisition de lock
+        if stale:
             with c["lb_lock"]:
-                c["recently_disconnected"].pop(k, None)
+                for k in stale:
+                    c["recently_disconnected"].pop(k, None)
 
         vehicle_changed = (
             recent is not None

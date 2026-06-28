@@ -11,10 +11,11 @@ from sqlalchemy.orm import selectinload as _pub_selectinload
 from flask_login import current_user, login_user, login_required
 from app import limiter
 
-from app.models import Driver, Event, EventRegistration
+from app.models import Driver, Event, EventRegistration, Server, SessionResult
 from app.routes.auth import _validate_password
 from app.services.database import db
-from app.services.process_manager import get_status
+from app.services.process_manager import get_status, get_player_history
+from app.services.results_parser import get_parsed
 from app.services.server_config import get_running_server_info
 
 public_bp = Blueprint("public", __name__)
@@ -164,11 +165,6 @@ def _now_utc():
 
 @public_bp.route("/")
 def index():
-    from app.models import SessionResult, Server
-    from app.services.results_parser import parse_result_file
-    from app.services.process_manager import get_player_history
-    import json as _j
-
     servers = (Server.query
                .filter_by(is_enabled=True)
                .order_by(Server.sort_order, Server.id)
@@ -181,7 +177,7 @@ def index():
         st = get_status(srv.id)
         statuses[srv.id]     = st
         server_infos[srv.id] = get_running_server_info(srv.id) if st["running"] else None
-        player_histories[srv.id] = _j.dumps(get_player_history(srv.id)[-30:]) if st["running"] else "[]"
+        player_histories[srv.id] = _json.dumps(get_player_history(srv.id)[-30:]) if st["running"] else "[]"
 
     # Enrichir les infos serveur avec l'image bannière du circuit en cours
     for srv in servers:
@@ -242,7 +238,7 @@ def index():
     recent_sessions = []
     for r in recent_rows:
         try:
-            parsed = parse_result_file(_json.loads(r.raw_json))
+            parsed = get_parsed(r)
         except Exception:
             parsed = {}
         if not parsed.get("standings") or not any(
@@ -259,19 +255,33 @@ def index():
     # Enrichir les résultats récents avec l'image de la voiture du vainqueur
     if recent_sessions:
         from app.models import CarMeta
+        # Collecte tous les noms de voiture vainqueurs en une passe, puis charge en 1 requête
+        winner_names = {
+            (s["parsed"].get("standings") or [{}])[0].get("car", "")
+            for s in recent_sessions
+        } - {""}
+        car_by_name: dict[str, CarMeta] = {}
+        if winner_names:
+            cms = CarMeta.query.filter(
+                CarMeta.display_name.in_(winner_names), CarMeta.image_path != ""
+            ).all()
+            car_by_name = {cm.display_name: cm for cm in cms}
+            # Fallback préfixe pour les noms sans variante (ex: "BMW M4 GT3" vs "BMW M4 GT3 Evo 2")
+            missing = winner_names - set(car_by_name)
+            if missing:
+                for cm in CarMeta.query.filter(CarMeta.image_path != "").all():
+                    for name in list(missing):
+                        if cm.display_name.startswith(name + " "):
+                            car_by_name.setdefault(name, cm)
+                            missing.discard(name)
+                    if not missing:
+                        break
+
         for s in recent_sessions:
             standings = s["parsed"].get("standings") or []
             car_name = standings[0].get("car", "") if standings else ""
-            s["car_image"] = ""
-            if car_name:
-                # Essai exact puis préfixe (le résultat JSON n'a pas le suffixe de variante)
-                cm = CarMeta.query.filter_by(display_name=car_name).first()
-                if not cm:
-                    cm = CarMeta.query.filter(
-                        CarMeta.display_name.like(f"{car_name} %")
-                    ).filter(CarMeta.image_path != "").first()
-                if cm and cm.image_path:
-                    s["car_image"] = cm.image_path
+            cm = car_by_name.get(car_name)
+            s["car_image"] = cm.image_path if cm else ""
 
             # Banner du circuit pour le fond de la carte résultat
             track_slug = (s["parsed"].get("track") or "").lower().replace(" ", "_")
@@ -328,7 +338,7 @@ def register():
             from app.services import mailer, discord_notifier
             mailer.send_new_registration(driver)
             mailer.send_registration_received(driver)
-            discord_notifier.notify_new_registration(driver)
+            discord_notifier.safe_notify(discord_notifier.notify_new_registration, driver)
             flash(_("Inscription reçue ! Votre compte sera activé par un administrateur."), "success")
             return redirect(url_for("auth.login"))
 
@@ -347,6 +357,7 @@ def pilot_dashboard():
 
     regs = (EventRegistration.query
             .filter_by(driver_id=current_user.id)
+            .options(_pub_selectinload(EventRegistration.event))
             .join(Event)
             .order_by(Event.date.asc())
             .all())
@@ -400,9 +411,8 @@ def pilot_register(event_id):
 
 
 @public_bp.route("/results")
+@limiter.limit("60 per minute")
 def results():
-    from app.models import SessionResult
-    from app.services.results_parser import parse_result_file
     from app.routes.leaderboard import build_circuits
 
     initial_view = request.args.get("v", "overview")
@@ -415,7 +425,7 @@ def results():
     sessions = []
     for r in rows:
         try:
-            parsed = parse_result_file(_json.loads(r.raw_json))
+            parsed = get_parsed(r)
         except Exception:
             parsed = {}
         sessions.append({"id": r.id, "received_at": r.received_at,
@@ -438,12 +448,12 @@ def results():
 
 
 @public_bp.route("/results/<int:result_id>")
+@limiter.limit("60 per minute")
 def result_detail(result_id):
-
     from app.models import SessionResult
-    from app.services.results_parser import parse_result_file
+    from app.services.results_parser import get_parsed
     r = SessionResult.query.get_or_404(result_id)
-    parsed = parse_result_file(_json.loads(r.raw_json))
+    parsed = get_parsed(r)
     return render_template("result_detail.html", result=r, parsed=parsed)
 
 

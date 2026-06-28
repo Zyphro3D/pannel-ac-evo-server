@@ -9,7 +9,7 @@
 <div class="card" style="max-width:860px">
   <div class="card-header">
     <h2>{{ _('Modifier l\'événement') if action == 'edit' else _('Nouvel événement') }}</h2>
-    <a href="{{ url_for('events_admin.events_list') }}" class="btn-secondary">← {{ _('Retour') }}</a>
+    <a href="{{ url_for('events_admin.events_list') }}" class="btn btn-secondary">← {{ _('Retour') }}</a>
   </div>
 
   <form method="post" class="panel-form" id="event-form">
@@ -26,7 +26,7 @@
           <option value="{{ cfg }}">{{ cfg }}</option>
           {% endfor %}
         </select>
-        <button type="button" class="btn-secondary" onclick="importFromConfig()">{{ _('Importer') }} ↵</button>
+        <button type="button" class="btn btn-secondary" onclick="importFromConfig()">{{ _('Importer') }} ↵</button>
       </div>
     </div>
     <hr class="cfg-import-sep">
@@ -210,8 +210,8 @@
     <div class="cars-filters">
       <div class="cars-filters-top">
         <input type="text" id="ef-car-search" placeholder="{{ _('Rechercher...') }}" oninput="efApplyFilters()">
-        <button type="button" class="btn-secondary" onclick="efSelectAll(true)">{{ _('Tout sélectionner') }}</button>
-        <button type="button" class="btn-secondary" onclick="efSelectAll(false)">{{ _('Tout désélectionner') }}</button>
+        <button type="button" class="btn btn-secondary" onclick="efSelectAll(true)">{{ _('Tout sélectionner') }}</button>
+        <button type="button" class="btn btn-secondary" onclick="efSelectAll(false)">{{ _('Tout désélectionner') }}</button>
       </div>
 
       <!-- Filtre PI -->
@@ -276,8 +276,8 @@
             <td class="car-name">{{ car.display_name }}</td>
             <td class="car-pi">{{ "%.0f"|format(car.performance_indicator) }}</td>
             <td style="font-size:11px;color:var(--text-muted)">{{ cats | join(' · ') }}</td>
-            <td><input type="number" class="ef-car-ballast" value="{{ car_cfg.get('ballast', 0) }}" min="0" step="1" style="width:60px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);padding:2px 6px;font-size:12px"></td>
-            <td><input type="number" class="ef-car-restrictor" value="{{ car_cfg.get('restrictor', 0) }}" min="0" step="1" style="width:60px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);padding:2px 6px;font-size:12px"></td>
+            <td><input type="number" class="form-control ef-car-ballast" value="{{ car_cfg.get('ballast', 0) }}" min="0" step="1" style="width:60px"></td>
+            <td><input type="number" class="form-control ef-car-restrictor" value="{{ car_cfg.get('restrictor', 0) }}" min="0" step="1" style="width:60px"></td>
           </tr>
           {% endfor %}
         </tbody>
@@ -286,14 +286,14 @@
     {% endif %}
 
     <div class="modal-actions" style="margin-top:16px">
-      <a href="{{ url_for('events_admin.events_list') }}" class="btn-secondary">{{ _('Annuler') }}</a>
-      <button type="submit" class="btn-primary">{{ _('Enregistrer') if action == 'edit' else _('Créer') }}</button>
+      <a href="{{ url_for('events_admin.events_list') }}" class="btn btn-secondary">{{ _('Annuler') }}</a>
+      <button type="submit" class="btn btn-primary">{{ _('Enregistrer') if action == 'edit' else _('Créer') }}</button>
     </div>
   </form>
 </div>
 
 {% block scripts %}
-<script>
+<script nonce="{{ csp_nonce }}">
 // ── Circuit display ──
 function updateCircuitDisplay(sel) {
   const opt = sel.options[sel.selectedIndex];

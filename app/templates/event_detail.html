@@ -14,9 +14,9 @@
     <div style="display:flex;gap:8px;align-items:center">
       <form method="post" action="{{ url_for('events_admin.event_entry_list', event_id=event.id) }}">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <button class="btn-secondary" style="font-size:12px"><span class="icon-run"></span> {{ _('Générer entry list') }}</button>
+        <button class="btn btn-secondary" style="font-size:12px"><span class="icon-run"></span> {{ _('Générer entry list') }}</button>
       </form>
-      <a href="{{ url_for('events_admin.events_list') }}" class="btn-secondary" style="font-size:12px">← {{ _('Retour') }}</a>
+      <a href="{{ url_for('events_admin.events_list') }}" class="btn btn-secondary" style="font-size:12px">← {{ _('Retour') }}</a>
     </div>
   </div>
 
@@ -57,7 +57,7 @@
             </select>
             <input type="hidden" name="car_display" id="car-display-{{ reg.id }}"
                    value="{{ reg.car_display }}">
-            <button class="btn-secondary" style="font-size:11px;padding:4px 10px">OK</button>
+            <button class="btn btn-secondary" style="font-size:11px;padding:4px 10px">OK</button>
           </form>
         </td>
         <td><span class="badge badge-{{ reg.status }}">{% if reg.status == 'confirmed' %}{{ _('Confirmé') }}{% elif reg.status == 'pending' %}{{ _('En attente') }}{% elif reg.status == 'rejected' %}{{ _('Refusé') }}{% else %}{{ reg.status }}{% endif %}</span></td>
@@ -66,13 +66,13 @@
             {% if reg.status != 'confirmed' %}
             <form method="post" action="{{ url_for('events_admin.reg_approve', event_id=event.id, rid=reg.id) }}" style="display:inline">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-              <button class="btn-secondary" style="font-size:11px;color:var(--green);border-color:var(--green)">{{ _('Confirmer') }}</button>
+              <button class="btn btn-secondary" style="font-size:11px;color:var(--green);border-color:var(--green)">{{ _('Confirmer') }}</button>
             </form>
             {% endif %}
             {% if reg.status != 'rejected' %}
             <form method="post" action="{{ url_for('events_admin.reg_reject', event_id=event.id, rid=reg.id) }}" style="display:inline">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-              <button class="btn-secondary" style="font-size:11px;color:var(--red);border-color:var(--red)">{{ _('Refuser') }}</button>
+              <button class="btn btn-secondary" style="font-size:11px;color:var(--red);border-color:var(--red)">{{ _('Refuser') }}</button>
             </form>
             {% endif %}
           </div>
@@ -86,7 +86,7 @@
   {% endif %}
 </div>
 
-<script>
+<script nonce="{{ csp_nonce }}">
 function updateDisplay(sel) {
   const opt  = sel.options[sel.selectedIndex];
   const id   = sel.closest('form').querySelector('[id^="car-display-"]').id.replace('car-display-','');

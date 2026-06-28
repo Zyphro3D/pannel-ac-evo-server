@@ -1,5 +1,35 @@
 # Changelog
 
+### v1.8.3 — 28/06/2026
+
+**Badges multi-propriétés sur la page Véhicules**
+- Chaque voiture affiche désormais tous ses badges réels : type de route (Road / Race / Track), époque (Modern / Vintage / Young Timer) et motorisation (ICE / EV / Hybrid), en plus du PI
+- Nouvelles colonnes `property_2_label` et `property_3_label` ajoutées à `car_meta` en base (migration automatique)
+- `_sync_car_meta()` peuple ces colonnes depuis `cars.json` à chaque démarrage
+- 9 nouvelles classes CSS de badges colorés (`veh-badge-modern`, `veh-badge-vintage`, `veh-badge-yt`, `veh-badge-ice`, `veh-badge-ev`, `veh-badge-hybrid`)
+- Traductions ajoutées dans les 5 langues (fr / en / de / es / it) pour les labels Road, Track, Modern, Vintage, YT, ICE, EV, Hybrid
+
+**Filtre voitures en logique OR dans la configuration serveur**
+- La sélection de catégorie dans l'écran de configuration serveur utilise maintenant une logique **OR globale** : une voiture s'affiche dès qu'un de ses badges correspond à la sélection active, indépendamment de ses autres propriétés
+- Une voiture Road + Vintage + Hybrid apparaît si l'un de ces trois badges est activé
+
+**Configuration compatible Portainer (settings.json)**
+- Les paramètres sauvegardés via l'UI sont désormais stockés dans `data/settings.json` (volume persistant `panel_data`) au lieu du fichier `.env`
+- Compatible avec les déploiements Portainer Stack Deploy et tout environnement qui gère ses propres variables d'environnement de démarrage
+- Migration automatique au premier démarrage : les variables configurables du `.env` existant sont exportées dans `settings.json` — aucune action requise pour les utilisateurs existants
+- `SECRET_KEY` reste exclusivement dans `.env` (jamais dans `settings.json`)
+- Les utilisateurs `docker compose` ne voient aucun changement de comportement
+
+**Mise à jour**
+```
+git pull
+docker compose up -d --build panel
+# Migration automatique : settings.json créé depuis .env au premier démarrage
+# Migration DB : property_2_label et property_3_label ajoutées à car_meta automatiquement
+```
+
+---
+
 ### v1.8.2 — 26/06/2026
 
 **Noms de voitures depuis le jeu**

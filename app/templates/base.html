@@ -214,7 +214,7 @@
 </div>
 <div class="toast" id="toast"></div>
 
-<script>
+<script nonce="{{ csp_nonce }}">
 const I18N = {
   online:          "{{ _('En ligne') }}",
   offline:         "{{ _('Hors ligne') }}",
@@ -333,7 +333,7 @@ document.addEventListener('click', function(e) {
   </div>
 
   <div class="footer-bottom">
-    <span>© 2026 <strong>Florian</strong> (Zyphro)</span>
+    <span>© {{ now.year }} <strong>Florian</strong> (Zyphro)</span>
     <span class="sep">·</span>
     <span>{{ _('Sous licence MIT') }}</span>
     <span class="sep">·</span>

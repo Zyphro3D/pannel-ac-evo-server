@@ -399,7 +399,7 @@
         </div>
       </div>
 
-      <script>
+      <script nonce="{{ csp_nonce }}">
       const _CSRF = document.querySelector('meta[name="csrf-token"]').content;
       function _fmtUptime(s) {
         if (!s || s < 0) return '—';
@@ -477,14 +477,14 @@
         const body = {username: steamUser, password: steamPass};
         if (steamGuard) body.guard_code = steamGuard;
         try {
-          term.textContent = '⏳ Connexion...\n';
+          term.textContent = '⏳ {{ _("Connexion...") }}\n';
           const resp = await fetch('/api/container/update', {
             method:'POST',
             headers:{'X-CSRFToken':_CSRF,'Content-Type':'application/json'},
             body: JSON.stringify(body),
           });
           if (!resp.ok) {
-            term.textContent += `\n✗ Erreur HTTP ${resp.status}: ${await resp.text()}`;
+            term.textContent += `\n✗ {{ _("Erreur HTTP") }} ${resp.status}: ${await resp.text()}`;
             msg.textContent = '✗ {{ _("Mise à jour échouée") }}';
             return;
           }
@@ -695,7 +695,7 @@
                   ⚠ {{ _('AdminPassword vide dans la config serveur — le bot se connectera sans droits admin.') }}
                   <a href="{{ url_for('admin.settings', tab='server') }}" style="color:inherit;text-decoration:underline">{{ _('Configurer') }}</a>
                 </div>
-                <script>
+                <script nonce="{{ csp_nonce }}">
                 document.getElementById('bot-is-admin-cb').addEventListener('change', function() {
                   document.getElementById('bot-admin-warn').style.display =
                     (this.checked && !{{ 'true' if bot_admin_password_set else 'false' }}) ? '' : 'none';
@@ -831,8 +831,8 @@
               </select>
             </div>
             <div class="modal-actions">
-              <button type="button" class="btn-secondary" onclick="closeAccountModal()">{{ _('Annuler') }}</button>
-              <button type="submit" class="btn-primary">{{ _('Créer') }}</button>
+              <button type="button" class="btn btn-secondary" onclick="closeAccountModal()">{{ _('Annuler') }}</button>
+              <button type="submit" class="btn btn-primary">{{ _('Créer') }}</button>
             </div>
           </form>
         </div>
@@ -862,8 +862,8 @@
               </select>
             </div>
             <div class="modal-actions">
-              <button type="button" class="btn-secondary" onclick="closeEditModal()">{{ _('Annuler') }}</button>
-              <button type="submit" class="btn-primary">{{ _('Enregistrer') }}</button>
+              <button type="button" class="btn btn-secondary" onclick="closeEditModal()">{{ _('Annuler') }}</button>
+              <button type="submit" class="btn btn-primary">{{ _('Enregistrer') }}</button>
             </div>
           </form>
         </div>
@@ -877,7 +877,7 @@
 
 {% block scripts %}
 {% if tab == 'accounts' %}
-<script>
+<script nonce="{{ csp_nonce }}">
 function openAccountModal() {
   document.getElementById('modal-account-create').style.display = 'flex';
 }
@@ -916,24 +916,24 @@ document.querySelectorAll('.modal-overlay').forEach(o => {
 </script>
 {% endif %}
 {% if tab == 'media' %}
-<script>
+<script nonce="{{ csp_nonce }}">
 async function uploadFile(file) {
   if (!file) return;
   const status = document.getElementById('upload-status');
   status.className = '';
-  status.textContent = 'Envoi...';
+  status.textContent = '{{ _("Envoi...") }}';
   const fd = new FormData();
   fd.append('file', file);
   fd.append('csrf_token', document.querySelector('meta[name=csrf-token]')?.content || '');
   try {
     const response = await fetch('/settings/upload-media', {method: 'POST', body: fd});
     const data = await response.json();
-    if (!response.ok || !data.ok) throw new Error(data.error || 'Erreur upload');
+    if (!response.ok || !data.ok) throw new Error(data.error || '{{ _("Erreur upload") }}');
     status.className = 'success';
-    status.textContent = data.filename + ' uploadé. Rechargez la page pour le voir.';
+    status.textContent = data.filename + '{{ _(" uploadé. Rechargez la page pour le voir.") }}';
   } catch (error) {
     status.className = 'error';
-    status.textContent = error.message || 'Erreur réseau';
+    status.textContent = error.message || '{{ _("Erreur réseau") }}';
   }
 }
 function handleDrop(ev) {

@@ -6,9 +6,10 @@ import json
 import os
 import re
 import time
+import threading
 import logging
 from flask import Blueprint, render_template, Response, stream_with_context, jsonify, request, session, redirect, url_for
-from flask_login import login_required
+from flask_login import current_user, login_required
 from flask_babel import _
 from app import limiter
 from app.utils import admin_required
@@ -126,8 +127,8 @@ def _container_name(server_id: int) -> str:
         srv = Server.query.get(server_id)
         if srv and srv.container_name:
             return srv.container_name
-    except Exception:
-        pass
+    except Exception as _e:
+        log.debug("Impossible de récupérer le container_name pour server_id=%s : %s", server_id, _e)
     return _CONTAINER
 
 
@@ -175,17 +176,20 @@ def _iter_log_stream(server_id: int = 1):
 # ── Build current session state ───────────────────────────────────────────────
 
 _state_cache: dict[int, tuple[float, dict]] = {}
+_state_cache_lock = threading.Lock()
 _STATE_TTL = 10.0  # seconds — aligns with the 15s client poll interval
 
 
 def _build_state_cached(server_id: int = 1) -> dict:
     """Returns a cached _build_state() result, re-parsed at most every _STATE_TTL seconds."""
     now = time.monotonic()
-    cached = _state_cache.get(server_id)
-    if cached and now - cached[0] < _STATE_TTL:
-        return cached[1]
+    with _state_cache_lock:
+        cached = _state_cache.get(server_id)
+        if cached and now - cached[0] < _STATE_TTL:
+            return cached[1]
     state = _build_state(server_id)
-    _state_cache[server_id] = (now, state)
+    with _state_cache_lock:
+        _state_cache[server_id] = (now, state)
     return state
 
 
@@ -285,7 +289,7 @@ def _build_state(server_id: int = 1) -> dict:
 
     # ── Leaderboard ──────────────────────────────────────────────────────────
     leaderboard = []
-    for sid, d in drivers.items():
+    for _steam_sid, d in drivers.items():
         laps, cs1, cs2 = _car_laps(d.get("car_id", ""))
         lap_times = [l["lap_ms"] for l in laps if l["lap_ms"]]
         best_ms   = min(lap_times, default=None)
@@ -320,8 +324,8 @@ def _build_state(server_id: int = 1) -> dict:
         for entry in leaderboard:
             tcp = tcp_by_sid.get(entry["steam_id"], {})
             entry["lap_invalid"] = tcp.get("lap_invalid", False)
-    except Exception:
-        pass
+    except Exception as _e:
+        log.debug("lap_invalid merge skipped : %s", _e)
 
     leader_ms = leaderboard[0]["best_lap_ms"] if leaderboard and leaderboard[0]["best_lap_ms"] else None
     for entry in leaderboard:
@@ -376,7 +380,17 @@ def timing_page():
 @live_bp.route("/api/live/state")
 @login_required
 def live_state():
-    return jsonify(_build_state_cached(_get_server_id()))
+    state = _build_state_cached(_get_server_id())
+    if not current_user.is_admin:
+        strip = _TIMING_STRIP_FIELDS
+        state = {
+            **state,
+            "leaderboard": [{k: v for k, v in e.items() if k not in strip}
+                            for e in state.get("leaderboard", [])],
+            "drivers":     [{k: v for k, v in d.items() if k not in strip}
+                            for d in state.get("drivers", [])],
+        }
+    return jsonify(state)
 
 
 def _session_timing(server_id: int = 1) -> dict:
@@ -405,7 +419,8 @@ def _session_timing(server_id: int = 1) -> dict:
         else:
             length_s = ses.get("PracticeSession", {}).get("Length", 0)
         return {"started_at": started_at, "session_length_s": length_s}
-    except Exception:
+    except Exception as _e:
+        log.warning("session_time_info failed : %s", _e)
         return {}
 
 
@@ -504,12 +519,15 @@ def timing_react():
 def live_stream():
     """SSE endpoint — envoie les nouveaux événements au fil des logs."""
     sid = _get_server_id()
+    is_admin = current_user.is_admin
     def _generate():
         yield "data: {\"type\":\"connected\"}\n\n"
         for raw_line in _iter_log_stream(sid):
             for line in raw_line.splitlines():
                 ev = _parse_line(line)
                 if ev:
+                    if not is_admin:
+                        ev = {k: v for k, v in ev.items() if k not in _TIMING_STRIP_FIELDS}
                     yield f"data: {json.dumps(ev)}\n\n"
 
     return Response(

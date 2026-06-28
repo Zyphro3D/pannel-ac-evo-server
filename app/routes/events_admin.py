@@ -169,7 +169,11 @@ def event_finish(event_id):
 @_admin_required
 def event_registrations(event_id):
     event = Event.query.get_or_404(event_id)
-    regs  = EventRegistration.query.filter_by(event_id=event.id).order_by(EventRegistration.created_at).all()
+    regs  = (EventRegistration.query
+             .filter_by(event_id=event.id)
+             .options(selectinload(EventRegistration.driver))
+             .order_by(EventRegistration.created_at)
+             .all())
     cars  = load_cars()
     return render_template("event_detail.html", event=event, regs=regs, cars=cars)
 

@@ -15,8 +15,8 @@ from typing import Optional
 
 logger = logging.getLogger(__name__)
 
-_KSPKG_PATH = os.environ.get('KSPKG_PATH', '/aceserver/content.kspkg')
-_XOR_KEY = struct.pack('<Q', 0x9F9721A97D1135C1)
+_XOR_KEY     = struct.pack('<Q', 0x9F9721A97D1135C1)
+_XOR_KEY_INT = struct.unpack('<Q', _XOR_KEY)[0]
 _TABLE_START = 0x11700000
 
 _lock = threading.Lock()
@@ -39,8 +39,15 @@ _ACRONYMS = {
 # ---------------------------------------------------------------------------
 
 def _xor(data: bytes) -> bytes:
-    k = _XOR_KEY
-    return bytes(data[i] ^ k[i % 8] for i in range(len(data)))
+    out = bytearray(len(data))
+    view = memoryview(data)
+    chunks = len(data) // 8
+    for i in range(chunks):
+        val = struct.unpack_from('<Q', view, i * 8)[0] ^ _XOR_KEY_INT
+        struct.pack_into('<Q', out, i * 8, val)
+    for j in range(chunks * 8, len(data)):
+        out[j] = data[j] ^ _XOR_KEY[j % 8]
+    return bytes(out)
 
 
 def _read_varint(buf: bytes, pos: int) -> tuple[int, int]:
@@ -155,13 +162,14 @@ def _read_entry(mm: mmap.mmap, entry: dict) -> bytes:
 
 def _load() -> None:
     global _car_names, _preset_names, _preset_classes, _loaded
-    if not os.path.exists(_KSPKG_PATH):
-        logger.warning('kspkg_reader: %s introuvable, les noms de voitures seront générés depuis le slug', _KSPKG_PATH)
+    kspkg_path = os.environ.get('KSPKG_PATH', '/aceserver/content.kspkg')
+    if not os.path.exists(kspkg_path):
+        logger.warning('kspkg_reader: %s introuvable, les noms de voitures seront générés depuis le slug', kspkg_path)
         _loaded = True
         return
 
-    logger.info('kspkg_reader: chargement de %s', _KSPKG_PATH)
-    fh = open(_KSPKG_PATH, 'rb')
+    logger.info('kspkg_reader: chargement de %s', kspkg_path)
+    fh = open(kspkg_path, 'rb')
     mm = mmap.mmap(fh.fileno(), 0, access=mmap.ACCESS_READ)
     try:
         index = _build_index(mm)

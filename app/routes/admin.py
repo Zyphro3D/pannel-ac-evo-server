@@ -13,7 +13,7 @@ from flask_babel import _, lazy_gettext as _l
 from flask_login import current_user
 
 
-from app.models import AdminAccount, Driver, Event, SessionResult, Server, CarMeta, TrackMeta
+from app.models import AdminAccount, Driver, Event, Server, CarMeta, TrackMeta
 from app.services.database import db
 from app.services.server_config import (
     load_config, load_cars, load_events,
@@ -22,7 +22,6 @@ from app.services.server_config import (
     ConfigJsonError, default_config,
 )
 from app.services.process_manager import get_status, get_server_logs
-from app.services.results_parser import parse_result_file
 from app.services import mailer, discord_notifier
 from app.utils import admin_required as _admin_required, superadmin_required as _superadmin_required, superadmin_required_json as _superadmin_required_json
 
@@ -80,6 +79,69 @@ def test_webhook():
                            result_webhook_channel=channel)
 
 
+def _track_slug(value: str) -> str:
+    value = (value or "").lower().replace("&", "and")
+    value = re.sub(r"[^a-z0-9]+", "_", value).strip("_")
+    return value.replace("grand_prix", "gp")
+
+
+def _get_track_meta(server_config: dict, circuit_files: dict) -> dict:
+    event_section = server_config.get("Event", {}) if server_config else {}
+    raw    = event_section.get("SelectedTrackValue", "") or ""
+    parts  = raw.split("|")
+    track  = parts[0] if len(parts) > 0 else "—"
+    layout = parts[1] if len(parts) > 1 else ""
+    length = parts[3] if len(parts) > 3 else ""
+    candidates = [
+        _track_slug(f"{track}_{layout}"),
+        _track_slug(layout),
+        _track_slug(track),
+    ]
+    image = ""
+    for candidate in candidates:
+        if candidate in circuit_files:
+            image = f"circuits/{circuit_files[candidate]}"
+            break
+    if not image:
+        track_slug = _track_slug(track)
+        for stem, fname in circuit_files.items():
+            if stem == track_slug or stem.startswith(f"{track_slug}_"):
+                image = f"circuits/{fname}"
+                break
+    return {
+        "track": track,
+        "layout": layout,
+        "length_km": f"{float(length) / 1000:.2f} km" if str(length).replace(".", "", 1).isdigit() else "",
+        "image": image,
+    }
+
+
+def _get_config_summary(name: str, active_config: str, running_config: str,
+                        weather_labels: dict, behavior_labels: dict, mode_labels: dict,
+                        circuit_files: dict) -> dict:
+    server_config  = load_config_by_name(name) or {}
+    server_section = server_config.get("Server", {})
+    event_section  = server_config.get("Event", {})
+    sessions       = server_config.get("Sessions", {})
+    selected_cars  = [c for c in event_section.get("Cars", []) if c.get("IsSelected") or c.get("is_selected")]
+    track_meta     = _get_track_meta(server_config, circuit_files)
+    return {
+        "name":             name,
+        "active":           name == active_config,
+        "running":          name == running_config,
+        "server_name":      server_section.get("ServerName", name),
+        "max_players":      server_section.get("MaxPlayers", "—"),
+        "mode":             mode_labels.get(event_section.get("SelectedSessionTypeValue"),
+                                            event_section.get("SelectedSessionTypeValue", "—")),
+        "weather":          weather_labels.get(event_section.get("SelectedWeatherTypeValue"), "—"),
+        "behavior":         behavior_labels.get(event_section.get("SelectedWeatherBehaviorValue"), "—"),
+        "track":            track_meta,
+        "car_count":        len(selected_cars),
+        "practice_minutes": int(sessions.get("PracticeSession", {}).get("Length", 0) or 0) // 60,
+        "race_minutes":     int(sessions.get("RaceSession", {}).get("Length", 0) or 0) // 60,
+    }
+
+
 @admin_bp.route("/server")
 @_admin_required
 def server():
@@ -124,41 +186,6 @@ def server():
     media_circuits = Path(__file__).parent.parent.parent / "media" / "circuits"
     circuit_files  = {p.stem: p.name for p in media_circuits.glob("*.webp")} if media_circuits.exists() else {}
 
-    def _slug(value: str) -> str:
-        value = (value or "").lower().replace("&", "and")
-        value = re.sub(r"[^a-z0-9]+", "_", value).strip("_")
-        return value.replace("grand_prix", "gp")
-
-    def _track_meta(server_config: dict) -> dict:
-        event_section = server_config.get("Event", {}) if server_config else {}
-        raw = event_section.get("SelectedTrackValue", "") or ""
-        parts = raw.split("|")
-        track = parts[0] if len(parts) > 0 else "—"
-        layout = parts[1] if len(parts) > 1 else ""
-        length = parts[3] if len(parts) > 3 else ""
-        candidates = [
-            _slug(f"{track}_{layout}"),
-            _slug(layout),
-            _slug(track),
-        ]
-        image = ""
-        for candidate in candidates:
-            if candidate in circuit_files:
-                image = f"circuits/{circuit_files[candidate]}"
-                break
-        if not image:
-            track_slug = _slug(track)
-            for stem, fname in circuit_files.items():
-                if stem == track_slug or stem.startswith(f"{track_slug}_"):
-                    image = f"circuits/{fname}"
-                    break
-        return {
-            "track": track,
-            "layout": layout,
-            "length_km": f"{float(length) / 1000:.2f} km" if str(length).replace(".", "", 1).isdigit() else "",
-            "image": image,
-        }
-
     weather_labels = {
         "GameModeSelectionWeatherType_CLEAR": _("Dégagé"),
         "GameModeSelectionWeatherType_OVERCAST": _("Nuageux"),
@@ -186,28 +213,6 @@ def server():
         except Exception:
             pass
 
-    def _config_summary(name: str) -> dict:
-        server_config  = load_config_by_name(name) or {}
-        server_section = server_config.get("Server", {})
-        event_section  = server_config.get("Event", {})
-        sessions       = server_config.get("Sessions", {})
-        selected_cars  = [c for c in event_section.get("Cars", []) if c.get("IsSelected") or c.get("is_selected")]
-        track_meta     = _track_meta(server_config)
-        return {
-            "name": name,
-            "active": name == active_config,
-            "running": name == running_config,
-            "server_name": server_section.get("ServerName", name),
-            "max_players": server_section.get("MaxPlayers", "—"),
-            "mode": mode_labels.get(event_section.get("SelectedSessionTypeValue"), event_section.get("SelectedSessionTypeValue", "—")),
-            "weather": weather_labels.get(event_section.get("SelectedWeatherTypeValue"), "—"),
-            "behavior": behavior_labels.get(event_section.get("SelectedWeatherBehaviorValue"), "—"),
-            "track": track_meta,
-            "car_count": len(selected_cars),
-            "practice_minutes": int(sessions.get("PracticeSession", {}).get("Length", 0) or 0) // 60,
-            "race_minutes": int(sessions.get("RaceSession", {}).get("Length", 0) or 0) // 60,
-        }
-
     def _recent_server_activity() -> list[dict]:
         keywords = (
             "connect", "disconnect", "joined", "left", "driver", "player",
@@ -233,8 +238,12 @@ def server():
                 break
         return items
 
-    config_summaries = [_config_summary(name) for name in configs]
-    current_track = _track_meta(config)
+    config_summaries = [
+        _get_config_summary(name, active_config, running_config,
+                            weather_labels, behavior_labels, mode_labels, circuit_files)
+        for name in configs
+    ]
+    current_track = _get_track_meta(config, circuit_files)
     current_event = config.get("Event", {})
 
     return render_template(
@@ -255,6 +264,7 @@ def server():
         server_events=Event.query.order_by(Event.date.asc()).all(),
         current_track=current_track,
         current_weather=weather_labels.get(current_event.get("SelectedWeatherTypeValue"), "—"),
+        current_weather_key=current_event.get("SelectedWeatherTypeValue", ""),
         current_weather_behavior=behavior_labels.get(current_event.get("SelectedWeatherBehaviorValue"), "—"),
         current_mode=mode_labels.get(current_event.get("SelectedSessionTypeValue"), "—"),
         recent_server_activity=_recent_server_activity(),
@@ -273,15 +283,15 @@ _ENV_SECTIONS = [
     ]),
     ("accounts", _l("Comptes"), []),  # Géré via AdminAccount en base de données
     ("server", _l("Serveur"), [
-        "SERVER_MAX_PLAYERS",
+        "SERVER_NAME", "SERVER_MAX_PLAYERS", "SERVER_TCP_PORT", "SERVER_UDP_PORT",
         "SERVER_DRIVER_PASSWORD", "SERVER_ADMIN_PASSWORD",
         "SERVER_ENTRY_LIST_PATH", "SERVER_RESULTS_PATH",
-        "ACESERVER_TCP_HOST", "ACESERVER_TCP_PORT",
+        "ACESERVER_TCP_HOST", "ACESERVER_TCP_PORT", "ACESERVER_HTTP_PORT",
         "ACESERVER_DIR", "CONFIGS_DIR",
         "STEAM_USERNAME",
     ]),
     ("notifications", _l("Notifications"), [
-        "ACE_BOT_STEAM_ID", "ACE_BOT_IS_ADMIN",
+        "ACE_BOT_STEAM_ID", "ACE_BOT_CAR_MODEL", "ACE_BOT_IS_ADMIN",
         "ACE_BOT_MSG_WELCOME", "ACE_BOT_MSG_DISCORD", "ACE_BOT_MSG_SITE",
         "DISCORD_WEBHOOK_URL", "DISCORD_PILOTS_WEBHOOK_URL", "DISCORD_RACE_WEBHOOK_URL",
         "DISCORD_INVITE_URL",
@@ -355,53 +365,39 @@ _SKIP_IF_EMPTY = {"MAIL_PASSWORD"}
 _CHECKBOXES = {"ACE_BOT_IS_ADMIN"}
 
 
+_SETTINGS_PATH      = Path(__file__).parent.parent.parent / "data" / "settings.json"
+_SETTINGS_SKIP_KEYS = {"SECRET_KEY"}   # clés structurelles : restent dans .env uniquement
+
+
 def _read_env_file():
-    import os
-    env_path = Path(__file__).parent.parent.parent / ".env"
+    """Lit la config depuis data/settings.json, avec fallback sur os.environ."""
+    import json as _json
     values = {}
-    if env_path.exists():
-        with open(env_path, encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if not line or line.startswith("#"):
-                    continue
-                if "=" in line:
-                    k, _, v = line.partition("=")
-                    values[k.strip()] = v.strip()
-    # Fallback: keys not in the file are read from the running environment
+    if _SETTINGS_PATH.exists():
+        try:
+            values = _json.loads(_SETTINGS_PATH.read_text(encoding="utf-8"))
+        except Exception:
+            pass
     all_keys = {k for _, _, keys in _ENV_SECTIONS for k in keys}
     for k in all_keys:
         if k not in values and k in os.environ:
             values[k] = os.environ[k]
-    return values, str(env_path)
+    return values, str(_SETTINGS_PATH)
 
 
 def _write_env_file(new_values: dict):
-    env_path = Path(__file__).parent.parent.parent / ".env"
-    if env_path.exists():
-        with open(env_path, encoding="utf-8") as f:
-            lines = f.readlines()
-    else:
-        lines = []
-
-    updated = set()
-    result = []
-    for line in lines:
-        stripped = line.strip()
-        if stripped and not stripped.startswith("#") and "=" in stripped:
-            k = stripped.partition("=")[0].strip()
-            if k in new_values:
-                result.append(f"{k}={new_values[k]}\n")
-                updated.add(k)
-                continue
-        result.append(line)
-
-    for k, v in new_values.items():
-        if k not in updated:
-            result.append(f"{k}={v}\n")
-
-    with open(env_path, "w", encoding="utf-8") as f:
-        f.writelines(result)
+    """Écrit la config dans data/settings.json (merge avec l'existant)."""
+    import json as _json
+    to_write = {k: v for k, v in new_values.items() if k not in _SETTINGS_SKIP_KEYS}
+    existing = {}
+    if _SETTINGS_PATH.exists():
+        try:
+            existing = _json.loads(_SETTINGS_PATH.read_text(encoding="utf-8"))
+        except Exception:
+            pass
+    existing.update(to_write)
+    _SETTINGS_PATH.parent.mkdir(parents=True, exist_ok=True)
+    _SETTINGS_PATH.write_text(_json.dumps(existing, indent=2, ensure_ascii=False), encoding="utf-8")
 
 
 @admin_bp.route("/settings", methods=["GET", "POST"])
@@ -425,10 +421,22 @@ def settings():
             if _name:
                 current_srv.name = _name
             if _tcp and _tcp.isdigit():
-                current_srv.tcp_port = int(_tcp)
-                current_srv.udp_port = int(_tcp)  # UDP = TCP
+                new_tcp = int(_tcp)
+                conflict = Server.query.filter(Server.id != current_srv.id, db.or_(
+                    Server.tcp_port == new_tcp, Server.udp_port == new_tcp
+                )).first()
+                if conflict:
+                    flash(_("Le port %(port)d est déjà utilisé par '%(name)s'.", port=new_tcp, name=conflict.name), "error")
+                else:
+                    current_srv.tcp_port = new_tcp
+                    current_srv.udp_port = new_tcp
             if _http and _http.isdigit():
-                current_srv.http_port = int(_http)
+                new_http = int(_http)
+                conflict = Server.query.filter(Server.id != current_srv.id, Server.http_port == new_http).first()
+                if conflict:
+                    flash(_("Le port %(port)d est déjà utilisé par '%(name)s'.", port=new_http, name=conflict.name), "error")
+                else:
+                    current_srv.http_port = new_http
             current_srv.discord_webhook_main   = request.form.get("srv_discord_main",   "").strip()
             current_srv.discord_webhook_pilots = request.form.get("srv_discord_pilots", "").strip()
             current_srv.discord_webhook_race   = request.form.get("srv_discord_race",   "").strip()
@@ -675,7 +683,6 @@ def select_server(server_id):
 @_admin_required
 @_superadmin_required
 def servers_list():
-    from app.services.process_manager import get_status
     servers = Server.query.order_by(Server.sort_order, Server.id).all()
     statuses = {}
     for srv in servers:
@@ -708,6 +715,13 @@ def server_create():
             flash(_("Port invalide (1024–65535)."), "error")
             return redirect(url_for("admin.servers_list"))
 
+    # Vérifie les conflits de port avec les serveurs existants
+    used_ports = {p for s in Server.query.all() for p in (s.tcp_port, s.udp_port, s.http_port)}
+    for port in (tcp_port, http_port):
+        if port in used_ports:
+            flash(_("Le port %(port)d est déjà utilisé par un autre serveur.", port=port), "error")
+            return redirect(url_for("admin.servers_list"))
+
     # Slug unique : base + suffixe numérique si collision
     base_slug = re.sub(r"-+", "-", re.sub(r"[^a-z0-9-]", "-", name.lower())).strip("-") or "server"
     slug, counter = base_slug, 1
@@ -722,10 +736,6 @@ def server_create():
     while Server.query.filter_by(container_name=container_name).first():
         container_name = f"{cnt_base}-{cnt_i}"
         cnt_i += 1
-
-    if Server.query.filter_by(container_name=container_name).first():
-        flash(_("Un serveur avec ce nom de container existe déjà."), "error")
-        return redirect(url_for("admin.servers_list"))
 
     # Vérifie si le container Docker existe déjà
     from app.services.server_docker import container_exists, create_server_container
@@ -826,22 +836,20 @@ def server_delete(server_id):
 
 # ── Véhicules ─────────────────────────────────────────────────────────────────
 
-_CAR_CATEGORIES = ["Road", "Race", "Track"]
-
 @admin_bp.route("/vehicles")
 @_admin_required
 def vehicles():
     cat_filter = request.args.get("cat", "")
     search     = request.args.get("q", "").strip().lower()
     q = CarMeta.query.order_by(CarMeta.category, CarMeta.display_name)
-    if cat_filter in _CAR_CATEGORIES:
+    if cat_filter in _CATEGORY_ORDER:
         q = q.filter_by(category=cat_filter)
     cars = q.all()
     if search:
         cars = [c for c in cars if search in c.display_name.lower() or search in c.slug.lower()]
-    counts = {cat: CarMeta.query.filter_by(category=cat).count() for cat in _CAR_CATEGORIES}
+    counts = {cat: CarMeta.query.filter_by(category=cat).count() for cat in _CATEGORY_ORDER}
     return render_template("vehicles.html", cars=cars, cat_filter=cat_filter,
-                           search=search, counts=counts, categories=_CAR_CATEGORIES)
+                           search=search, counts=counts, categories=_CATEGORY_ORDER)
 
 
 @admin_bp.route("/vehicles/<slug>/upload-image", methods=["POST"])

@@ -22,6 +22,17 @@ from pathlib import Path
 
 log = logging.getLogger(__name__)
 
+# Cache immuable keyed par SessionResult.id — les résultats ne changent jamais après import.
+_parse_cache: dict[int, dict] = {}
+
+
+def get_parsed(session_result) -> dict:
+    """Retourne le résultat parsé depuis le cache, ou le parse et le met en cache."""
+    rid = session_result.id
+    if rid not in _parse_cache:
+        _parse_cache[rid] = parse_result_file(json.loads(session_result.raw_json))
+    return _parse_cache[rid]
+
 # ISO 3166-1 alpha-3 → alpha-2 pour les codes nation ACE EVO
 _NATION3_TO_2 = {
     "AFG":"AF","ALB":"AL","ALG":"DZ","AND":"AD","AGO":"AO","ARG":"AR","ARM":"AM",

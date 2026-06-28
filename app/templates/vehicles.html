@@ -59,7 +59,15 @@
       <div class="veh-info">
         <div class="veh-name">{{ car.display_name }}</div>
         <div class="veh-badges">
+          {% if car.category %}
           <span class="veh-badge veh-badge-{{ car.category | lower }}">{{ _(car.category) }}</span>
+          {% endif %}
+          {% if car.property_2_label %}
+          <span class="veh-badge veh-badge-{{ car.property_2_label | lower }}">{{ _(car.property_2_label) }}</span>
+          {% endif %}
+          {% if car.property_3_label %}
+          <span class="veh-badge veh-badge-{{ car.property_3_label | lower }}">{{ _(car.property_3_label) }}</span>
+          {% endif %}
           {% if car.pi_min is not none %}
           <span class="veh-badge veh-badge-pi">PI {{ "%.1f"|format(car.pi_min) }}</span>
           {% endif %}
@@ -77,7 +85,7 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
+<script nonce="{{ csp_nonce }}">
 const _csrf = '{{ csrf_token() }}';
 
 /* ── Upload image ── */

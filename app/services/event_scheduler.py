@@ -21,7 +21,11 @@ def _loop(app):
                 for event in Event.query.filter_by(status="published", email_sent=False).all():
                     delta_min = (event.date - now).total_seconds() / 60
                     if delta_min <= event.notify_before:
-                        regs = EventRegistration.query.filter_by(event_id=event.id, status="confirmed", notified=False).all()
+                        from sqlalchemy.orm import selectinload as _sl
+                        regs = (EventRegistration.query
+                                .filter_by(event_id=event.id, status="confirmed", notified=False)
+                                .options(_sl(EventRegistration.driver))
+                                .all())
                         for reg in regs:
                             mailer.send_event_reminder(reg.driver, event, reg)
                             reg.notified = True
@@ -66,7 +70,7 @@ def _launch_event(app, event, db):
         from app.services.process_manager import start_server, stop_server, is_running
         from app.services import discord_notifier
 
-        server_id = 1  # Event n'a pas encore de server_id — utilise toujours le serveur 1
+        server_id = int(event.server_id or 1)
 
         # Arrêter le serveur en cours si besoin
         if is_running(server_id):
@@ -85,7 +89,7 @@ def _launch_event(app, event, db):
             db.session.commit()
             log.info("Auto-launch: '%s' lancé (PID %s, config %s)",
                      event.title, result.get("pid"), config_name)
-            discord_notifier.notify_start(cfg, config_name, server_id=server_id)
+            discord_notifier.safe_notify(discord_notifier.notify_start, cfg, config_name, server_id=server_id)
         else:
             log.error("Auto-launch: échec pour '%s' — %s", event.title, result.get("error"))
 

@@ -52,7 +52,7 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
+<script nonce="{{ csp_nonce }}">
 const _csrf = '{{ csrf_token() }}';
 
 document.querySelectorAll('.cir-file-input').forEach(input => {

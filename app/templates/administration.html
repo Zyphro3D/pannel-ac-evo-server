@@ -32,7 +32,7 @@
         <label style="font-size:12px">{{ _('Destinataire') }}</label>
         <input type="email" name="to" placeholder="{{ mail_cfg.admin[0] if mail_cfg.admin else 'email@exemple.fr' }}">
       </div>
-      <button class="btn-primary" style="white-space:nowrap">{{ _('Envoyer un test') }}</button>
+      <button class="btn btn-primary" style="white-space:nowrap">{{ _('Envoyer un test') }}</button>
     </form>
   </section>
 
@@ -60,7 +60,7 @@
     <form method="post" action="{{ url_for('admin.test_webhook') }}" style="margin-top:16px">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <input type="hidden" name="channel" value="server">
-      <button class="btn-secondary" {% if not webhook_url %}disabled{% endif %}>{{ _('Envoyer un message de test') }}</button>
+      <button class="btn btn-secondary" {% if not webhook_url %}disabled{% endif %}>{{ _('Envoyer un message de test') }}</button>
     </form>
   </section>
 
@@ -88,7 +88,7 @@
     <form method="post" action="{{ url_for('admin.test_webhook') }}" style="margin-top:16px">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <input type="hidden" name="channel" value="pilots">
-      <button class="btn-secondary" {% if not pilots_webhook_url and not webhook_url %}disabled{% endif %}>{{ _('Envoyer un message de test') }}</button>
+      <button class="btn btn-secondary" {% if not pilots_webhook_url and not webhook_url %}disabled{% endif %}>{{ _('Envoyer un message de test') }}</button>
     </form>
   </section>
 

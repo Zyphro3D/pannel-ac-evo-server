@@ -215,7 +215,7 @@ Dans `docker-compose.yml`, décommentez la ligne :
 
 Après chaque renouvellement du certificat :
 ```bash
-docker compose restart panel
+docker compose up -d panel
 ```
 
 **Mode 3 — Reverse proxy (Nginx, Caddy…)**

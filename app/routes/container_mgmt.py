@@ -14,7 +14,7 @@ from flask import Blueprint, Response, current_app, jsonify, request, stream_wit
 from flask_babel import _
 from flask_login import login_required
 
-from app.utils import admin_required
+from app.utils import admin_required, superadmin_required
 
 container_mgmt_bp = Blueprint("container_mgmt", __name__)
 
@@ -34,8 +34,8 @@ def _parse_acf() -> dict:
         with open(_acf_path()) as f:
             for m in _ACF_RE.finditer(f.read()):
                 result[m.group(1)] = m.group(2)
-    except Exception:
-        pass
+    except Exception as _e:
+        log.debug("ACF parse skipped : %s", _e)
     return result
 
 
@@ -107,7 +107,7 @@ def container_restart():
 
 
 @container_mgmt_bp.route("/api/container/update", methods=["POST"])
-@admin_required
+@superadmin_required
 def container_update():
     if not _updating.acquire(blocking=False):
         return jsonify({"error": _("Mise à jour déjà en cours")}), 409
@@ -150,22 +150,30 @@ def container_update():
             if not os.path.exists(steamcmd):
                 yield _msg(f"✗ SteamCMD introuvable : {steamcmd}", error=True)
             else:
-                login_args = ["+login", steam_user]
-                if steam_pass:
-                    login_args.append(steam_pass)
-                if steam_guard:
-                    login_args.append(steam_guard)
                 yield _msg(f"⬇ Lancement de SteamCMD (compte : {steam_user})...")
-                cmd = [
-                    steamcmd,
-                    "+force_install_dir", aceserver_dir,
-                    *login_args,
-                    "+app_update",        appid,
-                    "+quit",
-                ]
-                # HOME isolé pour éviter les conflits avec la session Steam du host
+                # Script temporaire pour éviter que le mot de passe apparaisse dans ps aux
+                import tempfile
                 steam_home = "/tmp/steamcmd_session"
                 os.makedirs(steam_home, exist_ok=True)
+                login_line = f"login {steam_user}"
+                if steam_pass:
+                    login_line += f" {steam_pass}"
+                if steam_guard:
+                    login_line += f" {steam_guard}"
+                script_lines = [
+                    f"force_install_dir {aceserver_dir}",
+                    login_line,
+                    f"app_update {appid}",
+                    "quit",
+                ]
+                with tempfile.NamedTemporaryFile(
+                    mode="w", suffix=".txt", delete=False,
+                    dir=steam_home, prefix="steamcmd_script_"
+                ) as tf:
+                    tf.write("\n".join(script_lines) + "\n")
+                    script_path = tf.name
+                os.chmod(script_path, 0o600)
+                cmd = [steamcmd, "+runscript", script_path]
                 try:
                     proc = subprocess.Popen(
                         cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
@@ -184,6 +192,11 @@ def container_update():
                         yield _msg(f"⚠ SteamCMD code de sortie : {rc}")
                 except Exception as e:
                     yield _msg(f"✗ Erreur SteamCMD : {e}", error=True)
+                finally:
+                    try:
+                        os.unlink(script_path)
+                    except Exception:
+                        pass
 
             # 3 — Redémarrage
             yield _msg("🚀 Redémarrage du serveur...")

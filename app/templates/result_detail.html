@@ -282,7 +282,7 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
+<script nonce="{{ csp_nonce }}">
 function toggleLaps(row) {
   if (!row.classList.contains('expandable')) return;
   const targetId = row.dataset.target;

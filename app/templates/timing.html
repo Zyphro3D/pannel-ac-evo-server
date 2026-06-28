@@ -155,7 +155,7 @@
   </div>
 </div>
 
-<script>
+<script nonce="{{ csp_nonce }}">
 const SERVER_ID  = {{ active_server_id | default(1) }};
 const _CACHE_LB  = `timing_lb_${SERVER_ID}`;
 const _CACHE_CHT = `timing_chat_${SERVER_ID}`;

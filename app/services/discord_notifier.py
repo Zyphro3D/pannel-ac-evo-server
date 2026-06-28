@@ -48,6 +48,10 @@ def init(panel_timezone: str = "Europe/Paris", **_ignored):
 
 
 def _post_to(url: str, payload: dict):
+    if not url or not url.startswith("https://discord.com/api/webhooks/"):
+        log.warning("Discord webhook URL invalide ou non autorisée : %r", url[:60] if url else "")
+        return
+
     def _post():
         try:
             data = json.dumps(payload).encode("utf-8")

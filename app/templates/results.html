@@ -124,8 +124,9 @@
               {% else %}{% if g.track %}{{ g.track }}{% else %}{{ _('Session') }}{% endif %}{% endif %}
             </span>
             <div style="display:flex;gap:4px;align-items:center;flex-shrink:0">
+              {% set stype_labels = {'practice': _('Practice'), 'qualifying': _('Qualifying'), 'warmup': _('Warmup'), 'race': _('Race')} %}
               {% for stype in ['practice','qualifying','warmup','race'] %}
-                {% if stype in g.types %}<span class="badge badge-session" style="font-size:0.62rem">{{ stype|upper }}</span>{% endif %}
+                {% if stype in g.types %}<span class="badge badge-session" style="font-size:0.62rem">{{ stype_labels[stype] }}</span>{% endif %}
               {% endfor %}
               {% if g.config_name %}<span class="cfg-chip">{{ g.config_name }}</span>{% endif %}
             </div>
@@ -255,7 +256,7 @@
   </div>{# race-content #}
 </div>{# race-layout #}
 
-<script>
+<script nonce="{{ csp_nonce }}">
 const _initialView = {{ initial_view | tojson }};
 function switchView(name) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));

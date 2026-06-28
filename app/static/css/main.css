@@ -28,7 +28,9 @@
   --condensed:    "Arial Narrow", Impact, Haettenschweiler, Arial, sans-serif;
   /* legacy aliases */
   --text-muted:   #8896a8;
+  --text2:        #8896a8;
   --surface:      #111420;
+  --surface1:     #131826;
   --surface2:     #161926;
 }
 
@@ -2339,33 +2341,6 @@ textarea.form-control { resize: vertical; min-height: 80px; }
 .font-bold     { font-weight: 700; }
 .truncate      { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-/* ─── Legacy standalone button classes (templates not yet updated) ── */
-/* These allow btn-primary / btn-danger etc. without the .btn wrapper  */
-.btn-primary, .btn-secondary, .btn-danger, .btn-success {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 13px;
-  border-radius: var(--radius-sm);
-  font-size: 1rem;
-  font-weight: 600;
-  border: none;
-  text-decoration: none;
-  cursor: pointer;
-  transition: opacity 0.15s, background 0.15s;
-  white-space: nowrap;
-  line-height: 1.4;
-}
-.btn-primary  { background: var(--accent); color: #fff; }
-.btn-secondary {
-  background: var(--bg-hover);
-  border: 1px solid var(--border-light);
-  color: var(--dim);
-}
-.btn-secondary:hover { color: var(--text); border-color: var(--dim); opacity: 1; }
-.btn-danger   { background: var(--red);   color: #fff; }
-.btn-success  { background: var(--green); color: #fff; }
-.btn-primary:hover, .btn-danger:hover, .btn-success:hover { opacity: 0.85; }
 .full-width { width: 100%; justify-content: center; }
 
 /* Legacy alert classes */
@@ -5676,10 +5651,16 @@ body::before {
   font-size: .68rem; font-weight: 700; padding: 2px 7px;
   border-radius: 99px; text-transform: uppercase; letter-spacing: .04em;
 }
-.veh-badge-road  { background: rgba(16,185,129,.18); color: #10b981; }
-.veh-badge-race  { background: rgba(239,68,68,.18);  color: #ef4444; }
-.veh-badge-track { background: rgba(99,102,241,.18); color: #818cf8; }
-.veh-badge-pi    { background: var(--surface); color: var(--dim); border: 1px solid var(--border); }
+.veh-badge-road    { background: rgba(16,185,129,.18);  color: #10b981; }
+.veh-badge-race    { background: rgba(239,68,68,.18);   color: #ef4444; }
+.veh-badge-track   { background: rgba(99,102,241,.18);  color: #818cf8; }
+.veh-badge-modern  { background: rgba(14,165,233,.15);  color: #38bdf8; }
+.veh-badge-vintage { background: rgba(245,158,11,.18);  color: #f59e0b; }
+.veh-badge-yt      { background: rgba(168,85,247,.15);  color: #c084fc; }
+.veh-badge-ice     { background: rgba(107,114,128,.15); color: #9ca3af; }
+.veh-badge-ev      { background: rgba(16,185,129,.12);  color: #34d399; }
+.veh-badge-hybrid  { background: rgba(20,184,166,.15);  color: #2dd4bf; }
+.veh-badge-pi      { background: var(--surface); color: var(--dim); border: 1px solid var(--border); }
 
 .veh-toggle {
   margin: 6px 10px 10px;

@@ -381,15 +381,15 @@ def _rotation_next(config_name: str) -> str | None:
         return None
 
 
-def _watchdog_rotate_docker(container, next_cfg: str, auto_restart: bool,
-                             from_cfg: str = "", server_id: int = 1):
-    """Passe à la prochaine config du roulement (container en cours ou arrêté)."""
-    configs_dir = Path(os.environ.get("CONFIGS_DIR", "/aceserver/configs"))
+def _rotation_load_and_build(next_cfg: str, configs_dir: Path, server_id: int):
+    """Charge la config, déploie et construit les args de lancement.
+    Retourne (cfg_data, sc_b64, sd_b64, new_run_id, _srv) ou None en cas d'erreur.
+    """
     try:
         cfg_data = json.loads((configs_dir / next_cfg).read_text())
     except Exception as e:
         log.error("Rotation: cannot load config %r: %s", next_cfg, e)
-        return
+        return None
     cfg_data.setdefault("Server", {})["IsCycleEnabled"] = False
     try:
         from app.services import config_builder
@@ -407,17 +407,37 @@ def _watchdog_rotate_docker(container, next_cfg: str, auto_restart: bool,
         )
     except Exception as e:
         log.error("Rotation: build_launch_args failed for %r: %s", next_cfg, e)
-        return
+        return None
+    return cfg_data, sc_b64, sd_b64, uuid.uuid4().hex, _srv
 
-    new_run_id = uuid.uuid4().hex
+
+def _rotation_notify_discord(from_cfg: str, next_cfg: str, cfg_data: dict, server_id: int):
+    try:
+        from app.services import discord_notifier
+        from app.models import Server as _Server
+        from app.services.database import db as _db
+        with _db_context():
+            _rot_srv = _db.session.get(_Server, server_id)
+            discord_notifier.notify_rotation_advance(from_cfg, next_cfg, cfg_data,
+                                                     server_id=server_id,
+                                                     server_name=_rot_srv.name if _rot_srv else "")
+    except Exception:
+        pass
+
+
+def _watchdog_rotate_docker(container, next_cfg: str, auto_restart: bool,
+                             from_cfg: str = "", server_id: int = 1):
+    """Passe à la prochaine config du roulement (container en cours ou arrêté)."""
+    configs_dir = Path(os.environ.get("CONFIGS_DIR", "/aceserver/configs"))
+    result = _rotation_load_and_build(next_cfg, configs_dir, server_id)
+    if result is None:
+        return
+    cfg_data, sc_b64, sd_b64, new_run_id, _srv = result
+
     lcp = _launch_config_path(server_id)
-    lcp.write_text(json.dumps({
-        "serverconfig":     sc_b64,
-        "seasondefinition": sd_b64,
-    }))
+    lcp.write_text(json.dumps({"serverconfig": sc_b64, "seasondefinition": sd_b64}))
     try:
         container.reload()
-        # Restart si en cours (rotation déclenchée par webhook), start si arrêté (watchdog)
         if container.status == "running":
             container.restart(timeout=10)
         else:
@@ -426,17 +446,7 @@ def _watchdog_rotate_docker(container, next_cfg: str, auto_restart: bool,
         _write_state(0, next_cfg, sc_b64, sd_b64, auto_restart, http_port,
                      run_id=new_run_id, server_id=server_id)
         log.info("Rotation: started %r (run=%s)", next_cfg, new_run_id)
-        try:
-            from app.services import discord_notifier
-            from app.models import Server as _Server
-            from app.services.database import db as _db
-            with _db_context():
-                _rot_srv = _db.session.get(_Server, server_id)
-                discord_notifier.notify_rotation_advance(from_cfg, next_cfg, cfg_data,
-                                                         server_id=server_id,
-                                                         server_name=_rot_srv.name if _rot_srv else "")
-        except Exception:
-            pass
+        _rotation_notify_discord(from_cfg, next_cfg, cfg_data, server_id)
     except Exception as e:
         log.error("Rotation: failed to start container for %r: %s", next_cfg, e)
         lcp.unlink(missing_ok=True)
@@ -445,35 +455,12 @@ def _watchdog_rotate_docker(container, next_cfg: str, auto_restart: bool,
 def _watchdog_rotate_native(exe: Path, next_cfg: str, auto_restart: bool,
                              from_cfg: str = "", server_id: int = 1):
     """Lance le serveur natif avec la prochaine config du roulement."""
-    configs_dir = Path(os.environ.get(
-        "CONFIGS_DIR",
-        str(exe.parent / "configs"),
-    ))
-    try:
-        cfg_data = json.loads((configs_dir / next_cfg).read_text())
-    except Exception as e:
-        log.error("Rotation: cannot load config %r: %s", next_cfg, e)
+    configs_dir = Path(os.environ.get("CONFIGS_DIR", str(exe.parent / "configs")))
+    result = _rotation_load_and_build(next_cfg, configs_dir, server_id)
+    if result is None:
         return
-    cfg_data.setdefault("Server", {})["IsCycleEnabled"] = False
-    try:
-        from app.services import config_builder
-        from app.models import Server as _Server
-        from app.services.database import db as _db
-        from app.services.server_config import deploy_config as _deploy_config
-        with _db_context():
-            _srv = _db.session.get(_Server, server_id)
-            _deploy_config(next_cfg, server_id)
-        sc_b64, sd_b64 = config_builder.build_launch_args(
-            cfg_data,
-            tcp_listener=_srv.tcp_port if _srv else None,
-            udp_listener=_srv.udp_port if _srv else None,
-            server_name=_srv.name     if _srv else None,
-        )
-    except Exception as e:
-        log.error("Rotation: build_launch_args failed for %r: %s", next_cfg, e)
-        return
+    cfg_data, sc_b64, sd_b64, new_run_id, _srv = result
 
-    new_run_id = uuid.uuid4().hex
     if cfg_data.get("Event", {}).get("SelectedSessionTypeValue") == "GameModeType_RACE_WEEKEND":
         _ensure_race_weekend_file(exe)
     try:
@@ -486,17 +473,7 @@ def _watchdog_rotate_native(exe: Path, next_cfg: str, auto_restart: bool,
         _write_state(proc.pid, next_cfg, sc_b64, sd_b64, auto_restart,
                      run_id=new_run_id, server_id=server_id)
         log.info("Rotation: started %r (PID=%d)", next_cfg, proc.pid)
-        try:
-            from app.services import discord_notifier
-            from app.models import Server as _Server
-            from app.services.database import db as _db
-            with _db_context():
-                _rot_srv = _db.session.get(_Server, server_id)
-                discord_notifier.notify_rotation_advance(from_cfg, next_cfg, cfg_data,
-                                                         server_id=server_id,
-                                                         server_name=_rot_srv.name if _rot_srv else "")
-        except Exception:
-            pass
+        _rotation_notify_discord(from_cfg, next_cfg, cfg_data, server_id)
     else:
         log.error("Rotation: failed to launch %r", next_cfg)
 

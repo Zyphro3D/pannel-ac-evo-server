@@ -1,4 +1,4 @@
-FROM ich777/winehq-baseimage
+FROM ich777/winehq-baseimage@sha256:fc81db12aaef18a6a0e9223a231887d40a26148cfda2f6e1a63a8485a4184fc6
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends xvfb xauth python3 \

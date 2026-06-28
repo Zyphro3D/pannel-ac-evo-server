@@ -114,6 +114,7 @@ class Event(db.Model):
     discord_notified  = db.Column(db.Boolean,     default=False)   # notif Discord 30min envoyée
     auto_launch       = db.Column(db.Boolean,     default=False)   # lancer le serveur automatiquement
     launched          = db.Column(db.Boolean,     default=False)   # déjà lancé par le scheduler
+    server_id         = db.Column(db.Integer,     nullable=True,  default=1)  # serveur cible pour auto-launch
     created_at      = db.Column(db.DateTime,    default=_utcnow)
     # Durées de session (minutes)
     practice_minutes   = db.Column(db.Integer, default=60)
@@ -129,8 +130,9 @@ class Event(db.Model):
                                     lazy="select", cascade="all, delete-orphan")
 
     __table_args__ = (
-        db.Index("ix_event_status_email_sent",      "status", "email_sent"),
-        db.Index("ix_event_status_discord_notified", "status", "discord_notified"),
+        db.Index("ix_event_status_email_sent",       "status", "email_sent"),
+        db.Index("ix_event_status_discord_notified",  "status", "discord_notified"),
+        db.Index("ix_event_status_date",              "status", "date"),
     )
 
     @property
@@ -204,7 +206,7 @@ class SessionResult(db.Model):
     track        = db.Column(db.String(200), default="")
     session_type = db.Column(db.String(60),  default="")
     config_name  = db.Column(db.String(200), nullable=True)       # config JSON actif au moment de la réception
-    run_id       = db.Column(db.String(40),  nullable=True)       # uuid du démarrage serveur (groupement fiable)
+    run_id       = db.Column(db.String(40),  nullable=True, index=True)  # uuid du démarrage serveur (groupement fiable)
     server_id    = db.Column(db.Integer,     nullable=True, index=True)  # server gérant ce résultat (NULL = rétrocompat)
     raw_json     = db.Column(db.Text, nullable=False)
 
@@ -237,14 +239,16 @@ class Server(db.Model):
 class CarMeta(db.Model):
     __tablename__ = "car_meta"
 
-    id           = db.Column(db.Integer, primary_key=True)
-    slug         = db.Column(db.String(120), unique=True, nullable=False)  # car["name"] depuis cars.json
-    display_name = db.Column(db.String(150), default="")
-    category     = db.Column(db.String(60),  default="")
-    pi_min       = db.Column(db.Float,       nullable=True)
-    pi_max       = db.Column(db.Float,       nullable=True)
-    image_path   = db.Column(db.String(255), default="")                   # relatif à media/cars/
-    is_active    = db.Column(db.Boolean, default=True)
+    id               = db.Column(db.Integer, primary_key=True)
+    slug             = db.Column(db.String(120), unique=True, nullable=False)  # car["name"] depuis cars.json
+    display_name     = db.Column(db.String(150), default="", index=True)
+    category         = db.Column(db.String(60),  default="")
+    property_2_label = db.Column(db.String(60),  default="")
+    property_3_label = db.Column(db.String(60),  default="")
+    pi_min           = db.Column(db.Float,       nullable=True)
+    pi_max           = db.Column(db.Float,       nullable=True)
+    image_path       = db.Column(db.String(255), default="")               # relatif à media/cars/
+    is_active        = db.Column(db.Boolean, default=True)
 
 
 # ── TrackMeta (métadonnées enrichies des circuits) ────────────────────────────

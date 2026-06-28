@@ -1,5 +1,6 @@
 .venv/
 .git/
+.claude/
 *.db
 aceserver/
 media/
@@ -7,6 +8,7 @@ media/
 .server_output.log
 .server_pid
 .env
+docker-compose.override.yml
 logs/
 dist/
 __pycache__/
@@ -15,3 +17,5 @@ __pycache__/
 docs/
 serverConfig/
 system/
+AUDIT.md
+CLAUDE.md

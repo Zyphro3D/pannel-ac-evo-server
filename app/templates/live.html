@@ -89,7 +89,7 @@
 
 </div>
 
-<script>
+<script nonce="{{ csp_nonce }}">
 const SERVER_ID = {{ current_server_id | default(1) | int }};
 
 const _CAR_LABELS = {

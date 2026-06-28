@@ -27,7 +27,7 @@ def _build_car_lookup() -> dict:
 
 def build_circuits() -> list:
     """Construit la liste des meilleurs temps par circuit, utilisable depuis d'autres routes."""
-    from app.services.results_parser import parse_result_file
+    from app.services.results_parser import get_parsed
 
     car_lookup = _build_car_lookup()
     best: dict[tuple, dict] = {}
@@ -35,8 +35,7 @@ def build_circuits() -> list:
     rows = SessionResult.query.order_by(SessionResult.received_at.asc()).limit(2000).all()
     for r in rows:
         try:
-            data   = json.loads(r.raw_json)
-            parsed = parse_result_file(data)
+            parsed = get_parsed(r)
         except Exception:
             continue
 

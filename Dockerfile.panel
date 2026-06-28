@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM python:3.11-slim@sha256:cdbd05fb6f457ca275ff51ce00d93d865ca0b6a25f5ffb08262d94f6835771e5
 
 # Bibliothèques 32-bit pour SteamCMD (binaire i386)
 RUN dpkg --add-architecture i386 \
@@ -13,7 +13,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
+ARG GIT_HASH=unknown
 RUN mkdir -p /panel/data /panel/logs /aceserver/configs && \
+    echo "${GIT_HASH}" > /panel/.git_hash && \
     pybabel compile -d /panel/translations && \
     chmod +x /panel/entrypoint.sh
 
@@ -25,6 +27,7 @@ ENV DEPLOY_MODE=docker_split \
     ACESERVER_HOST=aceserver \
     PYTHONUNBUFFERED=1
 
-EXPOSE 4300
+ARG PANEL_PORT=4300
+EXPOSE ${PANEL_PORT}
 
 ENTRYPOINT ["/panel/entrypoint.sh"]

@@ -54,7 +54,7 @@
 </div>
 
 {% block scripts %}
-<script>
+<script nonce="{{ csp_nonce }}">
 const pwd    = document.getElementById('pwd');
 const rules  = {
   len:     { el: document.getElementById('r-len'),     fn: v => v.length >= 10 },
