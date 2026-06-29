@@ -6,312 +6,325 @@
 {% macro dur_h(minutes, default=0) %}{{ ((minutes if minutes is not none else default) // 60) }}{% endmacro %}
 {% macro dur_m(minutes, default=0) %}{{ ((minutes if minutes is not none else default) % 60) }}{% endmacro %}
 
-<div class="card" style="max-width:860px">
-  <div class="card-header">
-    <h2>{{ _('Modifier l\'événement') if action == 'edit' else _('Nouvel événement') }}</h2>
-    <a href="{{ url_for('events_admin.events_list') }}" class="btn btn-secondary">← {{ _('Retour') }}</a>
+<div class="page-shell max-w-3xl">
+  <div class="card">
+    <div class="card-head">
+      <h2 class="card-title">
+        {{ _('Modifier l\'événement') if action == 'edit' else _('Nouvel événement') }}
+      </h2>
+      <a href="{{ url_for('events_admin.events_list') }}" class="btn-secondary btn-sm">
+        ← {{ _('Retour') }}
+      </a>
+    </div>
+
+    <form method="post" class="space-y-5" id="event-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      {# ── Import config ── #}
+      {% if configs %}
+      <div class="p-4 bg-surface rounded-lg border border-muted/20">
+        <label class="form-label">
+          {{ _('Importer depuis une config') }}
+          <span class="text-dim font-normal text-xs ml-1">({{ _('pré-remplit le formulaire') }})</span>
+        </label>
+        <div class="flex gap-2">
+          <select id="import-config-select" class="form-control flex-1">
+            <option value="">— {{ _('Choisir un fichier de config') }} —</option>
+            {% for cfg in configs %}
+            <option value="{{ cfg }}">{{ cfg }}</option>
+            {% endfor %}
+          </select>
+          <button type="button" class="btn-secondary shrink-0" onclick="importFromConfig()">
+            {{ _('Importer') }} ↵
+          </button>
+        </div>
+      </div>
+      {% endif %}
+
+      {# ── Infos générales ── #}
+      <div class="grid grid-cols-1 gap-4">
+        <div>
+          <label class="form-label">{{ _('Titre') }}</label>
+          <input type="text" name="title" class="form-control" required maxlength="100"
+                 value="{{ event.title if event else '' }}">
+        </div>
+        <div>
+          <label class="form-label">
+            {{ _('Description') }}
+            <span class="text-dim font-normal text-xs ml-1">({{ _('optionnel') }})</span>
+          </label>
+          <textarea name="description" rows="2" class="form-control">{{ event.description if event else '' }}</textarea>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="form-label">{{ _('Date et heure') }}</label>
+          <input type="datetime-local" name="date" class="form-control" required
+                 value="{{ event.date | local_dt_input if event and event.date else '' }}">
+        </div>
+        <div>
+          <label class="form-label">{{ _('Pilotes max') }}</label>
+          <input type="number" name="max_drivers" class="form-control" min="1" max="100"
+                 value="{{ event.max_drivers if event else 20 }}">
+        </div>
+      </div>
+
+      {# ── Circuit + mode ── #}
+      <div>
+        <label class="form-label">{{ _('Circuit') }}</label>
+        <select name="circuit" id="circuit-select" class="form-control" onchange="updateCircuitDisplay(this)">
+          {% for tr in tracks %}
+          {% set tv = tr.track + '|' + tr.layout + '|' + tr.event_name + '|' + tr.track_length|string %}
+          {% set disp = tr.track ~ ' — ' ~ tr.layout %}
+          <option value="{{ tv }}" data-display="{{ disp }}"
+                  {% if event and event.circuit == tv %}selected{% endif %}>
+            {{ disp }} ({{ "%.2f"|format(tr.track_length / 1000) }} km)
+          </option>
+          {% endfor %}
+        </select>
+        <input type="hidden" name="circuit_display" id="circuit-display"
+               value="{{ event.circuit_display if event else '' }}">
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="form-label">{{ _('Mode') }}</label>
+          <select name="mode" id="mode-select" class="form-control" onchange="onModeChange(this.value)">
+            <option value="GameModeType_PRACTICE"     {% if not event or event.mode == 'GameModeType_PRACTICE'     %}selected{% endif %}>{{ _('Libre') }}</option>
+            <option value="GameModeType_RACE_WEEKEND" {% if event and event.mode == 'GameModeType_RACE_WEEKEND' %}selected{% endif %}>{{ _('Race Weekend') }}</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">{{ _('Météo') }}</label>
+          <select name="weather" class="form-control">
+            <option value="GameModeSelectionWeatherType_CLEAR"    {% if not event or event.weather == 'GameModeSelectionWeatherType_CLEAR'    %}selected{% endif %}>{{ _('Dégagé') }}</option>
+            <option value="GameModeSelectionWeatherType_OVERCAST" {% if event and event.weather == 'GameModeSelectionWeatherType_OVERCAST' %}selected{% endif %}>{{ _('Nuageux') }}</option>
+            <option value="GameModeSelectionWeatherType_RAIN"     {% if event and event.weather == 'GameModeSelectionWeatherType_RAIN'     %}selected{% endif %}>{{ _('Pluie') }}</option>
+          </select>
+        </div>
+      </div>
+
+      {# ── Durées ── #}
+      <div>
+        <h3 class="text-sm font-semibold text-txt mb-3">{{ _('Durées de session') }}</h3>
+
+        <div id="dur-practice-block">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="form-label">{{ _('Libre') }}</label>
+              <div class="dur-inputs">
+                <input type="number" name="practice_h" min="0" max="23" placeholder="0"
+                       value="{{ dur_h(event.practice_minutes, 1) if event else 1 }}" class="dur-h">
+                <span class="dur-sep">h</span>
+                <input type="number" name="practice_m" min="0" max="59" step="5" placeholder="00"
+                       value="{{ dur_m(event.practice_minutes, 0) if event else 0 }}" class="dur-m">
+                <span class="dur-sep">min</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="dur-race-block" style="display:none">
+          <div class="grid grid-cols-2 gap-4 mb-3">
+            <div>
+              <label class="form-label">{{ _('Libre') }}</label>
+              <div class="dur-inputs">
+                <input type="number" name="practice_h" min="0" max="23" placeholder="0"
+                       value="{{ dur_h(event.practice_minutes, 1) if event else 1 }}" class="dur-h" id="practice-h-rw">
+                <span class="dur-sep">h</span>
+                <input type="number" name="practice_m" min="0" max="59" step="5" placeholder="00"
+                       value="{{ dur_m(event.practice_minutes, 0) if event else 0 }}" class="dur-m" id="practice-m-rw">
+                <span class="dur-sep">min</span>
+              </div>
+            </div>
+            <div>
+              <label class="form-label">{{ _('Qualification') }}</label>
+              <div class="dur-inputs">
+                <input type="number" name="qualifying_h" min="0" max="23" placeholder="0"
+                       value="{{ dur_h(event.qualifying_minutes, 0) if event else 0 }}" class="dur-h">
+                <span class="dur-sep">h</span>
+                <input type="number" name="qualifying_m" min="0" max="59" step="5" placeholder="00"
+                       value="{{ dur_m(event.qualifying_minutes, 30) if event else 30 }}" class="dur-m">
+                <span class="dur-sep">min</span>
+              </div>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="form-label">{{ _('Chauffe') }}</label>
+              <div class="dur-inputs">
+                <input type="number" name="warmup_h" min="0" max="23" placeholder="0"
+                       value="{{ dur_h(event.warmup_minutes, 0) if event else 0 }}" class="dur-h">
+                <span class="dur-sep">h</span>
+                <input type="number" name="warmup_m" min="0" max="59" step="5" placeholder="00"
+                       value="{{ dur_m(event.warmup_minutes, 10) if event else 10 }}" class="dur-m">
+                <span class="dur-sep">min</span>
+              </div>
+            </div>
+            <div>
+              <label class="form-label">{{ _('Course') }}</label>
+              <div class="dur-inputs">
+                <input type="number" name="race_h" min="0" max="23" placeholder="0"
+                       value="{{ dur_h(event.race_minutes, 1) if event else 1 }}" class="dur-h">
+                <span class="dur-sep">h</span>
+                <input type="number" name="race_m" min="0" max="59" step="5" placeholder="00"
+                       value="{{ dur_m(event.race_minutes, 0) if event else 0 }}" class="dur-m">
+                <span class="dur-sep">min</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {# ── Accès ── #}
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="form-label">
+            {{ _('Mot de passe serveur') }}
+            <span class="text-dim font-normal text-xs ml-1">({{ _('vide = public') }})</span>
+          </label>
+          <input type="text" name="password" class="form-control" maxlength="50"
+                 value="{{ event.password if event else '' }}">
+        </div>
+        <div>
+          <label class="form-label">
+            {{ _('Rappel email') }}
+            <span class="text-dim font-normal text-xs ml-1">({{ _('minutes avant début') }})</span>
+          </label>
+          <input type="number" name="notify_before" class="form-control" min="0" max="10080"
+                 value="{{ event.notify_before if event else 60 }}">
+        </div>
+      </div>
+
+      {# ── Options ── #}
+      <div class="space-y-3">
+        <label class="flex items-center gap-3 cursor-pointer">
+          <input type="hidden" name="is_public" value="0">
+          <input type="checkbox" name="is_public" value="1" class="w-4 h-4 rounded border-muted/40 bg-inp text-accent"
+                 {% if event and event.is_public %}checked{% endif %}>
+          <span class="text-sm text-txt">{{ _('Événement public (pas d\'inscription requise)') }}</span>
+        </label>
+        <label class="flex items-center gap-3 cursor-pointer">
+          <input type="hidden" name="auto_launch" value="0">
+          <input type="checkbox" name="auto_launch" value="1" class="w-4 h-4 rounded border-muted/40 bg-inp text-accent"
+                 {% if event and event.auto_launch %}checked{% endif %}>
+          <span class="text-sm text-txt">{{ _('Lancer le serveur automatiquement') }}</span>
+        </label>
+        {% if event and event.launched %}
+        <p class="text-xs text-emerald-DEFAULT">✓ {{ _('Serveur lancé automatiquement pour cet événement.') }}</p>
+        {% endif %}
+      </div>
+
+      {# ── Véhicules ── #}
+      {% if cars %}
+      <div>
+        <h3 class="text-sm font-semibold text-txt mb-3">
+          {{ _('Véhicules autorisés') }}
+          <span id="cars-sel-count" class="ml-2 text-dim font-normal text-xs"></span>
+        </h3>
+
+        <div class="cars-filters">
+          <div class="cars-filters-top">
+            <input type="text" id="ef-car-search" class="form-control" placeholder="{{ _('Rechercher...') }}" oninput="efApplyFilters()">
+            <button type="button" class="btn-secondary btn-sm" onclick="efSelectAll(true)">{{ _('Tout sélectionner') }}</button>
+            <button type="button" class="btn-secondary btn-sm" onclick="efSelectAll(false)">{{ _('Tout désélectionner') }}</button>
+          </div>
+          <div class="pi-filter-row">
+            <span class="pi-filter-label">PI</span>
+            <div class="pi-slider-wrapper" style="flex:1">
+              <div class="pi-slider-track" id="ef-pi-track"></div>
+              <input type="range" id="ef-pi-min" min="{{ pi_min|int }}" max="{{ pi_max|int }}"
+                     value="{{ pi_min|int }}" step="1" oninput="efSyncPi('min')">
+              <input type="range" id="ef-pi-max" min="{{ pi_min|int }}" max="{{ pi_max|int }}"
+                     value="{{ pi_max|int }}" step="1" oninput="efSyncPi('max')">
+            </div>
+            <span class="pi-range-label">
+              <span id="ef-pi-min-val">{{ pi_min|int }}</span>
+              <span class="text-dim"> — </span>
+              <span id="ef-pi-max-val">{{ pi_max|int }}</span>
+            </span>
+          </div>
+          {% if car_categories %}
+          <div class="cat-filter-row">
+            <button type="button" class="cat-btn active" data-cat="all" onclick="efSetCat(this)">{{ _('Tous') }}</button>
+            {% for cat in car_categories %}
+            <button type="button" class="cat-btn" data-cat="{{ cat }}" onclick="efSetCat(this)">{{ cat }}</button>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+
+        <input type="hidden" name="cars_config_json" id="ef-cars-config-json">
+        <div class="cars-table-wrapper" style="max-height:320px">
+          <table class="cars-table" id="ef-cars-table">
+            <thead>
+              <tr>
+                <th></th>
+                <th>{{ _('Véhicule') }}</th>
+                <th>PI</th>
+                <th>{{ _('Catégories') }}</th>
+                <th>{{ _('Ballast') }}</th>
+                <th>{{ _('Restrictor') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% set allowed_list = event.allowed_cars | from_json if event and event.allowed_cars else [] %}
+              {% set cars_cfg = event.cars_config | from_json if event and event.cars_config else {} %}
+              {% for car in cars %}
+              {% set cats = [] %}
+              {% if car.property_1_label %}{% set _ = cats.append(car.property_1_label) %}{% endif %}
+              {% if car.property_2_label %}{% set _ = cats.append(car.property_2_label) %}{% endif %}
+              {% if car.property_3_label %}{% set _ = cats.append(car.property_3_label) %}{% endif %}
+              {% set car_cfg = cars_cfg.get(car.name, {}) if cars_cfg is mapping else {} %}
+              <tr class="car-row"
+                  data-name="{{ car.display_name | lower }}"
+                  data-pi="{{ car.performance_indicator | default(0) }}"
+                  data-cats="{{ cats | join(' ') | lower }}"
+                  data-car="{{ car.name }}">
+                <td>
+                  <input type="checkbox" name="allowed_cars" value="{{ car.name }}" class="ef-car-check"
+                         {% if car.name in allowed_list %}checked{% endif %}>
+                </td>
+                <td class="car-name">{{ car.display_name }}</td>
+                <td class="car-pi">{{ "%.0f"|format(car.performance_indicator) }}</td>
+                <td style="font-size:11px;color:var(--dim)">{{ cats | join(' · ') }}</td>
+                <td><input type="number" class="form-control ef-car-ballast" value="{{ car_cfg.get('ballast', 0) }}" min="0" step="1" style="width:60px"></td>
+                <td><input type="number" class="form-control ef-car-restrictor" value="{{ car_cfg.get('restrictor', 0) }}" min="0" step="1" style="width:60px"></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% endif %}
+
+      {# ── Actions ── #}
+      <div class="flex items-center justify-end gap-3 pt-2 border-t border-muted/20">
+        <a href="{{ url_for('events_admin.events_list') }}" class="btn-secondary">{{ _('Annuler') }}</a>
+        <button type="submit" class="btn-primary">
+          {{ _('Enregistrer') if action == 'edit' else _('Créer') }}
+        </button>
+      </div>
+    </form>
   </div>
-
-  <form method="post" class="panel-form" id="event-form">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-
-    <!-- ── Import depuis une config existante ── -->
-    {% if configs %}
-    <div class="cfg-import-block">
-      <label class="cfg-import-label">{{ _('Importer depuis une config') }} <span class="label-hint">({{ _('pré-remplit le formulaire') }})</span></label>
-      <div class="cfg-import-row">
-        <select id="import-config-select" class="rot-add-select">
-          <option value="">— {{ _('Choisir un fichier de config') }} —</option>
-          {% for cfg in configs %}
-          <option value="{{ cfg }}">{{ cfg }}</option>
-          {% endfor %}
-        </select>
-        <button type="button" class="btn btn-secondary" onclick="importFromConfig()">{{ _('Importer') }} ↵</button>
-      </div>
-    </div>
-    <hr class="cfg-import-sep">
-    {% endif %}
-
-    <!-- ── Infos générales ── -->
-    <div class="form-group">
-      <label>{{ _('Titre') }}</label>
-      <input type="text" name="title" required maxlength="100"
-             value="{{ event.title if event else '' }}">
-    </div>
-
-    <div class="form-group">
-      <label>{{ _('Description') }} <span class="label-hint">({{ _('optionnel') }})</span></label>
-      <textarea name="description" rows="2" class="form-textarea">{{ event.description if event else '' }}</textarea>
-    </div>
-
-    <div class="form-row">
-      <div class="form-group">
-        <label>{{ _('Date et heure') }}</label>
-        <input type="datetime-local" name="date" required
-               value="{{ event.date | local_dt_input if event and event.date else '' }}">
-      </div>
-      <div class="form-group">
-        <label>{{ _('Pilotes max') }}</label>
-        <input type="number" name="max_drivers" min="1" max="100"
-               value="{{ event.max_drivers if event else 20 }}">
-      </div>
-    </div>
-
-    <!-- ── Circuit + mode ── -->
-    <div class="form-group">
-      <label>{{ _('Circuit') }}</label>
-      <select name="circuit" id="circuit-select" onchange="updateCircuitDisplay(this)">
-        {% for tr in tracks %}
-        {% set tv = tr.track + '|' + tr.layout + '|' + tr.event_name + '|' + tr.track_length|string %}
-        {% set disp = tr.track ~ ' — ' ~ tr.layout %}
-        <option value="{{ tv }}" data-display="{{ disp }}"
-                {% if event and event.circuit == tv %}selected{% endif %}>
-          {{ disp }} ({{ "%.2f"|format(tr.track_length / 1000) }} km)
-        </option>
-        {% endfor %}
-      </select>
-      <input type="hidden" name="circuit_display" id="circuit-display"
-             value="{{ event.circuit_display if event else '' }}">
-    </div>
-
-    <div class="form-row">
-      <div class="form-group">
-        <label>{{ _('Mode') }}</label>
-        <select name="mode" id="mode-select" onchange="onModeChange(this.value)">
-          <option value="GameModeType_PRACTICE"     {% if not event or event.mode == 'GameModeType_PRACTICE'     %}selected{% endif %}>{{ _('Libre') }}</option>
-          <option value="GameModeType_RACE_WEEKEND" {% if event and event.mode == 'GameModeType_RACE_WEEKEND' %}selected{% endif %}>{{ _('Race Weekend') }}</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>{{ _('Météo') }}</label>
-        <select name="weather">
-          <option value="GameModeSelectionWeatherType_CLEAR"    {% if not event or event.weather == 'GameModeSelectionWeatherType_CLEAR'    %}selected{% endif %}>{{ _('Dégagé') }}</option>
-          <option value="GameModeSelectionWeatherType_OVERCAST" {% if event and event.weather == 'GameModeSelectionWeatherType_OVERCAST' %}selected{% endif %}>{{ _('Nuageux') }}</option>
-          <option value="GameModeSelectionWeatherType_RAIN"     {% if event and event.weather == 'GameModeSelectionWeatherType_RAIN'     %}selected{% endif %}>{{ _('Pluie') }}</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- ── Durées de session ── -->
-    <h3 class="form-section-title">{{ _('Durées de session') }}</h3>
-
-    <div id="dur-practice-block">
-      <div class="form-row">
-        <div class="form-group">
-          <label>{{ _('Libre') }}</label>
-          <div class="dur-inputs">
-            <input type="number" name="practice_h" min="0" max="23" placeholder="0"
-                   value="{{ dur_h(event.practice_minutes, 1) if event else 1 }}" class="dur-h">
-            <span class="dur-sep">h</span>
-            <input type="number" name="practice_m" min="0" max="59" step="5" placeholder="00"
-                   value="{{ dur_m(event.practice_minutes, 0) if event else 0 }}" class="dur-m">
-            <span class="dur-sep">min</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div id="dur-race-block" style="display:none">
-      <div class="form-row">
-        <div class="form-group">
-          <label>{{ _('Libre') }}</label>
-          <div class="dur-inputs">
-            <input type="number" name="practice_h" min="0" max="23" placeholder="0"
-                   value="{{ dur_h(event.practice_minutes, 1) if event else 1 }}" class="dur-h" id="practice-h-rw">
-            <span class="dur-sep">h</span>
-            <input type="number" name="practice_m" min="0" max="59" step="5" placeholder="00"
-                   value="{{ dur_m(event.practice_minutes, 0) if event else 0 }}" class="dur-m" id="practice-m-rw">
-            <span class="dur-sep">min</span>
-          </div>
-        </div>
-        <div class="form-group">
-          <label>{{ _('Qualification') }}</label>
-          <div class="dur-inputs">
-            <input type="number" name="qualifying_h" min="0" max="23" placeholder="0"
-                   value="{{ dur_h(event.qualifying_minutes, 0) if event else 0 }}" class="dur-h">
-            <span class="dur-sep">h</span>
-            <input type="number" name="qualifying_m" min="0" max="59" step="5" placeholder="00"
-                   value="{{ dur_m(event.qualifying_minutes, 30) if event else 30 }}" class="dur-m">
-            <span class="dur-sep">min</span>
-          </div>
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>{{ _('Chauffe') }}</label>
-          <div class="dur-inputs">
-            <input type="number" name="warmup_h" min="0" max="23" placeholder="0"
-                   value="{{ dur_h(event.warmup_minutes, 0) if event else 0 }}" class="dur-h">
-            <span class="dur-sep">h</span>
-            <input type="number" name="warmup_m" min="0" max="59" step="5" placeholder="00"
-                   value="{{ dur_m(event.warmup_minutes, 10) if event else 10 }}" class="dur-m">
-            <span class="dur-sep">min</span>
-          </div>
-        </div>
-        <div class="form-group">
-          <label>{{ _('Course') }}</label>
-          <div class="dur-inputs">
-            <input type="number" name="race_h" min="0" max="23" placeholder="0"
-                   value="{{ dur_h(event.race_minutes, 1) if event else 1 }}" class="dur-h">
-            <span class="dur-sep">h</span>
-            <input type="number" name="race_m" min="0" max="59" step="5" placeholder="00"
-                   value="{{ dur_m(event.race_minutes, 0) if event else 0 }}" class="dur-m">
-            <span class="dur-sep">min</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ── Paramètres accès ── -->
-    <div class="form-row form-group-mt">
-      <div class="form-group">
-        <label>{{ _('Mot de passe serveur') }} <span class="label-hint">({{ _('vide = public') }})</span></label>
-        <input type="text" name="password" maxlength="50"
-               value="{{ event.password if event else '' }}">
-      </div>
-      <div class="form-group">
-        <label>{{ _('Rappel email') }} <span class="label-hint">({{ _('minutes avant début') }})</span></label>
-        <input type="number" name="notify_before" min="0" max="10080"
-               value="{{ event.notify_before if event else 60 }}">
-      </div>
-    </div>
-
-    <!-- ── Événement public ── -->
-    <div class="form-group form-group-mt">
-      <label class="toggle-label">
-        <input type="hidden" name="is_public" value="0">
-        <input type="checkbox" name="is_public" value="1"
-               {% if event and event.is_public %}checked{% endif %}>
-        <span>{{ _('Événement public (pas d\'inscription requise)') }}</span>
-      </label>
-    </div>
-
-    <!-- ── Lancement automatique ── -->
-    <div class="form-group form-group-mt">
-      <label class="toggle-label">
-        <input type="hidden" name="auto_launch" value="0">
-        <input type="checkbox" name="auto_launch" value="1"
-               {% if event and event.auto_launch %}checked{% endif %}>
-        <span>{{ _('Lancer le serveur automatiquement') }}</span>
-      </label>
-      {% if event and event.launched %}
-      <p class="success-hint">✓ {{ _('Serveur lancé automatiquement pour cet événement.') }}</p>
-      {% endif %}
-    </div>
-
-    <!-- ── Sélection véhicules ── -->
-    {% if cars %}
-    <h3 class="form-section-title" style="margin-top:8px">
-      {{ _('Véhicules autorisés') }}
-      <span id="cars-sel-count" class="cars-sel-count"></span>
-    </h3>
-
-    <!-- Filtres -->
-    <div class="cars-filters">
-      <div class="cars-filters-top">
-        <input type="text" id="ef-car-search" placeholder="{{ _('Rechercher...') }}" oninput="efApplyFilters()">
-        <button type="button" class="btn btn-secondary" onclick="efSelectAll(true)">{{ _('Tout sélectionner') }}</button>
-        <button type="button" class="btn btn-secondary" onclick="efSelectAll(false)">{{ _('Tout désélectionner') }}</button>
-      </div>
-
-      <!-- Filtre PI -->
-      <div class="pi-filter-row">
-        <span class="pi-filter-label">PI</span>
-        <div class="pi-slider-wrapper" style="flex:1">
-          <div class="pi-slider-track" id="ef-pi-track"></div>
-          <input type="range" id="ef-pi-min" min="{{ pi_min|int }}" max="{{ pi_max|int }}"
-                 value="{{ pi_min|int }}" step="1" oninput="efSyncPi('min')">
-          <input type="range" id="ef-pi-max" min="{{ pi_min|int }}" max="{{ pi_max|int }}"
-                 value="{{ pi_max|int }}" step="1" oninput="efSyncPi('max')">
-        </div>
-        <span class="pi-range-label">
-          <span id="ef-pi-min-val">{{ pi_min|int }}</span>
-          <span style="color:var(--text-muted)"> — </span>
-          <span id="ef-pi-max-val">{{ pi_max|int }}</span>
-        </span>
-      </div>
-
-      <!-- Filtre catégorie -->
-      {% if car_categories %}
-      <div class="cat-filter-row">
-        <button type="button" class="cat-btn active" data-cat="all" onclick="efSetCat(this)">{{ _('Tous') }}</button>
-        {% for cat in car_categories %}
-        <button type="button" class="cat-btn" data-cat="{{ cat }}" onclick="efSetCat(this)">{{ cat }}</button>
-        {% endfor %}
-      </div>
-      {% endif %}
-    </div>
-
-    <input type="hidden" name="cars_config_json" id="ef-cars-config-json">
-    <div class="cars-table-wrapper" style="max-height:320px">
-      <table class="cars-table" id="ef-cars-table">
-        <thead>
-          <tr>
-            <th></th>
-            <th>{{ _('Véhicule') }}</th>
-            <th>PI</th>
-            <th>{{ _('Catégories') }}</th>
-            <th>{{ _('Ballast') }}</th>
-            <th>{{ _('Restrictor') }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% set allowed_list = event.allowed_cars | from_json if event and event.allowed_cars else [] %}
-          {% set cars_cfg = event.cars_config | from_json if event and event.cars_config else {} %}
-          {% for car in cars %}
-          {% set cats = [] %}
-          {% if car.property_1_label %}{% set _ = cats.append(car.property_1_label) %}{% endif %}
-          {% if car.property_2_label %}{% set _ = cats.append(car.property_2_label) %}{% endif %}
-          {% if car.property_3_label %}{% set _ = cats.append(car.property_3_label) %}{% endif %}
-          {% set car_cfg = cars_cfg.get(car.name, {}) if cars_cfg is mapping else {} %}
-          <tr class="car-row"
-              data-name="{{ car.display_name | lower }}"
-              data-pi="{{ car.performance_indicator | default(0) }}"
-              data-cats="{{ cats | join(' ') | lower }}"
-              data-car="{{ car.name }}">
-            <td>
-              <input type="checkbox" name="allowed_cars" value="{{ car.name }}" class="ef-car-check"
-                     {% if car.name in allowed_list %}checked{% endif %}>
-            </td>
-            <td class="car-name">{{ car.display_name }}</td>
-            <td class="car-pi">{{ "%.0f"|format(car.performance_indicator) }}</td>
-            <td style="font-size:11px;color:var(--text-muted)">{{ cats | join(' · ') }}</td>
-            <td><input type="number" class="form-control ef-car-ballast" value="{{ car_cfg.get('ballast', 0) }}" min="0" step="1" style="width:60px"></td>
-            <td><input type="number" class="form-control ef-car-restrictor" value="{{ car_cfg.get('restrictor', 0) }}" min="0" step="1" style="width:60px"></td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-    {% endif %}
-
-    <div class="modal-actions" style="margin-top:16px">
-      <a href="{{ url_for('events_admin.events_list') }}" class="btn btn-secondary">{{ _('Annuler') }}</a>
-      <button type="submit" class="btn btn-primary">{{ _('Enregistrer') if action == 'edit' else _('Créer') }}</button>
-    </div>
-  </form>
 </div>
 
 {% block scripts %}
 <script nonce="{{ csp_nonce }}">
-// ── Circuit display ──
 function updateCircuitDisplay(sel) {
   const opt = sel.options[sel.selectedIndex];
   document.getElementById('circuit-display').value = opt.dataset.display || '';
 }
 
-// ── Mode toggle ──
 function onModeChange(val) {
   const isRW = val === 'GameModeType_RACE_WEEKEND';
-  const practiceBlock = document.getElementById('dur-practice-block');
-  const raceBlock = document.getElementById('dur-race-block');
-  practiceBlock.style.display = isRW ? 'none' : '';
-  raceBlock.style.display     = isRW ? ''     : 'none';
-  practiceBlock.querySelectorAll('input').forEach(input => { input.disabled = isRW; });
-  raceBlock.querySelectorAll('input').forEach(input => { input.disabled = !isRW; });
+  document.getElementById('dur-practice-block').style.display = isRW ? 'none' : '';
+  document.getElementById('dur-race-block').style.display     = isRW ? ''     : 'none';
+  document.getElementById('dur-practice-block').querySelectorAll('input').forEach(i => { i.disabled = isRW; });
+  document.getElementById('dur-race-block').querySelectorAll('input').forEach(i => { i.disabled = !isRW; });
 }
 
-// ── PI slider sync ──
 const PI_MIN = {{ pi_min|int }};
 const PI_MAX = {{ pi_max|int }};
 let _piMin = PI_MIN, _piMax = PI_MAX;
@@ -342,7 +355,6 @@ function efSyncPi(which) {
   efApplyFilters(true);
 }
 
-// ── Category filter ──
 let _activeCat = 'all';
 function efSetCat(btn) {
   document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
@@ -351,7 +363,6 @@ function efSetCat(btn) {
   efApplyFilters(true);
 }
 
-// ── Combined filter ──
 function efApplyFilters(autoSelect = false) {
   const q = (document.getElementById('ef-car-search')?.value || '').toLowerCase();
   document.querySelectorAll('#ef-cars-table .car-row').forEach(row => {
@@ -383,7 +394,6 @@ function efUpdateCount() {
 }
 document.querySelectorAll('.ef-car-check').forEach(cb => cb.addEventListener('change', efUpdateCount));
 
-// ── Collecte cars_config avant submit ──
 document.getElementById('event-form').addEventListener('submit', function() {
   const cfg = {};
   document.querySelectorAll('#ef-cars-table .car-row').forEach(row => {
@@ -395,11 +405,9 @@ document.getElementById('event-form').addEventListener('submit', function() {
   document.getElementById('ef-cars-config-json').value = JSON.stringify(cfg);
 });
 
-// ── Import depuis une config ──
 async function importFromConfig() {
   const sel = document.getElementById('import-config-select');
   if (!sel || !sel.value) return;
-
   let cfg;
   try {
     const r = await fetch('/api/configs/' + encodeURIComponent(sel.value));
@@ -407,39 +415,26 @@ async function importFromConfig() {
     cfg = await r.json();
   } catch (_) { showToast(I18N.networkError, 'error'); return; }
 
-  // Circuit
   const circSel = document.getElementById('circuit-select');
   const trackVal = cfg.Event?.SelectedTrackValue || '';
-  if (circSel && trackVal) {
-    circSel.value = trackVal;
-    updateCircuitDisplay(circSel);
-  }
+  if (circSel && trackVal) { circSel.value = trackVal; updateCircuitDisplay(circSel); }
 
-  // Mode
   const modeSel = document.getElementById('mode-select');
-  if (modeSel) {
-    modeSel.value = cfg.Event?.SelectedSessionTypeValue || 'GameModeType_PRACTICE';
-    onModeChange(modeSel.value);
-  }
+  if (modeSel) { modeSel.value = cfg.Event?.SelectedSessionTypeValue || 'GameModeType_PRACTICE'; onModeChange(modeSel.value); }
 
-  // Météo
   const wSel = document.querySelector('select[name="weather"]');
   if (wSel) wSel.value = cfg.Event?.SelectedWeatherTypeValue || '';
 
-  // Durées (secondes → h / min)
   const setDur = (hName, mName, seconds) => {
     const s = seconds || 0;
-    const h = Math.floor(s / 3600);
-    const m = Math.floor((s % 3600) / 60);
-    document.querySelectorAll(`input[name="${hName}"]`).forEach(el => el.value = h);
-    document.querySelectorAll(`input[name="${mName}"]`).forEach(el => el.value = m);
+    document.querySelectorAll(`input[name="${hName}"]`).forEach(el => el.value = Math.floor(s / 3600));
+    document.querySelectorAll(`input[name="${mName}"]`).forEach(el => el.value = Math.floor((s % 3600) / 60));
   };
   setDur('practice_h',   'practice_m',   cfg.Sessions?.PracticeSession?.Length);
   setDur('qualifying_h', 'qualifying_m', cfg.Sessions?.QualifyingSession?.Length);
   setDur('warmup_h',     'warmup_m',     cfg.Sessions?.WarmupSession?.Length);
   setDur('race_h',       'race_m',       cfg.Sessions?.RaceSession?.Length);
 
-  // Véhicules — décocher tout, puis cocher les sélectionnés dans la config
   document.querySelectorAll('.ef-car-check').forEach(cb => cb.checked = false);
   (cfg.Event?.Cars || []).forEach(c => {
     if (!(c.IsSelected || c.is_selected)) return;
@@ -455,14 +450,12 @@ async function importFromConfig() {
   efUpdateCount();
 }
 
-// ── Init ──
 document.addEventListener('DOMContentLoaded', () => {
   updateCircuitDisplay(document.getElementById('circuit-select'));
   onModeChange(document.getElementById('mode-select').value);
   efUpdatePiTrack();
   efApplyFilters(false);
   efUpdateCount();
-  // Pré-remplir la date depuis le calendrier (?date=YYYY-MM-DDTHH:MM)
   const _urlDate = new URLSearchParams(location.search).get('date');
   if (_urlDate) {
     const di = document.querySelector('input[name="date"]');

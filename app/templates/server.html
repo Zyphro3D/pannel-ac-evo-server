@@ -22,15 +22,19 @@
        @click.self="open = false"
        style="display:none">
     <div class="modal-box" @click.stop>
-      <h3 id="modal-title">{{ _('Nouvelle configuration') }}</h3>
-      <div class="form-group" style="margin-top:14px">
-        <label>{{ _('Nom du fichier') }}</label>
-        <input type="text" id="modal-name" placeholder="ma-config.json">
+      <div class="modal-head">
+        <h3 class="modal-title" id="modal-title">{{ _('Nouvelle configuration') }}</h3>
       </div>
-      <input type="hidden" id="modal-copy-from">
-      <div class="modal-actions">
-        <button class="btn btn-secondary" @click="open = false">{{ _('Annuler') }}</button>
-        <button class="btn btn-primary"   onclick="submitCreate()">{{ _('Créer') }}</button>
+      <div class="modal-body">
+        <div>
+          <label class="form-label">{{ _('Nom du fichier') }}</label>
+          <input type="text" id="modal-name" class="form-control" placeholder="ma-config.json">
+        </div>
+        <input type="hidden" id="modal-copy-from">
+      </div>
+      <div class="modal-foot">
+        <button class="btn-secondary btn-sm" @click="open = false">{{ _('Annuler') }}</button>
+        <button class="btn-primary btn-sm"   onclick="submitCreate()">{{ _('Créer') }}</button>
       </div>
     </div>
   </div>
@@ -44,16 +48,20 @@
        @click.self="open = false"
        style="display:none">
     <div class="modal-box" @click.stop>
-      <h3>&#9998; {{ _('Renommer la configuration') }}</h3>
-      <input type="hidden" id="modal-rename-old">
-      <div class="form-group" style="margin-top:14px">
-        <label>{{ _('Nouveau nom') }}</label>
-        <input type="text" id="modal-rename-new" placeholder="nouveau-nom.json"
-               onkeydown="if(event.key==='Enter') submitRename()">
+      <div class="modal-head">
+        <h3 class="modal-title">&#9998; {{ _('Renommer la configuration') }}</h3>
       </div>
-      <div class="modal-actions">
-        <button class="btn btn-secondary" @click="open = false">{{ _('Annuler') }}</button>
-        <button class="btn btn-primary"   onclick="submitRename()">{{ _('Renommer') }}</button>
+      <div class="modal-body">
+        <input type="hidden" id="modal-rename-old">
+        <div>
+          <label class="form-label">{{ _('Nouveau nom') }}</label>
+          <input type="text" id="modal-rename-new" class="form-control" placeholder="nouveau-nom.json"
+                 onkeydown="if(event.key==='Enter') submitRename()">
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-secondary btn-sm" @click="open = false">{{ _('Annuler') }}</button>
+        <button class="btn-primary btn-sm"   onclick="submitRename()">{{ _('Renommer') }}</button>
       </div>
     </div>
   </div>
@@ -61,12 +69,16 @@
   <!-- ── Modal erreur config (JS pur — affiché au chargement avant Alpine) ── -->
   <div class="modal-overlay" id="modal-config-error" style="display:none">
     <div class="modal-box">
-      <h3 style="color:#d97706"><span class="icon-warn"></span> {{ _('Fichier invalide') }}</h3>
-      <p style="margin:10px 0 6px;color:var(--dim);font-size:13px">{{ _('Ce fichier contient des erreurs :') }}</p>
-      <ul id="modal-error-list" style="margin:0 0 16px 16px;font-size:12px;color:var(--dim);line-height:1.8"></ul>
-      <div class="modal-actions">
-        <button class="btn btn-secondary" onclick="closeConfigErrorModal()">{{ _('Choisir autre') }}</button>
-        <button class="btn btn-primary"   onclick="doRepairConfig()"><span class="icon-gear"></span> {{ _('Réparer') }}</button>
+      <div class="modal-head">
+        <h3 class="modal-title text-amber-400"><span class="icon-warn"></span> {{ _('Fichier invalide') }}</h3>
+      </div>
+      <div class="modal-body">
+        <p class="text-sm text-dim">{{ _('Ce fichier contient des erreurs :') }}</p>
+        <ul id="modal-error-list" class="list-disc list-inside text-xs text-dim space-y-1 mt-2"></ul>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-secondary btn-sm" onclick="closeConfigErrorModal()">{{ _('Choisir autre') }}</button>
+        <button class="btn-primary btn-sm"   onclick="doRepairConfig()"><span class="icon-gear"></span> {{ _('Réparer') }}</button>
       </div>
     </div>
   </div>
@@ -79,11 +91,15 @@
        @click.self="open = false"
        style="display:none">
     <div class="modal-box modal-logs-box" @click.stop>
-      <h3><span class="icon-logs"></span> {{ _('Logs serveur') }}</h3>
-      <pre id="logs-content" class="logs-pre">{{ _('Chargement...') }}</pre>
-      <div class="modal-actions">
-        <button class="btn btn-secondary" @click="open = false">{{ _('Fermer') }}</button>
-        <button class="btn btn-secondary" onclick="loadLogs()">&#8635; {{ _('Actualiser') }}</button>
+      <div class="modal-head">
+        <h3 class="modal-title"><span class="icon-logs"></span> {{ _('Logs serveur') }}</h3>
+      </div>
+      <div class="modal-body p-0">
+        <pre id="logs-content" class="logs-pre">{{ _('Chargement...') }}</pre>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-secondary btn-sm" @click="open = false">{{ _('Fermer') }}</button>
+        <button class="btn-secondary btn-sm" onclick="loadLogs()">&#8635; {{ _('Actualiser') }}</button>
       </div>
     </div>
   </div>

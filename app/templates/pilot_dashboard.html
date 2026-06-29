@@ -1,115 +1,129 @@
 {% extends "base.html" %}
 {% block title %}{{ _('Mes inscriptions') }} — {{ panel_title }}{% endblock %}
 {% block content %}
-<div class="pilot-dash">
+<div class="page-shell max-w-3xl">
 
+  {# Header #}
   <div class="page-header">
-    <h1>{{ _('Mes inscriptions') }}</h1>
-    <p>{{ current_user.ingame_name }}</p>
+    <div>
+      <h1 class="page-title">{{ _('Mes inscriptions') }}</h1>
+      <p class="page-subtitle">{{ current_user.ingame_name }}</p>
+    </div>
   </div>
 
   {# ── Événements disponibles ── #}
   {% if available %}
-  <section class="card mb-16">
-    <div class="card-header">
-      <h2>{{ _('Événements disponibles') }}</h2>
-      <span style="margin-left:auto;font-size:12px;color:var(--dim)">{{ available|length }}</span>
+  <section class="card mb-6">
+    <div class="card-head">
+      <h2 class="card-title">{{ _('Événements disponibles') }}</h2>
+      <span class="badge badge-neutral">{{ available|length }}</span>
     </div>
-    {% for ev in available %}
-    <div class="pilot-row">
-      <div class="pilot-row-info">
-        <div class="pilot-row-title">{{ ev.title }}</div>
-        <div class="pilot-row-meta">
-          {{ ev.circuit_display or ev.circuit or '—' }}
-          &nbsp;·&nbsp;{{ ev.date | local_dt }}
-          &nbsp;·&nbsp;{{ ev.mode_display }}
+    <div class="divide-y divide-muted/10">
+      {% for ev in available %}
+      <div class="flex items-start justify-between gap-4 py-4 first:pt-0 last:pb-0">
+        <div class="flex-1 min-w-0">
+          <div class="font-medium text-txt">{{ ev.title }}</div>
+          <div class="text-sm text-dim mt-0.5">
+            {{ ev.circuit_display or ev.circuit or '—' }}
+            · {{ ev.date | local_dt }}
+            · {{ ev.mode_display }}
+          </div>
+          {% if ev.description %}
+          <div class="text-sm text-dim/80 mt-1">{{ ev.description }}</div>
+          {% endif %}
         </div>
-        {% if ev.description %}<div class="pilot-row-desc">{{ ev.description }}</div>{% endif %}
+        <div class="flex items-center gap-3 shrink-0">
+          <span class="text-sm text-dim">{{ ev.confirmed_count }}/{{ ev.max_drivers }}</span>
+          {% if ev.is_full %}
+            <span class="badge badge-warning">{{ _('Complet') }}</span>
+          {% elif current_user.is_approved %}
+          <form method="post" action="{{ url_for('public.pilot_register', event_id=ev.id) }}" class="m-0">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn-primary btn-sm">{{ _("S'inscrire") }}</button>
+          </form>
+          {% else %}
+            <span class="text-xs text-dim">{{ _('Compte en attente') }}</span>
+          {% endif %}
+        </div>
       </div>
-      <div class="pilot-row-actions">
-        <span class="pilot-row-slots">{{ ev.confirmed_count }}/{{ ev.max_drivers }}</span>
-        {% if ev.is_full %}
-          <span class="pilot-row-full">{{ _('Complet') }}</span>
-        {% elif current_user.is_approved %}
-        <form method="post" action="{{ url_for('public.pilot_register', event_id=ev.id) }}">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <button class="btn btn-primary btn-sm">{{ _("S'inscrire") }}</button>
-        </form>
-        {% else %}
-          <span style="font-size:12px;color:var(--dim)">{{ _('Compte en attente') }}</span>
-        {% endif %}
-      </div>
+      {% endfor %}
     </div>
-    {% endfor %}
   </section>
   {% endif %}
 
   {# ── Inscriptions à venir ── #}
-  <section class="card mb-16">
-    <div class="card-header">
-      <h2>{{ _('Inscriptions à venir') }}</h2>
+  <section class="card mb-6">
+    <div class="card-head">
+      <h2 class="card-title">{{ _('Inscriptions à venir') }}</h2>
     </div>
     {% if upcoming_regs %}
+    <div class="divide-y divide-muted/10">
       {% for reg in upcoming_regs %}
-      <div class="pilot-row">
-        <div class="pilot-row-info">
-          <div class="pilot-row-title">{{ reg.event.title }}</div>
-          <div class="pilot-row-meta">
+      <div class="flex items-start justify-between gap-4 py-4 first:pt-0 last:pb-0">
+        <div class="flex-1 min-w-0">
+          <div class="font-medium text-txt">{{ reg.event.title }}</div>
+          <div class="text-sm text-dim mt-0.5">
             {{ reg.event.circuit_display or reg.event.circuit or '—' }}
-            &nbsp;·&nbsp;{{ reg.event.date | local_dt }}
-            &nbsp;·&nbsp;{{ reg.event.mode_display }}
+            · {{ reg.event.date | local_dt }}
+            · {{ reg.event.mode_display }}
           </div>
           {% if reg.car_display or reg.assigned_car %}
-          <div class="pilot-row-meta">{{ _('Voiture') }} : {{ reg.car_display or reg.assigned_car }}</div>
+          <div class="text-sm text-dim/70 mt-0.5">{{ _('Voiture') }} : {{ reg.car_display or reg.assigned_car }}</div>
           {% endif %}
         </div>
-        <div class="pilot-row-actions">
-          <span class="badge badge-{{ reg.status }}">
+        <div class="flex items-center gap-3 shrink-0">
+          <span class="badge badge-{% if reg.status == 'confirmed' %}success{% elif reg.status == 'pending' %}warning{% else %}error{% endif %}">
             {% if reg.status == 'pending' %}{{ _('En attente') }}
             {% elif reg.status == 'confirmed' %}{{ _('Confirmé') }}
             {% else %}{{ _('Refusé') }}{% endif %}
           </span>
           {% if reg.status == 'pending' %}
-          <form method="post" action="{{ url_for('public.pilot_unregister', event_id=reg.event_id) }}">
+          <form method="post" action="{{ url_for('public.pilot_unregister', event_id=reg.event_id) }}" class="m-0">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button class="btn btn-danger btn-sm" onclick="return confirm('{{ _("Se désinscrire ?") }}')">{{ _('Annuler') }}</button>
+            <button class="btn-danger btn-sm"
+                    onclick="return confirm('{{ _("Se désinscrire ?") }}')">{{ _('Annuler') }}</button>
           </form>
           {% endif %}
         </div>
       </div>
       {% endfor %}
+    </div>
     {% else %}
-    <p class="text-muted" style="padding:8px 20px 16px">{{ _("Aucune inscription à venir.") }}</p>
+    <div class="empty-state py-8">
+      <p class="text-sm">{{ _("Aucune inscription à venir.") }}</p>
+    </div>
     {% endif %}
   </section>
 
   {# ── Historique ── #}
   {% if past_regs %}
   <section class="card">
-    <div class="card-header">
-      <h2>{{ _('Historique') }}</h2>
+    <div class="card-head">
+      <h2 class="card-title">{{ _('Historique') }}</h2>
     </div>
-    {% for reg in past_regs %}
-    <div class="pilot-row">
-      <div class="pilot-row-info">
-        <div class="pilot-row-title">{{ reg.event.title }}</div>
-        <div class="pilot-row-meta">
-          {{ reg.event.circuit_display or reg.event.circuit or '—' }}
-          &nbsp;·&nbsp;{{ reg.event.date | local_dt }}
+    <div class="divide-y divide-muted/10">
+      {% for reg in past_regs %}
+      <div class="flex items-start justify-between gap-4 py-4 first:pt-0 last:pb-0">
+        <div class="flex-1 min-w-0">
+          <div class="font-medium text-txt">{{ reg.event.title }}</div>
+          <div class="text-sm text-dim mt-0.5">
+            {{ reg.event.circuit_display or reg.event.circuit or '—' }}
+            · {{ reg.event.date | local_dt }}
+          </div>
+          {% if reg.car_display or reg.assigned_car %}
+          <div class="text-sm text-dim/70 mt-0.5">{{ _('Voiture') }} : {{ reg.car_display or reg.assigned_car }}</div>
+          {% endif %}
         </div>
-        {% if reg.car_display or reg.assigned_car %}
-        <div class="pilot-row-meta">{{ _('Voiture') }} : {{ reg.car_display or reg.assigned_car }}</div>
-        {% endif %}
+        <div class="shrink-0">
+          <span class="badge badge-{% if reg.status == 'confirmed' %}success{% elif reg.status == 'pending' %}warning{% else %}neutral{% endif %}">
+            {% if reg.status == 'pending' %}{{ _('En attente') }}
+            {% elif reg.status == 'confirmed' %}{{ _('Confirmé') }}
+            {% else %}{{ _('Refusé') }}{% endif %}
+          </span>
+        </div>
       </div>
-      <div class="pilot-row-actions">
-        <span class="badge badge-{{ reg.status }}">
-          {% if reg.status == 'pending' %}{{ _('En attente') }}
-          {% elif reg.status == 'confirmed' %}{{ _('Confirmé') }}
-          {% else %}{{ _('Refusé') }}{% endif %}
-        </span>
-      </div>
+      {% endfor %}
     </div>
-    {% endfor %}
   </section>
   {% endif %}
 

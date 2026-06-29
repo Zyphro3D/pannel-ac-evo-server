@@ -1,36 +1,59 @@
 {% extends "base.html" %}
 {% block title %}{{ _('Connexion') }} — {{ panel_title }}{% endblock %}
 {% block content %}
-<div style="display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 80px)">
-  <div class="auth-card">
-    <div class="auth-logo">
+<div class="flex items-center justify-center min-h-[calc(100vh-3.5rem)] px-4 py-12">
+  <div class="w-full max-w-sm">
+
+    {# Logo / Brand #}
+    <div class="flex flex-col items-center mb-8">
       {% if panel_logo_img %}
-        <img src="{{ url_for('serve_media', filename='banner/' ~ panel_logo_img) }}" style="max-height:60px;object-fit:contain;margin-bottom:8px" alt="">
+        <img src="{{ url_for('serve_media', filename='banner/' ~ panel_logo_img) }}"
+             class="h-14 object-contain mb-3" alt="{{ panel_title }}">
       {% else %}
-        <span class="b-evo">EVO</span>
-        <span class="b-panel">Panel</span>
+        <div class="flex items-center gap-2 mb-3">
+          <span class="font-black text-accent text-3xl tracking-tight leading-none">EVO</span>
+          <span class="font-semibold text-txt/70 text-xl leading-none">Panel</span>
+        </div>
       {% endif %}
+      <h1 class="text-xl font-bold text-txt">{{ _('Connexion') }}</h1>
+      <p class="text-sm text-dim mt-1">{{ panel_title }}</p>
     </div>
-    <h2 class="auth-title">{{ _('Connexion') }}</h2>
 
-    <form method="post" id="login-form">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <div class="form-group">
-        <label>{{ _('Identifiant ou email') }}</label>
-        <input class="form-control" type="text" name="username" id="username-input" autofocus required autocomplete="username">
-      </div>
-      <div class="form-group">
-        <label>{{ _('Mot de passe') }}</label>
-        <input class="form-control" type="password" name="password" required autocomplete="current-password">
-      </div>
-      <button type="submit" class="btn btn-primary btn-full" style="margin-top:4px">{{ _('Connexion') }}</button>
-    </form>
+    {# Form card #}
+    <div class="card space-y-4">
+      <form method="post" id="login-form" class="space-y-4">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-    <div class="auth-footer">
-      {{ _('Pilote ?') }} <a href="{{ url_for('public.register') }}">{{ _("S'inscrire") }}</a>
-      &nbsp;·&nbsp;
-      <a href="{{ url_for('auth.forgot_password') }}" style="color:var(--dim)">{{ _('Mot de passe oublié ?') }}</a>
+        <div>
+          <label for="username-input" class="form-label">{{ _('Identifiant ou email') }}</label>
+          <input class="form-control" type="text" name="username" id="username-input"
+                 autofocus required autocomplete="username">
+        </div>
+
+        <div>
+          <label for="pwd-input" class="form-label">{{ _('Mot de passe') }}</label>
+          <input class="form-control" type="password" name="password" id="pwd-input"
+                 required autocomplete="current-password">
+        </div>
+
+        <button type="submit" class="btn-primary w-full justify-center mt-2">
+          {{ _('Connexion') }}
+        </button>
+      </form>
     </div>
+
+    {# Footer links #}
+    <p class="text-center text-sm text-dim mt-5">
+      {{ _('Pilote ?') }}
+      <a href="{{ url_for('public.register') }}" class="text-accent hover:text-accent-dark transition-colors">
+        {{ _("S'inscrire") }}
+      </a>
+      <span class="mx-2 text-muted">·</span>
+      <a href="{{ url_for('auth.forgot_password') }}" class="hover:text-txt transition-colors">
+        {{ _('Mot de passe oublié ?') }}
+      </a>
+    </p>
+
   </div>
 </div>
 <script nonce="{{ csp_nonce }}">

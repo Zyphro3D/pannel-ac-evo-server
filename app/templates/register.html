@@ -1,62 +1,90 @@
 {% extends "base.html" %}
 {% block title %}{{ _('Inscription pilote') }} — {{ panel_title }}{% endblock %}
 {% block content %}
-<div style="display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 80px)">
-  <div class="auth-card" style="max-width:420px">
-    <div class="auth-logo">
+<div class="flex items-center justify-center min-h-[calc(100vh-3.5rem)] px-4 py-12">
+  <div class="w-full max-w-sm">
+
+    {# Logo / Brand #}
+    <div class="flex flex-col items-center mb-8">
       {% if panel_logo_img %}
-        <img src="{{ url_for('serve_media', filename='banner/' ~ panel_logo_img) }}" style="max-height:60px;object-fit:contain;margin-bottom:8px" alt="">
+        <img src="{{ url_for('serve_media', filename='banner/' ~ panel_logo_img) }}"
+             class="h-14 object-contain mb-3" alt="{{ panel_title }}">
       {% else %}
-        <span class="b-evo">EVO</span>
-        <span class="b-panel">Panel</span>
-      {% endif %}
-    </div>
-    <h2 class="auth-title">{{ _('Inscription pilote') }}</h2>
-
-    <form method="post">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <div class="form-group">
-        <label>{{ _('Nom in-game') }} <span style="color:var(--dim);font-weight:400;font-size:0.72rem">(2–30 car.)</span></label>
-        <input class="form-control" type="text" name="ingame_name" required minlength="2" maxlength="30"
-               pattern="[A-Za-z0-9_\-.\s]{2,30}"
-               placeholder="Ex: Jean-Pierre_Dupont"
-               value="{{ request.form.get('ingame_name', '') }}">
-      </div>
-      <div class="form-group">
-        <label>{{ _('Adresse email') }}</label>
-        <input class="form-control" type="email" name="email" required value="{{ request.form.get('email', '') }}">
-      </div>
-      <div class="form-group">
-        <label>{{ _('Mot de passe') }}</label>
-        <input class="form-control" type="password" name="password" id="pwd" required minlength="10" autocomplete="new-password">
-        <div id="pwd-rules" style="display:flex;flex-direction:column;gap:2px;margin-top:6px;font-size:0.72rem">
-          <span id="r-len"    style="color:var(--dim)">✕ {{ _('10 caractères minimum') }}</span>
-          <span id="r-upper"  style="color:var(--dim)">✕ {{ _('Une majuscule') }}</span>
-          <span id="r-lower"  style="color:var(--dim)">✕ {{ _('Une minuscule') }}</span>
-          <span id="r-digit"  style="color:var(--dim)">✕ {{ _('Un chiffre') }}</span>
-          <span id="r-special"style="color:var(--dim)">✕ {{ _('Un caractère spécial') }}</span>
+        <div class="flex items-center gap-2 mb-3">
+          <span class="font-black text-accent text-3xl tracking-tight leading-none">EVO</span>
+          <span class="font-semibold text-txt/70 text-xl leading-none">Panel</span>
         </div>
-      </div>
-      <div class="form-group">
-        <label>{{ _('Confirmer le mot de passe') }}</label>
-        <input class="form-control" type="password" name="confirm" required minlength="10" autocomplete="new-password">
-      </div>
-      <button type="submit" class="btn btn-primary btn-full" style="margin-top:4px">{{ _("S'inscrire") }}</button>
-    </form>
-
-    <div class="auth-footer">
-      {{ _('Déjà un compte ?') }} <a href="{{ url_for('auth.login') }}">{{ _('Se connecter') }}</a>
+      {% endif %}
+      <h1 class="text-xl font-bold text-txt">{{ _('Inscription pilote') }}</h1>
+      <p class="text-sm text-dim mt-1">{{ panel_title }}</p>
     </div>
-    <p style="text-align:center;margin-top:8px;font-size:0.72rem;color:var(--dim)">
+
+    {# Form card #}
+    <div class="card space-y-4">
+      <form method="post" class="space-y-4">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div>
+          <label class="form-label">
+            {{ _('Nom in-game') }}
+            <span class="text-dim font-normal text-xs ml-1">(2–30 car.)</span>
+          </label>
+          <input class="form-control" type="text" name="ingame_name"
+                 required minlength="2" maxlength="30"
+                 pattern="[A-Za-z0-9_\-.\s]{2,30}"
+                 placeholder="Ex: Jean-Pierre_Dupont"
+                 value="{{ request.form.get('ingame_name', '') }}">
+        </div>
+
+        <div>
+          <label class="form-label">{{ _('Adresse email') }}</label>
+          <input class="form-control" type="email" name="email"
+                 required value="{{ request.form.get('email', '') }}">
+        </div>
+
+        <div>
+          <label class="form-label">{{ _('Mot de passe') }}</label>
+          <input class="form-control" type="password" name="password" id="pwd"
+                 required minlength="10" autocomplete="new-password">
+          <div id="pwd-rules" class="mt-2 space-y-1">
+            <span id="r-len"     class="flex items-center gap-1.5 text-xs text-dim">✕ {{ _('10 caractères minimum') }}</span>
+            <span id="r-upper"   class="flex items-center gap-1.5 text-xs text-dim">✕ {{ _('Une majuscule') }}</span>
+            <span id="r-lower"   class="flex items-center gap-1.5 text-xs text-dim">✕ {{ _('Une minuscule') }}</span>
+            <span id="r-digit"   class="flex items-center gap-1.5 text-xs text-dim">✕ {{ _('Un chiffre') }}</span>
+            <span id="r-special" class="flex items-center gap-1.5 text-xs text-dim">✕ {{ _('Un caractère spécial') }}</span>
+          </div>
+        </div>
+
+        <div>
+          <label class="form-label">{{ _('Confirmer le mot de passe') }}</label>
+          <input class="form-control" type="password" name="confirm"
+                 required minlength="10" autocomplete="new-password">
+        </div>
+
+        <button type="submit" class="btn-primary w-full justify-center mt-1">
+          {{ _("S'inscrire") }}
+        </button>
+      </form>
+    </div>
+
+    {# Footer #}
+    <p class="text-center text-sm text-dim mt-5">
+      {{ _('Déjà un compte ?') }}
+      <a href="{{ url_for('auth.login') }}" class="text-accent hover:text-accent-dark transition-colors">
+        {{ _('Se connecter') }}
+      </a>
+    </p>
+    <p class="text-center text-xs text-dim/60 mt-2">
       {{ _('Votre compte sera activé par un administrateur.') }}
     </p>
+
   </div>
 </div>
 
 {% block scripts %}
 <script nonce="{{ csp_nonce }}">
-const pwd    = document.getElementById('pwd');
-const rules  = {
+const pwd   = document.getElementById('pwd');
+const rules = {
   len:     { el: document.getElementById('r-len'),     fn: v => v.length >= 10 },
   upper:   { el: document.getElementById('r-upper'),   fn: v => /[A-Z]/.test(v) },
   lower:   { el: document.getElementById('r-lower'),   fn: v => /[a-z]/.test(v) },
@@ -75,7 +103,7 @@ pwd.addEventListener('input', () => {
   for (const [key, rule] of Object.entries(rules)) {
     const pass = rule.fn(v);
     rule.el.textContent = (pass ? '✓ ' : '✕ ') + labels[key];
-    rule.el.style.color = pass ? 'var(--green)' : 'var(--dim)';
+    rule.el.style.color = pass ? '#10b981' : '#8896a8';
   }
 });
 </script>

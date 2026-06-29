@@ -1,3 +1,15 @@
+# ── Stage 1 : Tailwind CSS build ──────────────────────────────────────
+FROM node:20-alpine AS css-builder
+WORKDIR /build
+COPY package.json ./
+RUN npm install
+COPY tailwind.config.js ./
+COPY app/static/css/input.css ./
+COPY app/templates/ ./app/templates/
+COPY app/static/js/ ./app/static/js/
+RUN npx tailwindcss -i input.css -o tailwind.min.css --minify
+
+# ── Stage 2 : Flask panel ──────────────────────────────────────────────
 FROM python:3.11-slim@sha256:cdbd05fb6f457ca275ff51ce00d93d865ca0b6a25f5ffb08262d94f6835771e5
 
 # Bibliothèques 32-bit pour SteamCMD (binaire i386)
@@ -12,6 +24,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
+COPY --from=css-builder /build/tailwind.min.css /panel/app/static/css/tailwind.min.css
 
 ARG GIT_HASH=unknown
 RUN mkdir -p /panel/data /panel/logs /aceserver/configs && \

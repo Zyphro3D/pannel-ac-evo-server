@@ -1,30 +1,36 @@
 {% extends "base.html" %}
 {% block title %}{{ _('Véhicules') }} — {{ panel_title }}{% endblock %}
-
 {% block content %}
-<div style="max-width:1200px;margin:0 auto;">
+<div class="page-shell" style="max-width:1200px">
 
-  <div class="settings-card-head" style="display:flex;align-items:center;gap:1rem;margin-bottom:1.2rem;flex-wrap:wrap;">
-    <h1 style="margin:0;font-size:1.3rem;">{{ _('Véhicules') }}</h1>
-    <span class="dim" style="font-size:.85rem;">{{ cars|length }} {{ _('affiché(s)') }}</span>
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">{{ _('Véhicules') }}</h1>
+      <p class="page-subtitle">{{ cars|length }} {{ _('affiché(s)') }}</p>
+    </div>
   </div>
 
-  {# ── Filtres ── #}
-  <div class="veh-filters">
+  {# ── Filtres + recherche ── #}
+  <div class="flex flex-wrap items-center gap-2 mb-5">
     <a href="{{ url_for('admin.vehicles') }}"
-       class="veh-tab {% if not cat_filter %}veh-tab-active{% endif %}">
-      {{ _('Tous') }} <span class="veh-tab-count">{{ counts.values()|sum }}</span>
+       class="px-3 py-1.5 rounded-lg text-sm transition-colors duration-150
+              {% if not cat_filter %}bg-accent text-white{% else %}text-dim hover:text-txt hover:bg-surface{% endif %}">
+      {{ _('Tous') }}
+      <span class="ml-1 text-xs {% if not cat_filter %}text-white/80{% else %}text-dim/60{% endif %}">{{ counts.values()|sum }}</span>
     </a>
     {% for cat in categories %}
     <a href="{{ url_for('admin.vehicles', cat=cat) }}"
-       class="veh-tab {% if cat_filter == cat %}veh-tab-active{% endif %}">
-      {{ _(cat) }} <span class="veh-tab-count">{{ counts[cat] }}</span>
+       class="px-3 py-1.5 rounded-lg text-sm transition-colors duration-150
+              {% if cat_filter == cat %}bg-accent text-white{% else %}text-dim hover:text-txt hover:bg-surface{% endif %}">
+      {{ _(cat) }}
+      <span class="ml-1 text-xs {% if cat_filter == cat %}text-white/80{% else %}text-dim/60{% endif %}">{{ counts[cat] }}</span>
     </a>
     {% endfor %}
-    <form method="get" action="{{ url_for('admin.vehicles') }}" class="veh-search">
+
+    <form method="get" action="{{ url_for('admin.vehicles') }}" class="ml-auto">
       {% if cat_filter %}<input type="hidden" name="cat" value="{{ cat_filter }}" id="veh-cat-hidden">{% endif %}
       <input type="text" name="q" value="{{ search }}" id="veh-search-input"
-             placeholder="{{ _('Rechercher…') }}" class="form-control veh-search-input"
+             placeholder="{{ _('Rechercher…') }}" class="form-control w-56"
              hx-get="{{ url_for('admin.vehicles') }}"
              hx-trigger="input changed delay:350ms"
              hx-target="#veh-grid-container"
@@ -51,15 +57,14 @@ function _vehToast(type, msg) {
   const div = document.createElement('div');
   div.innerHTML = `<div x-data="{ show: true }"
     x-show="show" x-init="setTimeout(() => show = false, 4500)" x-transition
-    class="toast-htmx toast-htmx-${type}" role="alert">
+    class="toast toast-${type}" role="alert">
     <span>${msg}</span>
-    <button @click="show = false" class="toast-htmx-close">✕</button>
+    <button @click="show = false" class="toast-close">✕</button>
   </div>`;
   zone.prepend(div.firstElementChild);
   if (window.Alpine) Alpine.initTree(zone.firstElementChild);
 }
 
-/* ── Upload image ── */
 function _bindUploadInputs(root) {
   (root || document).querySelectorAll('.veh-file-input').forEach(input => {
     if (input._bound) return;

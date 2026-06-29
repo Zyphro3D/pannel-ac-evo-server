@@ -1,69 +1,70 @@
 {% extends "base.html" %}
 {% block title %}{{ _('Gestion des serveurs') }}{% endblock %}
-
 {% block content %}
-<div style="max-width:900px;margin:0 auto;display:flex;flex-direction:column;gap:14px;">
+<div class="page-shell max-w-4xl space-y-5">
 
   {# ── Liste des serveurs ── #}
-  <div class="settings-card">
-    <div class="settings-card-head">
-      <h2>{{ _('Serveurs ACE EVO') }}</h2>
+  <div class="card">
+    <div class="card-head">
+      <h2 class="card-title">{{ _('Serveurs ACE EVO') }}</h2>
     </div>
-
-    <table class="servers-table">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>{{ _('Nom') }}</th>
-          <th>{{ _('Container') }}</th>
-          <th>{{ _('Ports') }}</th>
-          <th>{{ _('État') }}</th>
-          <th>{{ _('Actions') }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for srv in servers %}
-        {% set st = statuses.get(srv.id, {}) %}
-        {% include "_partials/server_row.html" %}
-        {% endfor %}
-      </tbody>
-    </table>
+    <div class="table-wrapper">
+      <table class="table-base">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>{{ _('Nom') }}</th>
+            <th>{{ _('Container') }}</th>
+            <th>{{ _('Ports') }}</th>
+            <th>{{ _('État') }}</th>
+            <th>{{ _('Actions') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for srv in servers %}
+          {% set st = statuses.get(srv.id, {}) %}
+          {% include "_partials/server_row.html" %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
 
   {# ── Formulaire création ── #}
-  <div class="settings-card">
-    <div class="settings-card-head">
-      <h2>{{ _('Ajouter un serveur') }}</h2>
+  <div class="card">
+    <div class="card-head">
+      <h2 class="card-title">{{ _('Ajouter un serveur') }}</h2>
     </div>
-    <p class="dim" style="margin-bottom:1.2rem;">
-      {{ _('Un nouveau container Docker sera créé depuis l\'image aceserver existante.') }}
+    <p class="text-sm text-dim mb-5">
+      {{ _("Un nouveau container Docker sera créé depuis l'image aceserver existante.") }}
     </p>
 
     <form method="post" action="{{ url_for('admin.server_create') }}"
           hx-post="{{ url_for('admin.server_create') }}"
-          hx-target="#toast-zone" hx-swap="afterbegin">
+          hx-target="#toast-zone" hx-swap="afterbegin"
+          class="space-y-4">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-      <div class="settings-field" style="max-width:420px;margin-bottom:1rem;">
-        <label><strong>{{ _('Nom du serveur') }}</strong></label>
+      <div class="max-w-sm">
+        <label class="form-label">{{ _('Nom du serveur') }}</label>
         <input type="text" name="name" class="form-control"
                placeholder="{{ _('ex : Serveur Nuit') }}" required>
       </div>
 
-      <div style="display:flex;gap:1.5rem;flex-wrap:wrap;margin-bottom:.5rem;">
-        <div class="settings-field" style="flex:1;min-width:180px;">
-          <label><strong>{{ _('Port joueurs (TCP + UDP)') }}</strong></label>
+      <div class="flex gap-4 flex-wrap">
+        <div class="flex-1 min-w-[180px]">
+          <label class="form-label">{{ _('Port joueurs (TCP + UDP)') }}</label>
           <input type="number" name="tcp_port" class="form-control" value="9701" min="1024" max="65535">
-          <span class="dim">{{ _('Doit être différent du serveur #1 (9700).') }}</span>
+          <p class="form-hint">{{ _('Doit être différent du serveur #1 (9700).') }}</p>
         </div>
-        <div class="settings-field" style="flex:1;min-width:180px;">
-          <label><strong>{{ _('Port HTTP API') }}</strong></label>
+        <div class="flex-1 min-w-[180px]">
+          <label class="form-label">{{ _('Port HTTP API') }}</label>
           <input type="number" name="http_port" class="form-control" value="8081" min="1024" max="65535">
         </div>
       </div>
 
-      <div style="margin-top:1.5rem;">
-        <button type="submit" class="btn btn-primary">{{ _('Créer le serveur') }}</button>
+      <div class="pt-2">
+        <button type="submit" class="btn-primary">{{ _('Créer le serveur') }}</button>
       </div>
     </form>
   </div>

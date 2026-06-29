@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 {% block title %}Live Admin — {{ panel_title }}{% endblock %}
 {% block content %}
-<div class="live-page">
+<div class="page-shell" style="max-width:1200px">
 
-  <div class="live-header">
+  <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
     <div>
-      <h1 class="live-title">{{ _('Session en direct') }}</h1>
-      <p class="live-subtitle">{{ _('Mis à jour automatiquement') }} · <span id="live-last-update">—</span></p>
+      <h1 class="page-title">{{ _('Session en direct') }}</h1>
+      <p class="page-subtitle">{{ _('Mis à jour automatiquement') }} · <span id="live-last-update">—</span></p>
     </div>
-    <div style="display:flex;gap:.75rem;align-items:center;">
+    <div class="flex items-center gap-3">
       <div class="live-badge" id="live-conn-badge">
         <span class="dot offline" id="live-dot"></span>
         <span id="live-conn-label">{{ _('Connexion…') }}</span>
@@ -17,12 +17,14 @@
         <span class="dot offline" id="live-tcp-dot"></span>
         <span id="live-tcp-label">TCP —</span>
       </div>
-      <button class="btn btn-ghost btn-sm" id="btn-elevate-admin" onclick="elevateAdmin()"
+      <button class="btn-ghost btn-sm" id="btn-elevate-admin" onclick="elevateAdmin()"
               title="{{ _('Envoyer \\admin <password> via le bot TCP') }}" style="display:none">
         {{ _('Élever admin') }}
       </button>
     </div>
   </div>
+
+  <div class="live-page">
 
   <div class="live-grid">
 
@@ -87,7 +89,8 @@
     <div id="live-chat-log" class="live-chat-log"></div>
   </div>
 
-</div>
+  </div>{# /live-page #}
+</div>{# /page-shell #}
 
 <script nonce="{{ csp_nonce }}">
 const SERVER_ID = {{ current_server_id | default(1) | int }};

@@ -2,53 +2,57 @@
 {% block title %}{{ parsed.track or '—' }} — {{ panel_title }}{% endblock %}
 
 {% block content %}
-<div class="rd-wrapper">
+<div class="page-shell" style="max-width:1100px">
 
-  {# ── Retour ── #}
-  <a href="{{ url_for('public.results') }}" class="rd-back">&#8592; {{ _('Résultats') }}</a>
+  <a href="{{ url_for('public.results') }}" class="btn-ghost btn-sm inline-flex items-center gap-1 mb-5">
+    ← {{ _('Résultats') }}
+  </a>
 
   {# ── En-tête session ── #}
-  <div class="rd-header">
-    <div class="rd-header-main">
-      <div class="rd-track-name">{{ parsed.track or '—' }}</div>
-      {% if parsed.layout %}
-        <div class="rd-layout-name">{{ parsed.layout }}</div>
-      {% endif %}
-    </div>
-    <div class="rd-header-meta">
-      <span class="badge badge-session">{{ parsed.session_type or '—' }}</span>
-      {% if parsed.session_duration_ms %}
-        <span class="rd-meta-chip">{{ (parsed.session_duration_ms // 60000) }}min</span>
-      {% endif %}
-      <span class="rd-meta-chip">{{ parsed.standings|length }} {{ _('pilote(s)') }}</span>
-      {% if result.received_at %}
-        <span class="rd-meta-chip">{{ result.received_at | local_dt_short }}</span>
-      {% endif %}
-    </div>
-    {% if parsed.server_name %}
-      <div class="rd-server-name">{{ parsed.server_name }}</div>
-    {% endif %}
-    {% if parsed.session_best %}
-      <div class="rd-session-best">
-        <span class="rd-session-best-label">
-          {% if parsed.is_race %}{{ _('Meilleur tour en course') }}{% else %}{{ _('Meilleur tour session') }}{% endif %}
-        </span>
-        <span class="rd-session-best-time mono">{{ parsed.session_best }}</span>
-        {% if parsed.standings %}
-          {% for drv in parsed.standings %}
-            {% if (parsed.is_race and drv.is_fastest_lap) or (not parsed.is_race and drv.is_session_fastest) %}
-              <span class="rd-session-best-drv">— {{ drv.nickname }}</span>
-            {% endif %}
-          {% endfor %}
+  <div class="card mb-5">
+    <div class="flex flex-wrap items-start justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold text-txt">{{ parsed.track or '—' }}</h1>
+        {% if parsed.layout %}
+          <div class="text-sm text-dim mt-0.5">{{ parsed.layout }}</div>
+        {% endif %}
+        {% if parsed.server_name %}
+          <div class="text-xs text-muted mt-1">{{ parsed.server_name }}</div>
         {% endif %}
       </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="badge badge-info">{{ parsed.session_type or '—' }}</span>
+        {% if parsed.session_duration_ms %}
+          <span class="badge badge-neutral">{{ (parsed.session_duration_ms // 60000) }}min</span>
+        {% endif %}
+        <span class="badge badge-neutral">{{ parsed.standings|length }} {{ _('pilote(s)') }}</span>
+        {% if result.received_at %}
+          <span class="text-xs text-dim">{{ result.received_at | local_dt_short }}</span>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if parsed.session_best %}
+    <div class="mt-4 flex items-center gap-3 p-3 bg-surface rounded-lg border border-muted/20">
+      <div class="text-xs text-dim uppercase tracking-wider">
+        {% if parsed.is_race %}{{ _('Meilleur tour en course') }}{% else %}{{ _('Meilleur tour session') }}{% endif %}
+      </div>
+      <div class="font-mono font-bold text-emerald text-sm">{{ parsed.session_best }}</div>
+      {% if parsed.standings %}
+        {% for drv in parsed.standings %}
+          {% if (parsed.is_race and drv.is_fastest_lap) or (not parsed.is_race and drv.is_session_fastest) %}
+            <div class="text-xs text-dim">— {{ drv.nickname }}</div>
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+    </div>
     {% endif %}
   </div>
 
   {# ── Tableau classement ── #}
   {% if parsed.standings %}
-  <div class="card" style="padding:0;overflow:hidden;margin-top:16px">
-    <table class="rd-table">
+  <div class="table-wrapper mb-5">
+    <table class="rd-table table-base">
       {% set is_race = parsed.is_race %}
       <thead>
         <tr>
@@ -79,14 +83,12 @@
             data-target="{{ row_id }}"
             onclick="toggleLaps(this)">
 
-          {# Position #}
           <td class="col-pos rd-pos">
             <span class="pos-badge {% if drv.position == 1 %}pos-gold{% elif drv.position == 2 %}pos-silver{% elif drv.position == 3 %}pos-bronze{% endif %}">
               {{ drv.position }}
             </span>
           </td>
 
-          {# Grille de départ (course uniquement) #}
           {% if is_race %}
           <td class="col-grid rd-grid">
             {% if drv.starting_position %}
@@ -100,7 +102,6 @@
           </td>
           {% endif %}
 
-          {# Pilote #}
           <td class="col-driver">
             <div class="drv-name-row">
               {% if drv.nation_flag %}
@@ -116,13 +117,11 @@
             {% endif %}
           </td>
 
-          {# Voiture #}
           <td class="col-car">
             {% if drv.race_number %}<span class="race-number">#{{ drv.race_number }}</span>{% endif %}
             {{ drv.car or '—' }}
           </td>
 
-          {# Temps / Best lap #}
           {% if is_race %}
             <td class="col-best mono {% if not drv.race_time_ms %}muted{% endif %}">
               {{ drv.race_time or '—' }}
@@ -137,7 +136,6 @@
             </td>
           {% endif %}
 
-          {# Gap #}
           <td class="col-gap mono rd-gap">
             {% if drv.position == 1 %}
               <span style="color:var(--accent)">REF</span>
@@ -148,7 +146,6 @@
             {% endif %}
           </td>
 
-          {# Secteurs (hors course) #}
           {% if not is_race %}
           {% set bs = drv.best_splits %}
           {% set bsms = drv.best_splits_ms %}
@@ -163,7 +160,6 @@
           {% endfor %}
           {% endif %}
 
-          {# Tours #}
           <td class="col-laps">
             {% if is_race %}
               <span class="laps-count">{{ drv.race_laps_count }}</span>
@@ -175,7 +171,6 @@
             {% endif %}
           </td>
 
-          {# Expand #}
           <td class="col-expand">
             {% if drv.all_laps %}
               <button class="rd-expand-btn" title="{{ _('Voir tous les tours') }}"></button>
@@ -183,7 +178,6 @@
           </td>
         </tr>
 
-        {# ── Détail tours par pilote ── #}
         {% if drv.all_laps %}
         <tr class="laps-row" id="{{ row_id }}">
           <td colspan="{{ 9 if is_race else 10 }}">
@@ -264,17 +258,17 @@
   </div>
 
   {# ── Légende ── #}
-  <div class="rd-legend">
-    <span class="legend-item"><span class="legend-dot dot-fastest"></span> {{ _('Meilleur tour session') }}</span>
-    <span class="legend-item"><span class="legend-dot dot-drvbest"></span> {{ _('Best perso') }}</span>
-    <span class="legend-item"><span class="legend-dot dot-sect"></span> {{ _('Meilleur secteur session') }}</span>
-    <span class="legend-item"><span class="legend-dot dot-noted">~</span> {{ _('Tour noté') }}</span>
-    <span class="legend-item"><span class="legend-dot dot-invalid">!</span> {{ _('Tour invalide / out-lap') }}</span>
+  <div class="flex flex-wrap items-center gap-4 text-xs text-dim py-3">
+    <span class="rd-legend-item"><span class="legend-dot dot-fastest"></span> {{ _('Meilleur tour session') }}</span>
+    <span class="rd-legend-item"><span class="legend-dot dot-drvbest"></span> {{ _('Best perso') }}</span>
+    <span class="rd-legend-item"><span class="legend-dot dot-sect"></span> {{ _('Meilleur secteur session') }}</span>
+    <span class="rd-legend-item"><span class="legend-dot dot-noted">~</span> {{ _('Tour noté') }}</span>
+    <span class="rd-legend-item"><span class="legend-dot dot-invalid">!</span> {{ _('Tour invalide / out-lap') }}</span>
   </div>
 
   {% else %}
-  <div class="card" style="margin-top:16px">
-    <p class="text-muted">{{ _('Aucun pilote enregistré dans cette session.') }}</p>
+  <div class="card mt-4">
+    <p class="text-dim text-sm">{{ _('Aucun pilote enregistré dans cette session.') }}</p>
   </div>
   {% endif %}
 

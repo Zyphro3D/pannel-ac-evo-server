@@ -1,59 +1,76 @@
 {% extends "base.html" %}
 {% block title %}{{ _('Circuits') }} — {{ panel_title }}{% endblock %}
-
 {% block content %}
-<div style="max-width:1100px;margin:0 auto;">
+<div class="page-shell" style="max-width:1100px">
 
-  <div class="settings-card-head" style="display:flex;align-items:center;gap:1rem;margin-bottom:1.2rem;">
-    <h1 style="margin:0;font-size:1.3rem;">{{ _('Circuits') }}</h1>
-    <span class="dim" style="font-size:.85rem;">{{ tracks|length }} {{ _('circuit(s)') }}</span>
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">{{ _('Circuits') }}</h1>
+      <p class="page-subtitle">{{ tracks|length }} {{ _('circuit(s)') }}</p>
+    </div>
   </div>
 
   {% if tracks %}
-  <div class="cir-grid">
+  <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
     {% for tr in tracks %}
-    <div class="cir-card {% if not tr.is_active %}cir-card-inactive{% endif %}"
+    <div class="card p-0 overflow-hidden group {% if not tr.is_active %}opacity-50{% endif %}"
          id="cir-{{ tr.id }}">
 
-      <div class="cir-img-wrap">
+      {# Image #}
+      <div class="relative aspect-[4/3] bg-surface">
         {% if tr.image_path %}
         <img src="{{ url_for('serve_media', filename=tr.image_path) }}"
-             alt="{{ tr.track_name }}" class="cir-img" loading="lazy">
+             alt="{{ tr.track_name }}" class="cir-img w-full h-full object-cover" loading="lazy">
         {% else %}
-        <div class="cir-img-placeholder">
-          <span>{{ tr.track_name[:3].upper() }}</span>
+        <div class="w-full h-full flex items-center justify-center text-muted/40 font-bold text-lg">
+          {{ tr.track_name[:3].upper() }}
         </div>
         {% endif %}
+
         {% if current_user.is_superadmin %}
-        <label class="cir-img-upload" title="{{ _('Changer l\'image') }}">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          <input type="file" accept=".jpg,.jpeg,.png,.webp" class="cir-file-input"
+        <label class="absolute inset-0 flex items-center justify-center
+                      bg-black/0 group-hover:bg-black/40 transition-colors duration-200
+                      cursor-pointer opacity-0 group-hover:opacity-100"
+               title="{{ _('Changer l\'image') }}">
+          <svg class="w-5 h-5 text-white drop-shadow" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          <input type="file" accept=".jpg,.jpeg,.png,.webp" class="sr-only cir-file-input"
                  data-id="{{ tr.id }}"
                  data-url="{{ url_for('admin.circuit_upload_image', track_id=tr.id) }}">
         </label>
         {% endif %}
       </div>
 
-      <div class="cir-info">
-        <div class="cir-name">{{ tr.track_name }}</div>
-        <div class="cir-layout">{{ tr.layout }}</div>
+      {# Info #}
+      <div class="p-3">
+        <div class="text-sm font-medium text-txt truncate">{{ tr.track_name }}</div>
+        <div class="text-xs text-dim truncate">{{ tr.layout }}</div>
         {% if tr.length_m %}
-        <div class="cir-length dim">{{ "%.2f"|format(tr.length_m / 1000) }} km</div>
+        <div class="text-xs text-dim/60 mt-0.5">{{ "%.2f"|format(tr.length_m / 1000) }} km</div>
         {% endif %}
+        <button class="mt-2 w-full text-xs rounded-md px-2 py-1 transition-colors cir-toggle
+                       {% if tr.is_active %}bg-emerald-900/30 text-emerald-400 border border-emerald-900/40
+                       {% else %}bg-surface text-dim border border-muted/30{% endif %}"
+                data-id="{{ tr.id }}"
+                data-url="{{ url_for('admin.circuit_toggle', track_id=tr.id) }}"
+                title="{{ _('Activer / Désactiver') }}">
+          {% if tr.is_active %}{{ _('Actif') }}{% else %}{{ _('Inactif') }}{% endif %}
+        </button>
       </div>
-
-      <button class="cir-toggle btn btn-sm {% if not tr.is_active %}btn-dim{% endif %}"
-              data-id="{{ tr.id }}"
-              data-url="{{ url_for('admin.circuit_toggle', track_id=tr.id) }}"
-              title="{{ _('Activer / Désactiver') }}">
-        {% if tr.is_active %}{{ _('Actif') }}{% else %}{{ _('Inactif') }}{% endif %}
-      </button>
 
     </div>
     {% endfor %}
   </div>
   {% else %}
-  <div class="h-empty" style="margin-top:3rem;">{{ _('Aucun circuit trouvé. Les circuits sont détectés automatiquement depuis les configs de serveur.') }}</div>
+  <div class="empty-state mt-12">
+    <p class="text-sm max-w-sm text-center">
+      {{ _('Aucun circuit trouvé. Les circuits sont détectés automatiquement depuis les configs de serveur.') }}
+    </p>
+  </div>
   {% endif %}
 
 </div>
@@ -72,9 +89,14 @@ document.querySelectorAll('.cir-toggle').forEach(btn => {
     const data = await res.json();
     if (!data.ok) return;
     const card = document.getElementById('cir-' + btn.dataset.id);
-    card.classList.toggle('cir-card-inactive', !data.is_active);
+    card.classList.toggle('opacity-50', !data.is_active);
     btn.textContent = data.is_active ? '{{ _("Actif") }}' : '{{ _("Inactif") }}';
-    btn.classList.toggle('btn-dim', !data.is_active);
+    btn.className = btn.className.replace(/bg-\S+|text-\S+|border-\S+/g, '').trim();
+    if (data.is_active) {
+      btn.classList.add('bg-emerald-900/30', 'text-emerald-400', 'border', 'border-emerald-900/40');
+    } else {
+      btn.classList.add('bg-surface', 'text-dim', 'border', 'border-muted/30');
+    }
   });
 });
 
@@ -89,12 +111,12 @@ document.querySelectorAll('.cir-file-input').forEach(input => {
     const data = await res.json();
     if (!data.ok) { alert(data.error); return; }
     const card = document.getElementById('cir-' + input.dataset.id);
-    const wrap = card.querySelector('.cir-img-wrap');
+    const wrap = card.querySelector('.relative');
     let img = wrap.querySelector('.cir-img');
     if (!img) {
       img = document.createElement('img');
-      img.className = 'cir-img';
-      wrap.querySelector('.cir-img-placeholder')?.remove();
+      img.className = 'cir-img w-full h-full object-cover';
+      wrap.querySelector('div:not(.group)')?.remove();
       wrap.insertBefore(img, wrap.firstChild);
     }
     img.src = '/media/' + data.image_path + '?t=' + Date.now();

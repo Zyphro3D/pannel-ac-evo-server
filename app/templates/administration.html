@@ -1,103 +1,104 @@
 {% extends "base.html" %}
 {% block title %}{{ _('Administration') }} — {{ panel_title }}{% endblock %}
 {% block content %}
+<div class="page-shell max-w-2xl">
 
-<div style="max-width:720px;margin:0 auto">
-  <h1 style="font-size:20px;font-weight:700;margin-bottom:24px">{{ _('Administration') }}</h1>
+  <div class="page-header">
+    <h1 class="page-title">{{ _('Administration') }}</h1>
+  </div>
 
-  <!-- ── Email ── -->
-  <section class="card" style="margin-bottom:20px">
-    <div class="card-header">
-      <h2>{{ _('Configuration email') }}</h2>
+  {# ── Email ── #}
+  <section class="card mb-5">
+    <div class="card-head">
+      <h2 class="card-title">{{ _('Configuration email') }}</h2>
     </div>
 
-    <div class="admin-cfg-grid">
-      <div class="cfg-row"><span class="cfg-label">{{ _('Serveur') }}</span><span class="cfg-val">{{ mail_cfg.server or '—' }}</span></div>
-      <div class="cfg-row"><span class="cfg-label">{{ _('Port') }}</span><span class="cfg-val">{{ mail_cfg.port }}</span></div>
-      <div class="cfg-row"><span class="cfg-label">{{ _('Expéditeur') }}</span><span class="cfg-val">{{ (mail_cfg.from or mail_cfg.username) or '—' }}</span></div>
-      <div class="cfg-row"><span class="cfg-label">{{ _('Admin(s)') }}</span><span class="cfg-val">{{ mail_cfg.admin | join(', ') or '—' }}</span></div>
-    </div>
+    <dl class="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm mb-4">
+      <dt class="text-dim">{{ _('Serveur') }}</dt>  <dd class="text-txt">{{ mail_cfg.server or '—' }}</dd>
+      <dt class="text-dim">{{ _('Port') }}</dt>     <dd class="text-txt">{{ mail_cfg.port }}</dd>
+      <dt class="text-dim">{{ _('Expéditeur') }}</dt><dd class="text-txt">{{ (mail_cfg.from or mail_cfg.username) or '—' }}</dd>
+      <dt class="text-dim">{{ _('Admin(s)') }}</dt> <dd class="text-txt">{{ mail_cfg.admin | join(', ') or '—' }}</dd>
+    </dl>
 
     {% if result_email is defined %}
       {% if result_email.ok %}
-      <div class="alert-success" style="margin-top:12px">✓ {{ _('Email envoyé avec succès') }} à <strong>{{ result_email.to }}</strong></div>
+      <div class="flash flash-success mb-4">✓ {{ _('Email envoyé avec succès') }} à <strong>{{ result_email.to }}</strong></div>
       {% else %}
-      <div class="alert-error" style="margin-top:12px">✕ {{ _('Erreur SMTP') }} : <code>{{ result_email.error }}</code></div>
+      <div class="flash flash-error mb-4">✕ {{ _('Erreur SMTP') }} : <code>{{ result_email.error }}</code></div>
       {% endif %}
     {% endif %}
 
     <form method="post" action="{{ url_for('admin.test_email') }}"
           hx-post="{{ url_for('admin.test_email') }}"
           hx-target="#toast-zone" hx-swap="afterbegin"
-          style="margin-top:16px;display:flex;gap:10px;align-items:flex-end">
+          class="flex gap-3 items-end">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <div class="form-group" style="flex:1;margin:0">
-        <label style="font-size:12px">{{ _('Destinataire') }}</label>
-        <input type="email" name="to" placeholder="{{ mail_cfg.admin[0] if mail_cfg.admin else 'email@exemple.fr' }}">
+      <div class="flex-1">
+        <label class="form-label text-xs">{{ _('Destinataire') }}</label>
+        <input type="email" name="to" class="form-control"
+               placeholder="{{ mail_cfg.admin[0] if mail_cfg.admin else 'email@exemple.fr' }}">
       </div>
-      <button class="btn btn-primary" style="white-space:nowrap">{{ _('Envoyer un test') }}</button>
+      <button class="btn-primary whitespace-nowrap">{{ _('Envoyer un test') }}</button>
     </form>
   </section>
 
-  <!-- ── Discord Serveur ── -->
-  <section class="card" style="margin-bottom:20px">
-    <div class="card-header">
-      <h2>{{ _('Webhook Discord — Serveur') }}</h2>
+  {# ── Discord Serveur ── #}
+  <section class="card mb-5">
+    <div class="card-head">
+      <h2 class="card-title">{{ _('Webhook Discord — Serveur') }}</h2>
     </div>
 
-    <div class="admin-cfg-grid">
-      <div class="cfg-row">
-        <span class="cfg-label">{{ _('URL') }}</span>
-        <span class="cfg-val cfg-url">{{ webhook_url or '—' }}</span>
-      </div>
-    </div>
+    <dl class="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm mb-4">
+      <dt class="text-dim">{{ _('URL') }}</dt>
+      <dd class="text-txt truncate font-mono text-xs">{{ webhook_url or '—' }}</dd>
+    </dl>
 
     {% if result_webhook is defined and result_webhook_channel == 'server' %}
       {% if result_webhook.ok %}
-      <div class="alert-success" style="margin-top:12px">✓ {{ _('Message envoyé sur le channel serveur.') }}</div>
+      <div class="flash flash-success mb-4">✓ {{ _('Message envoyé sur le channel serveur.') }}</div>
       {% else %}
-      <div class="alert-error" style="margin-top:12px">✕ {{ _('Erreur') }} : <code>{{ result_webhook.error }}</code></div>
+      <div class="flash flash-error mb-4">✕ {{ _('Erreur') }} : <code>{{ result_webhook.error }}</code></div>
       {% endif %}
     {% endif %}
 
     <form method="post" action="{{ url_for('admin.test_webhook') }}"
           hx-post="{{ url_for('admin.test_webhook') }}"
-          hx-target="#toast-zone" hx-swap="afterbegin"
-          style="margin-top:16px">
+          hx-target="#toast-zone" hx-swap="afterbegin">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <input type="hidden" name="channel" value="server">
-      <button class="btn btn-secondary" {% if not webhook_url %}disabled{% endif %}>{{ _('Envoyer un message de test') }}</button>
+      <button class="btn-secondary" {% if not webhook_url %}disabled{% endif %}>
+        {{ _('Envoyer un message de test') }}
+      </button>
     </form>
   </section>
 
-  <!-- ── Discord Pilotes ── -->
+  {# ── Discord Pilotes ── #}
   <section class="card">
-    <div class="card-header">
-      <h2>{{ _('Webhook Discord — Pilotes') }}</h2>
+    <div class="card-head">
+      <h2 class="card-title">{{ _('Webhook Discord — Pilotes') }}</h2>
     </div>
 
-    <div class="admin-cfg-grid">
-      <div class="cfg-row">
-        <span class="cfg-label">{{ _('URL') }}</span>
-        <span class="cfg-val cfg-url">{{ pilots_webhook_url or ('— ' + _('utilise le webhook serveur')) }}</span>
-      </div>
-    </div>
+    <dl class="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm mb-4">
+      <dt class="text-dim">{{ _('URL') }}</dt>
+      <dd class="text-txt truncate font-mono text-xs">{{ pilots_webhook_url or ('— ' + _('utilise le webhook serveur')) }}</dd>
+    </dl>
 
     {% if result_webhook is defined and result_webhook_channel == 'pilots' %}
       {% if result_webhook.ok %}
-      <div class="alert-success" style="margin-top:12px">✓ {{ _('Message envoyé sur le channel pilotes.') }}</div>
+      <div class="flash flash-success mb-4">✓ {{ _('Message envoyé sur le channel pilotes.') }}</div>
       {% else %}
-      <div class="alert-error" style="margin-top:12px">✕ {{ _('Erreur') }} : <code>{{ result_webhook.error }}</code></div>
+      <div class="flash flash-error mb-4">✕ {{ _('Erreur') }} : <code>{{ result_webhook.error }}</code></div>
       {% endif %}
     {% endif %}
 
     <form method="post" action="{{ url_for('admin.test_webhook') }}"
           hx-post="{{ url_for('admin.test_webhook') }}"
-          hx-target="#toast-zone" hx-swap="afterbegin"
-          style="margin-top:16px">
+          hx-target="#toast-zone" hx-swap="afterbegin">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <input type="hidden" name="channel" value="pilots">
-      <button class="btn btn-secondary" {% if not pilots_webhook_url and not webhook_url %}disabled{% endif %}>{{ _('Envoyer un message de test') }}</button>
+      <button class="btn-secondary" {% if not pilots_webhook_url and not webhook_url %}disabled{% endif %}>
+        {{ _('Envoyer un message de test') }}
+      </button>
     </form>
   </section>
 

@@ -394,28 +394,32 @@
       </section>
 
       {# Modal Steam #}
-      <div id="steam-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center">
-        <div style="background:var(--surface1);border-radius:12px;padding:28px 32px;width:min(440px,92vw);box-shadow:0 8px 40px rgba(0,0,0,.5)">
-          <h3 style="margin:0 0 8px;font-size:1.1rem">🔐 {{ _('Connexion Steam') }}</h3>
-          <p style="font-size:0.83rem;color:var(--text2);margin:0 0 20px;line-height:1.5">{{ _('Entrez les identifiants du compte Steam qui possède ACE EVO. Ils ne sont pas sauvegardés.') }}</p>
-          <div class="form-group" style="margin-bottom:12px">
-            <label style="font-size:0.85rem;font-weight:600">{{ _('Nom d\'utilisateur') }}</label>
-            <input class="form-control" type="text" id="sm-user" autocomplete="username" placeholder="{{ _('votre_pseudo_steam') }}">
+      <div id="steam-modal" class="modal-overlay" style="display:none">
+        <div class="modal-box">
+          <div class="modal-head">
+            <h3 class="modal-title">🔐 {{ _('Connexion Steam') }}</h3>
           </div>
-          <div class="form-group" style="margin-bottom:12px">
-            <label style="font-size:0.85rem;font-weight:600">{{ _('Mot de passe') }}</label>
-            <input class="form-control" type="password" id="sm-pass" autocomplete="current-password">
+          <div class="modal-body space-y-3">
+            <p class="text-sm text-dim">{{ _('Entrez les identifiants du compte Steam qui possède ACE EVO. Ils ne sont pas sauvegardés.') }}</p>
+            <div>
+              <label class="form-label">{{ _('Nom d\'utilisateur') }}</label>
+              <input class="form-control" type="text" id="sm-user" autocomplete="username" placeholder="{{ _('votre_pseudo_steam') }}">
+            </div>
+            <div>
+              <label class="form-label">{{ _('Mot de passe') }}</label>
+              <input class="form-control" type="password" id="sm-pass" autocomplete="current-password">
+            </div>
+            <div>
+              <label class="form-label">
+                {{ _('Code Steam Guard') }}
+                <span class="text-xs text-dim font-normal"> — {{ _('optionnel, si activé sur le compte') }}</span>
+              </label>
+              <input class="form-control tracking-widest uppercase" type="text" id="sm-guard" maxlength="8" autocomplete="one-time-code" placeholder="XXXXX">
+            </div>
           </div>
-          <div class="form-group" style="margin-bottom:20px">
-            <label style="font-size:0.85rem;font-weight:600">
-              {{ _('Code Steam Guard') }}
-              <span style="color:var(--text2);font-weight:400;font-size:0.8rem"> — {{ _('optionnel, si activé sur le compte') }}</span>
-            </label>
-            <input class="form-control" type="text" id="sm-guard" maxlength="8" style="letter-spacing:.18em;text-transform:uppercase" autocomplete="one-time-code" placeholder="XXXXX">
-          </div>
-          <div style="display:flex;gap:.75rem;justify-content:flex-end">
-            <button class="btn btn-secondary" onclick="ctrModalClose()" type="button">{{ _('Annuler') }}</button>
-            <button class="btn btn-primary" onclick="ctrModalConfirm()" type="button" id="sm-btn-ok">⬆ {{ _('Lancer la mise à jour') }}</button>
+          <div class="modal-foot">
+            <button class="btn-secondary btn-sm" onclick="ctrModalClose()" type="button">{{ _('Annuler') }}</button>
+            <button class="btn-primary btn-sm" onclick="ctrModalConfirm()" type="button" id="sm-btn-ok">⬆ {{ _('Lancer la mise à jour') }}</button>
           </div>
         </div>
       </div>
@@ -857,62 +861,70 @@
       {# Modals comptes #}
       <div class="modal-overlay" x-show="showCreate" x-transition @click.self="showCreate = false" style="display:none">
         <div class="modal-box" @click.stop>
-          <h3>+ {{ _('Nouveau compte administrateur') }}</h3>
+          <div class="modal-head">
+            <h3 class="modal-title">+ {{ _('Nouveau compte administrateur') }}</h3>
+          </div>
           <form method="post" action="{{ url_for('admin.account_create') }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <div class="form-group" style="margin-top:14px">
-              <label>{{ _('Identifiant') }} *</label>
-              <input class="form-control" type="text" name="username" required autocomplete="off">
+            <div class="modal-body space-y-3">
+              <div>
+                <label class="form-label">{{ _('Identifiant') }} *</label>
+                <input class="form-control" type="text" name="username" required autocomplete="off">
+              </div>
+              <div>
+                <label class="form-label">{{ _('Nom affiché') }}</label>
+                <input class="form-control" type="text" name="display_name" autocomplete="off">
+              </div>
+              <div>
+                <label class="form-label">{{ _('Mot de passe') }} *</label>
+                <input class="form-control" type="password" name="password" required autocomplete="new-password">
+              </div>
+              <div>
+                <label class="form-label">{{ _('Rôle') }}</label>
+                <select class="form-control" name="role">
+                  <option value="admin">{{ _('Admin') }}</option>
+                  <option value="superadmin">{{ _('Super Admin') }}</option>
+                </select>
+              </div>
             </div>
-            <div class="form-group">
-              <label>{{ _('Nom affiché') }}</label>
-              <input class="form-control" type="text" name="display_name" autocomplete="off">
-            </div>
-            <div class="form-group">
-              <label>{{ _('Mot de passe') }} *</label>
-              <input class="form-control" type="password" name="password" required autocomplete="new-password">
-            </div>
-            <div class="form-group">
-              <label>{{ _('Rôle') }}</label>
-              <select class="form-control" name="role">
-                <option value="admin">{{ _('Admin') }}</option>
-                <option value="superadmin">{{ _('Super Admin') }}</option>
-              </select>
-            </div>
-            <div class="modal-actions">
-              <button type="button" class="btn btn-secondary" @click="showCreate = false">{{ _('Annuler') }}</button>
-              <button type="submit" class="btn btn-primary">{{ _('Créer') }}</button>
+            <div class="modal-foot">
+              <button type="button" class="btn-secondary btn-sm" @click="showCreate = false">{{ _('Annuler') }}</button>
+              <button type="submit" class="btn-primary btn-sm">{{ _('Créer') }}</button>
             </div>
           </form>
         </div>
       </div>
       <div class="modal-overlay" x-show="showEdit" x-transition @click.self="showEdit = false" style="display:none">
         <div class="modal-box" @click.stop>
-          <h3>✎ {{ _('Modifier le compte') }}</h3>
+          <div class="modal-head">
+            <h3 class="modal-title">✎ {{ _('Modifier le compte') }}</h3>
+          </div>
           <form method="post" :action="'/accounts/' + editId + '/edit'">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <div class="form-group" style="margin-top:14px">
-              <label>{{ _('Identifiant') }}</label>
-              <input class="form-control" type="text" name="username" x-model="editUsername" required autocomplete="off">
+            <div class="modal-body space-y-3">
+              <div>
+                <label class="form-label">{{ _('Identifiant') }}</label>
+                <input class="form-control" type="text" name="username" x-model="editUsername" required autocomplete="off">
+              </div>
+              <div>
+                <label class="form-label">{{ _('Nom affiché') }}</label>
+                <input class="form-control" type="text" name="display_name" x-model="editDisplayName" autocomplete="off">
+              </div>
+              <div>
+                <label class="form-label">{{ _('Nouveau mot de passe') }} <span class="text-xs text-dim">({{ _('laisser vide pour ne pas changer') }})</span></label>
+                <input class="form-control" type="password" name="password" autocomplete="new-password">
+              </div>
+              <div>
+                <label class="form-label">{{ _('Rôle') }}</label>
+                <select class="form-control" name="role" x-model="editRole">
+                  <option value="admin">{{ _('Admin') }}</option>
+                  <option value="superadmin">{{ _('Super Admin') }}</option>
+                </select>
+              </div>
             </div>
-            <div class="form-group">
-              <label>{{ _('Nom affiché') }}</label>
-              <input class="form-control" type="text" name="display_name" x-model="editDisplayName" autocomplete="off">
-            </div>
-            <div class="form-group">
-              <label>{{ _('Nouveau mot de passe') }} <span style="font-size:0.75rem;color:var(--dim)">({{ _('laisser vide pour ne pas changer') }})</span></label>
-              <input class="form-control" type="password" name="password" autocomplete="new-password">
-            </div>
-            <div class="form-group">
-              <label>{{ _('Rôle') }}</label>
-              <select class="form-control" name="role" x-model="editRole">
-                <option value="admin">{{ _('Admin') }}</option>
-                <option value="superadmin">{{ _('Super Admin') }}</option>
-              </select>
-            </div>
-            <div class="modal-actions">
-              <button type="button" class="btn btn-secondary" @click="showEdit = false">{{ _('Annuler') }}</button>
-              <button type="submit" class="btn btn-primary">{{ _('Enregistrer') }}</button>
+            <div class="modal-foot">
+              <button type="button" class="btn-secondary btn-sm" @click="showEdit = false">{{ _('Annuler') }}</button>
+              <button type="submit" class="btn-primary btn-sm">{{ _('Enregistrer') }}</button>
             </div>
           </form>
         </div>

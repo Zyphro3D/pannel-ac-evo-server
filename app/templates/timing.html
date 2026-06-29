@@ -8,6 +8,7 @@
 {% endblock %}
 
 {% block content %}
+<div class="pt-2">{# base nav already provides pt-14 #}
 <div class="timing-layout">
 
   {% if public_servers and public_servers|length > 1 %}
@@ -153,6 +154,7 @@
     {% endif %}
 
   </div>
+</div>
 </div>
 
 <script nonce="{{ csp_nonce }}">

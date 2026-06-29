@@ -1,5 +1,33 @@
 # Changelog
 
+### v2.0.0 — 29/06/2026
+
+**Refonte UI complète — Tailwind CSS + Flowbite (Phase 2)**
+
+Remplacement progressif de `main.css` par Tailwind CSS v3.4.14 compilé via build Docker multi-stage.
+
+*Infrastructure CSS*
+- Build Docker multi-stage : Node.js compile `tailwind.min.css` avec Flowbite v2.3.0 + @tailwindcss/forms
+- `input.css` : design system complet — boutons, formulaires, cartes, badges, tables, toasts, modales, page-shell, admin-layout
+- Tokens couleurs : `accent`, `bg`, `card`, `surface`, `inp`, `dim`, `muted`, `txt`, `emerald`
+- Mode hybride : `preflight: false` — `tailwind.min.css` et `main.css` coexistent pendant la migration
+
+*Templates migrés vers Tailwind*
+- `base.html` — navbar fixe, dropdowns Alpine.js, footer, cookie banner
+- `login.html`, `register.html`, `forgot_password.html`, `reset_password.html` — forms centrés
+- `pilot_dashboard.html`, `administration.html`, `mods.html` — layouts admin
+- `drivers.html`, `events_admin.html`, `servers.html`, `vehicles.html` — tables + HTMX
+- `tracks.html`, `circuits.html` — grilles d'images avec upload hover
+- `event_form.html`, `event_detail.html` — formulaires complexes
+- `live.html`, `timing.html` — hybride (structure Tailwind, classes live-*/timing-* conservées pour le JS)
+- `result_detail.html`, `public.html` — pages publiques
+- Modales dans `server.html` et `settings.html` — converties en `.modal-overlay`/`.modal-box`/`.modal-foot`
+
+*Breaking*
+- Nécessite un rebuild Docker (`docker compose up -d --build panel`) — la compilation CSS est dans le build
+
+---
+
 ### v1.9.0 — 29/06/2026
 
 **Modernisation UI — HTMX + Alpine.js (Phase 1)**

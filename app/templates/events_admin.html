@@ -1,122 +1,141 @@
 {% extends "base.html" %}
 {% block title %}{{ _('Événements') }} — {{ panel_title }}{% endblock %}
 {% block content %}
-<div class="card">
-  <div class="card-header">
-    <h2>{{ _('Événements') }}</h2>
-    <div style="display:flex;gap:8px;align-items:center">
-      <div class="view-toggle" id="ev-view-toggle">
-        <button class="view-btn active" data-view="calendar" onclick="setView('calendar')">{{ _('Calendrier') }}</button>
-        <button class="view-btn" data-view="list" onclick="setView('list')">{{ _('Liste') }}</button>
-      </div>
-      <a href="{{ url_for('events_admin.event_create') }}" class="btn btn-primary" style="font-size:13px">+ {{ _('Créer') }}</a>
-    </div>
-  </div>
+<div class="page-shell">
 
-  <!-- ── Vue Calendrier ── -->
-  <div id="view-calendar">
-    <div class="cal-nav">
-      <button class="btn btn-secondary" onclick="prevMonth()">‹</button>
-      <span class="cal-nav-label" id="cal-month-label"></span>
-      <button class="btn btn-secondary" onclick="nextMonth()">›</button>
-      <div class="cal-legend">
-        <span class="cal-legend-item"><span class="cal-legend-dot private"></span>{{ _('Privé') }}</span>
-        <span class="cal-legend-item"><span class="cal-legend-dot public"></span>{{ _('Public') }}</span>
+  <div class="card">
+    <div class="card-head mb-4">
+      <h2 class="card-title">{{ _('Événements') }}</h2>
+      <div class="flex items-center gap-2">
+        {# Vue toggle #}
+        <div class="flex rounded-lg border border-muted/30 overflow-hidden text-sm" id="ev-view-toggle">
+          <button class="px-3 py-1.5 text-dim hover:text-txt transition-colors active:text-txt active:bg-surface"
+                  data-view="calendar" onclick="setView('calendar')">{{ _('Calendrier') }}</button>
+          <button class="px-3 py-1.5 text-dim hover:text-txt transition-colors border-l border-muted/30"
+                  data-view="list" onclick="setView('list')">{{ _('Liste') }}</button>
+        </div>
+        <a href="{{ url_for('events_admin.event_create') }}" class="btn-primary btn-sm">
+          + {{ _('Créer') }}
+        </a>
       </div>
-    </div>
-    <div class="cal-grid-wrapper">
-      <div class="cal-headers">
-        <div>{{ _('Lun') }}</div>
-        <div>{{ _('Mar') }}</div>
-        <div>{{ _('Mer') }}</div>
-        <div>{{ _('Jeu') }}</div>
-        <div>{{ _('Ven') }}</div>
-        <div class="weekend">{{ _('Sam') }}</div>
-        <div class="weekend">{{ _('Dim') }}</div>
-      </div>
-      <div class="cal-grid" id="cal-grid"></div>
     </div>
 
-    <!-- Détail du jour sélectionné -->
-    <div class="cal-day-detail" id="cal-day-detail" style="display:none">
-      <div class="cal-detail-header">
-        <span class="cal-detail-title" id="cal-detail-title"></span>
-        <a id="cal-detail-create-btn" href="#" class="btn btn-primary" style="font-size:12px">+ {{ _('Créer ce jour') }}</a>
-        <button class="cal-detail-close" onclick="closeDayDetail()" title="{{ _('Fermer') }}">×</button>
+    {# ── Vue Calendrier ── #}
+    <div id="view-calendar">
+      <div class="cal-nav">
+        <button class="btn btn-secondary" onclick="prevMonth()">‹</button>
+        <span class="cal-nav-label" id="cal-month-label"></span>
+        <button class="btn btn-secondary" onclick="nextMonth()">›</button>
+        <div class="cal-legend">
+          <span class="cal-legend-item"><span class="cal-legend-dot private"></span>{{ _('Privé') }}</span>
+          <span class="cal-legend-item"><span class="cal-legend-dot public"></span>{{ _('Public') }}</span>
+        </div>
       </div>
-      <div class="cal-detail-body" id="cal-detail-body"></div>
+      <div class="cal-grid-wrapper">
+        <div class="cal-headers">
+          <div>{{ _('Lun') }}</div>
+          <div>{{ _('Mar') }}</div>
+          <div>{{ _('Mer') }}</div>
+          <div>{{ _('Jeu') }}</div>
+          <div>{{ _('Ven') }}</div>
+          <div class="weekend">{{ _('Sam') }}</div>
+          <div class="weekend">{{ _('Dim') }}</div>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+      </div>
+      <div class="cal-day-detail" id="cal-day-detail" style="display:none">
+        <div class="cal-detail-header">
+          <span class="cal-detail-title" id="cal-detail-title"></span>
+          <a id="cal-detail-create-btn" href="#" class="btn btn-primary" style="font-size:12px">
+            + {{ _('Créer ce jour') }}
+          </a>
+          <button class="cal-detail-close" onclick="closeDayDetail()" title="{{ _('Fermer') }}">×</button>
+        </div>
+        <div class="cal-detail-body" id="cal-detail-body"></div>
+      </div>
     </div>
-  </div>
 
-  <!-- ── Vue Liste ── -->
-  <div id="view-list" style="display:none">
-    {% if events %}
-    <table class="simple-table full-width">
-      <thead>
-        <tr>
-          <th>{{ _('Titre') }}</th>
-          <th>{{ _('Date → Fin') }}</th>
-          <th>{{ _('Circuit') }}</th>
-          <th>{{ _('Mode') }}</th>
-          <th>{{ _('Inscrits') }}</th>
-          <th>{{ _('Statut') }}</th>
-          <th style="text-align:right">{{ _('Actions') }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for ev in events %}
-        <tr id="ev-row-{{ ev.id }}">
-          <td style="font-weight:600">{{ ev.title }}</td>
-          <td style="white-space:nowrap">
-            {{ ev.date | local_dt_short }}
-            <span style="color:var(--text-muted);font-size:11px"> → {{ ev.end_date | local_dt_short }}</span>
-          </td>
-          <td>{{ ev.circuit_display or ev.circuit or '—' }}</td>
-          <td>{{ ev.mode_display }}</td>
-          <td>{{ ev.confirmed_count }}/{{ ev.max_drivers }}</td>
-          <td>
-            <span class="badge badge-{{ ev.status }}">
-              {% if ev.status == 'draft' %}{{ _('Brouillon') }}
-              {% elif ev.status == 'published' %}{{ _('Publié') }}
-              {% else %}{{ _('Terminé') }}{% endif %}
-            </span>
-          </td>
-          <td>
-            <div class="table-actions">
-              {% if not ev.is_public %}
-              <a href="{{ url_for('events_admin.event_registrations', event_id=ev.id) }}" class="btn btn-secondary" style="font-size:11px">{{ _('Inscrits') }}</a>
-              {% endif %}
-              <a href="{{ url_for('events_admin.event_edit', event_id=ev.id) }}" class="btn btn-secondary" style="font-size:11px">{{ _('Modifier') }}</a>
-              {% if ev.status != 'finished' %}
-              <button class="btn btn-secondary" style="font-size:11px"
-                      hx-post="{{ url_for('events_admin.event_publish', event_id=ev.id) }}"
-                      hx-target="#ev-row-{{ ev.id }}" hx-swap="outerHTML">
-                {{ _('Dépublier') if ev.status == 'published' else _('Publier') }}
-              </button>
-              {% endif %}
-              {% if ev.status == 'published' %}
-              <button class="btn btn-secondary" style="font-size:11px"
-                      hx-post="{{ url_for('events_admin.event_finish', event_id=ev.id) }}"
-                      hx-target="#ev-row-{{ ev.id }}" hx-swap="outerHTML"
-                      hx-confirm="{{ _('Marquer comme terminé ?') }}">
-                {{ _('Terminer') }}
-              </button>
-              {% endif %}
-              <button class="btn btn-danger" style="font-size:11px;padding:5px 10px"
-                      hx-post="{{ url_for('events_admin.event_delete', event_id=ev.id) }}"
-                      hx-target="#ev-row-{{ ev.id }}" hx-swap="outerHTML"
-                      hx-confirm="{{ _('Supprimer cet événement ?') }}">
-                <span class="icon-trash"></span>
-              </button>
-            </div>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-    {% else %}
-    <p class="text-muted" style="padding:12px 0">{{ _('Aucun événement.') }} <a href="{{ url_for('events_admin.event_create') }}" style="color:var(--accent)">{{ _('Créer le premier') }} →</a></p>
-    {% endif %}
+    {# ── Vue Liste ── #}
+    <div id="view-list" style="display:none">
+      {% if events %}
+      <div class="table-wrapper">
+        <table class="table-base">
+          <thead>
+            <tr>
+              <th>{{ _('Titre') }}</th>
+              <th>{{ _('Date → Fin') }}</th>
+              <th>{{ _('Circuit') }}</th>
+              <th>{{ _('Mode') }}</th>
+              <th>{{ _('Inscrits') }}</th>
+              <th>{{ _('Statut') }}</th>
+              <th class="text-right">{{ _('Actions') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for ev in events %}
+            <tr id="ev-row-{{ ev.id }}">
+              <td class="font-semibold">{{ ev.title }}</td>
+              <td class="whitespace-nowrap text-xs">
+                {{ ev.date | local_dt_short }}
+                <span class="text-dim"> → {{ ev.end_date | local_dt_short }}</span>
+              </td>
+              <td>{{ ev.circuit_display or ev.circuit or '—' }}</td>
+              <td>{{ ev.mode_display }}</td>
+              <td>{{ ev.confirmed_count }}/{{ ev.max_drivers }}</td>
+              <td>
+                <span class="badge badge-{% if ev.status == 'draft' %}neutral{% elif ev.status == 'published' %}success{% else %}info{% endif %}">
+                  {% if ev.status == 'draft' %}{{ _('Brouillon') }}
+                  {% elif ev.status == 'published' %}{{ _('Publié') }}
+                  {% else %}{{ _('Terminé') }}{% endif %}
+                </span>
+              </td>
+              <td>
+                <div class="flex items-center justify-end gap-1.5">
+                  {% if not ev.is_public %}
+                  <a href="{{ url_for('events_admin.event_registrations', event_id=ev.id) }}"
+                     class="btn-secondary btn-xs">{{ _('Inscrits') }}</a>
+                  {% endif %}
+                  <a href="{{ url_for('events_admin.event_edit', event_id=ev.id) }}"
+                     class="btn-secondary btn-xs">{{ _('Modifier') }}</a>
+                  {% if ev.status != 'finished' %}
+                  <button class="btn-secondary btn-xs"
+                          hx-post="{{ url_for('events_admin.event_publish', event_id=ev.id) }}"
+                          hx-target="#ev-row-{{ ev.id }}" hx-swap="outerHTML">
+                    {{ _('Dépublier') if ev.status == 'published' else _('Publier') }}
+                  </button>
+                  {% endif %}
+                  {% if ev.status == 'published' %}
+                  <button class="btn-secondary btn-xs"
+                          hx-post="{{ url_for('events_admin.event_finish', event_id=ev.id) }}"
+                          hx-target="#ev-row-{{ ev.id }}" hx-swap="outerHTML"
+                          hx-confirm="{{ _('Marquer comme terminé ?') }}">
+                    {{ _('Terminer') }}
+                  </button>
+                  {% endif %}
+                  <button class="btn-danger btn-xs"
+                          hx-post="{{ url_for('events_admin.event_delete', event_id=ev.id) }}"
+                          hx-target="#ev-row-{{ ev.id }}" hx-swap="outerHTML"
+                          hx-confirm="{{ _('Supprimer cet événement ?') }}">
+                    🗑
+                  </button>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state py-8">
+        {{ _('Aucun événement.') }}
+        <a href="{{ url_for('events_admin.event_create') }}"
+           class="text-accent hover:text-accent-dark transition-colors ml-1">
+          {{ _('Créer le premier') }} →
+        </a>
+      </div>
+      {% endif %}
+    </div>
+
   </div>
 </div>
 {% endblock %}
@@ -126,7 +145,6 @@
 function _esc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
-// Données événements (dates en heure locale via local_dt_input)
 const CAL_EVENTS = [
   {% for ev in events %}
   {
@@ -141,9 +159,8 @@ const CAL_EVENTS = [
   {% endfor %}
 ];
 
-// ── Calendrier ──────────────────────────────────────────────────────────────
 let _calYear  = new Date().getFullYear();
-let _calMonth = new Date().getMonth(); // 0-indexed
+let _calMonth = new Date().getMonth();
 
 const MONTHS_FR = [
   "{{ _('Janvier') }}","{{ _('Février') }}","{{ _('Mars') }}","{{ _('Avril') }}",
@@ -156,15 +173,12 @@ function renderCalendar() {
   const label = document.getElementById('cal-month-label');
   label.textContent = `${MONTHS_FR[_calMonth]} ${_calYear}`;
 
-  // First day of month, adjusted to Mon=0 … Sun=6
   const firstDow    = (new Date(_calYear, _calMonth, 1).getDay() + 6) % 7;
   const daysInMonth = new Date(_calYear, _calMonth + 1, 0).getDate();
   const prevDays    = new Date(_calYear, _calMonth, 0).getDate();
-
   const now      = new Date();
   const todayKey = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
 
-  // Group events by YYYY-MM-DD
   const evByDay = {};
   CAL_EVENTS.forEach(ev => {
     const d = ev.date.substring(0, 10);
@@ -172,13 +186,9 @@ function renderCalendar() {
   });
 
   let html = '';
-
-  // Leading cells (previous month — not clickable)
   for (let i = firstDow - 1; i >= 0; i--) {
     html += `<div class="cal-day other-month"><span class="cal-day-num">${prevDays - i}</span></div>`;
   }
-
-  // Current month cells
   for (let day = 1; day <= daysInMonth; day++) {
     const key      = `${_calYear}-${pad(_calMonth+1)}-${pad(day)}`;
     const isToday  = key === todayKey;
@@ -202,13 +212,10 @@ function renderCalendar() {
       <span class="cal-day-num">${day}</span>${chips}
     </div>`;
   }
-
-  // Trailing cells (next month)
   const total = Math.ceil((firstDow + daysInMonth) / 7) * 7;
   for (let i = 1; i <= total - firstDow - daysInMonth; i++) {
     html += `<div class="cal-day other-month"><span class="cal-day-num">${i}</span></div>`;
   }
-
   grid.innerHTML = html;
 }
 
@@ -216,7 +223,6 @@ function pad(n) { return String(n).padStart(2, '0'); }
 function prevMonth() { if (--_calMonth < 0)  { _calMonth = 11; _calYear--; } renderCalendar(); closeDayDetail(); }
 function nextMonth() { if (++_calMonth > 11)  { _calMonth = 0;  _calYear++; } renderCalendar(); closeDayDetail(); }
 
-// ── Vue journée ─────────────────────────────────────────────────────────────
 const DAYS_FR  = [
   "{{ _('Dimanche') }}","{{ _('Lundi') }}","{{ _('Mardi') }}","{{ _('Mercredi') }}",
   "{{ _('Jeudi') }}","{{ _('Vendredi') }}","{{ _('Samedi') }}"
@@ -235,7 +241,6 @@ function openDayDetail(dateKey) {
   document.getElementById('cal-detail-create-btn').href =
     `/events/create?date=${dateKey}T20:00`;
 
-  // Événements du jour groupés par heure de début
   const dayEvs = CAL_EVENTS.filter(ev => ev.date.startsWith(dateKey))
                             .sort((a, b) => a.date.localeCompare(b.date));
   const evByHour = {};
@@ -269,14 +274,12 @@ function openDayDetail(dateKey) {
 
   const body = document.getElementById('cal-detail-body');
   body.innerHTML = html;
-  // Pre-scroll to 8h
   body.scrollTop = 8 * 36;
 
   const detail = document.getElementById('cal-day-detail');
   detail.style.display = '';
   detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
-  // Highlight selected day cell
   document.querySelectorAll('.cal-day.selected').forEach(el => el.classList.remove('selected'));
   document.querySelectorAll(`.cal-day[data-key="${dateKey}"]`).forEach(el => el.classList.add('selected'));
 }
@@ -286,15 +289,17 @@ function closeDayDetail() {
   document.querySelectorAll('.cal-day.selected').forEach(el => el.classList.remove('selected'));
 }
 
-// ── Toggle vue ──────────────────────────────────────────────────────────────
 function setView(v) {
   document.getElementById('view-calendar').style.display = v === 'calendar' ? '' : 'none';
   document.getElementById('view-list').style.display     = v === 'list'     ? '' : 'none';
-  document.querySelectorAll('.view-btn').forEach(b => b.classList.toggle('active', b.dataset.view === v));
+  document.querySelectorAll('#ev-view-toggle button').forEach(b => {
+    b.classList.toggle('bg-surface', b.dataset.view === v);
+    b.classList.toggle('text-txt',   b.dataset.view === v);
+    b.classList.toggle('text-dim',   b.dataset.view !== v);
+  });
   localStorage.setItem('ev_view', v);
 }
 
-// Init
 const _savedView = localStorage.getItem('ev_view') || 'calendar';
 setView(_savedView);
 renderCalendar();
