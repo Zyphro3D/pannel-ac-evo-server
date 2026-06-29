@@ -6,9 +6,16 @@
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <title>{% block title %}{{ panel_title }}{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css', v=static_version) }}">
+  <script src="https://cdn.jsdelivr.net/npm/htmx.org@1.9.12/dist/htmx.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.3/dist/cdn.min.js"></script>
   {% block head %}{% endblock %}
 </head>
-<body>
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token() }}"}'>
+
+<div id="toast-zone"
+     aria-live="polite"
+     style="position:fixed;top:1.5rem;right:1.5rem;z-index:9999;display:flex;flex-direction:column;gap:.5rem;min-width:280px;max-width:420px">
+</div>
 
 <nav class="topnav" id="topnav">
   <div class="topnav-inner">
@@ -212,8 +219,6 @@
   <span>{{ _('Ce site utilise uniquement des cookies techniques nécessaires à son fonctionnement.') }}</span>
   <button class="btn btn-secondary btn-sm" onclick="acceptCookies()">OK</button>
 </div>
-<div class="toast" id="toast"></div>
-
 <script nonce="{{ csp_nonce }}">
 const I18N = {
   online:          "{{ _('En ligne') }}",

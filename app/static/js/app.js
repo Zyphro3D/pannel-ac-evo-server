@@ -116,12 +116,12 @@ function openCreateModal(duplicate) {
     ? active.replace('.json', '') + '-copie.json'
     : '';
   document.getElementById('modal-copy-from').value = duplicate ? active : '';
-  document.getElementById('modal-create').style.display = 'flex';
+  window.dispatchEvent(new CustomEvent('open-modal-create'));
   setTimeout(() => document.getElementById('modal-name').focus(), 50);
 }
 
 function closeModal() {
-  document.getElementById('modal-create').style.display = 'none';
+  window.dispatchEvent(new CustomEvent('close-modal-create'));
 }
 
 async function submitCreate() {
@@ -172,11 +172,11 @@ function openRenameModal() {
   if (!current) return;
   document.getElementById('modal-rename-old').value = current;
   document.getElementById('modal-rename-new').value = current.replace(/\.json$/i, '');
-  document.getElementById('modal-rename').style.display = 'flex';
+  window.dispatchEvent(new CustomEvent('open-modal-rename'));
   setTimeout(() => document.getElementById('modal-rename-new').select(), 50);
 }
 function closeRenameModal() {
-  document.getElementById('modal-rename').style.display = 'none';
+  window.dispatchEvent(new CustomEvent('close-modal-rename'));
 }
 async function submitRename() {
   const oldName = document.getElementById('modal-rename-old').value;
@@ -192,22 +192,25 @@ async function submitRename() {
   else { showToast(I18N.error + ': ' + d.error, 'error'); }
 }
 
-// Fermer modal en cliquant en dehors
-document.getElementById('modal-create')?.addEventListener('click', function(e) {
-  if (e.target === this) closeModal();
-});
-document.getElementById('modal-rename')?.addEventListener('click', function(e) {
-  if (e.target === this) closeRenameModal();
+// Fermer modal-config-error en cliquant en dehors (non géré par Alpine)
+document.getElementById('modal-config-error')?.addEventListener('click', function(e) {
+  if (e.target === this) closeConfigErrorModal();
 });
 
 
 /* ── Toast ── */
 function showToast(msg, type = 'success') {
-  const t = document.getElementById('toast');
-  if (!t) return;
-  t.textContent = msg;
-  t.className = `toast show ${type}`;
-  setTimeout(() => { t.className = 'toast'; }, 3000);
+  const zone = document.getElementById('toast-zone');
+  if (!zone) return;
+  const div = document.createElement('div');
+  div.innerHTML = `<div x-data="{ show: true }"
+    x-show="show" x-init="setTimeout(() => show = false, 4500)" x-transition
+    class="toast-htmx toast-htmx-${type}" role="alert" aria-live="polite">
+    <span>${msg}</span>
+    <button @click="show = false" class="toast-htmx-close" aria-label="Fermer">✕</button>
+  </div>`;
+  zone.prepend(div.firstElementChild);
+  if (window.Alpine) Alpine.initTree(zone.firstElementChild);
 }
 
 /* ── Server status polling ── */
@@ -344,7 +347,7 @@ async function loadLogs() {
 }
 
 function openLogs() {
-  document.getElementById('modal-logs').style.display = 'flex';
+  window.dispatchEvent(new CustomEvent('open-modal-logs'));
   loadLogs();
 }
 

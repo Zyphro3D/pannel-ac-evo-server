@@ -765,26 +765,46 @@ textarea.form-control { resize: vertical; min-height: 80px; }
 .badge-rejected   { background: rgba(239,68,68,0.12); color: #f87171; }
 .badge-running    { background: rgba(16,185,129,0.15); color: #34d399; border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 600; }
 
-/* ─── Toast ──────────────────────────────────────────────────── */
-.toast {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  padding: 10px 18px;
+/* ─── Toast HTMX (zone top-right, injecté par HTMX / Alpine) ──── */
+.toast-htmx {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding: .7rem 1.1rem;
   border-radius: var(--radius-sm);
-  font-size: 1rem;
+  font-size: .875rem;
   font-weight: 600;
-  z-index: 9000;
-  opacity: 0;
-  transform: translateY(8px);
-  transition: opacity 0.25s, transform 0.25s;
-  pointer-events: none;
+  box-shadow: 0 4px 16px rgba(0,0,0,.45);
 }
-.toast.show { opacity: 1; transform: translateY(0); }
-.toast.ok,
-.toast.success { background: var(--green); color: #fff; }
-.toast.err,
-.toast.error   { background: var(--red);   color: #fff; }
+.toast-htmx-success { background: rgba(16,185,129,.18); border: 1px solid rgba(52,211,153,.5);  color: #34d399; }
+.toast-htmx-error   { background: rgba(239,68,68,.18);  border: 1px solid rgba(248,113,113,.5); color: #f87171; }
+.toast-htmx-info    { background: rgba(14,165,233,.18); border: 1px solid rgba(56,189,248,.5);  color: #38bdf8; }
+.toast-htmx-close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  opacity: .6;
+  font-size: .9rem;
+  line-height: 1;
+  padding: 0 0 0 .25rem;
+  flex-shrink: 0;
+}
+.toast-htmx-close:hover { opacity: 1; }
+
+/* ─── HTMX — indicateur de chargement ───────────────────────── */
+.htmx-indicator { display: none; }
+.htmx-request .htmx-indicator,
+.htmx-request.htmx-indicator { display: inline-flex; align-items: center; gap: .4rem; }
+
+/* Boutons en cours de requête HTMX : légèrement estompés, non cliquables */
+button.htmx-request,
+.btn.htmx-request {
+  opacity: .6;
+  pointer-events: none;
+  cursor: wait;
+}
 
 /* ─── Cookie banner ──────────────────────────────────────────── */
 .cookie-banner {

@@ -65,7 +65,7 @@
       </thead>
       <tbody>
         {% for ev in events %}
-        <tr>
+        <tr id="ev-row-{{ ev.id }}">
           <td style="font-weight:600">{{ ev.title }}</td>
           <td style="white-space:nowrap">
             {{ ev.date | local_dt_short }}
@@ -88,23 +88,26 @@
               {% endif %}
               <a href="{{ url_for('events_admin.event_edit', event_id=ev.id) }}" class="btn btn-secondary" style="font-size:11px">{{ _('Modifier') }}</a>
               {% if ev.status != 'finished' %}
-              <form method="post" action="{{ url_for('events_admin.event_publish', event_id=ev.id) }}" style="display:inline">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button class="btn btn-secondary" style="font-size:11px">
-                  {{ _('Dépublier') if ev.status == 'published' else _('Publier') }}
-                </button>
-              </form>
+              <button class="btn btn-secondary" style="font-size:11px"
+                      hx-post="{{ url_for('events_admin.event_publish', event_id=ev.id) }}"
+                      hx-target="#ev-row-{{ ev.id }}" hx-swap="outerHTML">
+                {{ _('Dépublier') if ev.status == 'published' else _('Publier') }}
+              </button>
               {% endif %}
               {% if ev.status == 'published' %}
-              <form method="post" action="{{ url_for('events_admin.event_finish', event_id=ev.id) }}" style="display:inline">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button class="btn btn-secondary" style="font-size:11px" onclick="return confirm('{{ _("Marquer comme terminé ?") }}')">{{ _('Terminer') }}</button>
-              </form>
+              <button class="btn btn-secondary" style="font-size:11px"
+                      hx-post="{{ url_for('events_admin.event_finish', event_id=ev.id) }}"
+                      hx-target="#ev-row-{{ ev.id }}" hx-swap="outerHTML"
+                      hx-confirm="{{ _('Marquer comme terminé ?') }}">
+                {{ _('Terminer') }}
+              </button>
               {% endif %}
-              <form method="post" action="{{ url_for('events_admin.event_delete', event_id=ev.id) }}" style="display:inline">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button class="btn btn-danger" style="font-size:11px;padding:5px 10px" onclick="return confirm('{{ _("Supprimer cet événement ?") }}')"><span class="icon-trash"></span></button>
-              </form>
+              <button class="btn btn-danger" style="font-size:11px;padding:5px 10px"
+                      hx-post="{{ url_for('events_admin.event_delete', event_id=ev.id) }}"
+                      hx-target="#ev-row-{{ ev.id }}" hx-swap="outerHTML"
+                      hx-confirm="{{ _('Supprimer cet événement ?') }}">
+                <span class="icon-trash"></span>
+              </button>
             </div>
           </td>
         </tr>

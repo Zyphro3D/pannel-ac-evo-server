@@ -65,6 +65,18 @@ msgstr "Impostazioni del server salvate."
 msgid "Paramètres sauvegardés — redémarrez le panel pour les appliquer."
 msgstr "Impostazioni salvate — riavvia il pannello per applicarle."
 
+msgid "Paramètres sauvegardés"
+msgstr "Impostazioni salvate"
+
+msgid "Message de test envoyé sur Discord"
+msgstr "Messaggio di prova inviato su Discord"
+
+msgid "Erreur webhook"
+msgstr "Errore webhook"
+
+msgid "Aucune adresse destinataire"
+msgstr "Nessun indirizzo destinatario"
+
 #: app/routes/admin.py:566
 msgid "Fichier trop volumineux (max 5 Mo)"
 msgstr "File troppo grande (max 5 MB)"
@@ -3550,6 +3562,9 @@ msgstr "Caricamento..."
 
 msgid "Erreur upload"
 msgstr "Errore di caricamento"
+
+msgid "Image mise à jour"
+msgstr "Immagine aggiornata"
 
 msgid " uploadé. Rechargez la page pour le voir."
 msgstr " caricato. Ricarica la pagina per vederlo."

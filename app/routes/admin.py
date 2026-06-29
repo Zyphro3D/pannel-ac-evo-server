@@ -23,7 +23,14 @@ from app.services.server_config import (
 )
 from app.services.process_manager import get_status, get_server_logs
 from app.services import mailer, discord_notifier
-from app.utils import admin_required as _admin_required, superadmin_required as _superadmin_required, superadmin_required_json as _superadmin_required_json
+from app.utils import (
+    admin_required as _admin_required,
+    superadmin_required as _superadmin_required,
+    superadmin_required_json as _superadmin_required_json,
+    is_htmx,
+    htmx_redirect,
+    htmx_toast as _toast,
+)
 
 admin_bp = Blueprint("admin", __name__)
 
@@ -52,7 +59,11 @@ def test_email():
     cfg      = mailer._cfg
     safe_cfg = {k: v for k, v in cfg.items() if k != "password"}
     to       = request.form.get("to", "").strip() or (cfg.get("admin") or [None])[0]
-    result_email = mailer.send_test(to) if to else {"ok": False, "error": "Aucune adresse destinataire"}
+    result_email = mailer.send_test(to) if to else {"ok": False, "error": _("Aucune adresse destinataire")}
+    if is_htmx():
+        if result_email.get("ok"):
+            return _toast("success", _("Email envoyé avec succès"))
+        return _toast("error", _("Erreur SMTP") + " : " + str(result_email.get("error", "")))
     return render_template("administration.html",
                            mail_cfg=safe_cfg,
                            webhook_url=os.environ.get("DISCORD_WEBHOOK_URL", ""),
@@ -71,6 +82,10 @@ def test_webhook():
                 if channel == "pilots"
                 else os.environ.get("DISCORD_WEBHOOK_URL", ""))
     result   = discord_notifier.test_webhook(url)
+    if is_htmx():
+        if result.get("ok"):
+            return _toast("success", _("Message de test envoyé sur Discord"))
+        return _toast("error", _("Erreur webhook") + " : " + str(result.get("error", "")))
     return render_template("administration.html",
                            mail_cfg=safe_cfg,
                            webhook_url=os.environ.get("DISCORD_WEBHOOK_URL", ""),
@@ -418,6 +433,7 @@ def settings():
             _name = request.form.get("srv_name", "").strip()
             _tcp  = request.form.get("srv_tcp_port", "").strip()
             _http = request.form.get("srv_http_port", "").strip()
+            _port_errors = []
             if _name:
                 current_srv.name = _name
             if _tcp and _tcp.isdigit():
@@ -426,7 +442,9 @@ def settings():
                     Server.tcp_port == new_tcp, Server.udp_port == new_tcp
                 )).first()
                 if conflict:
-                    flash(_("Le port %(port)d est déjà utilisé par '%(name)s'.", port=new_tcp, name=conflict.name), "error")
+                    _msg = _("Le port %(port)d est déjà utilisé par '%(name)s'.", port=new_tcp, name=conflict.name)
+                    flash(_msg, "error")
+                    _port_errors.append(_msg)
                 else:
                     current_srv.tcp_port = new_tcp
                     current_srv.udp_port = new_tcp
@@ -434,7 +452,9 @@ def settings():
                 new_http = int(_http)
                 conflict = Server.query.filter(Server.id != current_srv.id, Server.http_port == new_http).first()
                 if conflict:
-                    flash(_("Le port %(port)d est déjà utilisé par '%(name)s'.", port=new_http, name=conflict.name), "error")
+                    _msg = _("Le port %(port)d est déjà utilisé par '%(name)s'.", port=new_http, name=conflict.name)
+                    flash(_msg, "error")
+                    _port_errors.append(_msg)
                 else:
                     current_srv.http_port = new_http
             current_srv.discord_webhook_main   = request.form.get("srv_discord_main",   "").strip()
@@ -461,6 +481,10 @@ def settings():
                     for _k, _v in new_vals.items():
                         os.environ[_k] = _v
                         current_app.config[_k] = _v
+            if is_htmx():
+                if _port_errors:
+                    return _toast("error", " — ".join(_port_errors))
+                return _toast("success", _("Paramètres du serveur sauvegardés."))
             flash(_("Paramètres du serveur sauvegardés."), "success")
             return redirect(url_for("admin.settings", tab=tab))
 
@@ -485,6 +509,8 @@ def settings():
             for _k, _v in new_vals.items():
                 os.environ[_k] = _v
                 current_app.config[_k] = _v
+        if is_htmx():
+            return _toast("success", _("Paramètres sauvegardés"))
         flash(_("Paramètres sauvegardés — redémarrez le panel pour les appliquer."), "success")
         saved = True
         return redirect(url_for("admin.settings", tab=tab))
@@ -699,6 +725,8 @@ def servers_list():
 def server_create():
     name = request.form.get("name", "").strip()
     if not name:
+        if is_htmx():
+            return _toast("error", _("Le nom est requis."))
         flash(_("Le nom est requis."), "error")
         return redirect(url_for("admin.servers_list"))
 
@@ -707,11 +735,15 @@ def server_create():
         tcp_port  = int(request.form.get("tcp_port")  or 9701)
         http_port = int(request.form.get("http_port") or 8082)
     except (ValueError, TypeError):
+        if is_htmx():
+            return _toast("error", _("Port invalide (1024–65535)."))
         flash(_("Port invalide (1024–65535)."), "error")
         return redirect(url_for("admin.servers_list"))
     udp_port = tcp_port  # TCP et UDP utilisent toujours le même numéro
     for port in (tcp_port, http_port):
         if not (1024 <= port <= 65535):
+            if is_htmx():
+                return _toast("error", _("Port invalide (1024–65535)."))
             flash(_("Port invalide (1024–65535)."), "error")
             return redirect(url_for("admin.servers_list"))
 
@@ -719,6 +751,8 @@ def server_create():
     used_ports = {p for s in Server.query.all() for p in (s.tcp_port, s.udp_port, s.http_port)}
     for port in (tcp_port, http_port):
         if port in used_ports:
+            if is_htmx():
+                return _toast("error", _("Le port %(port)d est déjà utilisé par un autre serveur.", port=port))
             flash(_("Le port %(port)d est déjà utilisé par un autre serveur.", port=port), "error")
             return redirect(url_for("admin.servers_list"))
 
@@ -740,6 +774,8 @@ def server_create():
     # Vérifie si le container Docker existe déjà
     from app.services.server_docker import container_exists, create_server_container
     if container_exists(container_name):
+        if is_htmx():
+            return _toast("error", _("Un container Docker nommé '%(name)s' existe déjà.", name=container_name))
         flash(_("Un container Docker nommé '%(name)s' existe déjà.", name=container_name), "error")
         return redirect(url_for("admin.servers_list"))
 
@@ -762,6 +798,8 @@ def server_create():
     result = create_server_container(srv)
     if not result["ok"]:
         db.session.rollback()
+        if is_htmx():
+            return _toast("error", _("Erreur lors de la création du container : %(err)s", err=result["error"]))
         flash(_("Erreur lors de la création du container : %(err)s", err=result["error"]), "error")
         return redirect(url_for("admin.servers_list"))
 
@@ -784,6 +822,8 @@ def server_create():
     from app.services import ace_tcp_client
     ace_tcp_client.start_for_server(srv, _ca.config)
 
+    if is_htmx():
+        return htmx_redirect(url_for("admin.servers_list"))
     flash(_("Serveur '%(name)s' créé avec succès.", name=name), "success")
     return redirect(url_for("admin.servers_list"))
 
@@ -793,18 +833,27 @@ def server_create():
 @_superadmin_required
 def server_toggle(server_id):
     if server_id == 1:
+        if is_htmx():
+            return _toast("error", _("Le serveur principal ne peut pas être désactivé."))
         flash(_("Le serveur principal ne peut pas être désactivé."), "error")
         return redirect(url_for("admin.servers_list"))
     srv = db.session.get(Server, server_id)
     if not srv:
+        if is_htmx():
+            return _toast("error", _("Serveur introuvable."))
         flash(_("Serveur introuvable."), "error")
         return redirect(url_for("admin.servers_list"))
     srv.is_enabled = not srv.is_enabled
     db.session.commit()
-    if srv.is_enabled:
-        flash(_("Serveur '%(name)s' activé.", name=srv.name), "success")
-    else:
-        flash(_("Serveur '%(name)s' désactivé.", name=srv.name), "success")
+    msg = _("Serveur '%(name)s' activé.", name=srv.name) if srv.is_enabled else _("Serveur '%(name)s' désactivé.", name=srv.name)
+    if is_htmx():
+        try:
+            st = get_status(srv.id)
+        except Exception:
+            st = {"running": False}
+        return render_template("_partials/server_row.html", srv=srv, st=st,
+                               toast_msg=msg, toast_type="success")
+    flash(msg, "success")
     return redirect(url_for("admin.servers_list"))
 
 
@@ -813,10 +862,14 @@ def server_toggle(server_id):
 @_superadmin_required
 def server_delete(server_id):
     if server_id == 1:
+        if is_htmx():
+            return _toast("error", _("Le serveur principal ne peut pas être supprimé."))
         flash(_("Le serveur principal ne peut pas être supprimé."), "error")
         return redirect(url_for("admin.servers_list"))
     srv = db.session.get(Server, server_id)
     if not srv:
+        if is_htmx():
+            return _toast("error", _("Serveur introuvable."))
         flash(_("Serveur introuvable."), "error")
         return redirect(url_for("admin.servers_list"))
 
@@ -827,10 +880,14 @@ def server_delete(server_id):
     # Supprime le dossier de configs déployées pour ce serveur
     delete_server_runtime_dir(server_id)
 
+    name = srv.name
     db.session.delete(srv)
     db.session.commit()
     sync_compose_override()
-    flash(_("Serveur '%(name)s' supprimé.", name=srv.name), "success")
+    if is_htmx():
+        from app.utils import htmx_oob_toast
+        return htmx_oob_toast("success", _("Serveur '%(name)s' supprimé.", name=name))
+    flash(_("Serveur '%(name)s' supprimé.", name=name), "success")
     return redirect(url_for("admin.servers_list"))
 
 
@@ -848,6 +905,8 @@ def vehicles():
     if search:
         cars = [c for c in cars if search in c.display_name.lower() or search in c.slug.lower()]
     counts = {cat: CarMeta.query.filter_by(category=cat).count() for cat in _CATEGORY_ORDER}
+    if is_htmx():
+        return render_template("_partials/vehicle_grid.html", cars=cars)
     return render_template("vehicles.html", cars=cars, cat_filter=cat_filter,
                            search=search, counts=counts, categories=_CATEGORY_ORDER)
 

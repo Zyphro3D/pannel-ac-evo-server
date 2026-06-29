@@ -22,64 +22,21 @@
     </a>
     {% endfor %}
     <form method="get" action="{{ url_for('admin.vehicles') }}" class="veh-search">
-      {% if cat_filter %}<input type="hidden" name="cat" value="{{ cat_filter }}">{% endif %}
-      <input type="text" name="q" value="{{ search }}"
-             placeholder="{{ _('Rechercher…') }}" class="form-control veh-search-input">
+      {% if cat_filter %}<input type="hidden" name="cat" value="{{ cat_filter }}" id="veh-cat-hidden">{% endif %}
+      <input type="text" name="q" value="{{ search }}" id="veh-search-input"
+             placeholder="{{ _('Rechercher…') }}" class="form-control veh-search-input"
+             hx-get="{{ url_for('admin.vehicles') }}"
+             hx-trigger="input changed delay:350ms"
+             hx-target="#veh-grid-container"
+             hx-swap="innerHTML"
+             hx-include="#veh-cat-hidden">
     </form>
   </div>
 
   {# ── Grille voitures ── #}
-  {% if cars %}
-  <div class="veh-grid">
-    {% for car in cars %}
-    <div class="veh-card" id="veh-{{ car.slug }}">
-
-      {# Image #}
-      <div class="veh-img-wrap">
-        {% if car.image_path %}
-        <img src="{{ url_for('serve_media', filename=car.image_path) }}"
-             alt="{{ car.display_name }}" class="veh-img" loading="lazy">
-        {% else %}
-        <div class="veh-img-placeholder">
-          <span>{{ car.display_name[:2].upper() }}</span>
-        </div>
-        {% endif %}
-        {# Overlay upload #}
-        {% if current_user.is_superadmin %}
-        <label class="veh-img-upload" title="{{ _('Changer l\'image') }}">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          <input type="file" accept=".jpg,.jpeg,.png,.webp" class="veh-file-input"
-                 data-slug="{{ car.slug }}"
-                 data-url="{{ url_for('admin.vehicle_upload_image', slug=car.slug) }}">
-        </label>
-        {% endif %}
-      </div>
-
-      {# Infos #}
-      <div class="veh-info">
-        <div class="veh-name">{{ car.display_name }}</div>
-        <div class="veh-badges">
-          {% if car.category %}
-          <span class="veh-badge veh-badge-{{ car.category | lower }}">{{ _(car.category) }}</span>
-          {% endif %}
-          {% if car.property_2_label %}
-          <span class="veh-badge veh-badge-{{ car.property_2_label | lower }}">{{ _(car.property_2_label) }}</span>
-          {% endif %}
-          {% if car.property_3_label %}
-          <span class="veh-badge veh-badge-{{ car.property_3_label | lower }}">{{ _(car.property_3_label) }}</span>
-          {% endif %}
-          {% if car.pi_min is not none %}
-          <span class="veh-badge veh-badge-pi">PI {{ "%.1f"|format(car.pi_min) }}</span>
-          {% endif %}
-        </div>
-      </div>
-
-    </div>
-    {% endfor %}
+  <div id="veh-grid-container">
+    {% include "_partials/vehicle_grid.html" %}
   </div>
-  {% else %}
-  <div class="h-empty" style="margin-top:3rem;">{{ _('Aucun véhicule trouvé.') }}</div>
-  {% endif %}
 
 </div>
 {% endblock %}
@@ -88,28 +45,52 @@
 <script nonce="{{ csp_nonce }}">
 const _csrf = '{{ csrf_token() }}';
 
+function _vehToast(type, msg) {
+  const zone = document.getElementById('toast-zone');
+  if (!zone) return;
+  const div = document.createElement('div');
+  div.innerHTML = `<div x-data="{ show: true }"
+    x-show="show" x-init="setTimeout(() => show = false, 4500)" x-transition
+    class="toast-htmx toast-htmx-${type}" role="alert">
+    <span>${msg}</span>
+    <button @click="show = false" class="toast-htmx-close">✕</button>
+  </div>`;
+  zone.prepend(div.firstElementChild);
+  if (window.Alpine) Alpine.initTree(zone.firstElementChild);
+}
+
 /* ── Upload image ── */
-document.querySelectorAll('.veh-file-input').forEach(input => {
-  input.addEventListener('change', async () => {
-    if (!input.files.length) return;
-    const form = new FormData();
-    form.append('file', input.files[0]);
-    const res  = await fetch(input.dataset.url, {
-      method: 'POST', headers: { 'X-CSRFToken': _csrf }, body: form,
+function _bindUploadInputs(root) {
+  (root || document).querySelectorAll('.veh-file-input').forEach(input => {
+    if (input._bound) return;
+    input._bound = true;
+    input.addEventListener('change', async () => {
+      if (!input.files.length) return;
+      const form = new FormData();
+      form.append('file', input.files[0]);
+      const res  = await fetch(input.dataset.url, {
+        method: 'POST', headers: { 'X-CSRFToken': _csrf }, body: form,
+      });
+      const data = await res.json();
+      if (!data.ok) {
+        _vehToast('error', data.error || '{{ _("Erreur upload") }}');
+        return;
+      }
+      const card = document.getElementById('veh-' + input.dataset.slug);
+      const wrap = card.querySelector('.veh-img-wrap');
+      let img = wrap.querySelector('.veh-img');
+      if (!img) {
+        img = document.createElement('img');
+        img.className = 'veh-img';
+        wrap.querySelector('.veh-img-placeholder')?.remove();
+        wrap.insertBefore(img, wrap.firstChild);
+      }
+      img.src = '/media/' + data.image_path + '?t=' + Date.now();
+      _vehToast('success', '{{ _("Image mise à jour") }}');
     });
-    const data = await res.json();
-    if (!data.ok) { alert(data.error); return; }
-    const card = document.getElementById('veh-' + input.dataset.slug);
-    const wrap = card.querySelector('.veh-img-wrap');
-    let img = wrap.querySelector('.veh-img');
-    if (!img) {
-      img = document.createElement('img');
-      img.className = 'veh-img';
-      wrap.querySelector('.veh-img-placeholder')?.remove();
-      wrap.insertBefore(img, wrap.firstChild);
-    }
-    img.src = '/media/' + data.image_path + '?t=' + Date.now();
   });
-});
+}
+_bindUploadInputs();
+document.getElementById('veh-grid-container').addEventListener('htmx:afterSettle', () => _bindUploadInputs(document.getElementById('veh-grid-container')));
 </script>
 {% endblock %}

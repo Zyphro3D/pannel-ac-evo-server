@@ -1,0 +1,59 @@
+<tr id="ev-row-{{ ev.id }}">
+  <td style="font-weight:600">{{ ev.title }}</td>
+  <td style="white-space:nowrap">
+    {{ ev.date | local_dt_short }}
+    <span style="color:var(--text-muted);font-size:11px"> → {{ ev.end_date | local_dt_short }}</span>
+  </td>
+  <td>{{ ev.circuit_display or ev.circuit or '—' }}</td>
+  <td>{{ ev.mode_display }}</td>
+  <td>{{ ev.confirmed_count }}/{{ ev.max_drivers }}</td>
+  <td>
+    <span class="badge badge-{{ ev.status }}">
+      {% if ev.status == 'draft' %}{{ _('Brouillon') }}
+      {% elif ev.status == 'published' %}{{ _('Publié') }}
+      {% else %}{{ _('Terminé') }}{% endif %}
+    </span>
+  </td>
+  <td>
+    <div class="table-actions">
+      {% if not ev.is_public %}
+      <a href="{{ url_for('events_admin.event_registrations', event_id=ev.id) }}" class="btn btn-secondary" style="font-size:11px">{{ _('Inscrits') }}</a>
+      {% endif %}
+      <a href="{{ url_for('events_admin.event_edit', event_id=ev.id) }}" class="btn btn-secondary" style="font-size:11px">{{ _('Modifier') }}</a>
+      {% if ev.status != 'finished' %}
+      <button class="btn btn-secondary" style="font-size:11px"
+              hx-post="{{ url_for('events_admin.event_publish', event_id=ev.id) }}"
+              hx-target="#ev-row-{{ ev.id }}" hx-swap="outerHTML">
+        {{ _('Dépublier') if ev.status == 'published' else _('Publier') }}
+      </button>
+      {% endif %}
+      {% if ev.status == 'published' %}
+      <button class="btn btn-secondary" style="font-size:11px"
+              hx-post="{{ url_for('events_admin.event_finish', event_id=ev.id) }}"
+              hx-target="#ev-row-{{ ev.id }}" hx-swap="outerHTML"
+              hx-confirm="{{ _('Marquer comme terminé ?') }}">
+        {{ _('Terminer') }}
+      </button>
+      {% endif %}
+      <button class="btn btn-danger" style="font-size:11px;padding:5px 10px"
+              hx-post="{{ url_for('events_admin.event_delete', event_id=ev.id) }}"
+              hx-target="#ev-row-{{ ev.id }}" hx-swap="outerHTML"
+              hx-confirm="{{ _('Supprimer cet événement ?') }}">
+        <span class="icon-trash"></span>
+      </button>
+    </div>
+  </td>
+</tr>
+{% if toast_msg is defined %}
+<div hx-swap-oob="afterbegin:#toast-zone">
+  <div x-data="{ show: true }"
+       x-show="show"
+       x-init="setTimeout(() => show = false, 4500)"
+       x-transition
+       class="toast-htmx toast-htmx-{{ toast_type | default('success') }}"
+       role="alert">
+    <span>{{ toast_msg }}</span>
+    <button @click="show = false" class="toast-htmx-close">✕</button>
+  </div>
+</div>
+{% endif %}

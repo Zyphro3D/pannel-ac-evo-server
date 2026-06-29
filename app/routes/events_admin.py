@@ -12,7 +12,7 @@ from app.models import Event, EventRegistration, Driver
 from app.services.database import db
 from app.services.server_config import load_events as load_tracks, load_cars, list_configs
 from app.services import mailer, entry_list
-from app.utils import admin_required as _admin_required
+from app.utils import admin_required as _admin_required, is_htmx, htmx_toast, htmx_oob_toast
 
 log = logging.getLogger(__name__)
 
@@ -132,6 +132,8 @@ def event_delete(event_id):
     event = Event.query.get_or_404(event_id)
     db.session.delete(event)
     db.session.commit()
+    if is_htmx():
+        return htmx_oob_toast("success", _("Événement supprimé."))
     flash(_("Événement supprimé."), "success")
     return redirect(url_for("events_admin.events_list"))
 
@@ -149,6 +151,9 @@ def event_publish(event_id):
     else:
         msg = _("Statut inchangé.")
     db.session.commit()
+    if is_htmx():
+        return render_template("_partials/event_row.html", ev=event,
+                               toast_msg=msg, toast_type="success")
     flash(msg, "success")
     return redirect(url_for("events_admin.events_list"))
 
@@ -159,6 +164,9 @@ def event_finish(event_id):
     event = Event.query.get_or_404(event_id)
     event.status = "finished"
     db.session.commit()
+    if is_htmx():
+        return render_template("_partials/event_row.html", ev=event,
+                               toast_msg=_("Événement marqué comme terminé."), toast_type="success")
     flash(_("Événement marqué comme terminé."), "success")
     return redirect(url_for("events_admin.events_list"))
 
@@ -239,6 +247,8 @@ def driver_approve(driver_id):
     driver.status = "approved"
     db.session.commit()
     mailer.send_registration_approved(driver)
+    if is_htmx():
+        return htmx_oob_toast("success", _("%(name)s approuvé.", name=driver.ingame_name))
     flash(_("%(name)s approuvé.", name=driver.ingame_name), "success")
     return redirect(url_for("events_admin.drivers_list"))
 
@@ -250,6 +260,8 @@ def driver_reject(driver_id):
     driver.status = "rejected"
     db.session.commit()
     mailer.send_registration_rejected(driver)
+    if is_htmx():
+        return htmx_oob_toast("success", _("%(name)s refusé.", name=driver.ingame_name))
     flash(_("%(name)s refusé.", name=driver.ingame_name), "error")
     return redirect(url_for("events_admin.drivers_list"))
 
@@ -261,5 +273,7 @@ def driver_delete(driver_id):
     name = driver.ingame_name
     db.session.delete(driver)
     db.session.commit()
+    if is_htmx():
+        return htmx_oob_toast("success", _("%(name)s supprimé.", name=name))
     flash(_("%(name)s supprimé.", name=name), "success")
     return redirect(url_for("events_admin.drivers_list"))

@@ -26,7 +26,10 @@
       {% endif %}
     {% endif %}
 
-    <form method="post" action="{{ url_for('admin.test_email') }}" style="margin-top:16px;display:flex;gap:10px;align-items:flex-end">
+    <form method="post" action="{{ url_for('admin.test_email') }}"
+          hx-post="{{ url_for('admin.test_email') }}"
+          hx-target="#toast-zone" hx-swap="afterbegin"
+          style="margin-top:16px;display:flex;gap:10px;align-items:flex-end">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <div class="form-group" style="flex:1;margin:0">
         <label style="font-size:12px">{{ _('Destinataire') }}</label>
@@ -57,7 +60,10 @@
       {% endif %}
     {% endif %}
 
-    <form method="post" action="{{ url_for('admin.test_webhook') }}" style="margin-top:16px">
+    <form method="post" action="{{ url_for('admin.test_webhook') }}"
+          hx-post="{{ url_for('admin.test_webhook') }}"
+          hx-target="#toast-zone" hx-swap="afterbegin"
+          style="margin-top:16px">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <input type="hidden" name="channel" value="server">
       <button class="btn btn-secondary" {% if not webhook_url %}disabled{% endif %}>{{ _('Envoyer un message de test') }}</button>
@@ -85,7 +91,10 @@
       {% endif %}
     {% endif %}
 
-    <form method="post" action="{{ url_for('admin.test_webhook') }}" style="margin-top:16px">
+    <form method="post" action="{{ url_for('admin.test_webhook') }}"
+          hx-post="{{ url_for('admin.test_webhook') }}"
+          hx-target="#toast-zone" hx-swap="afterbegin"
+          style="margin-top:16px">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <input type="hidden" name="channel" value="pilots">
       <button class="btn btn-secondary" {% if not pilots_webhook_url and not webhook_url %}disabled{% endif %}>{{ _('Envoyer un message de test') }}</button>

@@ -1480,6 +1480,521 @@ Multi-serveur complet = MINOR minimum (nouvelles tables, nouvelles clés .env).
 
 ---
 
+## 19. Modernisation UI — HTMX + Alpine.js + Flowbite
+
+### Contexte et motivation
+
+Le panel utilise du JS vanilla avec rechargements de pages complets sur chaque action (save settings, test webhook, créer événement, etc.). L'objectif est de rendre l'UI plus réactive sans introduire un framework lourd (React/Vue) qui nécessiterait un build step, une configuration webpack, et romprait la simplicité du stack Flask/Jinja2.
+
+**Deux phases séquentielles** :
+
+| Phase | Librairies | Durée estimée | Bump version |
+|---|---|---|---|
+| 1 | HTMX + Alpine.js | 3–5 jours | MINOR (ex: 1.9.0) |
+| 2 | Flowbite (Tailwind CSS) | 3–4 semaines | MAJOR (v2.0.0) |
+
+---
+
+### Phase 1 — HTMX + Alpine.js
+
+#### Objectif
+
+- Supprimer les rechargements de page complets sur les actions CRUD courantes
+- Remplacer les flash messages Flask (`{{ get_flashed_messages() }}`) par des toasts in-page non-bloquants
+- Nettoyer les `onclick` inline et les états JS ad-hoc avec Alpine.js `x-data`
+- **Sans build step, sans npm, sans webpack** — uniquement CDN, compatible tel quel avec Jinja2
+
+#### Librairies et versions
+
+```html
+<!-- Dans app/templates/base.html, avant </head> -->
+<script src="https://unpkg.com/htmx.org@1.9.12" integrity="sha384-..." crossorigin="anonymous"></script>
+<script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+```
+
+- **HTMX 1.9.x** (LTS stable, compatible Flask sans configuration)
+- **Alpine.js 3.x** (via `defer` pour que `x-data` soit résolu après le DOM)
+- Pas de dépendance `requirements.txt` côté Python — CDN uniquement
+
+#### Gestion CSRF avec HTMX
+
+HTMX envoie ses requêtes via `fetch()`, pas via un formulaire HTML standard. Flask-SeaSurf/Flask-WTF valide le token CSRF sur chaque POST. Il faut donc injecter le token dans tous les headers HTMX automatiquement.
+
+**Solution : meta tag + `hx-headers` global dans `<body>`**
+
+```html
+<!-- Dans base.html, dans <head> -->
+<meta name="csrf-token" content="{{ csrf_token() }}">
+
+<!-- Dans base.html, sur le <body> (propagé à tous les enfants HTMX) -->
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token() }}"}'>
+```
+
+Côté Flask, vérifier que Flask-SeaSurf accepte le header `X-CSRFToken` (par défaut oui si `CSRF_HEADER_NAME = "X-CSRFToken"` dans `config.py`).
+
+#### Content Security Policy (CSP)
+
+Si des headers CSP sont configurés (nginx reverse proxy ou Flask-Talisman), ajouter les CDN dans `script-src` :
+
+```
+script-src 'self' https://unpkg.com;
+```
+
+Le projet n'a pas de CSP Flask actif au 2026-06-29 — à garder en tête si un utilisateur rapporte des erreurs de console liées à CSP.
+
+#### Pattern : Partial Templates
+
+HTMX remplace un fragment HTML dans la page (via `hx-target` + `hx-swap`) plutôt que de naviguer. Flask doit retourner soit :
+
+- La page complète (requête normale → `render_template("page.html", ...)`)
+- Un fragment HTML (requête HTMX → `render_template("_partials/fragment.html", ...)`)
+
+**Pattern de détection dans Flask :**
+
+```python
+from flask import request, render_template
+
+def is_htmx():
+    return request.headers.get("HX-Request") == "true"
+
+# Dans la route :
+@admin_bp.route("/settings", methods=["GET", "POST"])
+@login_required
+@admin_required
+def settings():
+    # ... logique métier ...
+    if is_htmx():
+        return render_template("_partials/settings_toast.html", success=True)
+    return render_template("settings.html", ...)
+```
+
+**Convention de nommage :**
+- Les partials vivent dans `app/templates/_partials/`
+- Préfixés `_` pour signifier qu'ils ne sont jamais rendus directement (jamais de route qui retourne uniquement un partial sur une requête GET normale)
+
+#### Système de Toasts (remplacement des flash messages)
+
+**Problème actuel** : les flash messages Flask apparaissent en haut de page après rechargement. L'utilisateur perd son scroll. Pas de feedback visuel immédiat.
+
+**Solution : Zone toast persistante + HTMX `hx-swap="afterbegin"`**
+
+```html
+<!-- Dans base.html, juste après <body> -->
+<div id="toast-zone" 
+     aria-live="polite" 
+     style="position:fixed;top:1.5rem;right:1.5rem;z-index:9999;display:flex;flex-direction:column;gap:.5rem;">
+</div>
+```
+
+```html
+<!-- app/templates/_partials/toast.html -->
+<div x-data="{ show: true }" 
+     x-show="show" 
+     x-init="setTimeout(() => show = false, 4000)"
+     x-transition:leave="transition ease-in duration-300"
+     x-transition:leave-start="opacity-100 translate-y-0"
+     x-transition:leave-end="opacity-0 -translate-y-2"
+     class="toast toast-{{ type }}"
+     role="alert">
+  <span class="toast-icon">{{ icon }}</span>
+  <span>{{ message }}</span>
+  <button @click="show = false" class="toast-close" aria-label="Fermer">✕</button>
+</div>
+```
+
+```css
+/* À ajouter dans main.css */
+.toast              { display:flex; align-items:center; gap:.75rem; padding:.75rem 1.25rem;
+                      border-radius:.5rem; min-width:280px; max-width:420px;
+                      box-shadow:0 4px 12px rgba(0,0,0,.4); font-size:.9rem; }
+.toast-success      { background:rgba(16,185,129,.15); border:1px solid #34d399; color:#34d399; }
+.toast-error        { background:rgba(239,68,68,.15);  border:1px solid #f87171; color:#f87171; }
+.toast-info         { background:rgba(14,165,233,.15); border:1px solid #38bdf8; color:#38bdf8; }
+.toast-close        { margin-left:auto; background:none; border:none; cursor:pointer;
+                      color:inherit; opacity:.7; font-size:1rem; }
+```
+
+Les routes Flask retournent le partial `_partials/toast.html` avec `type=success|error|info` + `message` + `icon`.
+
+HTMX côté template : `hx-target="#toast-zone" hx-swap="afterbegin"` — les toasts s'empilent en haut.
+
+#### Implémentation page par page
+
+##### Page Settings (`admin/settings.html`)
+
+**Avant** : `<form method="POST">` → rechargement complet → flash message en haut.
+
+**Après** :
+```html
+<form hx-post="{{ url_for('admin.settings') }}"
+      hx-target="#toast-zone"
+      hx-swap="afterbegin"
+      hx-indicator="#settings-spinner">
+  <!-- champs inchangés -->
+  <div id="settings-spinner" class="htmx-indicator">Sauvegarde...</div>
+  <button type="submit" class="btn btn-primary">{{ _('Sauvegarder') }}</button>
+</form>
+```
+
+Route Flask : si `is_htmx()` → retourner `_partials/toast.html`. Les flash messages Flask existants sont conservés en fallback (si JS désactivé, la page se recharge normalement et le flash apparaît).
+
+**Indicateur de chargement** :
+```css
+.htmx-indicator        { display: none; }
+.htmx-request .htmx-indicator { display: inline-flex; }
+```
+
+##### Page Events (`admin/events.html`)
+
+**Création événement** :
+```html
+<form hx-post="{{ url_for('admin.create_event') }}"
+      hx-target="#events-list"
+      hx-swap="afterbegin"
+      hx-on::after-request="this.reset()">
+  <!-- champs formulaire -->
+</form>
+
+<div id="events-list">
+  {% for event in events %}
+    {% include "_partials/event_row.html" %}
+  {% endfor %}
+</div>
+```
+
+La route `create_event` retourne le partial `_partials/event_row.html` avec le nouvel événement. La liste se met à jour sans rechargement.
+
+**Suppression événement** :
+```html
+<!-- Dans _partials/event_row.html -->
+<div id="event-row-{{ event.id }}" class="event-row">
+  <!-- ... -->
+  <button hx-delete="{{ url_for('admin.delete_event', id=event.id) }}"
+          hx-target="#event-row-{{ event.id }}"
+          hx-swap="outerHTML"
+          hx-confirm="{{ _('Supprimer cet événement ?') }}">
+    {{ _('Supprimer') }}
+  </button>
+</div>
+```
+
+La route `delete_event` retourne une string vide `""` → HTMX remplace le `div` par rien (le retire du DOM).
+
+##### Page Config Serveur (`admin/server_config.html`)
+
+```html
+<form hx-post="{{ url_for('admin.server_config') }}"
+      hx-target="#toast-zone"
+      hx-swap="afterbegin">
+  <!-- champs inchangés -->
+</form>
+```
+
+Le filtre de voitures (Alpine.js + HTMX) :
+
+```html
+<div x-data="{ search: '', activeFilters: new Set() }">
+  <input type="text" x-model="search" placeholder="{{ _('Rechercher...') }}">
+  
+  <template x-for="car in filteredCars" :key="car.slug">
+    <!-- ligne voiture -->
+  </template>
+</div>
+```
+
+La logique `filterCars()` existante dans `app.js` peut être progressivement migrée vers `x-data` Alpine.js — voir section "Migration JS inline".
+
+##### Page Véhicules (`admin/vehicles.html`)
+
+**Upload d'image avec preview immédiate** :
+```html
+<div x-data="{ preview: null }">
+  <input type="file" accept="image/*"
+         @change="preview = URL.createObjectURL($event.target.files[0])"
+         name="image">
+  <img x-show="preview" :src="preview" class="veh-img-preview" alt="preview">
+</div>
+```
+
+**Sync DB** (bouton "Synchroniser les voitures") :
+```html
+<button hx-post="{{ url_for('admin.sync_vehicles') }}"
+        hx-target="#toast-zone"
+        hx-swap="afterbegin"
+        hx-indicator="#sync-spinner">
+  {{ _('Synchroniser') }}
+  <span id="sync-spinner" class="htmx-indicator">...</span>
+</button>
+```
+
+##### Page Administration (`admin/admin.html`)
+
+**Test email et webhook Discord** :
+```html
+<button hx-post="{{ url_for('admin.test_email') }}"
+        hx-target="#toast-zone"
+        hx-swap="afterbegin">
+  {{ _('Envoyer email de test') }}
+</button>
+
+<button hx-post="{{ url_for('admin.test_discord') }}"
+        hx-target="#toast-zone"
+        hx-swap="afterbegin">
+  {{ _('Tester le webhook') }}
+</button>
+```
+
+Les routes `test_email` et `test_discord` retournent `_partials/toast.html` avec le résultat (succès ou erreur).
+
+#### Migration JS inline → Alpine.js
+
+Objectif : éliminer les `onclick="monModal()"` et les variables globales JS en faveur de composants Alpine.js auto-contenus.
+
+**Pattern modale de confirmation** :
+
+```html
+<!-- Avant -->
+<button onclick="showDeleteModal({{ event.id }})">Supprimer</button>
+<div id="delete-modal" style="display:none">...</div>
+<script>function showDeleteModal(id){...}</script>
+
+<!-- Après -->
+<div x-data="{ open: false, targetId: null }">
+  <button @click="open = true; targetId = {{ event.id }}">{{ _('Supprimer') }}</button>
+  
+  <div x-show="open" x-transition class="modal-backdrop" @click.self="open = false">
+    <div class="modal">
+      <p>{{ _('Confirmer la suppression ?') }}</p>
+      <button @click="open = false">{{ _('Annuler') }}</button>
+      <button hx-delete="`/admin/events/${targetId}`"
+              hx-target="`#event-row-${targetId}`"
+              hx-swap="outerHTML"
+              @click="open = false">
+        {{ _('Confirmer') }}
+      </button>
+    </div>
+  </div>
+</div>
+```
+
+**Inventaire des JS à migrer (priorité) :**
+
+| Fichier | Comportement actuel | Migration Alpine |
+|---|---|---|
+| `admin.html` | Toggle sections | `x-show` + `x-data="{ section: 'users' }"` |
+| `server_config.html` | `filterCars()` inline | `x-data` avec computed filteredCars |
+| `events.html` | Modales supprimer/éditer | `x-data="{ open:false }"` |
+| `admin/admin.html` | Spinner sur test boutons | `x-data="{ loading: false }"` |
+
+**Ce qui reste en JS vanilla** (ne pas migrer) :
+- `app.js` : polling fetch `/api/timing`, WebSocket live, leaderboard — logique temps réel, Alpine ne convient pas
+- `app.js` : `filterCars()` — déjà propre, migrer uniquement si le gain est réel
+- Les charts Chart.js dans results/leaderboard — pas de gain à wraper avec Alpine
+
+#### Structure de fichiers après Phase 1
+
+```
+app/
+├── templates/
+│   ├── base.html                  ← CDN HTMX + Alpine, hx-headers CSRF, #toast-zone
+│   ├── _partials/                 ← NOUVEAU dossier
+│   │   ├── toast.html             ← Fragment toast (type, message, icon)
+│   │   ├── event_row.html         ← Fragment ligne événement
+│   │   ├── vehicle_row.html       ← Fragment ligne véhicule
+│   │   └── ...
+│   ├── admin/
+│   │   ├── settings.html          ← hx-post form
+│   │   ├── events.html            ← hx-post create + hx-delete
+│   │   ├── server_config.html     ← hx-post + Alpine filter
+│   │   ├── vehicles.html          ← hx-post sync + Alpine preview
+│   │   └── admin.html             ← hx-post test buttons
+│   └── ...
+├── routes/
+│   └── admin.py                   ← `is_htmx()` helper + routes retournant partials
+└── static/
+    ├── css/main.css               ← + .toast-* + .htmx-indicator
+    └── js/app.js                  ← inchangé (polling, WebSocket)
+```
+
+#### Compatibilité JS désactivé (graceful degradation)
+
+HTMX et Alpine.js requièrent JavaScript. Si JS est désactivé :
+- Les formulaires `hx-post` tombent en fallback HTML standard (le navigateur fait un POST normal)
+- Les flash messages Flask apparaissent normalement (ne pas supprimer le bloc `get_flashed_messages` de `base.html`)
+- Alpine.js `x-show` masque des éléments par défaut — ajouter `style="display:none"` sur les éléments cachés initialement pour éviter le FOUC (Flash Of Unstyled Content) si Alpine tarde à charger
+
+#### Checklist Phase 1
+
+- [ ] CDN HTMX + Alpine.js dans `base.html` (avec `defer` pour Alpine)
+- [ ] `hx-headers` CSRF sur `<body>` + meta tag `csrf-token`
+- [ ] Dossier `_partials/` créé avec `toast.html`
+- [ ] Zone `#toast-zone` dans `base.html`
+- [ ] CSS `.toast-*` + `.htmx-indicator` dans `main.css`
+- [ ] Helper `is_htmx()` dans `admin.py` (ou `utils.py`)
+- [ ] Page Settings : form → hx-post → toast
+- [ ] Page Events : create → hx-post → afterbegin, delete → hx-delete → outerHTML vide
+- [ ] Page Config serveur : form → hx-post → toast
+- [ ] Page Véhicules : sync → hx-post → toast, upload → Alpine preview
+- [ ] Page Administration : test email/webhook → hx-post → toast
+- [ ] Modales de confirmation → Alpine `x-data="{ open:false }"`
+- [ ] Flash messages Flask conservés en fallback (pas supprimés)
+- [ ] Tests visuels sur chaque page modifiée (rebuild + navigateur)
+- [ ] Traductions des nouveaux textes toast (pas de texte en dur)
+- [ ] `.mo` recompilés
+
+---
+
+### Phase 2 — Flowbite / Tailwind CSS (milestone v2.0)
+
+#### Objectif
+
+Refonte visuelle complète avec Tailwind CSS + composants Flowbite. Design plus moderne, meilleure cohérence entre les composants, support natif des modales, dropdowns, tooltips, accordéons sans JS custom.
+
+#### Incompatibilité avec l'existant
+
+**Tailwind CSS est fondamentalement incompatible avec `main.css` actuel.** Les deux approches sont opposées :
+
+| Approche actuelle (`main.css`) | Approche Tailwind |
+|---|---|
+| Classes sémantiques : `.settings-card`, `.btn-primary` | Classes utilitaires : `rounded-lg p-4 shadow-md bg-gray-800` |
+| CSS centralisé avec variables CSS (`--accent`, `--dim`) | Fichier `tailwind.config.js` + `@apply` |
+| 1 fichier CSS maintenu manuellement | Génération à la build à partir des templates scannés |
+| Pas de build step | Require `npx tailwindcss build` ou CDN Play CDN (limité) |
+
+Il n'est **pas possible** de mixer les deux de façon propre. Le CSS Tailwind CDN (Play CDN) existe mais est :
+- Non optimisé (charge l'intégralité de Tailwind)
+- Déconseillé en production par Tailwind lui-même
+- Susceptible de conflits avec les classes CSS existantes
+
+#### Approche recommandée : remplacement complet (branche dédiée)
+
+Deux approches envisageables :
+
+**Option A — Remplacement complet (recommandé)**
+- Branche `feat/v2-tailwind`
+- Réécriture de tous les templates (environ 25–30 templates)
+- Suppression de `main.css` (ou conservation d'un fichier minimal de reset)
+- Migration des variables CSS → tokens Tailwind dans `tailwind.config.js`
+- Ajout du build step (PostCSS + tailwind CLI ou Vite)
+- Durée estimée : 3–4 semaines
+- Risque : élevé (toutes les pages impactées simultanément)
+
+**Option B — Migration progressive page par page** (déconseillé)
+- Garder `main.css` + ajouter Tailwind CDN en parallèle
+- Migrer chaque page indépendamment
+- Problème : double chargement CSS, conflits de classes, incohérence visuelle pendant la transition
+- Durée estimée : 6–8 semaines (coût de la dette de transition)
+
+**Décision : Option A, milestone v2.0.0**
+
+#### Scope Flowbite
+
+Composants Flowbite utilisés pour remplacer le JS custom :
+
+| Composant Flowbite | Remplace |
+|---|---|
+| `Modal` | Les modales de confirmation (supprimer, réinitialiser) |
+| `Toast` | Le système de toasts Phase 1 |
+| `Dropdown` | Navbar dropdowns (Résultats, Config) |
+| `Tabs` | Onglets page Serveur (Status, Config, Logs) |
+| `Table` | Tableaux Events, Résultats, Leaderboard |
+| `Accordion` | Section Settings (accordéon par catégorie) |
+| `Alert` | Remplacement des flash messages |
+| `Spinner` | Indicateurs de chargement HTMX |
+| `Badge` | Badges véhicules (Road/Race, Modern/Vintage, ICE/EV) |
+| `Datepicker` | Sélecteur de date dans Events |
+
+#### Stack v2.0
+
+```
+Frontend stack cible :
+├── Tailwind CSS 3.x         (utility classes)
+├── Flowbite 2.x             (composants Tailwind)
+├── Alpine.js 3.x            (JS déclaratif — conservé de Phase 1)
+├── HTMX 1.9.x               (requêtes partielles — conservé de Phase 1)
+└── Build step               (npx tailwindcss --input app/static/css/input.css
+                               --output app/static/css/main.css --watch)
+```
+
+Le build step peut être intégré dans le `Dockerfile.panel` (run au build Docker) pour que les utilisateurs n'aient pas à installer Node.js. Exemple :
+
+```dockerfile
+# Dans Dockerfile.panel
+FROM node:20-alpine AS css-builder
+WORKDIR /build
+COPY package.json tailwind.config.js ./
+COPY app/templates ./app/templates
+RUN npm ci && npx tailwindcss -i app/static/css/input.css -o app/static/css/main.css --minify
+
+FROM python:3.11-slim
+# ... reste du Dockerfile
+COPY --from=css-builder /build/app/static/css/main.css /panel/app/static/css/main.css
+```
+
+#### Variables CSS → Tokens Tailwind
+
+Les variables CSS actuelles (`--accent`, `--dim`, `--surface`, `--surface2`) deviennent des couleurs Tailwind dans `tailwind.config.js` :
+
+```js
+// tailwind.config.js
+module.exports = {
+  content: ["./app/templates/**/*.html", "./app/static/js/**/*.js"],
+  theme: {
+    extend: {
+      colors: {
+        accent:   "#7c6ef7",   // --accent
+        dim:      "#9ca3af",   // --dim
+        surface:  "#111827",   // --surface (fond principal)
+        surface2: "#1f2937",   // --surface2 (cartes)
+        danger:   "#ef4444",
+      }
+    }
+  },
+  plugins: [require("flowbite/plugin")]
+}
+```
+
+#### Estimation et risques
+
+| Critère | Estimation |
+|---|---|
+| Durée brute développement | 3–4 semaines |
+| Pages à réécrire | ~28 templates |
+| Risque de régression | Élevé (toutes les pages touchées) |
+| Impact beta testeurs | Breaking (rebuild obligatoire, CSS entièrement nouveau) |
+| Bénéfice UX | Très élevé (composants modernes, cohérence accrue) |
+| Maintenabilité post-migration | Améliorée (moins de CSS custom, composants documentés) |
+
+**Prérequis avant de démarrer Phase 2 :**
+- Phase 1 terminée et stable en production
+- Branch `feat/v2-tailwind` créée depuis `main` après la release de Phase 1
+- Snapshot des screenshots UI actuels (pour comparaison avant/après)
+- Tests manuels exhaustifs sur un serveur de staging avant merge dans `main`
+
+#### Checklist Phase 2
+
+- [ ] Branche `feat/v2-tailwind` créée depuis `main` post-Phase 1
+- [ ] `package.json` + `tailwind.config.js` + `flowbite` configurés
+- [ ] Build step Tailwind intégré dans `Dockerfile.panel` (multi-stage build)
+- [ ] `app/static/css/input.css` créé (directives `@tailwind base/components/utilities`)
+- [ ] Mapping variables CSS → tokens Tailwind dans `tailwind.config.js`
+- [ ] `base.html` réécrit (layout, navbar, sidebar en classes Tailwind/Flowbite)
+- [ ] Toutes les pages admin réécrites (une par une, testées visuellement)
+- [ ] Toutes les pages publiques réécrites
+- [ ] `main.css` supprimé (ou réduit à un reset minimal)
+- [ ] Flash messages → composants `Alert` Flowbite
+- [ ] Modales → composants `Modal` Flowbite (Alpine.js conservé pour le state)
+- [ ] Tableaux → composants `Table` Flowbite
+- [ ] Onglets page Serveur → composants `Tabs` Flowbite
+- [ ] Badges véhicules → composants `Badge` Flowbite (couleurs conservées)
+- [ ] Traductions vérifiées (aucun texte en dur dans les templates réécrits)
+- [ ] `.mo` recompilés
+- [ ] Tests visuels complets sur toutes les pages (rebuild + navigateur)
+- [ ] CHANGELOG.md + VERSION bumped à `2.0.0`
+- [ ] README mis à jour (nouveaux screenshots, instructions build)
+
+---
+
 ## 18. TODO — Points en suspens
 
 ### Notifications Discord

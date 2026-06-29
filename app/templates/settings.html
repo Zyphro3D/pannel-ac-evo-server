@@ -2,7 +2,10 @@
 {% block title %}{{ _('Paramètres') }} — {{ panel_title }}{% endblock %}
 
 {% macro env_form(section_id, section_label, keys, title=None) %}
-<form method="post" action="{{ url_for('admin.settings', tab=section_id) }}" class="settings-card settings-card-form">
+<form method="post" action="{{ url_for('admin.settings', tab=section_id) }}"
+      hx-post="{{ url_for('admin.settings', tab=section_id) }}"
+      hx-target="#toast-zone" hx-swap="afterbegin"
+      class="settings-card settings-card-form">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   <input type="hidden" name="_tab" value="{{ section_id }}">
   <div class="settings-card-head">
@@ -89,7 +92,10 @@
 
       <section class="settings-dashboard-grid">
         {# Identité visuelle #}
-        <form method="post" action="{{ url_for('admin.settings', tab='panel') }}" class="settings-card settings-card-form">
+        <form method="post" action="{{ url_for('admin.settings', tab='panel') }}"
+              hx-post="{{ url_for('admin.settings', tab='panel') }}"
+              hx-target="#toast-zone" hx-swap="afterbegin"
+              class="settings-card settings-card-form">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="_tab" value="panel">
           <div class="settings-card-head"><h2>{{ _('Identité visuelle') }}</h2></div>
@@ -109,7 +115,10 @@
         </form>
 
         {# Langue & Fuseau #}
-        <form method="post" action="{{ url_for('admin.settings', tab='panel') }}" class="settings-card settings-card-form">
+        <form method="post" action="{{ url_for('admin.settings', tab='panel') }}"
+              hx-post="{{ url_for('admin.settings', tab='panel') }}"
+              hx-target="#toast-zone" hx-swap="afterbegin"
+              class="settings-card settings-card-form">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="_tab" value="panel">
           <div class="settings-card-head"><h2>{{ _('Langue & Fuseau') }}</h2></div>
@@ -129,7 +138,10 @@
         </form>
 
         {# Sécurité #}
-        <form method="post" action="{{ url_for('admin.settings', tab='panel') }}" class="settings-card settings-card-form">
+        <form method="post" action="{{ url_for('admin.settings', tab='panel') }}"
+              hx-post="{{ url_for('admin.settings', tab='panel') }}"
+              hx-target="#toast-zone" hx-swap="afterbegin"
+              class="settings-card settings-card-form">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="_tab" value="panel">
           <div class="settings-card-head"><h2>{{ _('Sécurité') }}</h2></div>
@@ -206,7 +218,10 @@
       {# ── Paramètres spécifiques au serveur sélectionné (DB) ── #}
       {% if current_srv %}
       <section class="settings-dashboard-grid">
-        <form method="post" action="{{ url_for('admin.settings', tab='server') }}" class="settings-card settings-card-full settings-card-form">
+        <form method="post" action="{{ url_for('admin.settings', tab='server') }}"
+              hx-post="{{ url_for('admin.settings', tab='server') }}"
+              hx-target="#toast-zone" hx-swap="afterbegin"
+              class="settings-card settings-card-full settings-card-form">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="_tab" value="server">
           <input type="hidden" name="_server_form" value="db">
@@ -301,7 +316,10 @@
 
       {# Infrastructure ACE #}
       <section class="settings-dashboard-grid" style="margin-top:1.5rem">
-        <form method="post" action="{{ url_for('admin.settings', tab='server') }}" class="settings-card settings-card-form">
+        <form method="post" action="{{ url_for('admin.settings', tab='server') }}"
+              hx-post="{{ url_for('admin.settings', tab='server') }}"
+              hx-target="#toast-zone" hx-swap="afterbegin"
+              class="settings-card settings-card-form">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="_tab" value="server">
           <div class="settings-card-head"><h2>{{ _('Infrastructure ACE EVO') }}</h2></div>
@@ -319,7 +337,10 @@
           <button type="submit" class="btn btn-primary settings-save-btn">{{ _('Enregistrer les modifications') }}</button>
         </form>
 
-        <form method="post" action="{{ url_for('admin.settings', tab='server') }}" class="settings-card settings-card-form">
+        <form method="post" action="{{ url_for('admin.settings', tab='server') }}"
+              hx-post="{{ url_for('admin.settings', tab='server') }}"
+              hx-target="#toast-zone" hx-swap="afterbegin"
+              class="settings-card settings-card-form">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="_tab" value="server">
           <div class="settings-card-head"><h2>{{ _('Compte Steam (SteamCMD)') }}</h2></div>
@@ -537,7 +558,10 @@
 
       {# Discord — Webhooks + Mentions #}
       <section class="settings-dashboard-grid">
-        <form method="post" action="{{ url_for('admin.settings', tab='notifications') }}" class="settings-card settings-card-form">
+        <form method="post" action="{{ url_for('admin.settings', tab='notifications') }}"
+              hx-post="{{ url_for('admin.settings', tab='notifications') }}"
+              hx-target="#toast-zone" hx-swap="afterbegin"
+              class="settings-card settings-card-form">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="_tab" value="notifications">
           <div class="settings-card-head"><h2>Discord — Webhooks</h2></div>
@@ -567,7 +591,10 @@
           <button type="submit" class="btn btn-primary settings-save-btn">{{ _('Enregistrer les modifications') }}</button>
         </form>
 
-        <form method="post" action="{{ url_for('admin.settings', tab='notifications') }}" class="settings-card settings-card-form">
+        <form method="post" action="{{ url_for('admin.settings', tab='notifications') }}"
+              hx-post="{{ url_for('admin.settings', tab='notifications') }}"
+              hx-target="#toast-zone" hx-swap="afterbegin"
+              class="settings-card settings-card-form">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="_tab" value="notifications">
           <div class="settings-card-head"><h2>Discord — {{ _('Mentions') }}</h2></div>
@@ -593,7 +620,10 @@
 
       {# Discord — Messages #}
       <section class="settings-dashboard-grid" style="margin-top:1.5rem">
-        <form method="post" action="{{ url_for('admin.settings', tab='notifications') }}" class="settings-card settings-card-form settings-card-full">
+        <form method="post" action="{{ url_for('admin.settings', tab='notifications') }}"
+              hx-post="{{ url_for('admin.settings', tab='notifications') }}"
+              hx-target="#toast-zone" hx-swap="afterbegin"
+              class="settings-card settings-card-form settings-card-full">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="_tab" value="notifications">
           <div class="settings-card-head"><h2>Discord — {{ _('Messages de notification') }}</h2></div>
@@ -649,7 +679,10 @@
 
       {# Mail + Bot #}
       <section class="settings-dashboard-grid" style="margin-top:1.5rem">
-        <form method="post" action="{{ url_for('admin.settings', tab='notifications') }}" class="settings-card settings-card-form">
+        <form method="post" action="{{ url_for('admin.settings', tab='notifications') }}"
+              hx-post="{{ url_for('admin.settings', tab='notifications') }}"
+              hx-target="#toast-zone" hx-swap="afterbegin"
+              class="settings-card settings-card-form">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="_tab" value="notifications">
           <div class="settings-card-head"><h2>{{ _('Mail (SMTP)') }}</h2></div>
@@ -671,7 +704,10 @@
           <button type="submit" class="btn btn-primary settings-save-btn">{{ _('Enregistrer les modifications') }}</button>
         </form>
 
-        <form method="post" action="{{ url_for('admin.settings', tab='notifications') }}" class="settings-card settings-card-form">
+        <form method="post" action="{{ url_for('admin.settings', tab='notifications') }}"
+              hx-post="{{ url_for('admin.settings', tab='notifications') }}"
+              hx-target="#toast-zone" hx-swap="afterbegin"
+              class="settings-card settings-card-form">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="_tab" value="notifications">
           <div class="settings-card-head"><h2>{{ _('Bot TCP') }}</h2></div>
@@ -724,12 +760,25 @@
       {# ── COMPTES ── Gestion des administrateurs ──────────────────────────── #}
       {# ═══════════════════════════════════════════════════════════════════════ #}
       {% elif tab in ['accounts', 'users', 'events', 'live'] %}
+      <div x-data="{
+        showCreate: false,
+        showEdit: false,
+        editId: null,
+        editUsername: '',
+        editDisplayName: '',
+        editRole: 'admin',
+        openEdit(id, u, dn, role) {
+          this.editId = id; this.editUsername = u;
+          this.editDisplayName = dn; this.editRole = role;
+          this.showEdit = true;
+        }
+      }">
 
       <section class="settings-dashboard-grid">
         <div class="settings-card settings-card-wide">
           <div class="settings-card-head">
             <h2>{{ _('Comptes administrateurs') }}</h2>
-            <button class="btn btn-primary btn-sm" onclick="openAccountModal()">+ {{ _('Ajouter') }}</button>
+            <button class="btn btn-primary btn-sm" @click="showCreate = true">+ {{ _('Ajouter') }}</button>
           </div>
           <table class="settings-table">
             <thead>
@@ -759,7 +808,7 @@
                 </td>
                 <td style="font-size:0.82rem;color:var(--dim)">{{ acc.last_login.strftime('%d/%m/%Y %H:%M') if acc.last_login else '—' }}</td>
                 <td style="display:flex;gap:6px;justify-content:flex-end">
-                  <button class="btn btn-secondary btn-sm" onclick="openEditModal({{ acc.id }}, '{{ acc.username }}', '{{ acc.display_name or '' }}', '{{ acc.role }}')">{{ _('Modifier') }}</button>
+                  <button class="btn btn-secondary btn-sm" @click="openEdit({{ acc.id }}, {{ acc.username | tojson }}, {{ (acc.display_name or '') | tojson }}, {{ acc.role | tojson }})">{{ _('Modifier') }}</button>
                   {% if acc.get_id() != current_user.get_id() %}
                   <button class="btn btn-ghost btn-sm" id="acc-toggle-{{ acc.id }}" onclick="toggleAccount({{ acc.id }}, {{ 'true' if acc.is_active else 'false' }})">{{ _('Désactiver') if acc.is_active else _('Activer') }}</button>
                   <form method="post" action="{{ url_for('admin.account_delete', account_id=acc.id) }}" onsubmit="return confirm('{{ _('Supprimer ce compte ?') }}')">
@@ -806,10 +855,10 @@
       {% endif %}
 
       {# Modals comptes #}
-      <div class="modal-overlay" id="modal-account-create" style="display:none">
-        <div class="modal-box">
+      <div class="modal-overlay" x-show="showCreate" x-transition @click.self="showCreate = false" style="display:none">
+        <div class="modal-box" @click.stop>
           <h3>+ {{ _('Nouveau compte administrateur') }}</h3>
-          <form method="post" action="{{ url_for('admin.account_create') }}" id="form-account-create">
+          <form method="post" action="{{ url_for('admin.account_create') }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="form-group" style="margin-top:14px">
               <label>{{ _('Identifiant') }} *</label>
@@ -831,24 +880,24 @@
               </select>
             </div>
             <div class="modal-actions">
-              <button type="button" class="btn btn-secondary" onclick="closeAccountModal()">{{ _('Annuler') }}</button>
+              <button type="button" class="btn btn-secondary" @click="showCreate = false">{{ _('Annuler') }}</button>
               <button type="submit" class="btn btn-primary">{{ _('Créer') }}</button>
             </div>
           </form>
         </div>
       </div>
-      <div class="modal-overlay" id="modal-account-edit" style="display:none">
-        <div class="modal-box">
+      <div class="modal-overlay" x-show="showEdit" x-transition @click.self="showEdit = false" style="display:none">
+        <div class="modal-box" @click.stop>
           <h3>✎ {{ _('Modifier le compte') }}</h3>
-          <form method="post" id="form-account-edit" action="">
+          <form method="post" :action="'/accounts/' + editId + '/edit'">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="form-group" style="margin-top:14px">
               <label>{{ _('Identifiant') }}</label>
-              <input class="form-control" type="text" name="username" id="edit-username" required autocomplete="off">
+              <input class="form-control" type="text" name="username" x-model="editUsername" required autocomplete="off">
             </div>
             <div class="form-group">
               <label>{{ _('Nom affiché') }}</label>
-              <input class="form-control" type="text" name="display_name" id="edit-display_name" autocomplete="off">
+              <input class="form-control" type="text" name="display_name" x-model="editDisplayName" autocomplete="off">
             </div>
             <div class="form-group">
               <label>{{ _('Nouveau mot de passe') }} <span style="font-size:0.75rem;color:var(--dim)">({{ _('laisser vide pour ne pas changer') }})</span></label>
@@ -856,19 +905,20 @@
             </div>
             <div class="form-group">
               <label>{{ _('Rôle') }}</label>
-              <select class="form-control" name="role" id="edit-role">
+              <select class="form-control" name="role" x-model="editRole">
                 <option value="admin">{{ _('Admin') }}</option>
                 <option value="superadmin">{{ _('Super Admin') }}</option>
               </select>
             </div>
             <div class="modal-actions">
-              <button type="button" class="btn btn-secondary" onclick="closeEditModal()">{{ _('Annuler') }}</button>
+              <button type="button" class="btn btn-secondary" @click="showEdit = false">{{ _('Annuler') }}</button>
               <button type="submit" class="btn btn-primary">{{ _('Enregistrer') }}</button>
             </div>
           </form>
         </div>
       </div>
 
+      </div>{# /x-data accounts #}
       {% endif %}
     </main>
   </div>
@@ -878,22 +928,6 @@
 {% block scripts %}
 {% if tab == 'accounts' %}
 <script nonce="{{ csp_nonce }}">
-function openAccountModal() {
-  document.getElementById('modal-account-create').style.display = 'flex';
-}
-function closeAccountModal() {
-  document.getElementById('modal-account-create').style.display = 'none';
-}
-function openEditModal(id, username, displayName, role) {
-  document.getElementById('edit-username').value     = username;
-  document.getElementById('edit-display_name').value = displayName;
-  document.getElementById('edit-role').value         = role;
-  document.getElementById('form-account-edit').action = '/accounts/' + id + '/edit';
-  document.getElementById('modal-account-edit').style.display = 'flex';
-}
-function closeEditModal() {
-  document.getElementById('modal-account-edit').style.display = 'none';
-}
 async function toggleAccount(id, isActive) {
   const csrf = document.querySelector('meta[name=csrf-token]')?.content || '';
   const res  = await fetch('/accounts/' + id + '/toggle', {
@@ -910,9 +944,6 @@ async function toggleAccount(id, isActive) {
   btn.textContent   = data.active ? '{{ _("Désactiver") }}' : '{{ _("Activer") }}';
   btn.onclick       = () => toggleAccount(id, data.active);
 }
-document.querySelectorAll('.modal-overlay').forEach(o => {
-  o.addEventListener('click', e => { if (e.target === o) o.style.display = 'none'; });
-});
 </script>
 {% endif %}
 {% if tab == 'media' %}

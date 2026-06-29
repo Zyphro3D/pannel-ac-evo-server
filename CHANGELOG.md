@@ -1,5 +1,52 @@
 # Changelog
 
+### v1.9.0 — 29/06/2026
+
+**Modernisation UI — HTMX + Alpine.js (Phase 1)**
+
+Interface plus réactive sans rechargement de page complet sur les actions courantes.
+
+*Toasts*
+- Système de toasts unifié : toutes les confirmations d'action apparaissent en haut à droite avec auto-dismiss (4,5 s) et bouton fermer, sans perturber le scroll
+- Le `showToast()` JavaScript interne utilise désormais le même système Alpine.js que les toasts HTMX — un seul rendu visuel cohérent partout
+
+*Settings*
+- Tous les formulaires de l'onglet Paramètres (11 formulaires) soumettent en HTMX : aucun rechargement de page, toast immédiat
+
+*Administration*
+- Boutons "Tester l'email" et "Tester le webhook Discord" : retour immédiat par toast sans rechargement
+
+*Événements*
+- Publier / dépublier / terminer un événement : le badge de statut et les boutons se mettent à jour inline dans la ligne du tableau
+- Supprimer un événement : la ligne disparaît avec toast de confirmation simultané (OOB swap)
+
+*Pilotes*
+- Approuver / refuser / supprimer un pilote : la ligne disparaît inline avec toast, sans rechargement de page
+
+*Véhicules*
+- Recherche live par frappe (debounce 350 ms) : la grille se filtre instantanément
+- Retour visuel toast sur l'upload d'image
+
+*Gestion des serveurs*
+- Activer / désactiver un serveur additionnel : le statut et les boutons se mettent à jour inline
+- Supprimer un serveur : la ligne disparaît avec toast
+- Créer un serveur : erreurs de validation retournées par toast, rechargement automatique en cas de succès
+
+*Modales*
+- Modales de création / renommage de config et logs serveur : ouverture/fermeture avec transition Alpine.js (`x-transition`)
+- Modales comptes administrateurs : Alpine.js `x-show` + `x-model` — fini les `style.display` JS
+
+*Indicateurs de chargement*
+- Boutons HTMX pendant une requête : opacité réduite + `cursor: wait` (feedback immédiat)
+
+**Mise à jour**
+```
+git pull
+docker compose up -d --build panel
+```
+
+---
+
 ### v1.8.3 — 28/06/2026
 
 **Badges multi-propriétés sur la page Véhicules**
