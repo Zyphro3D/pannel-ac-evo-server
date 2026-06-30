@@ -43,11 +43,11 @@
         <span class="h-panel-title">{{ srv.name }}</span>
         {% if st.running %}
         <span class="pub-srv-status online">
-          <span class="dot online" style="width:8px;height:8px"></span>{{ _('En direct') }}
+          <span class="dot online"></span>{{ _('En direct') }}
         </span>
         {% else %}
         <span class="pub-srv-status offline">
-          <span class="dot offline" style="width:8px;height:8px"></span>{{ _('Hors ligne') }}
+          <span class="dot offline"></span>{{ _('Hors ligne') }}
         </span>
         {% endif %}
       </div>
@@ -72,7 +72,7 @@
       </div>
       {% else %}
       <div class="pub-srv-title">
-        <div class="pub-srv-circuit-name" style="color:var(--dim);font-size:1.4rem">{{ _('Aucune session en cours.') }}</div>
+        <div class="pub-srv-circuit-name !text-dim !text-[1.4rem]">{{ _('Aucune session en cours.') }}</div>
       </div>
       {% endif %}
     </div>
@@ -93,7 +93,7 @@
         </div>
         {% endif %}
         {% else %}
-        <div class="pub-srv-name" style="color:var(--dim)">{{ _('Serveur hors ligne') }}</div>
+        <div class="pub-srv-name !text-dim">{{ _('Serveur hors ligne') }}</div>
         {% endif %}
       </div>
       <div class="pub-srv-info-side">
@@ -171,9 +171,9 @@
       <span>{{ item.duration }}</span>
     </div>
     {% if my_reg %}
-    <span class="badge badge-{{ my_reg.status }}" style="margin-top:auto;width:fit-content">{{ reg_status_label(my_reg.status) }}</span>
+    <span class="badge badge-{{ my_reg.status }} mt-auto w-fit">{{ reg_status_label(my_reg.status) }}</span>
     {% elif not item.ev.is_public %}
-    <div class="ev-reg" style="max-width:220px;margin-top:auto">
+    <div class="ev-reg max-w-[220px]">
       <div class="ev-reg-row"><span><span class="ev-reg-num">{{ item.confirmed }}</span> / {{ item.ev.max_drivers }} {{ _('Inscrits') }}</span></div>
       <div class="ev-progress"><i style="width:{{ item.fill_pct }}%"></i></div>
     </div>
@@ -209,7 +209,7 @@
         <span>{{ item.duration }}</span>
       </div>
       {% if my_reg %}
-      <span class="badge badge-{{ my_reg.status }}" style="margin-top:auto;width:fit-content;font-size:0.75rem">{{ reg_status_label(my_reg.status) }}</span>
+      <span class="badge badge-{{ my_reg.status }} mt-auto w-fit text-xs">{{ reg_status_label(my_reg.status) }}</span>
       {% elif not item.ev.is_public %}
       <div class="ev-reg">
         <div class="ev-reg-row"><span><span class="ev-reg-num">{{ item.confirmed }}</span> / {{ item.ev.max_drivers }} {{ _('Inscrits') }}</span></div>
@@ -223,7 +223,7 @@
 {% endif %}
 
 {% elif not ongoing %}
-<div class="h-panel" style="margin-bottom:2rem">
+<div class="h-panel mb-8">
   <div class="h-empty">{{ _('Aucun événement à venir.') }}</div>
 </div>
 {% endif %}
