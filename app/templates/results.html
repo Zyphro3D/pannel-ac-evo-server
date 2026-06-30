@@ -83,7 +83,7 @@
           <div class="result-card-footer">{{ p.standings|length }} {{ _('pilote(s)') }}</div>
         </a>
         {% else %}
-        <div class="card p-6 text-center text-dim" style="grid-column:1/-1">
+        <div class="card p-6 text-center text-dim col-span-full">
           {{ _('Aucun résultat disponible pour le moment. Les résultats apparaissent ici à la fin de chaque session.') }}
         </div>
         {% endfor %}
@@ -123,10 +123,10 @@
               {% if g.is_weekend %}Race Weekend{% if g.track %} · {{ g.track }}{% endif %}
               {% else %}{% if g.track %}{{ g.track }}{% else %}{{ _('Session') }}{% endif %}{% endif %}
             </span>
-            <div style="display:flex;gap:4px;align-items:center;flex-shrink:0">
+            <div class="flex items-center gap-1 shrink-0">
               {% set stype_labels = {'practice': _('Practice'), 'qualifying': _('Qualifying'), 'warmup': _('Warmup'), 'race': _('Race')} %}
               {% for stype in ['practice','qualifying','warmup','race'] %}
-                {% if stype in g.types %}<span class="badge badge-info" style="font-size:0.62rem">{{ stype_labels[stype] }}</span>{% endif %}
+                {% if stype in g.types %}<span class="badge badge-info text-[0.62rem]">{{ stype_labels[stype] }}</span>{% endif %}
               {% endfor %}
               {% if g.config_name %}<span class="cfg-chip">{{ g.config_name }}</span>{% endif %}
             </div>
@@ -156,10 +156,10 @@
               </div>
               {% if p.standings|length > 1 %}
               {% set p2 = p.standings[1] %}
-              <div class="result-card-winner" style="margin-top:4px">
-                <span class="result-card-pos" style="color:var(--dim);font-size:0.85rem">2</span>
-                <span class="result-card-nick" style="color:var(--dim)">{{ p2.nickname }}</span>
-                <span class="result-card-time" style="color:var(--dim)">{% if p.is_race %}{{ p2.race_time or p2.best_lap }}{% else %}{{ p2.best_lap }}{% endif %}</span>
+              <div class="result-card-winner mt-1">
+                <span class="result-card-pos text-dim text-sm">2</span>
+                <span class="result-card-nick text-dim">{{ p2.nickname }}</span>
+                <span class="result-card-time text-dim">{% if p.is_race %}{{ p2.race_time or p2.best_lap }}{% else %}{{ p2.best_lap }}{% endif %}</span>
               </div>
               {% endif %}
               {% endif %}

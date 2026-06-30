@@ -4921,19 +4921,7 @@ body::before {
 }
 
 /* ── Table helpers ───────────────────────────────────────────────────────── */
-.td-bold   { font-weight: 600; }
-.td-meta   { font-size: 12px; color: var(--dim); }
-.th-right  { text-align: right; }
 .form-inline { display: inline; }
-.btn-approve { font-size: 12px; color: var(--green); border-color: var(--green); }
-.btn-reject  { font-size: 12px; color: var(--red);   border-color: var(--red); }
-.btn-sm      { font-size: 12px; }
-.card-mb     { margin-bottom: 20px; }
-.count-label { font-size: 13px; color: var(--dim); }
-.actions-end { justify-content: flex-end; }
-.empty-msg   { padding: 8px 20px; }
-.form-group-mt  { margin-top: 4px; }
-.success-hint   { font-size: 12px; color: var(--green); margin-top: 4px; }
 .cars-sel-count { font-size: 12px; font-weight: 400; color: var(--text-muted); }
 
 /* ── Layout helpers ──────────────────────────────────────────────────────── */
@@ -4955,17 +4943,6 @@ body::before {
 }
 
 /* ─── Servers management page ─────────────────────────────────── */
-.servers-table { width:100%; border-collapse:collapse; font-size:.93rem; }
-.servers-table th { text-align:left; padding:.5rem .75rem; border-bottom:1px solid var(--border); color:var(--dim); font-weight:600; }
-.servers-table td { padding:.65rem .75rem; border-bottom:1px solid var(--border,rgba(255,255,255,.08)); vertical-align:middle; }
-.servers-table tbody tr:last-child td { border-bottom:none; }
-.servers-row-disabled td { opacity:.55; }
-.servers-actions { display:flex; gap:.4rem; flex-wrap:wrap; }
-.status-dot { display:inline-block; width:8px; height:8px; border-radius:50%; vertical-align:middle; margin-right:4px; }
-.status-dot-on  { background:#49dc5c; box-shadow:0 0 6px #49dc5c88; }
-.status-dot-off { background:var(--dim); }
-.badge-dim { display:inline-block; font-size:.75rem; padding:.1rem .4rem; border-radius:.25rem; background:rgba(255,255,255,.08); color:var(--dim); margin-left:.35rem; }
-.settings-form-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:1.2rem; }
 
 /* ─── Homepage public — section title ─────────────────────────── */
 .h-section-title {
