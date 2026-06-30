@@ -288,7 +288,7 @@
                 </td>
                 <td class="car-name">{{ car.display_name }}</td>
                 <td class="car-pi">{{ "%.0f"|format(car.performance_indicator) }}</td>
-                <td style="font-size:11px;color:var(--dim)">{{ cats | join(' · ') }}</td>
+                <td class="text-xs text-dim">{{ cats | join(' · ') }}</td>
                 <td><input type="number" class="form-control ef-car-ballast" value="{{ car_cfg.get('ballast', 0) }}" min="0" step="1" style="width:60px"></td>
                 <td><input type="number" class="form-control ef-car-restrictor" value="{{ car_cfg.get('restrictor', 0) }}" min="0" step="1" style="width:60px"></td>
               </tr>

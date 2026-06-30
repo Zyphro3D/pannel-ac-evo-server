@@ -519,7 +519,7 @@ def _register_request_hooks(app):
         response.headers["Referrer-Policy"]        = "strict-origin-when-cross-origin"
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; "
-            f"script-src 'self' 'nonce-{nonce}' https://cdn.jsdelivr.net; "
+            f"script-src 'self' 'nonce-{nonce}' https://cdn.jsdelivr.net 'unsafe-eval'; "
             "style-src 'self' 'unsafe-inline'; "
             "img-src 'self' data: https://cdn.jsdelivr.net; "
             "font-src 'self'; "

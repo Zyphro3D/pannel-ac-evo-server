@@ -745,53 +745,9 @@ textarea.form-control { resize: vertical; min-height: 80px; }
 .simple-table tr:last-child td { border-bottom: none; }
 .simple-table tr:hover td { background: var(--bg-hover); }
 
-/* ─── Badges ─────────────────────────────────────────────────── */
-.badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-size: 1rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-.badge-session   { background: rgba(224,53,53,0.18); color: #f87171; }
-.badge-draft     { background: rgba(100,116,139,0.2); color: #94a3b8; }
-.badge-published  { background: rgba(16,185,129,0.15); color: #34d399; }
-.badge-finished   { background: rgba(59,130,246,0.15); color: #60a5fa; }
-.badge-pending    { background: rgba(245,158,11,0.15); color: #fbbf24; }
-.badge-approved   { background: rgba(16,185,129,0.15); color: #34d399; }
-.badge-confirmed  { background: rgba(16,185,129,0.15); color: #34d399; }
-.badge-rejected   { background: rgba(239,68,68,0.12); color: #f87171; }
+/* ─── Badges (hybride : utilisés dans server.html config cards uniquement) ─── */
 .badge-running    { background: rgba(16,185,129,0.15); color: #34d399; border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 600; }
-
-/* ─── Toast HTMX (zone top-right, injecté par HTMX / Alpine) ──── */
-.toast-htmx {
-  display: flex;
-  align-items: center;
-  gap: .75rem;
-  padding: .7rem 1.1rem;
-  border-radius: var(--radius-sm);
-  font-size: .875rem;
-  font-weight: 600;
-  box-shadow: 0 4px 16px rgba(0,0,0,.45);
-}
-.toast-htmx-success { background: rgba(16,185,129,.18); border: 1px solid rgba(52,211,153,.5);  color: #34d399; }
-.toast-htmx-error   { background: rgba(239,68,68,.18);  border: 1px solid rgba(248,113,113,.5); color: #f87171; }
-.toast-htmx-info    { background: rgba(14,165,233,.18); border: 1px solid rgba(56,189,248,.5);  color: #38bdf8; }
-.toast-htmx-close {
-  margin-left: auto;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: inherit;
-  opacity: .6;
-  font-size: .9rem;
-  line-height: 1;
-  padding: 0 0 0 .25rem;
-  flex-shrink: 0;
-}
-.toast-htmx-close:hover { opacity: 1; }
+.badge-deployed   { background: rgba(59,130,246,0.15);  color: #60a5fa; border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 600; }
 
 /* ─── HTMX — indicateur de chargement ───────────────────────── */
 .htmx-indicator { display: none; }
@@ -2282,61 +2238,7 @@ button.htmx-request,
 }
 
 /* ─── Auth pages ─────────────────────────────────────────────── */
-.auth-wrap {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  background: var(--bg);
-}
-.auth-card {
-  width: 100%;
-  max-width: 380px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 32px 28px;
-}
-.auth-logo { text-align: center; margin-bottom: 24px; }
-.auth-logo .b-evo {
-  display: block;
-  font-size: 2.4rem;
-  font-weight: 900;
-  color: var(--accent);
-  letter-spacing: 0.08em;
-  line-height: 1;
-}
-.auth-logo .b-panel {
-  display: block;
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--dim);
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  margin-top: 2px;
-}
-.auth-title { font-size: 1.1rem; font-weight: 700; text-align: center; margin-bottom: 20px; }
-.auth-footer { margin-top: 16px; text-align: center; font-size: 1rem; color: var(--dim); }
-.auth-footer a { color: var(--accent); text-decoration: none; }
-
-/* ─── Pilot dashboard rows ───────────────────────────────────── */
-.pilot-row {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 12px 20px;
-  border-bottom: 1px solid var(--border);
-}
-.pilot-row:last-child { border-bottom: none; }
-.pilot-row-info { flex: 1; min-width: 0; }
-.pilot-row-title { font-weight: 600; font-size: 1rem; }
-.pilot-row-meta  { font-size: 1rem; color: var(--dim); margin-top: 2px; }
-.pilot-row-desc  { font-size: 1rem; color: var(--dim); margin-top: 2px; }
-.pilot-row-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-.pilot-row-slots { font-size: 1rem; color: var(--dim); }
-.pilot-row-full  { font-size: 1rem; color: var(--red); }
-.mb-16 { margin-bottom: 16px; }
+/* Migré vers Tailwind — conservé uniquement pour rétrocompat si fork non mis à jour */
 
 /* ─── Misc ───────────────────────────────────────────────────── */
 .admin-dash   { max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
@@ -2363,11 +2265,7 @@ button.htmx-request,
 
 .full-width { width: 100%; justify-content: center; }
 
-/* Legacy alert classes */
-.alert-error   { background: rgba(239,68,68,0.12);  border: 1px solid rgba(239,68,68,0.3);  color: #f87171; padding: 10px 14px; border-radius: var(--radius-sm); font-size: 1rem; }
-.alert-success { background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); color: #34d399; padding: 10px 14px; border-radius: var(--radius-sm); font-size: 1rem; }
-.alert-warning { background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.3); color: #fbbf24; padding: 10px 14px; border-radius: var(--radius-sm); font-size: 1rem; }
-.alert-info    { background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.3); color: #60a5fa; padding: 10px 14px; border-radius: var(--radius-sm); font-size: 1rem; }
+/* Legacy alert classes — migré vers flash-*/Tailwind */
 
 /* Legacy misc */
 .icon-trash::before { content: '🗑'; }

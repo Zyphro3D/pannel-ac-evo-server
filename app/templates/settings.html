@@ -801,12 +801,12 @@
                 <td><strong>{{ acc.username }}</strong></td>
                 <td>{{ acc.display_name or '—' }}</td>
                 <td>
-                  <span class="badge {% if acc.is_superadmin %}badge-published{% else %}badge-session{% endif %}">
+                  <span class="badge {% if acc.is_superadmin %}badge-warning{% else %}badge-neutral{% endif %}">
                     {{ _('Super Admin') if acc.is_superadmin else _('Admin') }}
                   </span>
                 </td>
                 <td>
-                  <span class="badge {% if acc.is_active %}badge-published{% else %}badge-rejected{% endif %}" id="acc-status-{{ acc.id }}">
+                  <span class="badge {% if acc.is_active %}badge-success{% else %}badge-error{% endif %}" id="acc-status-{{ acc.id }}">
                     {{ _('Actif') if acc.is_active else _('Inactif') }}
                   </span>
                 </td>
@@ -952,7 +952,7 @@ async function toggleAccount(id, isActive) {
   const badge  = document.getElementById('acc-status-' + id);
   const btn    = document.getElementById('acc-toggle-' + id);
   badge.textContent = data.active ? '{{ _("Actif") }}' : '{{ _("Inactif") }}';
-  badge.className   = 'badge ' + (data.active ? 'badge-published' : 'badge-rejected');
+  badge.className   = 'badge ' + (data.active ? 'badge-success' : 'badge-error');
   btn.textContent   = data.active ? '{{ _("Désactiver") }}' : '{{ _("Activer") }}';
   btn.onclick       = () => toggleAccount(id, data.active);
 }
