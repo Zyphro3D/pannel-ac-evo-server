@@ -206,9 +206,9 @@
           <div class="srv-weather-time-val">{{ (config.Sessions.PracticeSession.Hour|string).zfill(2) }}:00</div>
         </div>
       </div>
-      <div class="srv-mini" style="margin-top:auto">
+      <div class="srv-mini mt-auto">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5M21 12a9 9 0 0 1-15 6.7L3 16M3 21v-5h5"/></svg>
-        <div style="flex:1">
+        <div class="flex-1">
           <div class="l">{{ _('Auto-restart') }}</div>
           <div class="v" id="srv-auto-restart-label" style="font-size:0.82rem;font-family:'Inter',sans-serif;font-weight:700;text-transform:uppercase;color:var(--dim)">{{ _('Désactivé') }}</div>
         </div>
@@ -217,7 +217,7 @@
           <span class="slider"></span>
         </label>
       </div>
-      <span style="font-size:0.72rem;color:var(--dim);margin-top:8px">{{ _('Redémarre en cas de crash') }}</span>
+      <span class="text-[0.72rem] text-dim mt-2">{{ _('Redémarre en cas de crash') }}</span>
     </article>
 
     <!-- Session en cours -->
@@ -238,7 +238,7 @@
         <h2>{{ _('Performances serveur') }}</h2>
         <span id="srv-stats-age"></span>
       </div>
-      <div id="srv-stats-unavailable" style="color:var(--dim);font-size:0.85rem;padding:4px 0">
+      <div id="srv-stats-unavailable" class="text-dim text-[0.85rem] py-1">
         {{ _('Données indisponibles (serveur arrêté ou non Docker)') }}
       </div>
       <div id="srv-stats-body" style="display:none">
@@ -254,7 +254,7 @@
           <div class="srv-perf-item">
             <span class="srv-perf-label">{{ _('Mémoire RAM') }}</span>
             <strong id="srv-mem-val">—</strong>
-            <div class="perf-bar" style="margin-top:auto"><i id="srv-mem-bar" style="width:0%"></i></div>
+            <div class="perf-bar mt-auto"><i id="srv-mem-bar" style="width:0%"></i></div>
           </div>
           <div class="srv-perf-item">
             <span class="srv-perf-label">{{ _('Réseau (total)') }}</span>
@@ -370,7 +370,7 @@
   </div>
 
   <!-- ── Événement & Sessions ── -->
-  <section class="card" id="server-event" style="margin-top:16px">
+  <section class="card mt-4" id="server-event">
       <div class="card-header"><h2>{{ _('Événement') }}</h2></div>
       <form id="form-event" class="panel-form">
 
@@ -462,7 +462,7 @@
     </div>
     {% endmacro %}
 
-    <section class="card" id="server-sessions" style="margin-top:16px">
+    <section class="card mt-4" id="server-sessions">
       <div class="card-header"><h2>{{ _('Sessions') }}</h2></div>
       <form id="form-sessions" class="panel-form">
         <div class="sessions-grid">
@@ -522,10 +522,10 @@
 
   <!-- ── Roulement de configurations ── -->
   {% if view == 'rotation' %}
-  <section class="card" id="server-rotation" style="margin-top:16px">
-    <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+  <section class="card mt-4" id="server-rotation">
+    <div class="card-header justify-between flex-wrap !gap-3">
       <h2>{{ _('Roulement de configs') }}</h2>
-      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <div class="flex items-center gap-2.5 flex-wrap">
         <span id="rot-status-pill" class="rot-status-pill" style="display:none">
           <span class="dot online"></span>
           <span id="rot-status-text"></span>
@@ -536,7 +536,7 @@
         <button id="btn-stop-cycle" class="btn-stop btn-cycle" onclick="stopRotationCycle()" style="display:none">
           {{ _('Arrêter le cycle') }}
         </button>
-        <label class="toggle-label" style="margin:0">
+        <label class="toggle-label m-0">
           <input type="checkbox" id="rot-enabled" onchange="onRotEnabledChange()">
           <span>{{ _('Activé') }}</span>
         </label>
@@ -590,7 +590,7 @@
 
   <!-- ── Véhicules ── -->
   {% if view == 'config_edit' %}
-  <section class="card" id="server-cars" style="margin-top:16px">
+  <section class="card mt-4" id="server-cars">
       <div class="card-header">
         <h2>{{ _('Véhicules') }}</h2>
       </div>
