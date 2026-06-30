@@ -167,7 +167,7 @@
       </section>
 
       {# Médias #}
-      <section class="settings-dashboard-grid" style="margin-top:1.5rem">
+      <section class="settings-dashboard-grid mt-6">
         <div class="settings-card settings-card-wide">
           <div class="settings-card-head">
             <h2>{{ _('Médias — Bannière & Logo') }}</h2>
@@ -226,16 +226,16 @@
           <input type="hidden" name="_tab" value="server">
           <input type="hidden" name="_server_form" value="db">
           <div class="settings-card-head">
-            <h2>{{ _('Serveur') }} — <span style="color:var(--accent)">{{ current_srv.name }}</span></h2>
+            <h2>{{ _('Serveur') }} — <span class="text-accent">{{ current_srv.name }}</span></h2>
           </div>
-          <div class="settings-card-copy" style="background:var(--surface2);border-radius:8px;padding:14px 16px;margin-bottom:20px;font-size:0.83rem;line-height:1.6">
+          <div class="settings-card-copy bg-surface2 rounded-lg px-4 py-3.5 mb-5 !text-[0.83rem] leading-[1.6]">
             {{ _('Ces paramètres sont propres au serveur sélectionné. Changez de serveur via le sélecteur en haut pour modifier un autre serveur.') }}
           </div>
 
-          <div class="settings-card-head" style="margin-bottom:4px">
-            <h2 style="font-size:0.85rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text2)">{{ _('Identité') }}</h2>
+          <div class="settings-card-head !mb-1">
+            <h2 class="!text-[0.85rem] tracking-[.08em] !text-dim">{{ _('Identité') }}</h2>
           </div>
-          <div class="settings-fields" style="margin-bottom:20px">
+          <div class="settings-fields mb-5">
             <label class="settings-field">
               <span><strong>{{ _('Nom du serveur') }}</strong><em>{{ _('Nom affiché dans la liste des serveurs ACE EVO') }}</em></span>
               <input class="form-control" type="text" name="srv_name" value="{{ current_srv.name }}" placeholder="ACE EVO Server">
@@ -246,10 +246,10 @@
             </label>
           </div>
 
-          <div class="settings-card-head" style="margin-bottom:4px">
-            <h2 style="font-size:0.85rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text2)">{{ _('Réseau') }}</h2>
+          <div class="settings-card-head !mb-1">
+            <h2 class="!text-[0.85rem] tracking-[.08em] !text-dim">{{ _('Réseau') }}</h2>
           </div>
-          <div class="settings-fields" style="margin-bottom:20px">
+          <div class="settings-fields mb-5">
             <label class="settings-field">
               <span><strong>{{ _('Port TCP/UDP joueurs') }}</strong><em>{{ _('Port externe annoncé aux joueurs et à Kunos (doit être ouvert dans le pare-feu)') }}</em></span>
               <input class="form-control" type="number" name="srv_tcp_port" min="1024" max="65535" value="{{ current_srv.tcp_port }}">
@@ -260,10 +260,10 @@
             </label>
           </div>
 
-          <div class="settings-card-head" style="margin-bottom:4px">
-            <h2 style="font-size:0.85rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text2)">{{ _('Accès') }}</h2>
+          <div class="settings-card-head !mb-1">
+            <h2 class="!text-[0.85rem] tracking-[.08em] !text-dim">{{ _('Accès') }}</h2>
           </div>
-          <div class="settings-fields" style="margin-bottom:20px">
+          <div class="settings-fields mb-5">
             <label class="settings-field">
               <span><strong>SERVER_DRIVER_PASSWORD</strong><em>{{ env_descs.get('SERVER_DRIVER_PASSWORD', '') }}</em></span>
               <input class="form-control" type="password" name="SERVER_DRIVER_PASSWORD" value="{{ env_values.get('SERVER_DRIVER_PASSWORD', '') }}" autocomplete="new-password" placeholder="{{ _('Vide = accès libre') }}">
@@ -274,8 +274,8 @@
             </label>
           </div>
 
-          <div class="settings-card-head" style="margin-bottom:4px">
-            <h2 style="font-size:0.85rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text2)">{{ _('Chemins') }}</h2>
+          <div class="settings-card-head !mb-1">
+            <h2 class="!text-[0.85rem] tracking-[.08em] !text-dim">{{ _('Chemins') }}</h2>
           </div>
           <div class="settings-fields">
             <label class="settings-field">
@@ -288,13 +288,13 @@
             </label>
           </div>
 
-          <div class="settings-card-head" style="margin-bottom:4px">
-            <h2 style="font-size:0.85rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text2)">Discord</h2>
+          <div class="settings-card-head !mb-1">
+            <h2 class="!text-[0.85rem] tracking-[.08em] !text-dim">Discord</h2>
           </div>
-          <div class="settings-card-copy" style="background:var(--surface2);border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:0.82rem;line-height:1.5">
+          <div class="settings-card-copy bg-surface2 rounded-lg px-4 py-3 mb-4 !text-[0.82rem] leading-relaxed">
             {{ _('Webhooks propres à ce serveur. Laisser vide = utilise les webhooks globaux configurés dans l\'onglet Notifications.') }}
           </div>
-          <div class="settings-fields" style="margin-bottom:20px">
+          <div class="settings-fields mb-5">
             <label class="settings-field">
               <span><strong>{{ _('Webhook principal') }}</strong><em>{{ _('Démarrage, arrêt, crash du serveur') }}</em></span>
               <input class="form-control" type="password" name="srv_discord_main" value="{{ current_srv.discord_webhook_main or '' }}" autocomplete="off" placeholder="{{ _('Laisser vide = webhook global') }}">
@@ -315,7 +315,7 @@
       {% endif %}
 
       {# Infrastructure ACE #}
-      <section class="settings-dashboard-grid" style="margin-top:1.5rem">
+      <section class="settings-dashboard-grid mt-6">
         <form method="post" action="{{ url_for('admin.settings', tab='server') }}"
               hx-post="{{ url_for('admin.settings', tab='server') }}"
               hx-target="#toast-zone" hx-swap="afterbegin"
@@ -344,7 +344,7 @@
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="_tab" value="server">
           <div class="settings-card-head"><h2>{{ _('Compte Steam (SteamCMD)') }}</h2></div>
-          <div class="settings-card-copy" style="background:var(--surface2);border-radius:8px;padding:14px 16px;margin-bottom:8px;font-size:0.83rem;line-height:1.6">
+          <div class="settings-card-copy bg-surface2 rounded-lg px-4 py-3.5 mb-2 !text-[0.83rem] leading-[1.6]">
             {{ _("Le mot de passe est saisi au moment de la mise à jour et n'est jamais stocké. Ce champ pré-remplit simplement le formulaire. Le compte doit posséder ACE EVO dans sa bibliothèque Steam.") }}
           </div>
           <div class="settings-fields">
@@ -361,35 +361,35 @@
       </section>
 
       {# Mise à jour Steam / conteneur #}
-      <section class="settings-dashboard-grid" style="margin-top:1.5rem">
+      <section class="settings-dashboard-grid mt-6">
         <div class="settings-card settings-card-full">
           <div class="settings-card-head">
             <h2>{{ _('Serveur de jeu') }}</h2>
           </div>
-          <div id="ctr-status-block" class="grid-2col" style="margin-bottom:1.5rem">
-            <div style="background:var(--surface2);border-radius:8px;padding:14px 16px">
-              <div style="font-size:0.75rem;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">{{ _('Conteneur') }}</div>
-              <div style="display:flex;align-items:center;gap:8px">
+          <div id="ctr-status-block" class="grid-2col mb-6">
+            <div class="bg-surface2 rounded-lg px-4 py-3.5">
+              <div class="text-[0.75rem] text-dim uppercase tracking-[.05em] mb-1.5">{{ _('Conteneur') }}</div>
+              <div class="flex items-center gap-2">
                 <span class="dot offline" id="ctr-dot"></span>
                 <strong id="ctr-status-label">—</strong>
               </div>
-              <div style="font-size:0.78rem;color:var(--text2);margin-top:4px" id="ctr-uptime">—</div>
+              <div class="text-[0.78rem] text-dim mt-1" id="ctr-uptime">—</div>
             </div>
-            <div style="background:var(--surface2);border-radius:8px;padding:14px 16px">
-              <div style="font-size:0.75rem;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">{{ _('Version') }}</div>
-              <div id="ctr-version-installed" style="font-size:0.9rem">—</div>
-              <div id="ctr-version-target"    style="font-size:0.78rem;color:var(--text2);margin-top:2px">—</div>
+            <div class="bg-surface2 rounded-lg px-4 py-3.5">
+              <div class="text-[0.75rem] text-dim uppercase tracking-[.05em] mb-1.5">{{ _('Version') }}</div>
+              <div id="ctr-version-installed" class="text-[0.9rem]">—</div>
+              <div id="ctr-version-target" class="text-[0.78rem] text-dim mt-0.5">—</div>
             </div>
           </div>
-          <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1.5rem">
+          <div class="flex gap-3 flex-wrap mb-6">
             <button id="ctr-btn-restart" class="btn btn-secondary" onclick="ctrRestart()" type="button">{{ _('Redémarrer le serveur') }}</button>
             <button id="ctr-btn-update" class="btn btn-primary" onclick="ctrModalOpen()" type="button">{{ _('Vérifier et mettre à jour') }}</button>
           </div>
           <div id="ctr-terminal-wrap" style="display:none">
-            <div style="font-size:0.75rem;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">{{ _('Sortie SteamCMD') }}</div>
+            <div class="text-[0.75rem] text-dim uppercase tracking-[.05em] mb-1.5">{{ _('Sortie SteamCMD') }}</div>
             <pre id="ctr-terminal" style="background:#0d1117;color:#e6edf3;border-radius:8px;padding:14px 16px;font-size:0.78rem;line-height:1.5;max-height:360px;overflow-y:auto;white-space:pre-wrap;word-break:break-all"></pre>
           </div>
-          <div id="ctr-msg" style="margin-top:8px;font-size:0.85rem"></div>
+          <div id="ctr-msg" class="mt-2 text-[0.85rem]"></div>
         </div>
       </section>
 
@@ -569,7 +569,7 @@
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="_tab" value="notifications">
           <div class="settings-card-head"><h2>Discord — Webhooks</h2></div>
-          <p class="settings-card-copy" style="margin-bottom:20px;line-height:1.5">
+          <p class="settings-card-copy mb-5 leading-relaxed">
             {{ _('Trois channels optionnels. Si un channel n\'est pas renseigné, ses notifications tombent sur le webhook principal.') }}
           </p>
           <div class="dc-field">
@@ -602,7 +602,7 @@
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="_tab" value="notifications">
           <div class="settings-card-head"><h2>Discord — {{ _('Mentions') }}</h2></div>
-          <p class="settings-card-copy" style="margin-bottom:20px;line-height:1.5">
+          <p class="settings-card-copy mb-5 leading-relaxed">
             {{ _('Texte envoyé avant l\'embed pour mentionner un rôle ou @here. Laisser vide pour désactiver.') }}<br>
             {{ _('Exemples') }} : <code>@here</code>, <code>&lt;@&amp;123456789&gt;</code>
           </p>
@@ -623,7 +623,7 @@
       </section>
 
       {# Discord — Messages #}
-      <section class="settings-dashboard-grid" style="margin-top:1.5rem">
+      <section class="settings-dashboard-grid mt-6">
         <form method="post" action="{{ url_for('admin.settings', tab='notifications') }}"
               hx-post="{{ url_for('admin.settings', tab='notifications') }}"
               hx-target="#toast-zone" hx-swap="afterbegin"
@@ -631,7 +631,7 @@
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="_tab" value="notifications">
           <div class="settings-card-head"><h2>Discord — {{ _('Messages de notification') }}</h2></div>
-          <p class="settings-card-copy" style="margin-bottom:24px;line-height:1.5">
+          <p class="settings-card-copy mb-6 leading-relaxed">
             {{ _('Titre des embeds Discord envoyés dans chaque channel. Laisser vide = texte par défaut. Les variables entre accolades sont remplacées automatiquement à l\'envoi.') }}
           </p>
           <div class="grid-3col">
@@ -677,12 +677,12 @@
               </div>
             </div>
           </div>
-          <button type="submit" class="btn btn-primary settings-save-btn" style="margin-top:28px">{{ _('Enregistrer les messages') }}</button>
+          <button type="submit" class="btn btn-primary settings-save-btn mt-7">{{ _('Enregistrer les messages') }}</button>
         </form>
       </section>
 
       {# Mail + Bot #}
-      <section class="settings-dashboard-grid" style="margin-top:1.5rem">
+      <section class="settings-dashboard-grid mt-6">
         <form method="post" action="{{ url_for('admin.settings', tab='notifications') }}"
               hx-post="{{ url_for('admin.settings', tab='notifications') }}"
               hx-target="#toast-zone" hx-swap="afterbegin"
@@ -715,7 +715,7 @@
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="_tab" value="notifications">
           <div class="settings-card-head"><h2>{{ _('Bot TCP') }}</h2></div>
-          <div class="settings-card-copy" style="background:var(--surface2);border-radius:8px;padding:14px 16px;margin-bottom:16px;font-size:0.83rem;line-height:1.6">
+          <div class="settings-card-copy bg-surface2 rounded-lg px-4 py-3.5 mb-4 !text-[0.83rem] leading-[1.6]">
             {{ _('Le bot est un client fantôme qui se connecte silencieusement au serveur ACE EVO via TCP (port 9700). Il écoute les événements de session en temps réel (leaderboard, passages de secteurs, connexions/déconnexions) et les transmet au panel sans passer par le webhook de fin de session.') }}<br><br>
             <strong>{{ _('Steam ID') }}</strong> — {{ _('Compte Steam dédié recommandé (pas votre compte personnel). Le Steam ID 64-bit se trouve sur') }} <a href="https://www.steamidfinder.com" target="_blank" rel="noopener">steamidfinder.com</a>.
           </div>
@@ -730,10 +730,10 @@
                 <input type="hidden" name="ACE_BOT_IS_ADMIN" value="false">
                 <input type="checkbox" name="ACE_BOT_IS_ADMIN" value="true" id="bot-is-admin-cb"
                        {% if env_values.get('ACE_BOT_IS_ADMIN', 'false') == 'true' %}checked{% endif %}
-                       style="width:20px;height:20px;cursor:pointer">
+                       class="w-5 h-5 cursor-pointer">
                 <div id="bot-admin-warn" style="margin-top:6px;font-size:0.78rem;color:var(--yellow,#f0a500);{% if bot_admin_password_set or env_values.get('ACE_BOT_IS_ADMIN','false') != 'true' %}display:none{% endif %}">
                   ⚠ {{ _('AdminPassword vide dans la config serveur — le bot se connectera sans droits admin.') }}
-                  <a href="{{ url_for('admin.settings', tab='server') }}" style="color:inherit;text-decoration:underline">{{ _('Configurer') }}</a>
+                  <a href="{{ url_for('admin.settings', tab='server') }}" class="text-inherit underline">{{ _('Configurer') }}</a>
                 </div>
                 <script nonce="{{ csp_nonce }}">
                 document.getElementById('bot-is-admin-cb').addEventListener('change', function() {
@@ -810,8 +810,8 @@
                     {{ _('Actif') if acc.is_active else _('Inactif') }}
                   </span>
                 </td>
-                <td style="font-size:0.82rem;color:var(--dim)">{{ acc.last_login.strftime('%d/%m/%Y %H:%M') if acc.last_login else '—' }}</td>
-                <td style="display:flex;gap:6px;justify-content:flex-end">
+                <td class="text-[0.82rem] text-dim">{{ acc.last_login.strftime('%d/%m/%Y %H:%M') if acc.last_login else '—' }}</td>
+                <td class="flex gap-1.5 justify-end">
                   <button class="btn btn-secondary btn-sm" @click="openEdit({{ acc.id }}, {{ acc.username | tojson }}, {{ (acc.display_name or '') | tojson }}, {{ acc.role | tojson }})">{{ _('Modifier') }}</button>
                   {% if acc.get_id() != current_user.get_id() %}
                   <button class="btn btn-ghost btn-sm" id="acc-toggle-{{ acc.id }}" onclick="toggleAccount({{ acc.id }}, {{ 'true' if acc.is_active else 'false' }})">{{ _('Désactiver') if acc.is_active else _('Activer') }}</button>
@@ -823,7 +823,7 @@
                 </td>
               </tr>
               {% else %}
-              <tr><td colspan="6" style="text-align:center;color:var(--dim);padding:20px">{{ _('Aucun compte administrateur.') }}</td></tr>
+              <tr><td colspan="6" class="text-center text-dim p-5">{{ _('Aucun compte administrateur.') }}</td></tr>
               {% endfor %}
             </tbody>
           </table>
@@ -832,7 +832,7 @@
 
       {# Pilotes (si accès via ancienne URL) #}
       {% if tab == 'users' %}
-      <section class="settings-dashboard-grid" style="margin-top:1.5rem">
+      <section class="settings-dashboard-grid mt-6">
         <div class="settings-card settings-card-wide">
           <div class="settings-card-head">
             <h2>{{ _('Gestion pilotes') }}</h2>

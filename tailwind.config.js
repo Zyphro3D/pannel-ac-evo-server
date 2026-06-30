@@ -18,6 +18,7 @@ module.exports = {
         dim:           "#8896a8",
         muted:         "#3d4a5c",
         txt:           "#e2e8f0",
+        surface2:      "#161926",
         emerald: {
           DEFAULT: "#10b981",
           900:     "#064e3b",
