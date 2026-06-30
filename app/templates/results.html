@@ -68,7 +68,7 @@
            class="result-card"
            {% if s.track_banner %}style="background-image:url('{{ url_for('serve_media', filename=s.track_banner) }}')"{% endif %}>
           <div class="result-card-top">
-            <span class="badge badge-session">{{ p.session_type or '—' }}</span>
+            <span class="badge badge-info">{{ p.session_type or '—' }}</span>
             <span class="result-card-date">{{ s.received_at | local_dt_short }}</span>
           </div>
           <div class="result-card-track">{{ p.track or '—' }}</div>
@@ -83,8 +83,8 @@
           <div class="result-card-footer">{{ p.standings|length }} {{ _('pilote(s)') }}</div>
         </a>
         {% else %}
-        <div class="card" style="padding:24px;text-align:center;grid-column:1/-1">
-          <p style="color:var(--dim)">{{ _('Aucun résultat disponible pour le moment. Les résultats apparaissent ici à la fin de chaque session.') }}</p>
+        <div class="card p-6 text-center text-dim" style="grid-column:1/-1">
+          {{ _('Aucun résultat disponible pour le moment. Les résultats apparaissent ici à la fin de chaque session.') }}
         </div>
         {% endfor %}
       </div>
@@ -126,7 +126,7 @@
             <div style="display:flex;gap:4px;align-items:center;flex-shrink:0">
               {% set stype_labels = {'practice': _('Practice'), 'qualifying': _('Qualifying'), 'warmup': _('Warmup'), 'race': _('Race')} %}
               {% for stype in ['practice','qualifying','warmup','race'] %}
-                {% if stype in g.types %}<span class="badge badge-session" style="font-size:0.62rem">{{ stype_labels[stype] }}</span>{% endif %}
+                {% if stype in g.types %}<span class="badge badge-info" style="font-size:0.62rem">{{ stype_labels[stype] }}</span>{% endif %}
               {% endfor %}
               {% if g.config_name %}<span class="cfg-chip">{{ g.config_name }}</span>{% endif %}
             </div>
@@ -143,7 +143,7 @@
                class="result-card"
                style="border-top-color:{{ s.wkd_color }}{% if s.track_banner %};background-image:url('{{ url_for('serve_media', filename=s.track_banner) }}'){% endif %}">
               <div class="result-card-top">
-                <span class="badge badge-session">{{ p.session_type or '—' }}</span>
+                <span class="badge badge-info">{{ p.session_type or '—' }}</span>
                 <span class="result-card-date">{{ s.received_at | local_dt_short }}</span>
               </div>
               <div class="result-card-track">{{ p.track or '—' }}</div>
@@ -170,8 +170,8 @@
         </div>
         {% endfor %}
       {% else %}
-      <div class="card" style="padding:28px;text-align:center">
-        <p style="color:var(--dim)">{{ _('Aucun résultat disponible pour le moment. Les résultats apparaissent ici à la fin de chaque session.') }}</p>
+      <div class="card p-7 text-center text-dim">
+        {{ _('Aucun résultat disponible pour le moment. Les résultats apparaissent ici à la fin de chaque session.') }}
       </div>
       {% endif %}
     </section>
@@ -184,8 +184,8 @@
       </div>
 
       {% if not circuits %}
-      <div class="card" style="padding:28px;text-align:center">
-        <p style="color:var(--dim)">{{ _('Aucune session enregistrée pour le moment.') }}</p>
+      <div class="card p-7 text-center text-dim">
+        {{ _('Aucune session enregistrée pour le moment.') }}
       </div>
       {% else %}
       <div class="lb-grid">

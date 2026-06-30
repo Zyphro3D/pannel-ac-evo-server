@@ -3,10 +3,10 @@
        x-show="show"
        x-init="setTimeout(() => show = false, 4500)"
        x-transition
-       class="toast-htmx toast-htmx-{{ type }}"
+       class="toast toast-{{ type }}"
        role="alert"
        aria-live="polite">
     <span>{{ message }}</span>
-    <button @click="show = false" class="toast-htmx-close" aria-label="{{ _('Fermer') }}">✕</button>
+    <button @click="show = false" class="toast-close" aria-label="{{ _('Fermer') }}">✕</button>
   </div>
 </div>

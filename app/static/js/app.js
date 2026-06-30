@@ -205,9 +205,9 @@ function showToast(msg, type = 'success') {
   const div = document.createElement('div');
   div.innerHTML = `<div x-data="{ show: true }"
     x-show="show" x-init="setTimeout(() => show = false, 4500)" x-transition
-    class="toast-htmx toast-htmx-${type}" role="alert" aria-live="polite">
+    class="toast toast-${type}" role="alert" aria-live="polite">
     <span>${msg}</span>
-    <button @click="show = false" class="toast-htmx-close" aria-label="Fermer">✕</button>
+    <button @click="show = false" class="toast-close" aria-label="Fermer">✕</button>
   </div>`;
   zone.prepend(div.firstElementChild);
   if (window.Alpine) Alpine.initTree(zone.firstElementChild);

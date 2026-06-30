@@ -1,40 +1,48 @@
-<tr id="srv-row-{{ srv.id }}" class="{% if not srv.is_enabled %}servers-row-disabled{% endif %}">
-  <td><strong>#{{ srv.id }}</strong></td>
+<tr id="srv-row-{{ srv.id }}" class="{% if not srv.is_enabled %}opacity-40{% endif %}">
+  <td class="text-dim">#{{ srv.id }}</td>
   <td>
-    {{ srv.name }}
+    <span class="font-medium">{{ srv.name }}</span>
     {% if not srv.is_enabled %}
-    <span class="badge-dim">{{ _('désactivé') }}</span>
+    <span class="badge badge-neutral ml-2">{{ _('désactivé') }}</span>
     {% endif %}
   </td>
-  <td><code>{{ srv.container_name }}</code></td>
-  <td style="white-space:nowrap;">TCP {{ srv.tcp_port }} / HTTP {{ srv.http_port }}</td>
+  <td><code class="text-xs text-dim">{{ srv.container_name }}</code></td>
+  <td class="whitespace-nowrap text-xs text-dim">TCP {{ srv.tcp_port }} / HTTP {{ srv.http_port }}</td>
   <td>
     {% if st and st.get('running') %}
-    <span class="status-dot status-dot-on"></span> {{ _('En ligne') }}
-    {% if st.get('players') is not none %}
-    <span class="dim">· {{ st.players }} {{ _('joueur(s)') }}</span>
-    {% endif %}
+    <span class="flex items-center gap-1.5">
+      <span class="inline-block w-2 h-2 rounded-full bg-emerald shrink-0"></span>
+      <span class="text-emerald text-sm">{{ _('En ligne') }}</span>
+      {% if st.get('players') is not none %}
+      <span class="text-dim text-xs">· {{ st.players }} {{ _('joueur(s)') }}</span>
+      {% endif %}
+    </span>
     {% else %}
-    <span class="status-dot status-dot-off"></span> {{ _('Arrêté') }}
+    <span class="flex items-center gap-1.5">
+      <span class="inline-block w-2 h-2 rounded-full bg-muted shrink-0"></span>
+      <span class="text-dim text-sm">{{ _('Arrêté') }}</span>
+    </span>
     {% endif %}
   </td>
-  <td class="servers-actions">
-    {% if srv.id != 1 %}
-    <button class="btn btn-sm"
-            hx-post="{{ url_for('admin.server_toggle', server_id=srv.id) }}"
-            hx-target="#srv-row-{{ srv.id }}" hx-swap="outerHTML"
-            hx-confirm="{{ _('Confirmer ?') }}">
-      {{ _('Désactiver') if srv.is_enabled else _('Activer') }}
-    </button>
-    <button class="btn btn-sm btn-danger"
-            hx-post="{{ url_for('admin.server_delete', server_id=srv.id) }}"
-            hx-target="#srv-row-{{ srv.id }}" hx-swap="outerHTML"
-            hx-confirm="{{ _('Supprimer ce serveur et son container Docker ?') }}">
-      {{ _('Supprimer') }}
-    </button>
-    {% else %}
-    <span class="dim">{{ _('Serveur principal') }}</span>
-    {% endif %}
+  <td>
+    <div class="flex items-center gap-1.5 justify-end">
+      {% if srv.id != 1 %}
+      <button class="btn-secondary btn-xs"
+              hx-post="{{ url_for('admin.server_toggle', server_id=srv.id) }}"
+              hx-target="#srv-row-{{ srv.id }}" hx-swap="outerHTML"
+              hx-confirm="{{ _('Confirmer ?') }}">
+        {{ _('Désactiver') if srv.is_enabled else _('Activer') }}
+      </button>
+      <button class="btn-danger btn-xs"
+              hx-post="{{ url_for('admin.server_delete', server_id=srv.id) }}"
+              hx-target="#srv-row-{{ srv.id }}" hx-swap="outerHTML"
+              hx-confirm="{{ _('Supprimer ce serveur et son container Docker ?') }}">
+        {{ _('Supprimer') }}
+      </button>
+      {% else %}
+      <span class="text-xs text-dim">{{ _('Serveur principal') }}</span>
+      {% endif %}
+    </div>
   </td>
 </tr>
 {% if toast_msg is defined %}
@@ -43,10 +51,10 @@
        x-show="show"
        x-init="setTimeout(() => show = false, 4500)"
        x-transition
-       class="toast-htmx toast-htmx-{{ toast_type | default('success') }}"
+       class="toast toast-{{ toast_type | default('success') }}"
        role="alert">
     <span>{{ toast_msg }}</span>
-    <button @click="show = false" class="toast-htmx-close">✕</button>
+    <button @click="show = false" class="toast-close">✕</button>
   </div>
 </div>
 {% endif %}
