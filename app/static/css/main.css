@@ -76,10 +76,6 @@ textarea { resize: vertical; }
 .text-muted { color: var(--dim); font-size: 1rem; }
 
 
-/* ─── Page content ───────────────────────────────────────────── */
-.page-content {
-  padding: 16px 24px 24px;
-}
 .page-header { margin-bottom: 22px; }
 .page-header h1 { font-size: 1.55rem; font-weight: 800; color: var(--text); }
 .page-header p  { color: var(--dim); font-size: 1rem; margin-top: 4px; }
@@ -107,8 +103,7 @@ textarea { resize: vertical; }
   .lb-best-car { display: none; }
 }
 @media (max-width: 600px) {
-  .page-content { padding: 12px 12px 16px; }
-  .form-row   { grid-template-columns: 1fr; }
+  .form-row { grid-template-columns: 1fr; }
 }
 
 /* ─── Status dot ─────────────────────────────────────────────── */
@@ -147,8 +142,6 @@ textarea { resize: vertical; }
 .card > form:not(.panel-form) { padding: 0 20px 16px; }
 
 
-/* Pending alert dans admin dashboard */
-.card > .pending-alert { margin: 14px 20px; }
 
 .card-header {
   display: flex;
@@ -214,7 +207,6 @@ textarea { resize: vertical; }
 }
 .btn-ghost:hover { color: var(--text); background: var(--bg-hover); opacity: 1; }
 .btn-sm { padding: 4px 10px; font-size: 1rem; }
-.btn-lg { padding: 10px 20px; font-size: 1rem; }
 .btn-full { width: 100%; justify-content: center; }
 .btn[disabled], .btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
@@ -229,7 +221,6 @@ textarea { resize: vertical; }
 .flash-success { background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); color: #34d399; }
 .flash-error   { background: rgba(239,68,68,0.12);  border: 1px solid rgba(239,68,68,0.3);  color: #f87171; }
 .flash-warning { background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.3); color: #fbbf24; }
-.flash-info    { background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.3); color: #60a5fa; }
 
 /* ─── Forms ──────────────────────────────────────────────────── */
 .form-group { margin-bottom: 14px; }
@@ -264,8 +255,8 @@ textarea.form-control { resize: vertical; min-height: 80px; }
   gap: 14px;
 }
 /* ─── Badges (hybride : utilisés dans server.html config cards uniquement) ─── */
-.badge-running    { background: rgba(16,185,129,0.15); color: #34d399; border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 600; }
-.badge-deployed   { background: rgba(59,130,246,0.15);  color: #60a5fa; border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 600; }
+.badge-running  { background: rgba(16,185,129,0.15); color: #34d399; border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 600; }
+.badge-deployed { background: rgba(59,130,246,0.15);  color: #60a5fa; border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 600; }
 
 /* ─── HTMX — indicateur de chargement ───────────────────────── */
 .htmx-indicator { display: none; }
@@ -584,7 +575,7 @@ button.htmx-request,
 .race-layout {
   display: flex;
   align-items: stretch;
-  margin: -16px -24px -24px; /* annule le padding de .page-content */
+  margin: -16px -24px -24px;
 }
 .race-sidebar {
   width: 212px;
@@ -1358,7 +1349,6 @@ button.htmx-request,
   color: #fff;
   line-height: 1;
 }
-.lb-best-sep { color: var(--border-light); }
 .lb-best-driver { font-weight: 700; font-size: 0.95rem; color: var(--text); }
 .lb-best-car { font-size: 0.88rem; color: var(--dim); }
 .lb-best .lb-pi-badge { margin-left: auto; }
@@ -1873,7 +1863,7 @@ body::before {
   align-items: flex-start;
   gap: 0;
   min-height: calc(100vh - var(--nav-h));
-  margin: -16px -24px -24px; /* annule le padding de .page-content */
+  margin: -16px -24px -24px;
   --condensed: 'Barlow Condensed', 'Arial Narrow', Arial, sans-serif;
   --mono: 'JetBrains Mono', 'Courier New', monospace;
 }
@@ -2239,24 +2229,6 @@ body::before {
    ═══════════════════════════════════════════════════════════════ */
 .dashboard { max-width: 1100px; margin: 0 auto; padding: 24px 16px 48px; }
 
-/* Config bar */
-.config-bar {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 12px; flex-wrap: wrap;
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 12px 16px; margin-bottom: 16px;
-}
-.config-bar-left  { display: flex; align-items: center; gap: 10px; }
-.config-bar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.config-label {
-  font-size: 1rem; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 0.1em; color: var(--dim); white-space: nowrap;
-}
-.config-select-wrapper select {
-  background: var(--surface2); border: 1px solid var(--border);
-  border-radius: var(--radius-sm); color: var(--text);
-  padding: 6px 10px; font-size: 1rem; cursor: pointer;
-}
 
 /* Status bar */
 .status-bar {
@@ -2337,8 +2309,7 @@ body::before {
 .panel-form textarea,
 .rotation-body input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]),
 .rotation-body select,
-.cars-filters input[type="text"],
-.config-select-wrapper select {
+.cars-filters input[type="text"] {
   width: 100%;
   background: var(--bg-input);
   border: 1px solid var(--border-light);
@@ -2365,8 +2336,6 @@ body::before {
 .dur-part { width: 52px !important; padding: 6px 8px; text-align: center; }
 .dur-h, .dur-m { width: 56px !important; padding: 6px 8px; text-align: center; }
 
-/* Table actions */
-.table-actions { display: flex; gap: 6px; align-items: center; }
 
 /* Sessions grid */
 .sessions-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
@@ -2683,11 +2652,6 @@ body::before {
   display: block;
   margin-top: 4px;
   color: var(--dim);
-}
-.srv-card-button {
-  width: 100%;
-  justify-content: center;
-  margin-top: 16px;
 }
 .srv-weather-mark {
   width: 62px;
@@ -3267,9 +3231,6 @@ body::before {
   border-radius: 5px;
   transition: width .4s ease;
 }
-.srv-perf-item--bar { justify-content: flex-start; }
-.srv-perf-item--bar .perf-bar { margin-top: auto; }
-
 /* Activity */
 .srv-activity-list {
   display: flex;
@@ -3367,7 +3328,6 @@ body::before {
 }
 
 .server-admin-page .card,
-.server-admin-page .config-bar,
 .server-admin-page .status-bar {
   background:
     linear-gradient(180deg, rgba(18, 28, 46, 0.94), rgba(12, 18, 31, 0.92));
@@ -3404,23 +3364,7 @@ body::before {
   box-shadow: 0 0 18px rgba(224,53,53,0.45);
 }
 
-.server-admin-page .config-bar {
-  position: relative;
-  z-index: 40;
-  padding: 16px 18px;
-  border-left: 3px solid var(--accent);
-}
 
-.server-admin-page .config-bar-left {
-  flex: 1 1 360px;
-}
-
-.server-admin-page .config-select-wrapper {
-  flex: 1;
-  max-width: 360px;
-}
-
-.server-admin-page .config-label,
 .server-admin-page .form-group label,
 .server-admin-page .cars-table thead th,
 .server-admin-page .session-title {
@@ -3428,7 +3372,6 @@ body::before {
   letter-spacing: 0.045em;
 }
 
-.server-admin-page .config-label,
 .server-admin-page .form-group label {
   color: #94a3b8;
 }
@@ -3488,8 +3431,7 @@ body::before {
 .server-admin-page .panel-form textarea,
 .server-admin-page .rotation-body input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]),
 .server-admin-page .rotation-body select,
-.server-admin-page .cars-filters input[type="text"],
-.server-admin-page .config-select-wrapper select {
+.server-admin-page .cars-filters input[type="text"] {
   min-height: 38px;
   background: rgba(6, 8, 12, 0.68);
   border-color: rgba(148, 163, 184, 0.18);
@@ -3847,17 +3789,6 @@ body::before {
 }
 .cal-hour-row:hover .cal-hour-hint { opacity: 1; }
 
-/* View toggle */
-.view-toggle {
-  display: flex; background: var(--surface2);
-  border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden;
-}
-.view-btn {
-  padding: 5px 14px; font-size: 1rem; font-weight: 600; border: none;
-  background: none; color: var(--dim); cursor: pointer; transition: background 0.12s, color 0.12s;
-}
-.view-btn.active, .view-btn[data-active="true"] { background: var(--accent); color: #fff; }
-.view-btn:not(.active):hover { background: rgba(255,255,255,0.05); color: var(--text); }
 
 /* ═══════════════════════════════════════════════════════════════
    EVENT FORM — misc
@@ -3927,8 +3858,6 @@ body::before {
   }
 }
 
-/* ── Table helpers ───────────────────────────────────────────────────────── */
-.cars-sel-count { font-size: 12px; font-weight: 400; color: var(--text-muted); }
 
 /* ── Layout helpers ──────────────────────────────────────────────────────── */
 .grid-2col {
@@ -4171,25 +4100,12 @@ body::before {
   font-weight: 600;
 }
 
-/* ─── Homepage public — events grid ───────────────────────────── */
-.pub-events-grid {
-  display: grid;
-  gap: 0 20px;
-  margin-bottom: 2rem;
-}
-.pub-events-grid-1 { grid-template-columns: 1fr; }
-.pub-events-grid-2 { grid-template-columns: repeat(2, 1fr); }
-.pub-events-grid-3 { grid-template-columns: repeat(3, 1fr); }
-
 @media (max-width: 900px) {
-  .pub-servers-grid-3,
-  .pub-events-grid-3 { grid-template-columns: repeat(2, 1fr); }
+  .pub-servers-grid-3 { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 600px) {
   .pub-servers-grid-2,
-  .pub-servers-grid-3,
-  .pub-events-grid-2,
-  .pub-events-grid-3 { grid-template-columns: 1fr; }
+  .pub-servers-grid-3 { grid-template-columns: 1fr; }
 }
 
 /* ─── Page Véhicules ──────────────────────────────────────────── */
