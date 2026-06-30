@@ -232,7 +232,7 @@
           </div>
           <div class="pi-filter-row">
             <span class="pi-filter-label">PI</span>
-            <div class="pi-slider-wrapper" style="flex:1">
+            <div class="pi-slider-wrapper">
               <div class="pi-slider-track" id="ef-pi-track"></div>
               <input type="range" id="ef-pi-min" min="{{ pi_min|int }}" max="{{ pi_max|int }}"
                      value="{{ pi_min|int }}" step="1" oninput="efSyncPi('min')">
@@ -256,7 +256,7 @@
         </div>
 
         <input type="hidden" name="cars_config_json" id="ef-cars-config-json">
-        <div class="cars-table-wrapper" style="max-height:320px">
+        <div class="cars-table-wrapper !max-h-[320px]">
           <table class="cars-table" id="ef-cars-table">
             <thead>
               <tr>
@@ -289,8 +289,8 @@
                 <td class="car-name">{{ car.display_name }}</td>
                 <td class="car-pi">{{ "%.0f"|format(car.performance_indicator) }}</td>
                 <td class="text-xs text-dim">{{ cats | join(' · ') }}</td>
-                <td><input type="number" class="form-control ef-car-ballast" value="{{ car_cfg.get('ballast', 0) }}" min="0" step="1" style="width:60px"></td>
-                <td><input type="number" class="form-control ef-car-restrictor" value="{{ car_cfg.get('restrictor', 0) }}" min="0" step="1" style="width:60px"></td>
+                <td><input type="number" class="form-control ef-car-ballast !w-[60px]" value="{{ car_cfg.get('ballast', 0) }}" min="0" step="1"></td>
+                <td><input type="number" class="form-control ef-car-restrictor !w-[60px]" value="{{ car_cfg.get('restrictor', 0) }}" min="0" step="1"></td>
               </tr>
               {% endfor %}
             </tbody>
