@@ -45,6 +45,7 @@
 
 **Refonte des emails du panel**
 - Nouveau design pour les 10 emails (inscription, validation, refus, confirmation, reset mot de passe, rappel événement...) : header avec titre du panel, section « hero » avec photo de circuit, icônes contextuelles, bouton d'action, footer — compatible clients mail (CSS inline, layout en table)
+- Carte email posée directement sur le fond du client mail (pas de bande sombre pleine largeur autour)
 - Nouveaux assets embarqués dans l'application (`app/static/mail/`) : photo de fond + 9 icônes contextuelles — disponibles directement après `git pull`, aucune configuration requise
 - Page Administration → sélecteur « Aperçu du design » : ouvre le rendu réel de n'importe quel type d'email dans un nouvel onglet, sans envoi ni configuration SMTP requise (aperçu et envoi partagent le même code de rendu)
 

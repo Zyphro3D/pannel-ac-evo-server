@@ -98,7 +98,7 @@ def _layout(*, eyebrow: str, headline1: str, headline2: str, body_html: str,
         </tr>"""
 
     return f"""\
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:{_BG};padding:32px 16px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding:32px 16px;">
   <tr>
     <td align="center">
       <table role="presentation" width="600" cellpadding="0" cellspacing="0"
