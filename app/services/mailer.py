@@ -114,20 +114,23 @@ def _layout(*, eyebrow: str, headline1: str, headline2: str, body_html: str,
         </tr>
 
         <tr>
-          <td style="padding:0;">
-            <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
-              <td width="320" valign="middle" style="padding:36px 28px;background:{_CARD};">
-                <div style="width:38px;height:3px;background:{_ACCENT};margin:0 0 16px;"></div>
-                <div style="color:#ffffff;font-family:{_FONT};font-size:24px;font-weight:800;line-height:1.2;text-transform:uppercase;">{_e(headline1)}</div>
-                <div style="color:{_ACCENT};font-family:{_FONT};font-size:24px;font-weight:800;line-height:1.2;text-transform:uppercase;margin-bottom:16px;">{_e(headline2)}</div>
-                <div style="color:#d4d4d8;font-family:{_FONT};font-size:14.5px;line-height:1.6;">
-                  {body_html}
-                </div>
-              </td>
-              <td width="260" style="padding:0;">
-                <img src="{_e(hero)}" width="260" alt="" style="display:block;width:260px;height:100%;min-height:220px;object-fit:cover;">
-              </td>
-            </tr></table>
+          <td background="{_e(hero)}" bgcolor="{_BG}"
+              style="padding:52px 32px;background-image:url('{_e(hero)}');background-size:cover;background-position:center;background-repeat:no-repeat;">
+            <!--[if mso]>
+            <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="width:600px;">
+            <v:fill type="frame" src="{_e(hero)}" color="{_BG}" />
+            <v:textbox inset="0,0,0,0">
+            <![endif]-->
+            <div style="width:38px;height:3px;background:{_ACCENT};margin:0 0 16px;"></div>
+            <div style="color:#ffffff;font-family:{_FONT};font-size:24px;font-weight:800;line-height:1.2;text-transform:uppercase;text-shadow:0 1px 6px rgba(0,0,0,.6);">{_e(headline1)}</div>
+            <div style="color:{_ACCENT};font-family:{_FONT};font-size:24px;font-weight:800;line-height:1.2;text-transform:uppercase;margin-bottom:16px;text-shadow:0 1px 6px rgba(0,0,0,.6);">{_e(headline2)}</div>
+            <div style="color:#f1f1f3;font-family:{_FONT};font-size:14.5px;line-height:1.6;text-shadow:0 1px 4px rgba(0,0,0,.7);max-width:340px;">
+              {body_html}
+            </div>
+            <!--[if mso]>
+            </v:textbox>
+            </v:rect>
+            <![endif]-->
           </td>
         </tr>
 {_features_row(features or [])}
