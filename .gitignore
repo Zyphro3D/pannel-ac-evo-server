@@ -71,6 +71,9 @@ CLAUDE.md
 .claude/
 AUDIT.md
 
+# Notes internes — pas destinées au dépôt public
+ROADBOOK.md
+
 # Docker override — généré dynamiquement par le panel (données spécifiques à l'instance)
 docker-compose.override.yml
 
