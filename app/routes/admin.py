@@ -276,71 +276,53 @@ def _migrate_car_meta_props(db):
 
 
 
-@admin_bp.route("/administration")
-@_admin_required
-@_superadmin_required
-def administration():
-    cfg = mailer._cfg
-    safe_cfg = {k: v for k, v in cfg.items() if k != "password"}
-    return render_template("administration.html",
-                           mail_cfg=safe_cfg,
-                           webhook_url=os.environ.get("DISCORD_WEBHOOK_URL", ""),
-                           pilots_webhook_url=os.environ.get("DISCORD_PILOTS_WEBHOOK_URL", ""),
-                           mail_preview_types=mailer.PREVIEW_TYPES)
-
-
-@admin_bp.route("/administration/mail-preview")
+@admin_bp.route("/settings/mail-preview")
 @_admin_required
 @_superadmin_required
 def mail_preview():
     html = mailer.render_preview(request.args.get("type", ""))
     if html is None:
         flash(_("Type d'email inconnu."), "error")
-        return redirect(url_for("admin.administration"))
+        return redirect(url_for("admin.settings", tab="notifications"))
     return html
 
 
-@admin_bp.route("/administration/test-email", methods=["POST"])
+@admin_bp.route("/settings/test-email", methods=["POST"])
 @_admin_required
 @_superadmin_required
 def test_email():
-    cfg      = mailer._cfg
-    safe_cfg = {k: v for k, v in cfg.items() if k != "password"}
-    to       = request.form.get("to", "").strip() or (cfg.get("admin") or [None])[0]
+    cfg = mailer._cfg
+    to  = request.form.get("to", "").strip() or (cfg.get("admin") or [None])[0]
     result_email = mailer.send_test(to) if to else {"ok": False, "error": _("Aucune adresse destinataire")}
     if is_htmx():
         if result_email.get("ok"):
             return _toast("success", _("Email envoyé avec succès"))
         return _toast("error", _("Erreur SMTP") + " : " + str(result_email.get("error", "")))
-    return render_template("administration.html",
-                           mail_cfg=safe_cfg,
-                           webhook_url=os.environ.get("DISCORD_WEBHOOK_URL", ""),
-                           pilots_webhook_url=os.environ.get("DISCORD_PILOTS_WEBHOOK_URL", ""),
-                           mail_preview_types=mailer.PREVIEW_TYPES,
-                           result_email=result_email)
+    if result_email.get("ok"):
+        flash(_("Email envoyé avec succès"), "success")
+    else:
+        flash(_("Erreur SMTP") + " : " + str(result_email.get("error", "")), "error")
+    return redirect(url_for("admin.settings", tab="notifications"))
 
 
-@admin_bp.route("/administration/test-webhook", methods=["POST"])
+@admin_bp.route("/settings/test-webhook", methods=["POST"])
 @_admin_required
 @_superadmin_required
 def test_webhook():
-    cfg      = mailer._cfg
-    safe_cfg = {k: v for k, v in cfg.items() if k != "password"}
-    channel  = request.form.get("channel", "server")
-    url      = (os.environ.get("DISCORD_PILOTS_WEBHOOK_URL", "")
-                if channel == "pilots"
-                else os.environ.get("DISCORD_WEBHOOK_URL", ""))
-    result   = discord_notifier.test_webhook(url)
+    channel = request.form.get("channel", "server")
+    url     = (os.environ.get("DISCORD_PILOTS_WEBHOOK_URL", "")
+               if channel == "pilots"
+               else os.environ.get("DISCORD_WEBHOOK_URL", ""))
+    result  = discord_notifier.test_webhook(url)
     if is_htmx():
         if result.get("ok"):
             return _toast("success", _("Message de test envoyé sur Discord"))
         return _toast("error", _("Erreur webhook") + " : " + str(result.get("error", "")))
-    return render_template("administration.html",
-                           mail_cfg=safe_cfg,
-                           webhook_url=os.environ.get("DISCORD_WEBHOOK_URL", ""),
-                           pilots_webhook_url=os.environ.get("DISCORD_PILOTS_WEBHOOK_URL", ""),
-                           result_webhook=result,
-                           result_webhook_channel=channel)
+    if result.get("ok"):
+        flash(_("Message de test envoyé sur Discord"), "success")
+    else:
+        flash(_("Erreur webhook") + " : " + str(result.get("error", "")), "error")
+    return redirect(url_for("admin.settings", tab="notifications"))
 
 
 def _track_slug(value: str) -> str:
@@ -539,6 +521,17 @@ def server():
 
 # ── Helpers .env ──────────────────────────────────────────────────────────────
 
+def _mail_template_keys() -> list:
+    """Clés MAIL_TPL_* générées depuis mailer.MAIL_TEMPLATE_FIELDS (édition des templates mail)."""
+    keys = []
+    for type_key, _label, _vars in mailer.MAIL_TEMPLATE_FIELDS:
+        fields = ["eyebrow", "h1", "h2", "body"]
+        if "cta" in mailer.MAIL_TEMPLATE_DEFAULTS[type_key]:
+            fields.append("cta")
+        keys.extend(mailer._tpl_key(type_key, f) for f in fields)
+    return keys
+
+
 _ENV_SECTIONS = [
     ("panel", "Panel", [
         "PANEL_TITLE", "PANEL_BANNER_IMG", "PANEL_LOGO_IMG", "PANEL_URL",
@@ -566,6 +559,7 @@ _ENV_SECTIONS = [
         "DISCORD_MSG_BEST_LAP", "DISCORD_MSG_ADMIN_ACTION",
         "MAIL_SERVER", "MAIL_PORT", "MAIL_USE_TLS", "MAIL_USERNAME",
         "MAIL_PASSWORD", "MAIL_FROM", "MAIL_ADMIN",
+        *_mail_template_keys(),
     ]),
 ]
 _ENV_DESCS = {
@@ -770,6 +764,7 @@ def settings():
     except Exception:
         bot_admin_password_set = False
 
+    mail_cfg = {k: v for k, v in mailer._cfg.items() if k != "password"}
     return render_template("settings.html",
                            env_values=env_values,
                            env_sections=_ENV_SECTIONS,
@@ -784,7 +779,12 @@ def settings():
                            bot_cars=bot_cars,
                            bot_admin_password_set=bot_admin_password_set,
                            current_srv=current_srv,
-                           server_status=get_status(sid))
+                           server_status=get_status(sid),
+                           mail_cfg=mail_cfg,
+                           mail_preview_types=mailer.PREVIEW_TYPES,
+                           mail_template_fields=mailer.MAIL_TEMPLATE_FIELDS,
+                           mail_template_defaults=mailer.MAIL_TEMPLATE_DEFAULTS,
+                           mail_tpl_key=mailer._tpl_key)
 
 
 def _validate_image_upload(allowed_exts=None):

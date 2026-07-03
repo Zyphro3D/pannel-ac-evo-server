@@ -3697,3 +3697,41 @@ msgstr "Vedi anteprima"
 
 msgid "Type d'email inconnu."
 msgstr "Tipo di email sconosciuto."
+
+#: Fusion page Administration dans Paramètres > Notifications
+msgid "Mail — Test et aperçu"
+msgstr "Email — Test e anteprima"
+
+msgid "Tester — Serveur"
+msgstr "Prova — Server"
+
+msgid "Tester — Pilotes"
+msgstr "Prova — Piloti"
+
+#: Éditeur de templates mail (Paramètres > Notifications)
+msgid "Templates des emails"
+msgstr "Modelli email"
+
+msgid "Personnalisez le texte de chacun des emails envoyés par le panel. Laisser un champ vide restaure le texte par défaut. Les variables entre accolades sont remplacées automatiquement à l'envoi."
+msgstr "Personalizza il testo di ciascuna email inviata dal pannello. Lasciare un campo vuoto ripristina il testo predefinito. Le variabili tra parentesi graffe vengono sostituite automaticamente all'invio."
+
+msgid "Eyebrow (contexte)"
+msgstr "Testo di contesto"
+
+msgid "Titre — ligne 1"
+msgstr "Titolo — riga 1"
+
+msgid "Titre — ligne 2"
+msgstr "Titolo — riga 2"
+
+msgid "Texte du bouton"
+msgstr "Testo del pulsante"
+
+msgid "Corps du message"
+msgstr "Corpo del messaggio"
+
+msgid "Ligne vide = nouveau paragraphe"
+msgstr "Riga vuota = nuovo paragrafo"
+
+msgid "Enregistrer les templates"
+msgstr "Salva modelli"

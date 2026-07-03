@@ -1,6 +1,6 @@
 {
   "name": "ace-panel",
-  "version": "1.9.0",
+  "version": "1.9.1",
   "private": true,
   "scripts": {
     "build": "tailwindcss -i app/static/css/input.css -o app/static/css/tailwind.min.css --minify",

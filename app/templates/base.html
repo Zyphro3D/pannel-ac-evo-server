@@ -104,7 +104,7 @@
 
       {# ── Admin dropdown ── #}
       {% if current_user.is_authenticated and current_user.is_admin %}
-      {% set _admin_eps = ('admin.server','events_admin.drivers_list','events_admin.events_list','live.live_page','admin.settings','admin.administration','admin.vehicles','admin.tracks','admin.mods','admin.servers_list','admin.my_account') %}
+      {% set _admin_eps = ('admin.server','events_admin.drivers_list','events_admin.events_list','live.live_page','admin.settings','admin.vehicles','admin.tracks','admin.mods','admin.servers_list','admin.my_account') %}
       <div x-data="{ open: false }" class="relative" @click.outside="open = false">
         <button @click="open = !open"
                 class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm
@@ -153,7 +153,6 @@
           <div class="nav-dropdown-divider"></div>
           {{ adminitem('admin.servers_list', _('Serveurs'), ['admin.server_create','admin.server_toggle','admin.server_delete']) }}
           {{ adminitem('admin.settings', _('Paramètres')) }}
-          {{ adminitem('admin.administration', _('Administration')) }}
           {% endif %}
           <div class="nav-dropdown-divider"></div>
           {{ adminitem('admin.my_account', _('Mon compte')) }}
@@ -263,7 +262,6 @@
       {% if current_user.is_superadmin %}
         <a href="{{ url_for('admin.servers_list') }}" class="nav-dropdown-item rounded-lg pl-5">{{ _('Serveurs') }}</a>
         <a href="{{ url_for('admin.settings') }}" class="nav-dropdown-item rounded-lg pl-5">{{ _('Paramètres') }}</a>
-        <a href="{{ url_for('admin.administration') }}" class="nav-dropdown-item rounded-lg pl-5">{{ _('Administration') }}</a>
       {% endif %}
       <a href="{{ url_for('admin.my_account') }}" class="nav-dropdown-item rounded-lg pl-5">{{ _('Mon compte') }}</a>
     {% endif %}
