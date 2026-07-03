@@ -3,7 +3,6 @@ module.exports = {
   content: [
     "./app/templates/**/*.html",
     "./app/static/js/**/*.js",
-    "./node_modules/flowbite/**/*.js"
   ],
   theme: {
     extend: {
@@ -35,7 +34,6 @@ module.exports = {
   },
   plugins: [
     require("@tailwindcss/forms"),
-    require("flowbite/plugin"),
   ],
   /* Désactivé pendant la migration progressive : main.css coexiste avec Tailwind.
      À activer quand main.css est totalement supprimé (fin Phase 2). */

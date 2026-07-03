@@ -172,6 +172,8 @@ def create_config(name: str, copy_from: str | None = None) -> dict:
         return {"ok": False, "error": "file_exists"}
 
     if copy_from:
+        if not _valid_config_name(copy_from):
+            return {"ok": False, "error": "invalid_source_name"}
         src = _configs_dir() / copy_from
         if not src.exists():
             return {"ok": False, "error": "source_not_found"}
@@ -576,9 +578,15 @@ def apply_server_patch(patch: dict, is_superadmin: bool = False) -> dict:
                 new_cars.append(_car_dict(car, selected, ballast, restrictor))
             config["Event"]["Cars"] = new_cars
         elif key == "Sessions":
+            _session_fields = {
+                "forceTimeDuration", "TimeMultiplier", "IsVisible", "Name", "Duration",
+                "Length", "Hour", "Minute", "MaxWaitToBox", "OvertimeWaitingNextSession",
+                "MinWaitingForPlayers", "MaxWaitingForPlayers",
+            }
             for sess_key, sess_val in value.items():
-                if sess_key in config["Sessions"]:
-                    config["Sessions"][sess_key].update(sess_val)
+                if sess_key in config["Sessions"] and isinstance(sess_val, dict):
+                    filtered = {k: v for k, v in sess_val.items() if k in _session_fields}
+                    config["Sessions"][sess_key].update(filtered)
 
     save_config(config)
     return config
@@ -666,3 +674,54 @@ def _default_config() -> dict:
             },
         },
     }
+
+
+# ── Sauvegarde du formulaire "par-serveur" de /settings ────────────────────────
+
+def save_server_form(current_srv, form) -> list[dict]:
+    """Applique au Server les champs du formulaire par-serveur (nom, ports, webhooks Discord)
+    et commit en DB. Retourne une liste d'erreurs de port sous forme structurée
+    (le libellé traduit est construit par l'appelant, côté route) :
+      {"field": "tcp"|"http", "type": "invalid_range"|"conflict", "port": int, "name": str|None}
+    """
+    from app.services.database import db
+    from app.models import Server
+
+    name = form.get("srv_name", "").strip()
+    tcp  = form.get("srv_tcp_port", "").strip()
+    http = form.get("srv_http_port", "").strip()
+    errors: list[dict] = []
+
+    if name:
+        current_srv.name = name
+
+    if tcp and tcp.isdigit():
+        new_tcp = int(tcp)
+        if not (1024 <= new_tcp <= 65535):
+            errors.append({"field": "tcp", "type": "invalid_range", "port": new_tcp, "name": None})
+        else:
+            conflict = Server.query.filter(Server.id != current_srv.id, db.or_(
+                Server.tcp_port == new_tcp, Server.udp_port == new_tcp
+            )).first()
+            if conflict:
+                errors.append({"field": "tcp", "type": "conflict", "port": new_tcp, "name": conflict.name})
+            else:
+                current_srv.tcp_port = new_tcp
+                current_srv.udp_port = new_tcp
+
+    if http and http.isdigit():
+        new_http = int(http)
+        if not (1024 <= new_http <= 65535):
+            errors.append({"field": "http", "type": "invalid_range", "port": new_http, "name": None})
+        else:
+            conflict = Server.query.filter(Server.id != current_srv.id, Server.http_port == new_http).first()
+            if conflict:
+                errors.append({"field": "http", "type": "conflict", "port": new_http, "name": conflict.name})
+            else:
+                current_srv.http_port = new_http
+
+    current_srv.discord_webhook_main   = form.get("srv_discord_main",   "").strip()
+    current_srv.discord_webhook_pilots = form.get("srv_discord_pilots", "").strip()
+    current_srv.discord_webhook_race   = form.get("srv_discord_race",   "").strip()
+    db.session.commit()
+    return errors

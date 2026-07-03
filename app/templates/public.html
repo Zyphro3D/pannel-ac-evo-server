@@ -23,7 +23,7 @@
   </div>
 </div>
 
-<div class="max-w-screen-xl mx-auto px-4 sm:px-6 pb-10">
+<div class="px-4 sm:px-6 pb-10">
 
 {# ── Section 2 : Serveurs de jeu ── #}
 {% if servers %}
@@ -230,7 +230,7 @@
 
 {# ── Section 4 : Derniers résultats ── #}
 {% if recent_sessions %}
-{% set ordinals = ['1er', '2e', '3e', '4e'] %}
+{% set ordinals = [_('1er'), _('2e'), _('3e'), _('4e')] %}
 <div class="h-panel">
   <div class="h-panel-header">
     <span class="h-panel-title">{{ _('Derniers résultats') }}</span>
@@ -248,7 +248,7 @@
 
       <div class="h-result-body">
         <h4>{{ p.track or '—' }}</h4>
-        <div class="h-result-session">{{ p.session_type or '—' }}</div>
+        <div class="h-result-session">{{ p.session_type | session_type_label or '—' }}</div>
 
         {% if winner %}
         <div class="h-result-time">
@@ -286,13 +286,14 @@
 {% block scripts %}
 <script nonce="{{ csp_nonce }}">
 /* ── Uptime counters ── */
+const _upD = "{{ _('j') }}", _upH = "{{ _('h') }}", _upM = "{{ _('min') }}";
 function _fmtUptime(s) {
   const d = Math.floor(s / 86400);
   const h = Math.floor((s % 86400) / 3600);
   const m = Math.floor((s % 3600) / 60);
-  if (d > 0) return d + 'j ' + h + 'h' + String(m).padStart(2,'0');
-  if (h > 0) return h + 'h' + String(m).padStart(2,'0');
-  return m + ' min';
+  if (d > 0) return d + _upD + ' ' + h + _upH + String(m).padStart(2,'0');
+  if (h > 0) return h + _upH + String(m).padStart(2,'0');
+  return m + ' ' + _upM;
 }
 function _tickUptimes() {
   document.querySelectorAll('.h-srv-uptime[data-started-at]').forEach(function(el) {

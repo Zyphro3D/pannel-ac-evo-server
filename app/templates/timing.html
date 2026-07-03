@@ -2,9 +2,7 @@
 {% block title %}{{ _('Classement en direct') }}{% if active_server %} — {{ active_server.name }}{% endif %} — AC EVO{% endblock %}
 
 {% block head %}
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/fonts.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -92,13 +90,13 @@
       <!-- Boutons de réaction emoji -->
       <div class="timing-react-wrap">
         <span class="timing-react-label">{{ _('Réagir') }} :</span>
-        <div class="timing-react-btns">
-          <button class="timing-react-btn" data-emoji="🏁" onclick="sendReaction('🏁')" title="{{ _('Beau tour !') }}">🏁</button>
-          <button class="timing-react-btn" data-emoji="👍" onclick="sendReaction('👍')" title="{{ _('Bien joué !') }}">👍</button>
-          <button class="timing-react-btn" data-emoji="❤️" onclick="sendReaction('❤️')" title="{{ _('Courage !') }}">❤️</button>
-          <button class="timing-react-btn" data-emoji="🔥" onclick="sendReaction('🔥')" title="{{ _('En feu !') }}">🔥</button>
-          <button class="timing-react-btn" data-emoji="💪" onclick="sendReaction('💪')" title="{{ _('Bravo !') }}">💪</button>
-          <button class="timing-react-btn" data-emoji="⚡" onclick="sendReaction('⚡')" title="{{ _('Allez !') }}">⚡</button>
+        <div class="timing-react-btns" id="timing-react-btns">
+          <button class="timing-react-btn" data-emoji="🏁" title="{{ _('Beau tour !') }}">🏁</button>
+          <button class="timing-react-btn" data-emoji="👍" title="{{ _('Bien joué !') }}">👍</button>
+          <button class="timing-react-btn" data-emoji="❤️" title="{{ _('Courage !') }}">❤️</button>
+          <button class="timing-react-btn" data-emoji="🔥" title="{{ _('En feu !') }}">🔥</button>
+          <button class="timing-react-btn" data-emoji="💪" title="{{ _('Bravo !') }}">💪</button>
+          <button class="timing-react-btn" data-emoji="⚡" title="{{ _('Allez !') }}">⚡</button>
         </div>
         <span class="timing-react-status" id="timing-react-status"></span>
       </div>
@@ -113,7 +111,7 @@
           <span class="dot offline" id="admin-tcp-dot"></span>
           <span id="admin-tcp-label">TCP —</span>
         </div>
-        <button class="btn btn-ghost btn-sm" id="btn-elevate-admin" onclick="elevateAdmin()"
+        <button class="btn btn-ghost btn-sm" id="btn-elevate-admin"
                 title="{{ _('Envoyer \\admin <password> via le bot TCP') }}" style="display:none">
           {{ _('Élever admin') }}
         </button>
@@ -147,7 +145,7 @@
         </select>
         <input type="text" id="admin-chat-input" class="form-control timing-admin-input"
                placeholder="{{ _('Tapez un message ou commande…') }}" maxlength="200" disabled>
-        <button class="btn btn-primary" id="admin-chat-send" onclick="sendAdminChat()" disabled>{{ _('Envoyer') }}</button>
+        <button class="btn btn-primary" id="admin-chat-send" disabled>{{ _('Envoyer') }}</button>
       </div>
       <div id="admin-chat-log" class="timing-admin-log"></div>
     </div>
@@ -357,10 +355,7 @@ async function sendReaction(emoji) {
   try {
     const r = await fetch(`/api/timing/react?server=${SERVER_ID}`, {
       method:  'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken':  document.querySelector('meta[name="csrf-token"]').content,
-      },
+      headers: _csrfHeaders(),
       body: JSON.stringify({ reaction: emoji, driver }),
     });
     const d = await r.json();
@@ -372,6 +367,10 @@ async function sendReaction(emoji) {
     setTimeout(() => { status.textContent = ''; }, 3000);
   }
 }
+document.getElementById('timing-react-btns')?.addEventListener('click', (e) => {
+  const btn = e.target.closest('.timing-react-btn');
+  if (btn) sendReaction(btn.dataset.emoji);
+});
 
 // ── Init : cache local immédiat puis API ──────────────────────────────────────
 _updateReactTitles();
@@ -454,10 +453,7 @@ async function sendAdminChat() {
   try {
     const r = await fetch(`/api/live/chat?server=${SERVER_ID}`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content
-      },
+      headers: _csrfHeaders(),
       body: JSON.stringify({ message: text })
     });
     const d = await r.json();
@@ -527,6 +523,7 @@ function onCarSelect(sel) {
 document.getElementById('admin-chat-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') sendAdminChat();
 });
+document.getElementById('admin-chat-send').addEventListener('click', sendAdminChat);
 
 async function elevateAdmin() {
   const btn = document.getElementById('btn-elevate-admin');
@@ -534,7 +531,7 @@ async function elevateAdmin() {
   try {
     const r = await fetch('/api/live/bot/elevate-admin', {
       method: 'POST',
-      headers: { 'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content },
+      headers: _csrfHeaders(),
     });
     const d = await r.json();
     if (d.ok) {
@@ -548,6 +545,7 @@ async function elevateAdmin() {
     btn.disabled = false;
   }
 }
+document.getElementById('btn-elevate-admin').addEventListener('click', elevateAdmin);
 
 pollTcpStatus();
 setInterval(pollTcpStatus, 5000);

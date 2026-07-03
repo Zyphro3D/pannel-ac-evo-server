@@ -45,6 +45,11 @@ limiter       = Limiter(key_func=get_remote_address, default_limits=[])
 # ── Persistance des paramètres (Portainer-compatible) ─────────────────────────
 _SETTINGS_PATH      = Path(__file__).parent.parent / "data" / "settings.json"
 _SETTINGS_SKIP_KEYS = {"SECRET_KEY"}   # clés structurelles : restent dans .env uniquement
+_SETTINGS_BOOL_KEYS = {"SESSION_COOKIE_SECURE", "MAIL_USE_TLS", "ACE_BOT_IS_ADMIN", "REQUIRE_EMAIL_CONFIRMATION"}
+# "SERVER_NAME" ici = nom d'affichage du serveur ACE EVO, mais c'est aussi une clé Flask
+# réservée qui pilote url_for(_external=True)/le subdomain matching. Ne jamais la répercuter
+# dans app.config, sous peine de casser toute génération d'URL externe (ex. callback Steam OpenID).
+_APPCONFIG_RESERVED_KEYS = {"SERVER_NAME"}
 
 
 def _load_settings(app):
@@ -58,7 +63,8 @@ def _load_settings(app):
         for k, v in data.items():
             if k not in _SETTINGS_SKIP_KEYS:
                 os.environ[k] = str(v)
-                app.config[k] = v
+                if k not in _APPCONFIG_RESERVED_KEYS:
+                    app.config[k] = (str(v).lower() == "true") if k in _SETTINGS_BOOL_KEYS else v
                 count += 1
         _log.getLogger(__name__).info("settings.json chargé : %d clé(s)", count)
     except Exception as e:
@@ -142,134 +148,18 @@ def _seed_servers(db):
     log.info("Serveur #1 créé automatiquement depuis .env")
 
 
-def _migrate_indexes(db):
-    """Crée les index composites manquants sur les DB existantes."""
-    import sqlalchemy as sa
-    indexes = [
-        ("ix_event_status_email_sent",       "CREATE INDEX IF NOT EXISTS ix_event_status_email_sent ON event (status, email_sent)"),
-        ("ix_event_status_discord_notified",  "CREATE INDEX IF NOT EXISTS ix_event_status_discord_notified ON event (status, discord_notified)"),
-        ("ix_car_meta_display_name",          "CREATE INDEX IF NOT EXISTS ix_car_meta_display_name ON car_meta (display_name)"),
-        ("ix_session_result_run_id",           "CREATE INDEX IF NOT EXISTS ix_session_result_run_id ON session_result (run_id)"),
-        ("ix_event_status_date",               "CREATE INDEX IF NOT EXISTS ix_event_status_date ON event (status, date)"),
-    ]
-    with db.engine.connect() as conn:
-        for name, sql in indexes:
-            try:
-                conn.execute(sa.text(sql))
-                conn.commit()
-            except Exception as e:
-                _log.getLogger(__name__).warning("Index %s ignoré : %s", name, e)
-
-
-def _migrate_db(db):
-    """Applique les ALTER TABLE manquants sur SQLite sans casser les données existantes."""
-    import sqlalchemy as sa
-    engine = db.engine
-    allowed_tables = {"event", "driver", "session_result"}
-    allowed_columns = {
-        "practice_minutes", "qualifying_minutes", "warmup_minutes", "race_minutes",
-        "allowed_cars", "reset_token", "reset_token_expires", "is_public",
-        "auto_launch", "launched", "discord_notified", "cars_config",
-        "config_name", "run_id", "server_id",
-    }
-    cols_to_add = [
-        ("event",  "practice_minutes",    "INTEGER DEFAULT 60"),
-        ("event",  "qualifying_minutes",  "INTEGER DEFAULT 30"),
-        ("event",  "warmup_minutes",      "INTEGER DEFAULT 10"),
-        ("event",  "race_minutes",        "INTEGER DEFAULT 60"),
-        ("event",  "allowed_cars",        "TEXT    DEFAULT '[]'"),
-        ("driver", "reset_token",         "TEXT"),
-        ("driver", "reset_token_expires", "DATETIME"),
-        ("event",  "is_public",           "INTEGER DEFAULT 0"),
-        ("event",  "auto_launch",          "INTEGER DEFAULT 0"),
-        ("event",  "launched",            "INTEGER DEFAULT 0"),
-        ("event",  "discord_notified",    "INTEGER DEFAULT 0"),
-        ("event",  "cars_config",         "TEXT    DEFAULT '{}'"),
-        ("session_result", "config_name", "TEXT"),
-        ("session_result", "run_id",      "TEXT"),
-        ("session_result", "server_id",   "INTEGER"),
-    ]
-    with engine.connect() as conn:
-        for table, col, col_def in cols_to_add:
-            try:
-                if table not in allowed_tables or col not in allowed_columns:
-                    raise ValueError(f"Migration non whitelistée: {table}.{col}")
-                existing = [r[1] for r in conn.execute(sa.text(f"PRAGMA table_info({table})"))]
-                if col not in existing:
-                    conn.execute(sa.text(f"ALTER TABLE {table} ADD COLUMN {col} {col_def}"))
-                    conn.commit()
-            except Exception as e:
-                _log.getLogger(__name__).warning("Migration %s.%s ignorée : %s", table, col, e)
-
-
-def _migrate_server_discord(db):
-    """Ajoute les colonnes discord_webhook_* à la table server si absentes."""
-    import sqlalchemy as sa
-    cols = [
-        ("discord_webhook_main",   "TEXT DEFAULT ''"),
-        ("discord_webhook_pilots", "TEXT DEFAULT ''"),
-        ("discord_webhook_race",   "TEXT DEFAULT ''"),
-    ]
-    with db.engine.connect() as conn:
-        existing = [r[1] for r in conn.execute(sa.text("PRAGMA table_info(server)"))]
-        for col, col_def in cols:
-            if col not in existing:
-                try:
-                    conn.execute(sa.text(f"ALTER TABLE server ADD COLUMN {col} {col_def}"))
-                    conn.commit()
-                except Exception as e:
-                    _log.getLogger(__name__).warning("Migration server.%s ignorée : %s", col, e)
-
-
-def _migrate_event_server_id(db):
-    """Ajoute la colonne server_id à la table event (v1.8.3+)."""
-    import sqlalchemy as sa
-    with db.engine.connect() as conn:
-        try:
-            conn.execute(sa.text("ALTER TABLE event ADD COLUMN server_id INTEGER DEFAULT 1"))
-            conn.commit()
-            _log.getLogger(__name__).info("Migration event.server_id : colonne ajoutée")
-        except Exception:
-            pass  # colonne déjà présente
-
-
-def _migrate_server_http_port(db):
-    """Corrige http_port 8080 → 8081 pour les installations créées avant v1.8.1."""
-    import sqlalchemy as sa
-    with db.engine.connect() as conn:
-        try:
-            result = conn.execute(sa.text(
-                "UPDATE server SET http_port = 8081 WHERE http_port = 8080"
-            ))
-            conn.commit()
-            if result.rowcount:
-                _log.getLogger(__name__).info(
-                    "Migration http_port : %d serveur(s) mis à jour 8080→8081", result.rowcount
-                )
-        except Exception as e:
-            _log.getLogger(__name__).warning("Migration http_port ignorée : %s", e)
-
+# Les migrations DB (_migrate_indexes, _migrate_db, _migrate_result_hash,
+# _migrate_server_discord, _migrate_event_server_id, _migrate_server_http_port,
+# _migrate_car_meta_props) vivent dans app/routes/admin.py (règle CLAUDE.md #4)
+# et sont importées à l'appel dans create_app().
 
 _PROP_CATEGORY = {0: "Road", 1: "Race", 2: "Track"}
 _PROP_2        = {0: "Modern", 1: "Vintage", 2: "YT"}
 _PROP_3        = {0: "ICE", 1: "EV", 2: "Hybrid"}
 
 
-def _migrate_car_meta_props(db):
-    """Ajoute property_2_label et property_3_label à car_meta (v1.9.0+)."""
-    import sqlalchemy as sa
-    with db.engine.connect() as conn:
-        for col in ("property_2_label", "property_3_label"):
-            try:
-                conn.execute(sa.text(f"ALTER TABLE car_meta ADD COLUMN {col} VARCHAR(60) DEFAULT ''"))
-                conn.commit()
-                _log.getLogger(__name__).info("Migration car_meta.%s : colonne ajoutée", col)
-            except Exception:
-                pass  # colonne déjà présente
-
-
 def _sync_car_meta(db):
-    """Synchronise CarMeta depuis cars.json au démarrage (upsert)."""
+    """Synchronise CarMeta depuis cars.json au démarrage (upsert, 1 requête SELECT)."""
     from pathlib import Path as _Path
     log = _log.getLogger(__name__)
     try:
@@ -277,6 +167,7 @@ def _sync_car_meta(db):
         from app.services.server_config import load_cars
         _media_cars = _Path(__file__).parent.parent / "media" / "cars"
         cars = load_cars()
+        existing_map = {c.slug: c for c in CarMeta.query.all()}
         for car in cars:
             slug  = car["name"]
             dn    = car.get("display_name", "")
@@ -284,7 +175,14 @@ def _sync_car_meta(db):
             cat   = _PROP_CATEGORY.get(car.get("property_1", 0), "Road")
             p2    = _PROP_2.get(car.get("property_2"), "")
             p3    = _PROP_3.get(car.get("property_3"), "")
-            existing = CarMeta.query.filter_by(slug=slug).first()
+
+            def _find_img(s):
+                for ext in (".webp", ".jpg", ".jpeg", ".png"):
+                    if (_media_cars / f"{s}{ext}").exists():
+                        return f"cars/{s}{ext}"
+                return ""
+
+            existing = existing_map.get(slug)
             if existing:
                 existing.display_name     = dn
                 existing.pi_min           = existing.pi_max = pi
@@ -293,20 +191,12 @@ def _sync_car_meta(db):
                 if not existing.category:
                     existing.category = cat
                 if not existing.image_path:
-                    for ext in (".webp", ".jpg", ".jpeg", ".png"):
-                        if (_media_cars / f"{slug}{ext}").exists():
-                            existing.image_path = f"cars/{slug}{ext}"
-                            break
+                    existing.image_path = _find_img(slug)
             else:
-                img = ""
-                for ext in (".webp", ".jpg", ".jpeg", ".png"):
-                    if (_media_cars / f"{slug}{ext}").exists():
-                        img = f"cars/{slug}{ext}"
-                        break
                 db.session.add(CarMeta(
                     slug=slug, display_name=dn, category=cat,
                     property_2_label=p2, property_3_label=p3,
-                    pi_min=pi, pi_max=pi, image_path=img,
+                    pi_min=pi, pi_max=pi, image_path=_find_img(slug),
                 ))
         db.session.commit()
         log.info("CarMeta synchronisé : %d voitures", len(cars))
@@ -386,8 +276,7 @@ def _sync_track_meta(db):
         db.session.commit()
         log.info("TrackMeta synchronisé : %d circuits", len(track_map))
     except Exception as e:
-        pass  # _log available at module level
-        _l2.getLogger(__name__).warning("_sync_track_meta ignoré : %s", e)
+        log.warning("_sync_track_meta ignoré : %s", e)
 
 
 def _register_extensions(app):
@@ -470,6 +359,23 @@ def _register_jinja(app):
     app.jinja_env.filters['local_dt_short'] = _local_dt_short
     app.jinja_env.filters['local_dt_input'] = _local_dt_input
 
+    def _session_type_label(value):
+        """Traduit un session_type brut (valeur du jeu, en anglais) en libellé localisé.
+        Retombe sur la valeur brute si elle n'est pas reconnue."""
+        if not value:
+            return value
+        from flask_babel import gettext as _gt
+        labels = {
+            "practice":   _gt("Practice"),
+            "qualify":    _gt("Qualifying"),
+            "qualifying": _gt("Qualifying"),
+            "warmup":     _gt("Warmup"),
+            "race":       _gt("Race"),
+        }
+        return labels.get(value.strip().lower(), value)
+
+    app.jinja_env.filters['session_type_label'] = _session_type_label
+
 
 def _register_request_hooks(app):
     import secrets
@@ -489,9 +395,9 @@ def _register_request_hooks(app):
         current_server_id = _session.get("current_server_id", 1)
         try:
             if current_user.is_authenticated and current_user.is_admin:
-                from app.models import Driver, Server
+                from app.models import Driver, Server, DriverStatus
                 from app.services.process_manager import is_running
-                count = Driver.query.filter_by(status="pending").count()
+                count = Driver.query.filter_by(status=DriverStatus.PENDING).count()
                 servers = Server.query.filter_by(is_enabled=True).order_by(Server.sort_order, Server.id).all()
                 if servers and current_server_id not in {s.id for s in servers}:
                     current_server_id = servers[0].id
@@ -519,7 +425,8 @@ def _register_request_hooks(app):
         response.headers["Referrer-Policy"]        = "strict-origin-when-cross-origin"
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; "
-            f"script-src 'self' 'nonce-{nonce}' https://cdn.jsdelivr.net 'unsafe-eval'; "
+            f"script-src 'self' 'nonce-{nonce}' 'unsafe-inline' https://cdn.jsdelivr.net 'unsafe-eval'; "
+            "script-src-attr 'unsafe-inline'; "
             "style-src 'self' 'unsafe-inline'; "
             "img-src 'self' data: https://cdn.jsdelivr.net; "
             "font-src 'self'; "
@@ -528,6 +435,11 @@ def _register_request_hooks(app):
         if Config.SESSION_COOKIE_SECURE:
             response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
         return response
+
+    @app.context_processor
+    def _inject_status_constants():
+        from app.models import EventStatus, DriverStatus, RegStatus
+        return {"EventStatus": EventStatus, "DriverStatus": DriverStatus, "RegStatus": RegStatus}
 
     @app.context_processor
     def _inject_system_warnings():
@@ -623,12 +535,27 @@ def create_app():
     with app.app_context():
         from . import models  # noqa: F401 — enregistre les modèles
         db.create_all()
+        from sqlalchemy import text as _sql_text
+        db.session.execute(_sql_text("PRAGMA journal_mode=WAL"))
+        db.session.execute(_sql_text("PRAGMA synchronous=NORMAL"))
+        db.session.commit()
+        from app.routes.admin import (
+            _migrate_db, _migrate_indexes, _migrate_server_discord,
+            _migrate_server_http_port, _migrate_event_server_id,
+            _migrate_car_meta_props, _migrate_result_hash,
+            _migrate_driver_steam_id, _migrate_admin_account_extra,
+            _migrate_driver_email_confirmation,
+        )
         _migrate_db(db)
         _migrate_indexes(db)
         _migrate_server_discord(db)
         _migrate_server_http_port(db)
         _migrate_event_server_id(db)
         _migrate_car_meta_props(db)
+        _migrate_result_hash(db)
+        _migrate_driver_steam_id(db)
+        _migrate_admin_account_extra(db)
+        _migrate_driver_email_confirmation(db)
         _seed_admin_accounts(db, app.config)
         _seed_servers(db)
         _sync_car_meta(db)

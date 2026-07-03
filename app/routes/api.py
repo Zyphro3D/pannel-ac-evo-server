@@ -2,7 +2,6 @@ import json
 import logging
 import hmac
 import hashlib
-import ipaddress
 from pathlib import Path
 
 from flask import Blueprint, jsonify, request, current_app, session
@@ -20,6 +19,7 @@ from app.services.process_manager import (
     start_server, stop_server, get_status, get_server_logs,
     set_auto_restart, _ensure_race_weekend_file, try_rotation_advance,
     update_session_state, get_player_history, get_container_stats,
+    get_server_raw_state,
 )
 from app.services.rotation_manager import get_rotation, save_rotation
 from app.services import config_builder, discord_notifier
@@ -31,14 +31,6 @@ from app.utils import admin_required_json as _admin_required_json
 log = logging.getLogger(__name__)
 
 api_bp = Blueprint("api", __name__)
-
-
-def _request_from_private_network() -> bool:
-    try:
-        addr = ipaddress.ip_address(request.remote_addr or "")
-    except ValueError:
-        return False
-    return addr.is_loopback or addr.is_private
 
 
 def _verify_ingest_signature(raw_body: bytes) -> bool:
@@ -88,19 +80,15 @@ def status():
 
 
 @api_bp.route("/server/logs")
-@login_required
+@_admin_required_json
 def server_logs():
-    if not current_user.is_admin:
-        return jsonify({"error": "forbidden"}), 403
     sid = _current_server_id()
     return jsonify({"logs": get_server_logs(server_id=sid)})
 
 
 @api_bp.route("/server/container-stats")
-@login_required
+@_admin_required_json
 def server_container_stats():
-    if not current_user.is_admin:
-        return jsonify({"error": "forbidden"}), 403
     sid   = _current_server_id()
     stats = get_container_stats(sid)
     if stats is None:
@@ -125,24 +113,24 @@ def _do_start(auto_restart: bool = False, server_id: int = 1) -> dict:
 
     # Ports et nom propres au serveur (multi-serveur : chaque serveur a son port externe)
     from app.models import Server as _Server
-    _srv = db.session.get(_Server, server_id)
-    _tcp = _srv.tcp_port  if _srv else None
-    _udp = _srv.udp_port  if _srv else None
-    _name = _srv.name     if _srv else None
+    server = db.session.get(_Server, server_id)
+    if server is None:
+        return {"ok": False, "error": "Serveur introuvable"}
+    tcp_port    = server.tcp_port
+    udp_port    = server.udp_port
+    server_name = server.name
 
     # Déploie la config dans server-{id}/ avec les bons ports (tracking + rotation)
     deploy_config(get_active_config_name(), server_id)
 
-    sc, sd = config_builder.build_launch_args(config,
-                                              tcp_listener=_tcp,
-                                              udp_listener=_udp,
-                                              server_name=_name)
-    result = start_server(sc, sd, get_active_config_name(), auto_restart=auto_restart,
-                          server_id=server_id)
+    serverconfig_b64, seasondefinition_b64 = config_builder.build_launch_args(
+        config, tcp_listener=tcp_port, udp_listener=udp_port, server_name=server_name)
+    result = start_server(serverconfig_b64, seasondefinition_b64, get_active_config_name(),
+                          auto_restart=auto_restart, server_id=server_id)
 
     if result.get("ok"):
         discord_notifier.safe_notify(discord_notifier.notify_start, config, get_active_config_name(),
-                                     server_id=server_id, server_name=_name or "")
+                                     server_id=server_id, server_name=server_name or "")
 
     return result
 
@@ -257,10 +245,10 @@ def create_config_route():
 @_admin_required_json
 def get_config_by_name(name):
     if name not in list_configs():
-        return jsonify({"error": "not_found"}), 404
+        return jsonify({"ok": False, "error": "not_found"}), 404
     data = load_config_by_name(name)
     if data is None:
-        return jsonify({"error": "read_error"}), 500
+        return jsonify({"ok": False, "error": "read_error"}), 500
     return jsonify(data)
 
 
@@ -315,7 +303,7 @@ def get_cars():
 @_admin_required_json
 def get_events(mode):
     if mode not in ("practice", "race"):
-        return jsonify({"error": "invalid mode"}), 400
+        return jsonify({"ok": False, "error": "invalid mode"}), 400
     return jsonify(load_events(mode))
 
 
@@ -333,8 +321,7 @@ def results_ingest():
     # serait False et get_status() retournerait config=None. On lit l'état brut
     # directement pour conserver config_name et run_id même si le container vient
     # de s'arrêter.
-    from app.services.process_manager import _read_state as _pm_read_state
-    _raw_state = _pm_read_state(sid)
+    _raw_state = get_server_raw_state(sid)
     _st = get_status(sid)
     current_config = _st.get("config") or _raw_state.get("config") or None
     current_run_id = _st.get("run_id")  or _raw_state.get("run_id")  or None
@@ -348,21 +335,32 @@ def results_ingest():
     final_session_type = ""
 
     if data:
-        parsed = parse_result_file(data)
-        result = SessionResult(
-            raw_json=json.dumps(data),
-            source="webhook",
-            track=parsed["track"][:200],
-            session_type=parsed["session_type"][:60],
-            config_name=current_config,
-            run_id=current_run_id,
-            server_id=sid,
-        )
-        db.session.add(result)
-        db.session.commit()
-        log.info("Résultats reçus via webhook : track=%r type=%r config=%r run=%r id=%d",
-                 parsed["track"], parsed["session_type"], current_config, current_run_id, result.id)
-        imported = 1
+        raw_str  = json.dumps(data)
+        raw_hash = hashlib.sha256(raw_str.encode()).hexdigest()
+        parsed   = parse_result_file(data)
+        if SessionResult.query.filter_by(raw_json_hash=raw_hash).first():
+            log.info("Résultats webhook en double ignorés (hash=%s…)", raw_hash[:8])
+        else:
+            result = SessionResult(
+                raw_json=raw_str,
+                raw_json_hash=raw_hash,
+                source="webhook",
+                track=parsed["track"][:200],
+                session_type=parsed["session_type"][:60],
+                config_name=current_config,
+                run_id=current_run_id,
+                server_id=sid,
+            )
+            db.session.add(result)
+            db.session.commit()
+            log.info("Résultats reçus via webhook : track=%r type=%r config=%r run=%r id=%d",
+                     parsed["track"], parsed["session_type"], current_config, current_run_id, result.id)
+            imported = 1
+            try:
+                from app.routes.leaderboard import invalidate_circuits_cache
+                invalidate_circuits_cache()
+            except Exception:
+                pass
         final_session_type = parsed["session_type"]
     else:
         log.info("results/ingest: body vide, scan du dossier aceserver (run=%r)", current_run_id)
@@ -484,7 +482,7 @@ def post_rotation_route():
 @login_required
 def get_result(result_id):
     """Retourne le détail complet d'une session."""
-    r = SessionResult.query.get_or_404(result_id)
+    r = db.get_or_404(SessionResult, result_id)
     parsed = get_parsed(r)
     return jsonify({
         "id":           r.id,
@@ -498,10 +496,8 @@ def get_result(result_id):
 # ── Client TCP — chat in-game ─────────────────────────────────────────────────
 
 @api_bp.route("/live/chat", methods=["POST"])
-@login_required
+@_admin_required_json
 def live_chat():
-    if not current_user.is_admin:
-        return jsonify({"ok": False, "error": "forbidden"}), 403
     data = request.get_json(force=True) or {}
     text = (data.get("message") or "").strip()
     if not text:
@@ -519,10 +515,8 @@ def live_chat():
 
 
 @api_bp.route("/live/tcp_status")
-@login_required
+@_admin_required_json
 def live_tcp_status():
-    if not current_user.is_admin:
-        return jsonify({"ok": False, "error": "forbidden"}), 403
     try:
         from app.services import ace_tcp_client
         sid = max(1, int(request.args.get("server") or session.get("current_server_id") or 1))
@@ -535,11 +529,9 @@ def live_tcp_status():
 
 
 @api_bp.route("/live/admin_cmd", methods=["POST"])
-@login_required
+@_admin_required_json
 def live_admin_cmd():
     """Envoie une commande admin in-game via le chat TCP."""
-    if not current_user.is_admin:
-        return jsonify({"ok": False, "error": "forbidden"}), 403
     data    = request.get_json(force=True) or {}
     cmd     = (data.get("cmd") or "").strip().lower()
     car_num = str(data.get("car_num", "")).strip()
@@ -587,11 +579,9 @@ def live_admin_cmd():
 
 
 @api_bp.route("/live/tcp_debug")
-@login_required
+@_admin_required_json
 def live_tcp_debug():
     """Endpoint de diagnostic : retourne les données brutes reçues via TCP."""
-    if not current_user.is_admin:
-        return jsonify({"error": "forbidden"}), 403
     try:
         from app.services import ace_tcp_client
         from app.routes.live import _build_state_cached
@@ -606,4 +596,4 @@ def live_tcp_debug():
             "tcp_leaderboard": tcp_lb,
         })
     except Exception as e:
-        return jsonify({"error": str(e)})
+        return jsonify({"ok": False, "error": str(e)})

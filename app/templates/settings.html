@@ -146,7 +146,7 @@
           <input type="hidden" name="_tab" value="panel">
           <div class="settings-card-head"><h2>{{ _('Sécurité') }}</h2></div>
           <div class="settings-fields">
-            {% for k in ['SECRET_KEY', 'SESSION_COOKIE_SECURE', 'RESULTS_INGEST_SECRET'] %}
+            {% for k in ['SECRET_KEY', 'RESULTS_INGEST_SECRET'] %}
             <label class="settings-field">
               <span>
                 <strong>{{ k }}</strong>
@@ -161,6 +161,28 @@
               {% endif %}
             </label>
             {% endfor %}
+            <label class="settings-field">
+              <span>
+                <strong>SESSION_COOKIE_SECURE</strong>
+                {% if 'SESSION_COOKIE_SECURE' in env_descs %}<em>{{ env_descs['SESSION_COOKIE_SECURE'] }}</em>{% endif %}
+              </span>
+              <div>
+                <input type="hidden" name="SESSION_COOKIE_SECURE" value="false">
+                <input type="checkbox" name="SESSION_COOKIE_SECURE" value="true" class="switch"
+                       {% if env_values.get('SESSION_COOKIE_SECURE', 'true') == 'true' %}checked{% endif %}>
+              </div>
+            </label>
+            <label class="settings-field">
+              <span>
+                <strong>REQUIRE_EMAIL_CONFIRMATION</strong>
+                {% if 'REQUIRE_EMAIL_CONFIRMATION' in env_descs %}<em>{{ env_descs['REQUIRE_EMAIL_CONFIRMATION'] }}</em>{% endif %}
+              </span>
+              <div>
+                <input type="hidden" name="REQUIRE_EMAIL_CONFIRMATION" value="false">
+                <input type="checkbox" name="REQUIRE_EMAIL_CONFIRMATION" value="true" class="switch"
+                       {% if env_values.get('REQUIRE_EMAIL_CONFIRMATION', 'false') == 'true' %}checked{% endif %}>
+              </div>
+            </label>
           </div>
           <button type="submit" class="btn btn-primary settings-save-btn">{{ _('Enregistrer les modifications') }}</button>
         </form>
@@ -176,7 +198,6 @@
             {{ _('Les images uploadées ici peuvent être utilisées dans') }} <strong>PANEL_BANNER_IMG</strong> {{ _('et') }} <strong>PANEL_LOGO_IMG</strong>.
           </p>
           <div id="upload-zone" class="settings-upload"
-               onclick="document.getElementById('file-input').click()"
                ondragover="event.preventDefault();this.classList.add('dragging')"
                ondragleave="this.classList.remove('dragging')"
                ondrop="handleDrop(event)">
@@ -195,8 +216,8 @@
             <img src="{{ url_for('serve_media', filename='banner/' ~ fname) }}" alt="{{ fname }}">
             <div>
               <strong title="{{ fname }}">{{ fname }}</strong>
-              <button class="btn btn-ghost btn-sm" type="button"
-                      onclick="navigator.clipboard.writeText('{{ fname }}').then(()=>{this.textContent='Copié';setTimeout(()=>this.textContent='Copier',1400)})">
+              <button class="btn btn-ghost btn-sm settings-copy-fname-btn" type="button"
+                      data-fname="{{ fname }}" data-label-copy="{{ _('Copier') }}" data-label-copied="{{ _('Copié') }}">
                 {{ _('Copier') }}
               </button>
             </div>
@@ -382,8 +403,8 @@
             </div>
           </div>
           <div class="flex gap-3 flex-wrap mb-6">
-            <button id="ctr-btn-restart" class="btn btn-secondary" onclick="ctrRestart()" type="button">{{ _('Redémarrer le serveur') }}</button>
-            <button id="ctr-btn-update" class="btn btn-primary" onclick="ctrModalOpen()" type="button">{{ _('Vérifier et mettre à jour') }}</button>
+            <button id="ctr-btn-restart" class="btn btn-secondary" type="button">{{ _('Redémarrer le serveur') }}</button>
+            <button id="ctr-btn-update" class="btn btn-primary" type="button">{{ _('Vérifier et mettre à jour') }}</button>
           </div>
           <div id="ctr-terminal-wrap" style="display:none">
             <div class="text-[0.75rem] text-dim uppercase tracking-[.05em] mb-1.5">{{ _('Sortie SteamCMD') }}</div>
@@ -418,8 +439,8 @@
             </div>
           </div>
           <div class="modal-foot">
-            <button class="btn-secondary btn-sm" onclick="ctrModalClose()" type="button">{{ _('Annuler') }}</button>
-            <button class="btn-primary btn-sm" onclick="ctrModalConfirm()" type="button" id="sm-btn-ok">⬆ {{ _('Lancer la mise à jour') }}</button>
+            <button class="btn-secondary btn-sm" type="button" id="sm-btn-cancel">{{ _('Annuler') }}</button>
+            <button class="btn-primary btn-sm" type="button" id="sm-btn-ok">⬆ {{ _('Lancer la mise à jour') }}</button>
           </div>
         </div>
       </div>
@@ -492,6 +513,10 @@
         if (e.key === 'Enter') ctrModalConfirm();
         if (e.key === 'Escape') ctrModalClose();
       });
+      document.getElementById('ctr-btn-restart').addEventListener('click', ctrRestart);
+      document.getElementById('ctr-btn-update').addEventListener('click', ctrModalOpen);
+      document.getElementById('sm-btn-cancel').addEventListener('click', ctrModalClose);
+      document.getElementById('sm-btn-ok').addEventListener('click', ctrModalConfirm);
       async function ctrUpdate(steamUser, steamPass, steamGuard) {
         const btn = document.getElementById('ctr-btn-update');
         const wrap = document.getElementById('ctr-terminal-wrap');
@@ -691,7 +716,7 @@
           <input type="hidden" name="_tab" value="notifications">
           <div class="settings-card-head"><h2>{{ _('Mail (SMTP)') }}</h2></div>
           <div class="settings-fields">
-            {% for k in ['MAIL_SERVER', 'MAIL_PORT', 'MAIL_USE_TLS', 'MAIL_USERNAME', 'MAIL_PASSWORD', 'MAIL_FROM', 'MAIL_ADMIN'] %}
+            {% for k in ['MAIL_SERVER', 'MAIL_PORT', 'MAIL_USERNAME', 'MAIL_PASSWORD', 'MAIL_FROM', 'MAIL_ADMIN'] %}
             <label class="settings-field">
               <span>
                 <strong>{{ k }}</strong>
@@ -704,6 +729,17 @@
               {% endif %}
             </label>
             {% endfor %}
+            <label class="settings-field">
+              <span>
+                <strong>MAIL_USE_TLS</strong>
+                {% if 'MAIL_USE_TLS' in env_descs %}<em>{{ env_descs['MAIL_USE_TLS'] }}</em>{% endif %}
+              </span>
+              <div>
+                <input type="hidden" name="MAIL_USE_TLS" value="false">
+                <input type="checkbox" name="MAIL_USE_TLS" value="true" class="switch"
+                       {% if env_values.get('MAIL_USE_TLS', 'true') == 'true' %}checked{% endif %}>
+              </div>
+            </label>
           </div>
           <button type="submit" class="btn btn-primary settings-save-btn">{{ _('Enregistrer les modifications') }}</button>
         </form>
@@ -730,7 +766,7 @@
                 <input type="hidden" name="ACE_BOT_IS_ADMIN" value="false">
                 <input type="checkbox" name="ACE_BOT_IS_ADMIN" value="true" id="bot-is-admin-cb"
                        {% if env_values.get('ACE_BOT_IS_ADMIN', 'false') == 'true' %}checked{% endif %}
-                       class="w-5 h-5 cursor-pointer">
+                       class="switch">
                 <div id="bot-admin-warn" style="margin-top:6px;font-size:0.78rem;color:var(--yellow,#f0a500);{% if bot_admin_password_set or env_values.get('ACE_BOT_IS_ADMIN','false') != 'true' %}display:none{% endif %}">
                   ⚠ {{ _('AdminPassword vide dans la config serveur — le bot se connectera sans droits admin.') }}
                   <a href="{{ url_for('admin.settings', tab='server') }}" class="text-inherit underline">{{ _('Configurer') }}</a>
@@ -743,15 +779,15 @@
                 </script>
               </div>
             </label>
-            <label class="settings-field">
+            <label class="settings-field settings-field--stack">
               <span><strong>ACE_BOT_MSG_WELCOME</strong><em>{{ env_descs.get('ACE_BOT_MSG_WELCOME', '') }}</em></span>
               <input class="form-control" type="text" name="ACE_BOT_MSG_WELCOME" value="{{ env_values.get('ACE_BOT_MSG_WELCOME', _('Bienvenue {name} !')) }}" placeholder="{{ _('Bienvenue {name} !') }}">
             </label>
-            <label class="settings-field">
+            <label class="settings-field settings-field--stack">
               <span><strong>ACE_BOT_MSG_DISCORD</strong><em>{{ env_descs.get('ACE_BOT_MSG_DISCORD', '') }}</em></span>
               <input class="form-control" type="text" name="ACE_BOT_MSG_DISCORD" value="{{ env_values.get('ACE_BOT_MSG_DISCORD', _('Rejoins le discord : {discord_url}')) }}" placeholder="{{ _('Rejoins le discord : {discord_url}') }}">
             </label>
-            <label class="settings-field">
+            <label class="settings-field settings-field--stack">
               <span><strong>ACE_BOT_MSG_SITE</strong><em>{{ env_descs.get('ACE_BOT_MSG_SITE', '') }}</em></span>
               <input class="form-control" type="text" name="ACE_BOT_MSG_SITE" value="{{ env_values.get('ACE_BOT_MSG_SITE', _('Retrouve tes resultats et evenements sur : {site_url}')) }}" placeholder="{{ _('Retrouve tes resultats et evenements sur : {site_url}') }}">
             </label>
@@ -812,12 +848,13 @@
                 </td>
                 <td class="text-[0.82rem] text-dim">{{ acc.last_login.strftime('%d/%m/%Y %H:%M') if acc.last_login else '—' }}</td>
                 <td class="flex gap-1.5 justify-end">
-                  <button class="btn btn-secondary btn-sm" @click="openEdit({{ acc.id }}, {{ acc.username | tojson }}, {{ (acc.display_name or '') | tojson }}, {{ acc.role | tojson }})">{{ _('Modifier') }}</button>
+                  <button class="btn btn-secondary btn-sm" @click="openEdit({{ acc.id }}, {{ acc.username | tojson | forceescape }}, {{ (acc.display_name or '') | tojson | forceescape }}, {{ acc.role | tojson | forceescape }})">{{ _('Modifier') }}</button>
                   {% if acc.get_id() != current_user.get_id() %}
-                  <button class="btn btn-ghost btn-sm" id="acc-toggle-{{ acc.id }}" onclick="toggleAccount({{ acc.id }}, {{ 'true' if acc.is_active else 'false' }})">{{ _('Désactiver') if acc.is_active else _('Activer') }}</button>
-                  <form method="post" action="{{ url_for('admin.account_delete', account_id=acc.id) }}" onsubmit="return confirm('{{ _('Supprimer ce compte ?') }}')">
+                  <button class="btn btn-ghost btn-sm acc-toggle-btn" id="acc-toggle-{{ acc.id }}"
+                          data-id="{{ acc.id }}" data-active="{{ 'true' if acc.is_active else 'false' }}">{{ _('Désactiver') if acc.is_active else _('Activer') }}</button>
+                  <form method="post" action="{{ url_for('admin.account_delete', account_id=acc.id) }}">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <button type="submit" class="btn btn-danger btn-sm">{{ _('Supprimer') }}</button>
+                    <button type="submit" class="btn btn-danger btn-sm" data-confirm="{{ _('Supprimer ce compte ?') }}">{{ _('Supprimer') }}</button>
                   </form>
                   {% endif %}
                 </td>
@@ -954,11 +991,14 @@ async function toggleAccount(id, isActive) {
   badge.textContent = data.active ? '{{ _("Actif") }}' : '{{ _("Inactif") }}';
   badge.className   = 'badge ' + (data.active ? 'badge-success' : 'badge-error');
   btn.textContent   = data.active ? '{{ _("Désactiver") }}' : '{{ _("Activer") }}';
-  btn.onclick       = () => toggleAccount(id, data.active);
+  btn.dataset.active = data.active ? 'true' : 'false';
 }
+document.querySelectorAll('.acc-toggle-btn').forEach((btn) => {
+  btn.addEventListener('click', () => toggleAccount(btn.dataset.id, btn.dataset.active === 'true'));
+});
 </script>
 {% endif %}
-{% if tab == 'media' %}
+{% if tab in ['panel', 'locale', 'security', 'media'] %}
 <script nonce="{{ csp_nonce }}">
 async function uploadFile(file) {
   if (!file) return;
@@ -984,6 +1024,17 @@ function handleDrop(ev) {
   ev.currentTarget.classList.remove('dragging');
   uploadFile(ev.dataTransfer.files[0]);
 }
+document.getElementById('upload-zone').addEventListener('click', () => {
+  document.getElementById('file-input').click();
+});
+document.querySelectorAll('.settings-copy-fname-btn').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    navigator.clipboard.writeText(btn.dataset.fname).then(() => {
+      btn.textContent = btn.dataset.labelCopied;
+      setTimeout(() => { btn.textContent = btn.dataset.labelCopy; }, 1400);
+    });
+  });
+});
 </script>
 {% endif %}
 {% endblock %}

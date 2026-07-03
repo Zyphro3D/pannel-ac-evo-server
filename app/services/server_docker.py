@@ -190,6 +190,15 @@ def sync_compose_override():
         log.debug("sync_compose_override: fichier absent, ignoré (%s)", _COMPOSE_OVERRIDE_PATH)
         return
 
+    if os.path.isdir(_COMPOSE_OVERRIDE_PATH):
+        log.error(
+            "sync_compose_override: %s est un DOSSIER au lieu d'un fichier — "
+            "corrigez avec: docker compose down && sudo rm -rf %s && touch %s "
+            "&& docker compose up -d --build (voir CHANGELOG v1.9.0)",
+            _COMPOSE_OVERRIDE_PATH, _COMPOSE_OVERRIDE_PATH, _COMPOSE_OVERRIDE_PATH,
+        )
+        return
+
     try:
         from app.models import Server
         servers = Server.query.filter(Server.id > 1, Server.is_enabled == True).all()  # noqa: E712
@@ -211,3 +220,59 @@ def container_exists(container_name: str) -> bool:
         return True
     except Exception:
         return False
+
+
+def resolve_new_server(name: str, tcp_port_raw: str, http_port_raw: str) -> dict:
+    """Valide les entrées du formulaire de création de serveur et résout un slug/
+    container_name uniques. Ne touche pas la DB — retourne les valeurs prêtes à
+    utiliser pour construire l'objet Server, ou une erreur structurée.
+
+    Retourne soit {"ok": True, "name", "slug", "tcp_port", "udp_port", "http_port",
+    "container_name"}, soit {"ok": False, "error": <code>, "port": int|None}
+    avec error dans {"name_required", "invalid_port", "port_conflict", "container_exists"}.
+    """
+    import re
+    from app.models import Server
+
+    name = (name or "").strip()
+    if not name:
+        return {"ok": False, "error": "name_required", "port": None}
+
+    try:
+        tcp_port  = int(tcp_port_raw  or 9701)
+        http_port = int(http_port_raw or 8082)
+    except (ValueError, TypeError):
+        return {"ok": False, "error": "invalid_port", "port": None}
+    udp_port = tcp_port  # TCP et UDP utilisent toujours le même numéro
+    for port in (tcp_port, http_port):
+        if not (1024 <= port <= 65535):
+            return {"ok": False, "error": "invalid_port", "port": port}
+
+    # Vérifie les conflits de port avec les serveurs existants
+    used_ports = {p for s in Server.query.all() for p in (s.tcp_port, s.udp_port, s.http_port)}
+    for port in (tcp_port, http_port):
+        if port in used_ports:
+            return {"ok": False, "error": "port_conflict", "port": port}
+
+    # Slug unique : base + suffixe numérique si collision
+    base_slug = re.sub(r"-+", "-", re.sub(r"[^a-z0-9-]", "-", name.lower())).strip("-") or "server"
+    slug, counter = base_slug, 1
+    while Server.query.filter_by(slug=slug).first():
+        slug = f"{base_slug}-{counter}"
+        counter += 1
+
+    # container_name : toujours auto-généré depuis le slug, jamais fourni par l'utilisateur
+    container_name = f"ace-server-{slug}"
+    cnt_base, cnt_i = container_name, 1
+    while Server.query.filter_by(container_name=container_name).first():
+        container_name = f"{cnt_base}-{cnt_i}"
+        cnt_i += 1
+
+    if container_exists(container_name):
+        return {"ok": False, "error": "container_exists", "port": None, "container_name": container_name}
+
+    return {
+        "ok": True, "name": name, "slug": slug,
+        "tcp_port": tcp_port, "udp_port": udp_port, "http_port": http_port,
+        "container_name": container_name,
+    }

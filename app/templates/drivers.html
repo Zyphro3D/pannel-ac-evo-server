@@ -10,104 +10,13 @@
   </div>
 
   {# ── En attente ── #}
-  <section class="card mb-5">
-    <div class="card-head">
-      <h2 class="card-title">{{ _('En attente de validation') }}</h2>
-      <span class="badge badge-warning">{{ pending|length }} {{ _('pilote(s)') }}</span>
-    </div>
-    {% if pending %}
-    <div class="table-wrapper">
-      <table class="table-base">
-        <thead>
-          <tr>
-            <th>{{ _('Nom in-game') }}</th>
-            <th>{{ _('Email') }}</th>
-            <th>{{ _('Inscrit le') }}</th>
-            <th class="text-right">{{ _('Actions') }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for d in pending %}
-          <tr id="drv-row-{{ d.id }}">
-            <td class="font-medium">{{ d.ingame_name }}</td>
-            <td class="text-dim">{{ d.email }}</td>
-            <td class="text-dim text-xs">{{ d.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
-            <td>
-              <div class="flex items-center justify-end gap-2">
-                <button class="btn-success btn-sm"
-                        hx-post="{{ url_for('events_admin.driver_approve', driver_id=d.id) }}"
-                        hx-target="#drv-row-{{ d.id }}" hx-swap="outerHTML">
-                  ✓ {{ _('Approuver') }}
-                </button>
-                <button class="btn-secondary btn-sm"
-                        hx-post="{{ url_for('events_admin.driver_reject', driver_id=d.id) }}"
-                        hx-target="#drv-row-{{ d.id }}" hx-swap="outerHTML"
-                        hx-confirm="{{ _('Refuser') }} {{ d.ingame_name }} ?">
-                  ✕ {{ _('Refuser') }}
-                </button>
-                <button class="btn-danger btn-sm"
-                        hx-post="{{ url_for('events_admin.driver_delete', driver_id=d.id) }}"
-                        hx-target="#drv-row-{{ d.id }}" hx-swap="outerHTML"
-                        hx-confirm="{{ _('Supprimer définitivement') }} {{ d.ingame_name }} ?">
-                  🗑
-                </button>
-              </div>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-    {% else %}
-    <div class="empty-state py-8">
-      <p class="text-sm">{{ _('Aucun pilote en attente.') }}</p>
-    </div>
-    {% endif %}
+  <section class="card mb-5" id="pending-section">
+    {% include "_partials/drivers_pending.html" %}
   </section>
 
   {# ── Approuvés ── #}
-  <section class="card">
-    <div class="card-head">
-      <h2 class="card-title">{{ _('Pilotes approuvés') }}</h2>
-      <span class="badge badge-success">{{ approved|length }} {{ _('pilote(s)') }}</span>
-    </div>
-    {% if approved %}
-    <div class="table-wrapper">
-      <table class="table-base">
-        <thead>
-          <tr>
-            <th>{{ _('Nom in-game') }}</th>
-            <th>{{ _('Email') }}</th>
-            <th>{{ _('Inscrit le') }}</th>
-            <th class="text-right">{{ _('Actions') }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for d in approved %}
-          <tr id="drv-row-{{ d.id }}">
-            <td class="font-medium">{{ d.ingame_name }}</td>
-            <td class="text-dim">{{ d.email }}</td>
-            <td class="text-dim text-xs">{{ d.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
-            <td>
-              <div class="flex items-center justify-end">
-                <button class="btn-danger btn-sm"
-                        hx-post="{{ url_for('events_admin.driver_delete', driver_id=d.id) }}"
-                        hx-target="#drv-row-{{ d.id }}" hx-swap="outerHTML"
-                        hx-confirm="{{ _('Supprimer définitivement') }} {{ d.ingame_name }} ?">
-                  🗑 {{ _('Supprimer définitivement') }}
-                </button>
-              </div>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-    {% else %}
-    <div class="empty-state py-8">
-      <p class="text-sm">{{ _('Aucun pilote approuvé.') }}</p>
-    </div>
-    {% endif %}
+  <section class="card" id="approved-section">
+    {% include "_partials/drivers_approved.html" %}
   </section>
 
 </div>

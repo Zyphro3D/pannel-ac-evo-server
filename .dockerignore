@@ -1,5 +1,6 @@
 .venv/
 .git/
+node_modules/
 .claude/
 *.db
 aceserver/

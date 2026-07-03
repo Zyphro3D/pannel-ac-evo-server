@@ -1,7 +1,7 @@
 {% extends "base.html" %}
-{% block title %}Serveur — {{ panel_title }}{% endblock %}
-{% block content %}
+{% block title %}{{ _('Serveur') }} — {{ panel_title }}{% endblock %}
 {% set view = server_view or request.args.get('view', 'status') %}
+{% block content %}
 {% set max_players = config.Server.MaxPlayers if config else 0 %}
 {% set selected_cars = config.Event.Cars | selectattr('IsSelected') | list if config else [] %}
 <script nonce="{{ csp_nonce }}">document.body.dataset.activeConfig = "{{ active_config|default('') }}";</script>
@@ -34,7 +34,7 @@
       </div>
       <div class="modal-foot">
         <button class="btn-secondary btn-sm" @click="open = false">{{ _('Annuler') }}</button>
-        <button class="btn-primary btn-sm"   onclick="submitCreate()">{{ _('Créer') }}</button>
+        <button class="btn-primary btn-sm" id="modal-create-submit-btn">{{ _('Créer') }}</button>
       </div>
     </div>
   </div>
@@ -61,7 +61,7 @@
       </div>
       <div class="modal-foot">
         <button class="btn-secondary btn-sm" @click="open = false">{{ _('Annuler') }}</button>
-        <button class="btn-primary btn-sm"   onclick="submitRename()">{{ _('Renommer') }}</button>
+        <button class="btn-primary btn-sm" id="modal-rename-submit-btn">{{ _('Renommer') }}</button>
       </div>
     </div>
   </div>
@@ -77,8 +77,8 @@
         <ul id="modal-error-list" class="list-disc list-inside text-xs text-dim space-y-1 mt-2"></ul>
       </div>
       <div class="modal-foot">
-        <button class="btn-secondary btn-sm" onclick="closeConfigErrorModal()">{{ _('Choisir autre') }}</button>
-        <button class="btn-primary btn-sm"   onclick="doRepairConfig()"><span class="icon-gear"></span> {{ _('Réparer') }}</button>
+        <button class="btn-secondary btn-sm" id="modal-config-error-close-btn">{{ _('Choisir autre') }}</button>
+        <button class="btn-primary btn-sm" id="modal-config-error-repair-btn"><span class="icon-gear"></span> {{ _('Réparer') }}</button>
       </div>
     </div>
   </div>
@@ -99,7 +99,7 @@
       </div>
       <div class="modal-foot">
         <button class="btn-secondary btn-sm" @click="open = false">{{ _('Fermer') }}</button>
-        <button class="btn-secondary btn-sm" onclick="loadLogs()">&#8635; {{ _('Actualiser') }}</button>
+        <button class="btn-secondary btn-sm" id="modal-logs-refresh-btn">&#8635; {{ _('Actualiser') }}</button>
       </div>
     </div>
   </div>
@@ -167,16 +167,16 @@
 
   <!-- ACTIONS -->
   <section class="srv-action-grid">
-    <button class="srv-action-card srv-action-start" id="btn-start" onclick="serverAction('start')">
+    <button class="srv-action-card srv-action-start" id="btn-start">
       <span>▶</span><strong>{{ _('Démarrer le serveur') }}</strong>
     </button>
-    <button class="srv-action-card srv-action-stop" id="btn-stop" onclick="serverAction('stop')">
+    <button class="srv-action-card srv-action-stop" id="btn-stop">
       <span>■</span><strong>{{ _('Arrêter le serveur') }}</strong>
     </button>
-    <button class="srv-action-card" id="btn-restart" onclick="serverAction('restart')">
+    <button class="srv-action-card" id="btn-restart">
       <span>↻</span><strong>{{ _('Redémarrer le serveur') }}</strong>
     </button>
-    <button class="srv-action-card srv-action-warn" onclick="openLogs()">
+    <button class="srv-action-card srv-action-warn" id="btn-logs">
       <span>!</span><strong>{{ _('Logs serveur') }}</strong>
     </button>
   </section>
@@ -281,12 +281,12 @@
       <div class="srv-card-head"><h2>{{ _('Activité récente') }}</h2></div>
       <div class="srv-activity-list">
         {% for item in recent_server_activity %}
-        <div><time>{{ item.time }}</time><span>{{ item.message }}</span></div>
+        <div title="{{ item.message }}"><time>{{ item.time }}</time><span>{{ item.message }}</span></div>
         {% else %}
         <p>{{ _('Aucune activité serveur récente.') }}</p>
         {% endfor %}
       </div>
-      <button class="srv-logs-btn" onclick="openLogs()">
+      <button class="srv-logs-btn" id="srv-logs-open-btn">
         <span class="arr">›</span> {{ _('Voir tous les logs') }}
       </button>
     </article>
@@ -297,7 +297,7 @@
   {% if view == 'configuration' %}
   <header class="server-section-head">
     <h1>{{ _('Configurations') }}</h1>
-    <button class="btn btn-primary" onclick="openCreateModal(false)">+ {{ _('Nouvelle configuration') }}</button>
+    <button class="btn btn-primary" id="srv-new-config-btn">+ {{ _('Nouvelle configuration') }}</button>
   </header>
   <section class="srv-config-grid">
     {% for item in config_summaries %}
@@ -328,15 +328,15 @@
         <details class="srv-action-menu">
           <summary>{{ _('Action') }}</summary>
           {% if item.running %}
-          <button onclick="serverAction('stop')">{{ _('Arrêter') }}</button>
-          <button onclick="serverAction('restart')">{{ _('Redémarrer') }}</button>
+          <button data-action="stop">{{ _('Arrêter') }}</button>
+          <button data-action="restart">{{ _('Redémarrer') }}</button>
           {% else %}
-          <button onclick="startConfig('{{ item.name }}')">{{ _('Démarrer') }}</button>
+          <button data-action="start" data-name="{{ item.name }}">{{ _('Démarrer') }}</button>
           {% endif %}
-          <button onclick="editConfig('{{ item.name }}', '{{ url_for('admin.server', view='config_edit') }}')">{{ _('Modifier') }}</button>
-          <button onclick="serverSelectConfig('{{ item.name }}');openRenameModal()">{{ _('Renommer') }}</button>
-          <button onclick="serverSelectConfig('{{ item.name }}');openCreateModal(true)">{{ _('Dupliquer') }}</button>
-          <button onclick="serverSelectConfig('{{ item.name }}');confirmDeleteConfig()">{{ _('Supprimer') }}</button>
+          <button data-action="edit" data-name="{{ item.name }}" data-edit-url="{{ url_for('admin.server', view='config_edit') }}">{{ _('Modifier') }}</button>
+          <button data-action="rename" data-name="{{ item.name }}">{{ _('Renommer') }}</button>
+          <button data-action="duplicate" data-name="{{ item.name }}">{{ _('Dupliquer') }}</button>
+          <button data-action="delete" data-name="{{ item.name }}">{{ _('Supprimer') }}</button>
         </details>
       </div>
     </article>
@@ -358,12 +358,12 @@
       <span id="player-count" class="player-count"></span>
     </div>
     <div class="control-actions">
-      <button class="btn-start"   id="btn-start"   onclick="serverAction('start')">{{ _('Démarrer') }}</button>
-      <button class="btn-stop"    id="btn-stop"    onclick="serverAction('stop')">{{ _('Arrêter') }}</button>
-      <button class="btn-restart" id="btn-restart" onclick="serverAction('restart')">{{ _('Redémarrer') }}</button>
-      <button class="btn-logs"    onclick="openLogs()">{{ _('Logs') }}</button>
+      <button class="btn-start"   id="btn-start">{{ _('Démarrer') }}</button>
+      <button class="btn-stop"    id="btn-stop">{{ _('Arrêter') }}</button>
+      <button class="btn-restart" id="btn-restart">{{ _('Redémarrer') }}</button>
+      <button class="btn-logs"    id="btn-logs-edit">{{ _('Logs') }}</button>
       <label class="toggle-label" title="{{ _('Relancer automatiquement en cas de crash') }}">
-        <input type="checkbox" id="chk-auto-restart" onchange="toggleAutoRestart(this.checked)">
+        <input type="checkbox" id="chk-auto-restart" class="switch" onchange="toggleAutoRestart(this.checked)">
         <span>{{ _('Auto-restart') }}</span>
       </label>
     </div>
@@ -530,15 +530,15 @@
           <span class="dot online"></span>
           <span id="rot-status-text"></span>
         </span>
-        <button id="btn-start-cycle" class="btn-start btn-cycle" onclick="startRotationCycle()" style="display:none">
+        <button id="btn-start-cycle" class="btn-start btn-cycle" style="display:none">
           <span class="icon-run"></span> {{ _('Lancer le cycle') }}
         </button>
-        <button id="btn-stop-cycle" class="btn-stop btn-cycle" onclick="stopRotationCycle()" style="display:none">
+        <button id="btn-stop-cycle" class="btn-stop btn-cycle" style="display:none">
           {{ _('Arrêter le cycle') }}
         </button>
-        <label class="toggle-label m-0">
-          <input type="checkbox" id="rot-enabled" onchange="onRotEnabledChange()">
-          <span>{{ _('Activé') }}</span>
+        <label class="toggle-label m-0" title="{{ _('Reprend automatiquement la config suivante au prochain arrêt du serveur (différent du cycle en cours, affiché ci-contre).') }}">
+          <input type="checkbox" id="rot-enabled" class="switch" onchange="onRotEnabledChange()">
+          <span>{{ _('Reprise auto') }}</span>
         </label>
       </div>
     </div>
@@ -553,12 +553,12 @@
           <option value="{{ cfg }}">{{ cfg }}</option>
           {% endfor %}
         </select>
-        <button class="btn btn-secondary" onclick="rotAddConfig()">+ {{ _('Ajouter') }}</button>
+        <button class="btn btn-secondary" id="rot-add-btn">+ {{ _('Ajouter') }}</button>
       </div>
 
       <div class="rot-cycle-row">
         <label class="toggle-label">
-          <input type="checkbox" id="rot-cycle" onchange="saveRotation()">
+          <input type="checkbox" id="rot-cycle" class="switch" onchange="saveRotation()">
           <span>{{ _('Cycle — recommencer depuis le début après le dernier') }}</span>
         </label>
       </div>
@@ -599,11 +599,11 @@
         <div class="cars-filters-top">
           <input type="text" id="car-search" placeholder="{{ _('Rechercher...') }}" oninput="filterCars()">
           <label class="toggle-label">
-            <input type="checkbox" id="show-selected-only" onchange="filterCars()">
+            <input type="checkbox" id="show-selected-only" class="switch" onchange="filterCars()">
             <span>{{ _('Sélectionnés seulement') }}</span>
           </label>
-          <button class="btn btn-secondary" onclick="selectAllVisible(true)">{{ _('Tout sélectionner') }}</button>
-          <button class="btn btn-secondary" onclick="selectAllVisible(false)">{{ _('Tout désélectionner') }}</button>
+          <button class="btn btn-secondary" id="cars-select-all-btn">{{ _('Tout sélectionner') }}</button>
+          <button class="btn btn-secondary" id="cars-deselect-all-btn">{{ _('Tout désélectionner') }}</button>
         </div>
 
         <div class="pi-filter">
@@ -620,9 +620,9 @@
         </div>
 
         {% if car_categories %}
-        <div class="cat-filters">
+        <div class="cat-filters" id="srv-cat-filters">
           {% for cat in car_categories %}
-          <button class="cat-btn active" data-cat="{{ cat }}" onclick="toggleCat(this)">{{ cat }}</button>
+          <button class="cat-btn active" data-cat="{{ cat }}">{{ cat }}</button>
           {% endfor %}
         </div>
         {% endif %}
@@ -635,9 +635,9 @@
               <th></th>
               <th>{{ _('Véhicule') }}</th>
               <th>{{ _('Type') }}</th>
-              <th class="pi-sort-th car-pi-th" onclick="togglePiSort(this)" title="Trier par PI">PI <span class="pi-sort-icon" id="pi-sort-icon">⇅</span></th>
-              <th>Ballast</th>
-              <th>Restrictor</th>
+              <th class="pi-sort-th car-pi-th" id="pi-sort-th" title="Trier par PI">PI <span class="pi-sort-icon" id="pi-sort-icon">⇅</span></th>
+              <th>{{ _('Ballast') }}</th>
+              <th>{{ _('Restrictor') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -690,13 +690,47 @@
   <!-- ── Bouton unique Sauvegarder tout ── -->
   {% if view == 'config_edit' %}
   <div class="save-dock">
-    <button class="btn btn-primary save-dock-btn" onclick="saveAll()">{{ _('Sauvegarder tout') }}</button>
+    <button class="btn btn-primary save-dock-btn" id="save-all-btn">{{ _('Sauvegarder tout') }}</button>
   </div>
   {% endif %}
 
 </div>
+{% endblock %}
 
+{% block scripts %}
 <script nonce="{{ csp_nonce }}">
+{% if view == 'status' %}
+(function bindActionButtons() {
+  var actions = { 'btn-start': 'start', 'btn-stop': 'stop', 'btn-restart': 'restart' };
+  Object.keys(actions).forEach(function(id) {
+    var btn = document.getElementById(id);
+    if (btn) btn.addEventListener('click', function() { serverAction(actions[id]); });
+  });
+  var logsBtn = document.getElementById('btn-logs');
+  if (logsBtn) logsBtn.addEventListener('click', openLogs);
+  if (typeof fetchStatus === 'function') {
+    fetchStatus();
+    if (!window._statusTimer) window._statusTimer = setInterval(fetchStatus, 5000);
+  }
+})();
+{% endif %}
+
+{% if view == 'config_edit' %}
+(function bindEditButtons() {
+  var actions = { 'btn-start': 'start', 'btn-stop': 'stop', 'btn-restart': 'restart' };
+  Object.keys(actions).forEach(function(id) {
+    var btn = document.getElementById(id);
+    if (btn) btn.addEventListener('click', function() { serverAction(actions[id]); });
+  });
+  var logsBtn = document.getElementById('btn-logs-edit');
+  if (logsBtn) logsBtn.addEventListener('click', openLogs);
+  if (typeof fetchStatus === 'function') {
+    fetchStatus();
+    if (!window._statusTimer) window._statusTimer = setInterval(fetchStatus, 5000);
+  }
+})();
+{% endif %}
+
 {% if view == 'configuration' %}
 (function pollCardPlayers() {
   const el = document.getElementById('card-players');

@@ -1,4 +1,4 @@
-{% set _badge = {'draft': 'badge-neutral', 'published': 'badge-success', 'finished': 'badge-info'} %}
+{% set _badge = {EventStatus.DRAFT: 'badge-neutral', EventStatus.PUBLISHED: 'badge-success', EventStatus.FINISHED: 'badge-info'} %}
 <tr id="ev-row-{{ ev.id }}">
   <td class="font-semibold">{{ ev.title }}</td>
   <td class="whitespace-nowrap">
@@ -10,8 +10,8 @@
   <td>{{ ev.confirmed_count }}/{{ ev.max_drivers }}</td>
   <td>
     <span class="badge {{ _badge.get(ev.status, 'badge-neutral') }}">
-      {% if ev.status == 'draft' %}{{ _('Brouillon') }}
-      {% elif ev.status == 'published' %}{{ _('Publié') }}
+      {% if ev.status == EventStatus.DRAFT %}{{ _('Brouillon') }}
+      {% elif ev.status == EventStatus.PUBLISHED %}{{ _('Publié') }}
       {% else %}{{ _('Terminé') }}{% endif %}
     </span>
   </td>
@@ -21,14 +21,14 @@
       <a href="{{ url_for('events_admin.event_registrations', event_id=ev.id) }}" class="btn-secondary btn-xs">{{ _('Inscrits') }}</a>
       {% endif %}
       <a href="{{ url_for('events_admin.event_edit', event_id=ev.id) }}" class="btn-secondary btn-xs">{{ _('Modifier') }}</a>
-      {% if ev.status != 'finished' %}
+      {% if ev.status != EventStatus.FINISHED %}
       <button class="btn-secondary btn-xs"
               hx-post="{{ url_for('events_admin.event_publish', event_id=ev.id) }}"
               hx-target="#ev-row-{{ ev.id }}" hx-swap="outerHTML">
-        {{ _('Dépublier') if ev.status == 'published' else _('Publier') }}
+        {{ _('Dépublier') if ev.status == EventStatus.PUBLISHED else _('Publier') }}
       </button>
       {% endif %}
-      {% if ev.status == 'published' %}
+      {% if ev.status == EventStatus.PUBLISHED %}
       <button class="btn-ghost btn-xs"
               hx-post="{{ url_for('events_admin.event_finish', event_id=ev.id) }}"
               hx-target="#ev-row-{{ ev.id }}" hx-swap="outerHTML"

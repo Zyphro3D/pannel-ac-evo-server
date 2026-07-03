@@ -45,9 +45,26 @@ _servers_lock       = threading.Lock()
 _rotation_locks: dict[int, threading.Lock] = {}
 _rotation_locks_meta = threading.Lock()
 
+# Per-server state-file lock — protège la lecture-modif-écriture de .panel_state*.json
+# (distinct de _rotation_lock : _write_state est appelé DEPUIS l'intérieur de _rotation_lock,
+# réutiliser ce dernier ici causerait un deadlock car threading.Lock n'est pas réentrant)
+_state_locks: dict[int, threading.Lock] = {}
+_state_locks_meta = threading.Lock()
+
+
+def _state_lock(server_id: int) -> threading.Lock:
+    with _state_locks_meta:
+        if server_id not in _state_locks:
+            _state_locks[server_id] = threading.Lock()
+        return _state_locks[server_id]
+
 # is_running() cache for docker_split mode — avoids a Docker API call on every request
 _is_running_cache: dict[int, tuple[bool, float]] = {}
 _IS_RUNNING_CACHE_TTL = 5.0  # seconds
+
+# get_player_count() cache — prevents blocking multiple Waitress workers on concurrent home page loads
+_player_count_cache: dict[int, tuple[float, int | None]] = {}
+_PLAYER_COUNT_TTL = 8.0  # seconds
 
 
 def _rotation_lock(server_id: int) -> threading.Lock:
@@ -126,43 +143,51 @@ def _read_state(server_id: int) -> dict:
     return {}
 
 
+def get_server_raw_state(server_id: int) -> dict:
+    """Lit l'état persisté du serveur (config_name, run_id, pid…) même si le serveur est arrêté."""
+    return _read_state(server_id)
+
+
 def _write_state(pid: int, config_name: str, sc_b64: str, sd_b64: str,
                  auto_restart: bool, http_port: int = 8081, run_id: str = "",
                  server_id: int = 1):
     import time as _t
-    sf       = _state_file(server_id)
-    existing = _read_state(server_id)
-    # Preserve started_at across state rewrites; set a new one only when launching a fresh process
-    if pid and pid != existing.get("pid"):
-        started_at = _t.time()
-    else:
-        started_at = existing.get("started_at") or _t.time()
-    _atomic_write(sf, json.dumps({
-        "pid":          pid,
-        "config":       config_name,
-        "sc":           sc_b64,
-        "sd":           sd_b64,
-        "auto_restart": auto_restart,
-        "http_port":    http_port,
-        "run_id":       run_id,
-        "started_at":   started_at,
-    }))
+    with _state_lock(server_id):
+        sf       = _state_file(server_id)
+        existing = _read_state(server_id)
+        # Preserve started_at across state rewrites; set a new one only when launching a fresh process
+        if pid and pid != existing.get("pid"):
+            started_at = _t.time()
+        else:
+            started_at = existing.get("started_at") or _t.time()
+        _atomic_write(sf, json.dumps({
+            "pid":          pid,
+            "config":       config_name,
+            "sc":           sc_b64,
+            "sd":           sd_b64,
+            "auto_restart": auto_restart,
+            "http_port":    http_port,
+            "run_id":       run_id,
+            "started_at":   started_at,
+        }))
 
 
 def _clear_state(server_id: int):
-    sf = _state_file(server_id)
-    if sf.exists():
-        sf.unlink()
+    with _state_lock(server_id):
+        sf = _state_file(server_id)
+        if sf.exists():
+            sf.unlink()
 
 
 def update_session_state(session_type: str, server_id: int = 1):
     """Called after each result ingest to track session timing."""
-    state = _read_state(server_id)
-    if not state:
-        return
-    state["session_changed_at"] = time.time()
-    state["last_session_type"]  = session_type.lower()
-    _atomic_write(_state_file(server_id), json.dumps(state))
+    with _state_lock(server_id):
+        state = _read_state(server_id)
+        if not state:
+            return
+        state["session_changed_at"] = time.time()
+        state["last_session_type"]  = session_type.lower()
+        _atomic_write(_state_file(server_id), json.dumps(state))
 
 
 def _sample_player_history(server_id: int):
@@ -250,10 +275,11 @@ def get_player_history(server_id: int = 1) -> list:
 
 
 def _set_auto_restart(enabled: bool, server_id: int):
-    state = _read_state(server_id)
-    if state:
-        state["auto_restart"] = enabled
-        _atomic_write(_state_file(server_id), json.dumps(state))
+    with _state_lock(server_id):
+        state = _read_state(server_id)
+        if state:
+            state["auto_restart"] = enabled
+            _atomic_write(_state_file(server_id), json.dumps(state))
 
 
 # ── Docker split helpers ──────────────────────────────────────────────────────
@@ -271,6 +297,12 @@ def _get_docker_client():
         return _docker_client
 
 
+def _reset_docker_client():
+    global _docker_client
+    with _docker_client_lock:
+        _docker_client = None
+
+
 def _get_aceserver_container(server_id: int = 1):
     """Retourne l'objet Container Docker du serveur ACE EVO, ou None."""
     srv  = _get_server(server_id)
@@ -278,6 +310,9 @@ def _get_aceserver_container(server_id: int = 1):
     try:
         return _get_docker_client().containers.get(name)
     except Exception as e:
+        import docker as _docker
+        if not isinstance(e, _docker.errors.NotFound):
+            _reset_docker_client()
         log.debug("Container '%s' introuvable : %s", name, e)
         return None
 
@@ -557,6 +592,96 @@ def try_rotation_advance(session_type: str, config_name: str, server_id: int = 1
 
 # ── Watchdog ─────────────────────────────────────────────────────────────────
 
+def _watchdog_notify_crash(config_name: str, restarting: bool, server_id: int):
+    try:
+        from app.services import discord_notifier
+        from app.models import Server as _Server
+        from app.services.database import db as _db
+        with _db_context():
+            _crash_srv = _db.session.get(_Server, server_id)
+            discord_notifier.notify_crash(config_name, restarting=restarting,
+                                          server_id=server_id,
+                                          server_name=_crash_srv.name if _crash_srv else "")
+    except Exception:
+        pass
+
+
+def _watchdog_handle_docker(container, state, server_id: int):
+    """Gère un container stoppé : rotation ou redémarrage. Retourne True si l'itération doit continuer."""
+    auto_restart = state.get("auto_restart", False)
+    config_name  = state.get("config", "")
+    next_cfg     = _rotation_next(config_name)
+
+    if not auto_restart and next_cfg is None:
+        return True
+
+    try:
+        container.reload()
+    except Exception:
+        return True
+    if container.status == "running":
+        return True
+
+    if next_cfg is not None:
+        with _rotation_lock(server_id):
+            _watchdog_rotate_docker(container, next_cfg, auto_restart,
+                                    from_cfg=config_name, server_id=server_id)
+    else:
+        log.warning("Watchdog: container aceserver stoppé, redémarrage…")
+        _watchdog_notify_crash(config_name, restarting=True, server_id=server_id)
+        try:
+            container.start()
+            log.info("Watchdog: container aceserver redémarré")
+        except Exception as e:
+            log.error("Watchdog: échec redémarrage container : %s", e)
+    return True
+
+
+def _watchdog_handle_native(srv, state, server_id: int):
+    """Gère un processus natif stoppé : rotation ou redémarrage."""
+    auto_restart = state.get("auto_restart", False)
+    config_name  = state.get("config", "")
+    next_cfg     = _rotation_next(config_name)
+
+    if not auto_restart and next_cfg is None:
+        return
+
+    pid   = state.get("pid")
+    alive = False
+    if pid:
+        try:
+            alive = _proc_matches(psutil.Process(pid))
+        except psutil.NoSuchProcess:
+            pass
+    if alive:
+        return
+
+    exe    = Path(srv["exe_path"])
+    run_id = state.get("run_id", "")
+
+    if next_cfg is not None:
+        with _rotation_lock(server_id):
+            _watchdog_rotate_native(exe, next_cfg, auto_restart,
+                                    from_cfg=config_name, server_id=server_id)
+    else:
+        sc = state.get("sc", "")
+        sd = state.get("sd", "")
+        log.warning("Watchdog: server crashed, restarting…")
+        _watchdog_notify_crash(config_name, restarting=auto_restart, server_id=server_id)
+        try:
+            with open(_log_file(server_id), "a", encoding="utf-8") as lf:
+                lf.write("\n[watchdog] Server crash detected — restarting…\n")
+        except Exception:
+            pass
+        proc = _launch(exe, sc, sd, server_id)
+        if proc:
+            _write_state(proc.pid, config_name, sc, sd, auto_restart,
+                         run_id=run_id, server_id=server_id)
+            log.info("Watchdog: restarted with PID %d", proc.pid)
+        else:
+            log.error("Watchdog: restart failed")
+
+
 def _watchdog_loop(server_id: int):
     srv = _get_server(server_id)
     log.info("Watchdog started (mode=%s, server=%d)", _DEPLOY_MODE, server_id)
@@ -565,99 +690,17 @@ def _watchdog_loop(server_id: int):
             _sample_player_history(server_id)
             if _DEPLOY_MODE == "docker_split":
                 _sample_container_stats(server_id)
+
         state = _read_state(server_id)
         if not state:
             continue
 
-        auto_restart = state.get("auto_restart", False)
-        config_name  = state.get("config", "")
-        next_cfg     = _rotation_next(config_name)
-
-        # Rien à faire si ni auto_restart ni rotation active
-        if not auto_restart and next_cfg is None:
-            continue
-
         if _DEPLOY_MODE == "docker_split":
             container = _get_aceserver_container(server_id)
-            if not container:
-                continue
-            try:
-                container.reload()
-            except Exception:
-                continue
-            if container.status == "running":
-                continue
-
-            # Container stoppé — rotation ou auto_restart
-            if next_cfg is not None:
-                with _rotation_lock(server_id):
-                    _watchdog_rotate_docker(container, next_cfg, auto_restart,
-                                            from_cfg=config_name, server_id=server_id)
-            else:
-                log.warning("Watchdog: container aceserver stoppé, redémarrage…")
-                try:
-                    from app.services import discord_notifier
-                    from app.models import Server as _Server
-                    from app.services.database import db as _db
-                    with _db_context():
-                        _crash_srv = _db.session.get(_Server, server_id)
-                        discord_notifier.notify_crash(config_name, restarting=True,
-                                                      server_id=server_id,
-                                                      server_name=_crash_srv.name if _crash_srv else "")
-                except Exception:
-                    pass
-                try:
-                    container.start()
-                    log.info("Watchdog: container aceserver redémarré")
-                except Exception as e:
-                    log.error("Watchdog: échec redémarrage container : %s", e)
-            continue
-
-        # Modes native / docker : vérification psutil
-        pid   = state.get("pid")
-        alive = False
-        if pid:
-            try:
-                alive = _proc_matches(psutil.Process(pid))
-            except psutil.NoSuchProcess:
-                pass
-        if alive:
-            continue
-
-        exe    = Path(srv["exe_path"])
-        run_id = state.get("run_id", "")
-
-        if next_cfg is not None:
-            with _rotation_lock(server_id):
-                _watchdog_rotate_native(exe, next_cfg, auto_restart,
-                                        from_cfg=config_name, server_id=server_id)
+            if container:
+                _watchdog_handle_docker(container, state, server_id)
         else:
-            sc = state.get("sc", "")
-            sd = state.get("sd", "")
-            log.warning("Watchdog: server crashed, restarting…")
-            try:
-                from app.services import discord_notifier
-                from app.models import Server as _Server
-                from app.services.database import db as _db
-                with _db_context():
-                    _crash_srv = _db.session.get(_Server, server_id)
-                    discord_notifier.notify_crash(config_name, restarting=auto_restart,
-                                                  server_id=server_id,
-                                                  server_name=_crash_srv.name if _crash_srv else "")
-            except Exception:
-                pass
-            try:
-                with open(_log_file(server_id), "a", encoding="utf-8") as lf:
-                    lf.write("\n[watchdog] Server crash detected — restarting…\n")
-            except Exception:
-                pass
-            proc = _launch(exe, sc, sd, server_id)
-            if proc:
-                _write_state(proc.pid, config_name, sc, sd, auto_restart,
-                             run_id=run_id, server_id=server_id)
-                log.info("Watchdog: restarted with PID %d", proc.pid)
-            else:
-                log.error("Watchdog: restart failed")
+            _watchdog_handle_native(srv, state, server_id)
 
     log.info("Watchdog stopped (server=%d)", server_id)
 
@@ -675,6 +718,15 @@ def _start_watchdog(server_id: int):
     )
     srv["watchdog_thread"] = t
     t.start()
+
+
+def stop_watchdog(server_id: int):
+    """Arrête définitivement le watchdog d'un serveur (ex: suppression du serveur)."""
+    with _servers_lock:
+        if server_id not in _servers:
+            return
+        srv = _servers[server_id]
+    srv["watchdog_stop"].set()
 
 
 def _check_docker_restart_policy(server_id: int) -> None:
@@ -761,13 +813,23 @@ def is_running(server_id: int = 1) -> bool:
                 return True
         except psutil.NoSuchProcess:
             pass
-    for proc in psutil.process_iter(["name", "cmdline"]):
-        if _proc_matches(proc):
-            return True
-    return False
+
+    # Cache avant le scan de tous les processus système (coûteux sans PID valide)
+    cached = _is_running_cache.get(server_id)
+    if cached is not None:
+        result, ts = cached
+        if time.monotonic() - ts < _IS_RUNNING_CACHE_TTL:
+            return result
+    result = any(_proc_matches(proc) for proc in psutil.process_iter(["name", "cmdline"]))
+    _is_running_cache[server_id] = (result, time.monotonic())
+    return result
 
 
 def get_player_count(server_id: int = 1) -> int | None:
+    now = time.monotonic()
+    cached = _player_count_cache.get(server_id)
+    if cached and now - cached[0] < _PLAYER_COUNT_TTL:
+        return cached[1]
     state = _read_state(server_id)
     if _DEPLOY_MODE == "docker_split":
         port      = state.get("http_port", 8081)
@@ -779,100 +841,104 @@ def get_player_count(server_id: int = 1) -> int | None:
     try:
         with urllib.request.urlopen(url, timeout=1) as r:
             data = json.loads(r.read())
-            return data.get("clients", 0)
+            result = data.get("clients", 0)
     except Exception:
-        return None
+        result = None
+    _player_count_cache[server_id] = (now, result)
+    return result
 
 
 def start_server(serverconfig_b64: str, seasondefinition_b64: str,
                  config_name: str, auto_restart: bool = False,
                  server_id: int = 1) -> dict:
-    _is_running_cache.pop(server_id, None)  # invalidate cache before state change
-    if is_running(server_id):
-        return {"ok": False, "error": "server_already_running"}
+    with _rotation_lock(server_id):
+        _is_running_cache.pop(server_id, None)  # invalidate cache before state change
+        if is_running(server_id):
+            return {"ok": False, "error": "server_already_running"}
 
-    # Identifiant unique pour ce run — toutes les sessions de ce démarrage partageront ce run_id.
-    # Généré ici (démarrage explicite admin/scheduler), jamais recalculé par le watchdog.
-    run_id = uuid.uuid4().hex
+        # Identifiant unique pour ce run — toutes les sessions de ce démarrage partageront ce run_id.
+        # Généré ici (démarrage explicite admin/scheduler), jamais recalculé par le watchdog.
+        run_id = uuid.uuid4().hex
 
-    if _DEPLOY_MODE == "docker_split":
-        lcp = _launch_config_path(server_id)
-        lcp.write_text(json.dumps({
-            "serverconfig":    serverconfig_b64,
-            "seasondefinition": seasondefinition_b64,
-        }))
-        try:
-            container = _get_aceserver_container(server_id)
-            if not container:
+        if _DEPLOY_MODE == "docker_split":
+            lcp = _launch_config_path(server_id)
+            lcp.write_text(json.dumps({
+                "serverconfig":    serverconfig_b64,
+                "seasondefinition": seasondefinition_b64,
+            }))
+            try:
+                container = _get_aceserver_container(server_id)
+                if not container:
+                    lcp.unlink(missing_ok=True)
+                    return {"ok": False, "error": "aceserver_container_not_found"}
+                container.reload()
+                if container.status == "running":
+                    container.restart(timeout=10)
+                else:
+                    container.start()
+                http_port = int(os.environ.get("ACESERVER_HTTP_PORT", "8081"))
+                _write_state(0, config_name, serverconfig_b64, seasondefinition_b64,
+                             auto_restart, http_port, run_id=run_id, server_id=server_id)
+                return {"ok": True, "pid": 0, "config": config_name, "run_id": run_id}
+            except Exception as e:
                 lcp.unlink(missing_ok=True)
-                return {"ok": False, "error": "aceserver_container_not_found"}
-            container.reload()
-            if container.status == "running":
-                container.restart(timeout=10)
-            else:
-                container.start()
-            http_port = int(os.environ.get("ACESERVER_HTTP_PORT", "8081"))
-            _write_state(0, config_name, serverconfig_b64, seasondefinition_b64,
-                         auto_restart, http_port, run_id=run_id, server_id=server_id)
-            return {"ok": True, "pid": 0, "config": config_name, "run_id": run_id}
-        except Exception as e:
-            lcp.unlink(missing_ok=True)
-            return {"ok": False, "error": str(e)}
+                return {"ok": False, "error": str(e)}
 
-    # native / docker
-    exe       = Path(current_app.config["ACESERVER_EXE_PATH"])
-    http_port = current_app.config.get("ACESERVER_HTTP_PORT", 8081)
-    proc = _launch(exe, serverconfig_b64, seasondefinition_b64, server_id)
-    if not proc:
-        return {"ok": False, "error": "launch_failed"}
-    _write_state(proc.pid, config_name, serverconfig_b64, seasondefinition_b64,
-                 auto_restart, http_port, run_id=run_id, server_id=server_id)
-    return {"ok": True, "pid": proc.pid, "config": config_name, "run_id": run_id}
+        # native / docker
+        exe       = Path(current_app.config["ACESERVER_EXE_PATH"])
+        http_port = current_app.config.get("ACESERVER_HTTP_PORT", 8081)
+        proc = _launch(exe, serverconfig_b64, seasondefinition_b64, server_id)
+        if not proc:
+            return {"ok": False, "error": "launch_failed"}
+        _write_state(proc.pid, config_name, serverconfig_b64, seasondefinition_b64,
+                     auto_restart, http_port, run_id=run_id, server_id=server_id)
+        return {"ok": True, "pid": proc.pid, "config": config_name, "run_id": run_id}
 
 
 def stop_server(server_id: int = 1) -> dict:
-    _is_running_cache.pop(server_id, None)  # invalidate cache before state change
-    if _DEPLOY_MODE == "docker_split":
-        # Supprimer la config de lancement avant d'arrêter le container
-        _launch_config_path(server_id).unlink(missing_ok=True)
-        try:
-            container = _get_aceserver_container(server_id)
-            if container:
-                container.stop(timeout=10)
-        except Exception as e:
-            log.warning("stop_server docker_split : %s", e)
-        _clear_state(server_id)
-        return {"ok": True, "error": None}
-
-    # native / docker
-    state  = _read_state(server_id)
-    pid    = state.get("pid")
-    killed = False
-    if pid:
-        try:
-            proc = psutil.Process(pid)
-            proc.terminate()
+    with _rotation_lock(server_id):
+        _is_running_cache.pop(server_id, None)  # invalidate cache before state change
+        if _DEPLOY_MODE == "docker_split":
+            # Supprimer la config de lancement avant d'arrêter le container
+            _launch_config_path(server_id).unlink(missing_ok=True)
             try:
-                proc.wait(timeout=10)
-                killed = True
-            except psutil.TimeoutExpired:
-                log.warning("stop_server: SIGTERM timeout for PID %d, sending SIGKILL", pid)
+                container = _get_aceserver_container(server_id)
+                if container:
+                    container.stop(timeout=10)
+            except Exception as e:
+                log.warning("stop_server docker_split : %s", e)
+            _clear_state(server_id)
+            return {"ok": True, "error": None}
+
+        # native / docker
+        state  = _read_state(server_id)
+        pid    = state.get("pid")
+        killed = False
+        if pid:
+            try:
+                proc = psutil.Process(pid)
+                proc.terminate()
                 try:
-                    proc.kill()
-                    proc.wait(timeout=5)
+                    proc.wait(timeout=10)
                     killed = True
-                except Exception as e:
-                    log.error("stop_server: SIGKILL failed for PID %d: %s", pid, e)
-        except psutil.NoSuchProcess:
-            killed = True  # already gone
-    if not killed:
-        for proc in psutil.process_iter(["name", "pid", "cmdline"]):
-            if _proc_matches(proc):
-                psutil.Process(proc.info["pid"]).terminate()
-                killed = True
-                break
-    _clear_state(server_id)
-    return {"ok": killed, "error": None if killed else "process_not_found"}
+                except psutil.TimeoutExpired:
+                    log.warning("stop_server: SIGTERM timeout for PID %d, sending SIGKILL", pid)
+                    try:
+                        proc.kill()
+                        proc.wait(timeout=5)
+                        killed = True
+                    except Exception as e:
+                        log.error("stop_server: SIGKILL failed for PID %d: %s", pid, e)
+            except psutil.NoSuchProcess:
+                killed = True  # already gone
+        if not killed:
+            for proc in psutil.process_iter(["name", "pid", "cmdline"]):
+                if _proc_matches(proc):
+                    psutil.Process(proc.info["pid"]).terminate()
+                    killed = True
+                    break
+        _clear_state(server_id)
+        return {"ok": killed, "error": None if killed else "process_not_found"}
 
 
 def set_auto_restart(enabled: bool, server_id: int = 1) -> dict:

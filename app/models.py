@@ -8,6 +8,26 @@ def _utcnow():
     return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
+# ── Status constants ──────────────────────────────────────────────────────────
+
+class EventStatus:
+    DRAFT     = "draft"
+    PUBLISHED = "published"
+    FINISHED  = "finished"
+
+
+class DriverStatus:
+    PENDING  = "pending"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+
+
+class RegStatus:
+    PENDING   = "pending"
+    CONFIRMED = "confirmed"
+    REJECTED  = "rejected"
+
+
 # ── AdminAccount (admin/superadmin stockés en DB) ────────────────────────────
 
 class AdminAccount(UserMixin, db.Model):
@@ -21,6 +41,11 @@ class AdminAccount(UserMixin, db.Model):
     is_active    = db.Column(db.Boolean, default=True)
     created_at   = db.Column(db.DateTime, default=_utcnow)
     last_login   = db.Column(db.DateTime, nullable=True)
+
+    # Champs personnels facultatifs, gérés en self-service via admin.my_account
+    email                 = db.Column(db.String(120), nullable=True)
+    steam_id              = db.Column(db.String(32),  nullable=True)
+    steam_id_confirmed_at = db.Column(db.DateTime,    nullable=True)
 
     def get_id(self) -> str:
         return f"aa_{self.id}"
@@ -57,11 +82,20 @@ class Driver(UserMixin, db.Model):
     ingame_name = db.Column(db.String(50),  unique=True, nullable=False)
     email       = db.Column(db.String(120), unique=True, nullable=False)
     _pw_hash    = db.Column("password_hash", db.String(256), nullable=False)
-    status      = db.Column(db.String(20), default="pending")  # pending/approved/rejected
+    status      = db.Column(db.String(20), default=DriverStatus.PENDING)  # pending/approved/rejected
     created_at  = db.Column(db.DateTime,  default=_utcnow)
 
     reset_token         = db.Column(db.String(64),  nullable=True)
     reset_token_expires = db.Column(db.DateTime,    nullable=True)
+
+    # Confirmation d'email facultative (togglable via REQUIRE_EMAIL_CONFIRMATION) — voir public.py
+    email_confirmed_at          = db.Column(db.DateTime,   nullable=True)
+    email_confirm_token         = db.Column(db.String(64), nullable=True)
+    email_confirm_token_expires = db.Column(db.DateTime,   nullable=True)
+
+    # Compte Steam vérifié via Steam OpenID (jamais saisi à la main — voir auth.py steam_link/steam_callback)
+    steam_id             = db.Column(db.String(32), unique=True, nullable=True)
+    steam_id_confirmed_at = db.Column(db.DateTime,  nullable=True)
 
     registrations = db.relationship("EventRegistration", back_populates="driver", lazy="select")
 
@@ -89,7 +123,11 @@ class Driver(UserMixin, db.Model):
 
     @property
     def is_approved(self) -> bool:
-        return self.status == "approved"
+        return self.status == DriverStatus.APPROVED
+
+    @property
+    def is_email_confirmed(self) -> bool:
+        return self.email_confirmed_at is not None
 
 
 # ── Event ─────────────────────────────────────────────────────────────────────
@@ -108,7 +146,7 @@ class Event(db.Model):
     max_drivers     = db.Column(db.Integer,     default=20)
     password        = db.Column(db.String(50),  default="")      # mot de passe course privée
     notify_before   = db.Column(db.Integer,     default=60)      # minutes avant le départ
-    status          = db.Column(db.String(20),  default="draft") # draft/published/finished
+    status          = db.Column(db.String(20),  default=EventStatus.DRAFT) # draft/published/finished
     is_public         = db.Column(db.Boolean,     default=False)   # pas d'inscription requise
     email_sent        = db.Column(db.Boolean,     default=False)   # emails pré-événement envoyés
     discord_notified  = db.Column(db.Boolean,     default=False)   # notif Discord 30min envoyée
@@ -137,11 +175,11 @@ class Event(db.Model):
 
     @property
     def confirmed_count(self) -> int:
-        return sum(1 for r in self.registrations if r.status == "confirmed")
+        return sum(1 for r in self.registrations if r.status == RegStatus.CONFIRMED)
 
     @property
     def pending_count(self) -> int:
-        return sum(1 for r in self.registrations if r.status == "pending")
+        return sum(1 for r in self.registrations if r.status == RegStatus.PENDING)
 
     @property
     def is_full(self) -> bool:
@@ -185,7 +223,7 @@ class EventRegistration(db.Model):
     driver_id    = db.Column(db.Integer, db.ForeignKey("driver.id"), nullable=False)
     assigned_car = db.Column(db.String(100), default="")  # car.name depuis cars.json
     car_display  = db.Column(db.String(150), default="")  # car.display_name
-    status       = db.Column(db.String(20),  default="pending")  # pending/confirmed/rejected
+    status       = db.Column(db.String(20),  default=RegStatus.PENDING)  # pending/confirmed/rejected
     notified     = db.Column(db.Boolean,     default=False)      # email pré-event envoyé
     created_at   = db.Column(db.DateTime,    default=_utcnow)
 
@@ -209,6 +247,7 @@ class SessionResult(db.Model):
     run_id       = db.Column(db.String(40),  nullable=True, index=True)  # uuid du démarrage serveur (groupement fiable)
     server_id    = db.Column(db.Integer,     nullable=True, index=True)  # server gérant ce résultat (NULL = rétrocompat)
     raw_json     = db.Column(db.Text, nullable=False)
+    raw_json_hash = db.Column(db.String(64), nullable=True, index=True)  # SHA-256[:64] pour dédup rapide
 
 
 # ── Server (instance ACE EVO gérée par le panel) ─────────────────────────────
@@ -290,7 +329,8 @@ def load_user(user_id: str):
         acc = db.session.get(AdminAccount, int(user_id[3:]))
         return acc if (acc and acc.is_active) else None
     if user_id.startswith("d_"):
-        return db.session.get(Driver, int(user_id[2:]))
+        driver = db.session.get(Driver, int(user_id[2:]))
+        return driver if (driver and driver.status == DriverStatus.APPROVED) else None
     # Sessions legacy (avant migration) — tente de retrouver par rôle
     if user_id in ("admin", "superadmin"):
         return AdminAccount.query.filter_by(role=user_id, is_active=True).first()

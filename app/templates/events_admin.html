@@ -10,9 +10,9 @@
         {# Vue toggle #}
         <div class="flex rounded-lg border border-muted/30 overflow-hidden text-sm" id="ev-view-toggle">
           <button class="px-3 py-1.5 text-dim hover:text-txt transition-colors active:text-txt active:bg-surface"
-                  data-view="calendar" onclick="setView('calendar')">{{ _('Calendrier') }}</button>
+                  data-view="calendar">{{ _('Calendrier') }}</button>
           <button class="px-3 py-1.5 text-dim hover:text-txt transition-colors border-l border-muted/30"
-                  data-view="list" onclick="setView('list')">{{ _('Liste') }}</button>
+                  data-view="list">{{ _('Liste') }}</button>
         </div>
         <a href="{{ url_for('events_admin.event_create') }}" class="btn-primary btn-sm">
           + {{ _('Créer') }}
@@ -23,9 +23,9 @@
     {# ── Vue Calendrier ── #}
     <div id="view-calendar">
       <div class="cal-nav">
-        <button class="btn btn-secondary" onclick="prevMonth()">‹</button>
+        <button class="btn btn-secondary" id="cal-prev-month">‹</button>
         <span class="cal-nav-label" id="cal-month-label"></span>
-        <button class="btn btn-secondary" onclick="nextMonth()">›</button>
+        <button class="btn btn-secondary" id="cal-next-month">›</button>
         <div class="cal-legend">
           <span class="cal-legend-item"><span class="cal-legend-dot private"></span>{{ _('Privé') }}</span>
           <span class="cal-legend-item"><span class="cal-legend-dot public"></span>{{ _('Public') }}</span>
@@ -49,7 +49,7 @@
           <a id="cal-detail-create-btn" href="#" class="btn btn-primary text-xs">
             + {{ _('Créer ce jour') }}
           </a>
-          <button class="cal-detail-close" onclick="closeDayDetail()" title="{{ _('Fermer') }}">×</button>
+          <button class="cal-detail-close" id="cal-detail-close-btn" title="{{ _('Fermer') }}">×</button>
         </div>
         <div class="cal-detail-body" id="cal-detail-body"></div>
       </div>
@@ -83,9 +83,9 @@
               <td>{{ ev.mode_display }}</td>
               <td>{{ ev.confirmed_count }}/{{ ev.max_drivers }}</td>
               <td>
-                <span class="badge badge-{% if ev.status == 'draft' %}neutral{% elif ev.status == 'published' %}success{% else %}info{% endif %}">
-                  {% if ev.status == 'draft' %}{{ _('Brouillon') }}
-                  {% elif ev.status == 'published' %}{{ _('Publié') }}
+                <span class="badge badge-{% if ev.status == EventStatus.DRAFT %}neutral{% elif ev.status == EventStatus.PUBLISHED %}success{% else %}info{% endif %}">
+                  {% if ev.status == EventStatus.DRAFT %}{{ _('Brouillon') }}
+                  {% elif ev.status == EventStatus.PUBLISHED %}{{ _('Publié') }}
                   {% else %}{{ _('Terminé') }}{% endif %}
                 </span>
               </td>
@@ -97,14 +97,14 @@
                   {% endif %}
                   <a href="{{ url_for('events_admin.event_edit', event_id=ev.id) }}"
                      class="btn-secondary btn-xs">{{ _('Modifier') }}</a>
-                  {% if ev.status != 'finished' %}
+                  {% if ev.status != EventStatus.FINISHED %}
                   <button class="btn-secondary btn-xs"
                           hx-post="{{ url_for('events_admin.event_publish', event_id=ev.id) }}"
                           hx-target="#ev-row-{{ ev.id }}" hx-swap="outerHTML">
-                    {{ _('Dépublier') if ev.status == 'published' else _('Publier') }}
+                    {{ _('Dépublier') if ev.status == EventStatus.PUBLISHED else _('Publier') }}
                   </button>
                   {% endif %}
-                  {% if ev.status == 'published' %}
+                  {% if ev.status == EventStatus.PUBLISHED %}
                   <button class="btn-secondary btn-xs"
                           hx-post="{{ url_for('events_admin.event_finish', event_id=ev.id) }}"
                           hx-target="#ev-row-{{ ev.id }}" hx-swap="outerHTML"
@@ -168,6 +168,12 @@ const MONTHS_FR = [
   "{{ _('Septembre') }}","{{ _('Octobre') }}","{{ _('Novembre') }}","{{ _('Décembre') }}"
 ];
 
+const STATUS_LABELS = {
+  draft:     "{{ _('Brouillon') }}",
+  published: "{{ _('Publié') }}",
+  finished:  "{{ _('Terminé') }}",
+};
+
 function renderCalendar() {
   const grid  = document.getElementById('cal-grid');
   const label = document.getElementById('cal-month-label');
@@ -202,13 +208,11 @@ function renderCalendar() {
       const time        = ev.date.substring(11, 16);
       chips += `<span class="cal-event-chip ${typeClass} ${statusClass}"
         data-url="${_esc(ev.url_edit)}"
-        onclick="event.stopPropagation(); window.location=this.dataset.url"
-        title="${_esc(ev.title)} — ${_esc(ev.status)}">${time} ${_esc(ev.title)}</span>`;
+        title="${_esc(ev.title)} — ${_esc(STATUS_LABELS[ev.status] || ev.status)}">${time} ${_esc(ev.title)}</span>`;
     });
 
     html += `<div class="cal-day${isToday ? ' today' : ''}"
-      data-key="${key}"
-      onclick="openDayDetail('${key}')">
+      data-key="${key}">
       <span class="cal-day-num">${day}</span>${chips}
     </div>`;
   }
@@ -261,12 +265,10 @@ function openDayDetail(dateKey) {
       const sc = (ev.status === 'draft' || ev.status === 'finished') ? ev.status : '';
       evHtml += `<div class="cal-hour-event ${tc} ${sc}"
         data-url="${_esc(ev.url_edit)}"
-        onclick="event.stopPropagation(); window.location=this.dataset.url"
         title="${_esc(ev.title)}">${start}→${end} ${_esc(ev.title)}</div>`;
     });
     const hint = evs.length === 0 ? `<span class="cal-hour-hint">+ {{ _('créer') }}</span>` : '';
-    html += `<div class="cal-hour-row" data-url="/events/create?date=${dateKey}T${hPad}:00"
-      onclick="window.location=this.dataset.url">
+    html += `<div class="cal-hour-row" data-url="/events/create?date=${dateKey}T${hPad}:00">
       <span class="cal-hour-label">${hPad}:00</span>
       <div class="cal-hour-content">${evHtml}${hint}</div>
     </div>`;
@@ -299,6 +301,26 @@ function setView(v) {
   });
   localStorage.setItem('ev_view', v);
 }
+
+document.getElementById('cal-prev-month').addEventListener('click', prevMonth);
+document.getElementById('cal-next-month').addEventListener('click', nextMonth);
+document.getElementById('cal-detail-close-btn').addEventListener('click', closeDayDetail);
+document.getElementById('ev-view-toggle').addEventListener('click', (e) => {
+  const btn = e.target.closest('button[data-view]');
+  if (btn) setView(btn.dataset.view);
+});
+document.getElementById('cal-grid').addEventListener('click', (e) => {
+  const chip = e.target.closest('.cal-event-chip');
+  if (chip) { e.stopPropagation(); window.location = chip.dataset.url; return; }
+  const day = e.target.closest('.cal-day[data-key]');
+  if (day) openDayDetail(day.dataset.key);
+});
+document.getElementById('cal-detail-body').addEventListener('click', (e) => {
+  const ev = e.target.closest('.cal-hour-event');
+  if (ev) { e.stopPropagation(); window.location = ev.dataset.url; return; }
+  const row = e.target.closest('.cal-hour-row[data-url]');
+  if (row) window.location = row.dataset.url;
+});
 
 const _savedView = localStorage.getItem('ev_view') || 'calendar';
 setView(_savedView);

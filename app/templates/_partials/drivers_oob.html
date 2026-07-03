@@ -1,0 +1,20 @@
+<div id="pending-section" hx-swap-oob="innerHTML">
+{% include "_partials/drivers_pending.html" %}
+</div>
+<div id="approved-section" hx-swap-oob="innerHTML">
+{% include "_partials/drivers_approved.html" %}
+</div>
+{% if toast_msg is defined %}
+<div hx-swap-oob="afterbegin:#toast-zone">
+  <div x-data="{ show: true }"
+       x-show="show"
+       x-init="setTimeout(() => show = false, 4500)"
+       x-transition
+       class="toast toast-{{ toast_type | default('success') }}"
+       role="alert"
+       aria-live="polite">
+    <span>{{ toast_msg }}</span>
+    <button @click="show = false" class="toast-close" aria-label="{{ _('Fermer') }}">✕</button>
+  </div>
+</div>
+{% endif %}

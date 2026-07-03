@@ -74,6 +74,16 @@ AUDIT.md
 # Docker override — généré dynamiquement par le panel (données spécifiques à l'instance)
 docker-compose.override.yml
 
+# CSS compilé par le build Docker — le fichier local peut diverger du build
+app/static/css/tailwind.min.css
+
+# Dépendances Node.js — installées dans l'image Docker, pas dans le repo
+node_modules/
+
+# Artefacts des tests Playwright (screenshots/traces des échecs)
+test-results/
+playwright-report/
+
 # OS
 Thumbs.db
 .DS_Store

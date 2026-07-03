@@ -4,9 +4,67 @@ on:
   push:
     tags:
       - 'v*'
+    branches:
+      - main
+      - 'feat/**'
+  pull_request:
 
 jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prépare un .env minimal pour le smoke test
+        run: |
+          mkdir -p aceserver media data
+          touch docker-compose.override.yml
+          cat > .env <<EOF
+          SECRET_KEY=ci-smoke-test-secret-key-not-for-production
+          ADMIN_USERNAME=admin
+          ADMIN_PASSWORD=ci-admin-password
+          SUPERADMIN_USERNAME=ci_superadmin
+          SUPERADMIN_PASSWORD=ci-superadmin-password
+          PANEL_TITLE=CI Smoke Test
+          RESULTS_INGEST_SECRET=ci-ingest-secret
+          EOF
+
+      - name: Build et démarre le panel
+        run: docker compose up -d --build panel dockerproxy
+
+      - name: Attend que le panel réponde
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:4300/login > /dev/null; then
+              echo "panel prêt"; exit 0
+            fi
+            sleep 2
+          done
+          echo "panel n'a pas démarré à temps"; docker compose logs panel; exit 1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Installe les dépendances et navigateurs Playwright
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Lance le test de fumée
+        env:
+          PANEL_BASE_URL: http://localhost:4300
+          PANEL_TEST_USERNAME: ci_superadmin
+          PANEL_TEST_PASSWORD: ci-superadmin-password
+        run: npx playwright test
+
+      - name: Logs du panel (en cas d'échec)
+        if: failure()
+        run: docker compose logs panel
+
   release:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: smoke-test
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -51,7 +109,6 @@ jobs:
               -o -name "install.bat" \
               -o -name "start.bat" \
               -o -name "update.bat" \
-              -o -path "./.env.example" \
             \) \
             -type f \
           | sed 's|^\./||' \

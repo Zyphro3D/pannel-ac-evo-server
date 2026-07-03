@@ -1,5 +1,6 @@
 import json
 import logging
+import time
 from flask import Blueprint, redirect, url_for
 from app.models import SessionResult
 from app.services.server_config import load_cars, CAR_PROP_MAPS as _PROP_MAPS, CAR_CATEGORY_ORDER as _CAT_ORDER
@@ -7,6 +8,16 @@ from app.services.server_config import load_cars, CAR_PROP_MAPS as _PROP_MAPS, C
 log = logging.getLogger(__name__)
 
 leaderboard_bp = Blueprint("leaderboard", __name__)
+
+_circuits_cache: list | None = None
+_circuits_cache_at: float = 0.0
+_CIRCUITS_TTL = 60.0
+
+
+def invalidate_circuits_cache():
+    global _circuits_cache, _circuits_cache_at
+    _circuits_cache = None
+    _circuits_cache_at = 0.0
 
 
 def _build_car_lookup() -> dict:
@@ -26,7 +37,11 @@ def _build_car_lookup() -> dict:
 
 
 def build_circuits() -> list:
-    """Construit la liste des meilleurs temps par circuit, utilisable depuis d'autres routes."""
+    """Construit la liste des meilleurs temps par circuit (cache 60s)."""
+    global _circuits_cache, _circuits_cache_at
+    if _circuits_cache is not None and (time.monotonic() - _circuits_cache_at) < _CIRCUITS_TTL:
+        return _circuits_cache
+
     from app.services.results_parser import get_parsed
 
     car_lookup = _build_car_lookup()
@@ -98,6 +113,8 @@ def build_circuits() -> list:
             "total":      len(entries),
         })
 
+    _circuits_cache = circuits
+    _circuits_cache_at = time.monotonic()
     return circuits
 
 

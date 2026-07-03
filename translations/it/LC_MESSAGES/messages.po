@@ -19,11 +19,8 @@ msgid ""
 "Aucun fichier de configuration trouvé dans CONFIGS_DIR. Créez-en un via "
 "le bouton ci-dessous."
 msgstr ""
-"Nessun file di configurazione trovato in CONFIGS_DIR. Creane uno tramite "
-"il pulsante qui sotto.Nessun file di configurazione trovato in "
-"CONFIGS_DIR. Creane uno tramite il pulsante qui sotto.Nessun file di "
-"configurazione trovato in CONFIGS_DIR. Creane uno tramite il pulsante qui"
-" sotto."
+"Nessun file di configurazione trovato in CONFIGS_DIR. Creane uno tramite il "
+"pulsante qui sotto."
 
 #: app/routes/admin.py:205 app/templates/event_form.html:88
 #: app/templates/server.html:271
@@ -348,10 +345,7 @@ msgstr "Questa email è già in uso."
 msgid "Inscription reçue ! Votre compte sera activé par un administrateur."
 msgstr ""
 "Registrazione ricevuta! Il tuo account verrà attivato da un "
-"amministratore.Registrazione ricevuta! Il tuo account verrà attivato da "
-"un amministratore.Iscrizione ricevuta! Il tuo account sarà attivato da un"
-" amministratore.Registrazione ricevuta! Il tuo account sarà convalidato "
-"da un amministratore."
+"amministratore."
 
 #: app/routes/public.py:342
 msgid "Votre compte doit être validé avant de vous inscrire."
@@ -748,6 +742,10 @@ msgstr "Eventi admin"
 #: app/templates/base.html:191
 msgid "Live Admin"
 msgstr "Live Admin"
+
+#: app/templates/base.html:401
+msgid "Supprimer \"%%s\" ? Cette action est irréversible."
+msgstr "Eliminare \"%%s\"? Questa azione è irreversibile."
 
 #: app/templates/base.html:222
 msgid ""
@@ -1357,11 +1355,7 @@ msgid ""
 "approuvé, vous recevrez un lien de réinitialisation valable 1 heure."
 msgstr ""
 "Inserisci il tuo nome utente o indirizzo email. Se il tuo account è "
-"approvato, riceverai un link di reimpostazione.Inserisci il tuo nome "
-"utente o indirizzo email. Se il tuo account è approvato, riceverai un "
-"link di reimpostazione.Inserisci il tuo nome utente o indirizzo email. Se"
-" il tuo account è approvato, riceverai un link di ripristino valido per 1"
-" ora."
+"approvato, riceverai un link di ripristino valido per 1 ora."
 
 #: app/templates/forgot_password.html:19
 msgid "Nom in-game ou email"
@@ -1380,9 +1374,8 @@ msgid ""
 "Meilleurs temps par circuit — cliquez sur un circuit pour voir le détail "
 "par catégorie"
 msgstr ""
-"Tempi migliori per circuito — clicca su un circuito per vedere i dettagli"
-" per categoriaTempi migliori per circuito — clicca su un circuito per "
-"vedere i dettagli per categoria"
+"Tempi migliori per circuito — clicca su un circuito per vedere i dettagli "
+"per categoria"
 
 #: app/templates/leaderboard.html:12
 msgid "Aucune session enregistrée pour le moment."
@@ -1856,9 +1849,7 @@ msgid ""
 "à la fin de chaque session."
 msgstr ""
 "Nessun risultato disponibile per il momento. I risultati appaiono qui "
-"alla fine di ogni sessione.Nessun risultato disponibile per il momento. I"
-" risultati appaiono qui alla fine di ogni sessione.Nessun risultato "
-"disponibile. I risultati appaiono qui alla fine di ogni sessione."
+"alla fine di ogni sessione."
 
 #: app/templates/server.html:21
 msgid "Nom du fichier"
@@ -2143,6 +2134,12 @@ msgstr "Max. giocatori in attesa"
 msgid "Roulement de configs"
 msgstr "Rotazione config"
 
+msgid "Reprise auto"
+msgstr "Ripresa automatica"
+
+msgid "Reprend automatiquement la config suivante au prochain arrêt du serveur (différent du cycle en cours, affiché ci-contre)."
+msgstr "Riprende automaticamente la configurazione successiva al prossimo arresto del server (diverso dal ciclo in corso, mostrato accanto)."
+
 #: app/templates/server.html:416
 msgid "Lancer le cycle"
 msgstr "Avvia il ciclo"
@@ -2161,8 +2158,7 @@ msgid ""
 "liste automatiquement."
 msgstr ""
 "Quando il server si ferma, avvia automaticamente la configurazione "
-"successiva nell'elenco.Quando il server si ferma, avvia automaticamente "
-"la configurazione successiva nell'elenco."
+"successiva nell'elenco."
 
 #: app/templates/server.html:438 app/templates/settings.html:732
 msgid "Ajouter"
@@ -2358,6 +2354,10 @@ msgstr "JPG, PNG, GIF, WEBP · max 5 MB"
 msgid "Copier"
 msgstr "Copia"
 
+#: app/templates/settings.html:199
+msgid "Copié"
+msgstr "Copiato"
+
 #: app/templates/settings.html:196
 msgid "Aucun fichier dans media/banner/ pour le moment."
 msgstr "Nessun file in media/banner/ per il momento."
@@ -2467,12 +2467,9 @@ msgid ""
 "posséder ACE EVO dans sa bibliothèque Steam."
 msgstr ""
 "La password viene inserita al momento dell'aggiornamento e non viene mai "
-"memorizzata. Questo campo è solo un promemoria per indicare se di solito "
-"è necessaria una password. Lasciare vuoto se si usa un account senza "
-"password o in modalità anonima.La password viene inserita al momento "
-"dell'aggiornamento e non viene mai memorizzata. Questo campo è solo un "
-"promemoria per indicare se di solito è necessaria una password. Lasciare "
-"vuoto se si usa un account senza password o in modalità anonima."
+"memorizzata. Questo campo è solo un promemoria per indicare se di solito è "
+"necessaria una password. Lasciare vuoto se si usa un account senza password "
+"o in modalità anonima."
 
 #: app/templates/settings.html:335
 msgid "ex: moncomptesteam"
@@ -2509,8 +2506,7 @@ msgid ""
 "pas sauvegardés."
 msgstr ""
 "Inserisci le credenziali dell'account Steam che possiede ACE EVO. Non "
-"vengono salvate.Inserisci le credenziali dell'account Steam che possiede "
-"ACE EVO. Non vengono salvate."
+"vengono salvate."
 
 #: app/templates/settings.html:381
 msgid "Nom d'utilisateur"
@@ -2700,13 +2696,10 @@ msgid ""
 " réel (leaderboard, passages de secteurs, connexions/déconnexions) et les"
 " transmet au panel sans passer par le webhook de fin de session."
 msgstr ""
-"Il bot è un client fantasma che si connette silenziosamente al server ACE"
-" EVO tramite TCP. Non occupa uno slot pilota. Consente di inviare "
-"messaggi in-game, comandi admin e gestire i piloti (kick, mute, "
-"penalità…) direttamente da questo pannello.Il bot è un client fantasma "
-"che si connette silenziosamente al server ACE EVO tramite TCP. Non occupa"
-" uno slot pilota. Consente di inviare messaggi in-game, comandi admin e "
-"gestire i piloti (kick, mute, penalità…) direttamente da questo pannello."
+"Il bot è un client fantasma che si connette silenziosamente al server ACE "
+"EVO tramite TCP. Non occupa uno slot pilota. Consente di inviare messaggi "
+"in-game, comandi admin e gestire i piloti (kick, mute, penalità…) "
+"direttamente da questo pannello."
 
 #: app/templates/settings.html:680
 msgid "Steam ID"
@@ -2717,10 +2710,8 @@ msgid ""
 "Compte Steam dédié recommandé (pas votre compte personnel). Le Steam ID "
 "64-bit se trouve sur"
 msgstr ""
-"Si consiglia un account Steam dedicato (non il tuo account personale). "
-"L'ID Steam a 64 bit verrà compilato automaticamente.Si consiglia un "
-"account Steam dedicato (non il tuo account personale). L'ID Steam a 64 "
-"bit verrà compilato automaticamente."
+"Si consiglia un account Steam dedicato (non il tuo account personale). L'ID "
+"Steam a 64 bit verrà compilato automaticamente."
 
 #: app/templates/settings.html:685
 msgid "Laisser vide pour désactiver"
@@ -2731,9 +2722,8 @@ msgid ""
 "AdminPassword vide dans la config serveur — le bot se connectera sans "
 "droits admin."
 msgstr ""
-"AdminPassword vuoto nella configurazione del server — il bot si "
-"connetterà senza diritti admin.AdminPassword vuoto nella configurazione "
-"del server — il bot si connetterà senza diritti admin."
+"AdminPassword vuoto nella configurazione del server — il bot si connetterà "
+"senza diritti admin."
 
 #: app/templates/settings.html:696
 msgid "Configurer"
@@ -3601,3 +3591,109 @@ msgstr "Elettrico"
 
 msgid "Hybrid"
 msgstr "Ibrido"
+
+#: Steam OpenID
+msgid "Ce compte Steam est déjà lié à un autre pilote."
+msgstr "Questo account Steam è già collegato a un altro pilota."
+
+msgid "Compte Steam confirmé avec succès."
+msgstr "Account Steam confermato con successo."
+
+msgid "Compte Steam délié."
+msgstr "Account Steam scollegato."
+
+msgid "Impossible de vérifier votre compte Steam. Réessayez."
+msgstr "Impossibile verificare il tuo account Steam. Riprova."
+
+msgid "SteamID"
+msgstr "SteamID"
+
+msgid "Compte Steam"
+msgstr "Account Steam"
+
+msgid "Délier"
+msgstr "Scollega"
+
+msgid "Délier ce compte Steam ?"
+msgstr "Scollegare questo account Steam?"
+
+msgid "Lier mon compte Steam"
+msgstr "Collega il mio account Steam"
+
+msgid "Liez votre compte Steam pour confirmer votre identité auprès de l'organisateur."
+msgstr "Collega il tuo account Steam per confermare la tua identità all'organizzatore."
+
+msgid "Voir le profil Steam"
+msgstr "Vedi profilo Steam"
+
+#: Mon compte (admin/superadmin)
+msgid "Mon compte"
+msgstr "Il mio account"
+
+msgid "Email mis à jour."
+msgstr "Email aggiornata."
+
+msgid "Facultatif — utilisée uniquement pour vous identifier."
+msgstr "Facoltativo — usato solo per identificarti."
+
+#: Confirmation d'email (togglable)
+msgid "Ce lien de confirmation est invalide ou a expiré."
+msgstr "Questo link di conferma non è valido o è scaduto."
+
+msgid "Email confirmé avec succès."
+msgstr "Email confermata con successo."
+
+msgid "Email de confirmation renvoyé."
+msgstr "Email di conferma reinviata."
+
+msgid "Confirmez votre email avant de vous inscrire à un événement."
+msgstr "Conferma la tua email prima di iscriverti a un evento."
+
+msgid "Confirmez votre email pour pouvoir vous inscrire aux événements. Vérifiez votre boîte de réception."
+msgstr "Conferma la tua email per poterti iscrivere agli eventi. Controlla la tua casella di posta."
+
+msgid "Renvoyer l'email de confirmation"
+msgstr "Invia di nuovo l'email di conferma"
+
+msgid "Exige que les pilotes confirment leur email (lien envoyé à l'inscription) avant de pouvoir s'inscrire à un événement. Les comptes existants ne sont pas affectés rétroactivement."
+msgstr "Richiede che i piloti confermino la propria email (link inviato alla registrazione) prima di potersi iscrivere a un evento. Gli account esistenti non sono interessati retroattivamente."
+
+#: Aperçu des templates d'email (administration)
+msgid "Email de test"
+msgstr "Email di test"
+
+msgid "Nouvelle inscription (notif. admin)"
+msgstr "Nuova registrazione (notifica admin)"
+
+msgid "Inscription reçue"
+msgstr "Registrazione ricevuta"
+
+msgid "Compte validé"
+msgstr "Account convalidato"
+
+msgid "Inscription refusée"
+msgstr "Registrazione rifiutata"
+
+msgid "Inscription événement confirmée"
+msgstr "Iscrizione evento confermata"
+
+msgid "Inscription événement refusée"
+msgstr "Iscrizione evento rifiutata"
+
+msgid "Confirmation d'email"
+msgstr "Conferma email"
+
+msgid "Réinitialisation mot de passe"
+msgstr "Reimpostazione password"
+
+msgid "Rappel événement"
+msgstr "Promemoria evento"
+
+msgid "Aperçu du design"
+msgstr "Anteprima del design"
+
+msgid "Voir l'aperçu"
+msgstr "Vedi anteprima"
+
+msgid "Type d'email inconnu."
+msgstr "Tipo di email sconosciuto."

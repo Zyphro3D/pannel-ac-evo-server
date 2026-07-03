@@ -79,7 +79,7 @@ async function startConfig(name) {
   } catch (_) {}
 
   if (statusData && statusData.running && statusData.config && statusData.config !== name) {
-    const ok = confirm(
+    const ok = await showConfirm(
       (I18N.serverRunningWith || 'Le serveur tourne avec') + ' « ' + statusData.config + ' ».\n' +
       (I18N.replaceWith || 'Remplacer par') + ' « ' + name + ' » ?'
     );
@@ -152,7 +152,7 @@ async function submitCreate() {
 async function confirmDeleteConfig() {
   const name = document.getElementById('config-select')?.value;
   if (!name) return;
-  if (!confirm(`Supprimer "${name}" ? Cette action est irréversible.`)) return;
+  if (!await showConfirm(I18N.confirmDeleteConfig.replace('%s', name))) return;
 
   const r = await fetch('/api/configs/delete', {
     method: 'POST',
@@ -206,10 +206,12 @@ function showToast(msg, type = 'success') {
   div.innerHTML = `<div x-data="{ show: true }"
     x-show="show" x-init="setTimeout(() => show = false, 4500)" x-transition
     class="toast toast-${type}" role="alert" aria-live="polite">
-    <span>${msg}</span>
+    <span></span>
     <button @click="show = false" class="toast-close" aria-label="Fermer">✕</button>
   </div>`;
-  zone.prepend(div.firstElementChild);
+  const el = div.firstElementChild;
+  el.querySelector('span').textContent = msg;
+  zone.prepend(el);
   if (window.Alpine) Alpine.initTree(zone.firstElementChild);
 }
 
@@ -328,7 +330,7 @@ async function fetchStatus() {
   } catch (_) {}
 }
 
-if (document.getElementById('main-status-dot') || document.getElementById('status-dot')) {
+if (document.getElementById('main-status-dot') || document.getElementById('status-dot') || document.getElementById('server-side-status')) {
   fetchStatus();
   setInterval(fetchStatus, 5000);
 }
@@ -355,8 +357,8 @@ function openLogs() {
 const _serverBtns = () => ['start','stop','restart'].map(id => document.getElementById(`btn-${id}`));
 
 async function serverAction(action) {
-  if (action === 'stop'    && !confirm(I18N.confirmStop))    return;
-  if (action === 'restart' && !confirm(I18N.confirmRestart)) return;
+  if (action === 'stop'    && !await showConfirm(I18N.confirmStop))    return;
+  if (action === 'restart' && !await showConfirm(I18N.confirmRestart)) return;
 
   const loadingLabel = { start: I18N.serverStarting, stop: I18N.serverStopping, restart: I18N.serverRestarting };
   _serverBtns().forEach(b => {
@@ -635,7 +637,7 @@ function updateRotationStatus() {
     const nextCfg = nextIdx < _rotConfigs.length
       ? _rotConfigs[nextIdx]
       : (hasCycle ? _rotConfigs[0] : null);
-    txt.textContent = _rotRunningCfg + (nextCfg ? '  →  ' + nextCfg : '  (dernier)');
+    txt.textContent = _rotRunningCfg + (nextCfg ? '  →  ' + nextCfg : '  ' + I18N.rotLast);
   }
 
   // Boutons Start / Stop cycle
@@ -772,3 +774,48 @@ async function stopRotationCycle() {
 }
 
 if (document.getElementById('rot-enabled')) loadRotation();
+
+// Boutons de confirmation générique (remplace les anciens onclick="return confirm(...)")
+document.addEventListener('click', async (e) => {
+  const btn = e.target.closest('[data-confirm]');
+  if (!btn) return;
+  e.preventDefault();
+  if (await showConfirm(btn.dataset.confirm)) {
+    const form = btn.closest('form');
+    if (form) form.submit();
+  }
+});
+
+// Page server.html — boutons (remplace les anciens onclick=)
+document.getElementById('modal-create-submit-btn')?.addEventListener('click', submitCreate);
+document.getElementById('modal-rename-submit-btn')?.addEventListener('click', submitRename);
+document.getElementById('modal-config-error-close-btn')?.addEventListener('click', closeConfigErrorModal);
+document.getElementById('modal-config-error-repair-btn')?.addEventListener('click', doRepairConfig);
+document.getElementById('modal-logs-refresh-btn')?.addEventListener('click', loadLogs);
+document.getElementById('srv-logs-open-btn')?.addEventListener('click', openLogs);
+document.getElementById('srv-new-config-btn')?.addEventListener('click', () => openCreateModal(false));
+document.getElementById('btn-start-cycle')?.addEventListener('click', startRotationCycle);
+document.getElementById('btn-stop-cycle')?.addEventListener('click', stopRotationCycle);
+document.getElementById('rot-add-btn')?.addEventListener('click', rotAddConfig);
+document.getElementById('cars-select-all-btn')?.addEventListener('click', () => selectAllVisible(true));
+document.getElementById('cars-deselect-all-btn')?.addEventListener('click', () => selectAllVisible(false));
+document.getElementById('pi-sort-th')?.addEventListener('click', function () { togglePiSort(this); });
+document.getElementById('save-all-btn')?.addEventListener('click', saveAll);
+document.getElementById('srv-cat-filters')?.addEventListener('click', (e) => {
+  const btn = e.target.closest('.cat-btn');
+  if (btn) toggleCat(btn);
+});
+document.querySelector('.srv-config-grid')?.addEventListener('click', (e) => {
+  const btn = e.target.closest('button[data-action]');
+  if (!btn) return;
+  const name = btn.dataset.name;
+  switch (btn.dataset.action) {
+    case 'stop':      serverAction('stop'); break;
+    case 'restart':   serverAction('restart'); break;
+    case 'start':     startConfig(name); break;
+    case 'edit':      editConfig(name, btn.dataset.editUrl); break;
+    case 'rename':    serverSelectConfig(name); openRenameModal(); break;
+    case 'duplicate': serverSelectConfig(name); openCreateModal(true); break;
+    case 'delete':    serverSelectConfig(name); confirmDeleteConfig(); break;
+  }
+});

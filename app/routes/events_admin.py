@@ -8,7 +8,7 @@ from flask_babel import _
 from flask_login import current_user
 from sqlalchemy.orm import selectinload
 
-from app.models import Event, EventRegistration, Driver
+from app.models import Event, EventRegistration, Driver, EventStatus, DriverStatus, RegStatus
 from app.services.database import db
 from app.services.server_config import load_events as load_tracks, load_cars, list_configs
 from app.services import mailer, entry_list
@@ -59,8 +59,8 @@ def _event_from_form(event, form):
     event.is_public   = "1" in form.getlist("is_public")
     # Lancement automatique → publie automatiquement l'événement
     event.auto_launch = "1" in form.getlist("auto_launch")
-    if event.auto_launch and event.status != "finished":
-        event.status = "published"
+    if event.auto_launch and event.status != EventStatus.FINISHED:
+        event.status = EventStatus.PUBLISHED
     return event
 
 
@@ -111,7 +111,7 @@ def event_create():
 @events_admin_bp.route("/events/<int:event_id>/edit", methods=["GET", "POST"])
 @_admin_required
 def event_edit(event_id):
-    event  = Event.query.get_or_404(event_id)
+    event  = db.get_or_404(Event, event_id)
     tracks = load_tracks("practice")
     cars   = load_cars()
     car_categories, pi_min, pi_max = _cars_context(cars)
@@ -129,7 +129,7 @@ def event_edit(event_id):
 @events_admin_bp.route("/events/<int:event_id>/delete", methods=["POST"])
 @_admin_required
 def event_delete(event_id):
-    event = Event.query.get_or_404(event_id)
+    event = db.get_or_404(Event, event_id)
     db.session.delete(event)
     db.session.commit()
     if is_htmx():
@@ -141,12 +141,12 @@ def event_delete(event_id):
 @events_admin_bp.route("/events/<int:event_id>/publish", methods=["POST"])
 @_admin_required
 def event_publish(event_id):
-    event = Event.query.get_or_404(event_id)
-    if event.status == "draft":
-        event.status = "published"
+    event = db.get_or_404(Event, event_id)
+    if event.status == EventStatus.DRAFT:
+        event.status = EventStatus.PUBLISHED
         msg = _("Événement publié.")
-    elif event.status == "published":
-        event.status = "draft"
+    elif event.status == EventStatus.PUBLISHED:
+        event.status = EventStatus.DRAFT
         msg = _("Événement repassé en brouillon.")
     else:
         msg = _("Statut inchangé.")
@@ -161,8 +161,8 @@ def event_publish(event_id):
 @events_admin_bp.route("/events/<int:event_id>/finish", methods=["POST"])
 @_admin_required
 def event_finish(event_id):
-    event = Event.query.get_or_404(event_id)
-    event.status = "finished"
+    event = db.get_or_404(Event, event_id)
+    event.status = EventStatus.FINISHED
     db.session.commit()
     if is_htmx():
         return render_template("_partials/event_row.html", ev=event,
@@ -176,7 +176,7 @@ def event_finish(event_id):
 @events_admin_bp.route("/events/<int:event_id>/registrations")
 @_admin_required
 def event_registrations(event_id):
-    event = Event.query.get_or_404(event_id)
+    event = db.get_or_404(Event, event_id)
     regs  = (EventRegistration.query
              .filter_by(event_id=event.id)
              .options(selectinload(EventRegistration.driver))
@@ -190,7 +190,7 @@ def event_registrations(event_id):
 @_admin_required
 def reg_approve(event_id, rid):
     reg = EventRegistration.query.filter_by(id=rid, event_id=event_id).first_or_404()
-    reg.status = "confirmed"
+    reg.status = RegStatus.CONFIRMED
     db.session.commit()
     mailer.send_event_registration_confirmed(reg.driver, reg.event)
     flash(_("%(name)s confirmé(e).", name=reg.driver.ingame_name), "success")
@@ -201,7 +201,7 @@ def reg_approve(event_id, rid):
 @_admin_required
 def reg_reject(event_id, rid):
     reg = EventRegistration.query.filter_by(id=rid, event_id=event_id).first_or_404()
-    reg.status = "rejected"
+    reg.status = RegStatus.REJECTED
     db.session.commit()
     mailer.send_event_registration_rejected(reg.driver, reg.event)
     flash(_("%(name)s refusé.", name=reg.driver.ingame_name), "success")
@@ -211,7 +211,7 @@ def reg_reject(event_id, rid):
 @events_admin_bp.route("/events/<int:event_id>/registrations/<int:rid>/assign-car", methods=["POST"])
 @_admin_required
 def reg_assign_car(event_id, rid):
-    reg = EventRegistration.query.get_or_404(rid)
+    reg = EventRegistration.query.filter_by(id=rid, event_id=event_id).first_or_404()
     car_name = request.form.get("assigned_car", "")
     car_disp = request.form.get("car_display", "")
     reg.assigned_car = car_name
@@ -223,7 +223,7 @@ def reg_assign_car(event_id, rid):
 @events_admin_bp.route("/events/<int:event_id>/entry-list", methods=["POST"])
 @_admin_required
 def event_entry_list(event_id):
-    event = Event.query.get_or_404(event_id)
+    event = db.get_or_404(Event, event_id)
     ok = entry_list.generate(event)
     flash(_("Entry list générée.") if ok else _("Erreur lors de la génération."), "success" if ok else "error")
     return redirect(url_for("events_admin.event_registrations", event_id=event_id))
@@ -234,21 +234,28 @@ def event_entry_list(event_id):
 @events_admin_bp.route("/drivers")
 @_admin_required
 def drivers_list():
-    pending  = Driver.query.filter_by(status="pending").order_by(Driver.created_at).all()
-    approved = Driver.query.filter_by(status="approved").order_by(Driver.ingame_name).all()
-    rejected = Driver.query.filter_by(status="rejected").order_by(Driver.ingame_name).all()
+    pending  = Driver.query.filter_by(status=DriverStatus.PENDING).order_by(Driver.created_at).all()
+    approved = Driver.query.filter_by(status=DriverStatus.APPROVED).order_by(Driver.ingame_name).all()
+    rejected = Driver.query.filter_by(status=DriverStatus.REJECTED).order_by(Driver.ingame_name).all()
     return render_template("drivers.html", pending=pending, approved=approved, rejected=rejected)
+
+
+def _drivers_oob(toast_type, toast_msg):
+    pending  = Driver.query.filter_by(status=DriverStatus.PENDING).order_by(Driver.created_at).all()
+    approved = Driver.query.filter_by(status=DriverStatus.APPROVED).order_by(Driver.ingame_name).all()
+    return render_template("_partials/drivers_oob.html", pending=pending, approved=approved,
+                           toast_type=toast_type, toast_msg=toast_msg)
 
 
 @events_admin_bp.route("/drivers/<int:driver_id>/approve", methods=["POST"])
 @_admin_required
 def driver_approve(driver_id):
-    driver = Driver.query.get_or_404(driver_id)
-    driver.status = "approved"
+    driver = db.get_or_404(Driver, driver_id)
+    driver.status = DriverStatus.APPROVED
     db.session.commit()
     mailer.send_registration_approved(driver)
     if is_htmx():
-        return htmx_oob_toast("success", _("%(name)s approuvé.", name=driver.ingame_name))
+        return _drivers_oob("success", _("%(name)s approuvé.", name=driver.ingame_name))
     flash(_("%(name)s approuvé.", name=driver.ingame_name), "success")
     return redirect(url_for("events_admin.drivers_list"))
 
@@ -256,12 +263,12 @@ def driver_approve(driver_id):
 @events_admin_bp.route("/drivers/<int:driver_id>/reject", methods=["POST"])
 @_admin_required
 def driver_reject(driver_id):
-    driver = Driver.query.get_or_404(driver_id)
-    driver.status = "rejected"
+    driver = db.get_or_404(Driver, driver_id)
+    driver.status = DriverStatus.REJECTED
     db.session.commit()
     mailer.send_registration_rejected(driver)
     if is_htmx():
-        return htmx_oob_toast("success", _("%(name)s refusé.", name=driver.ingame_name))
+        return _drivers_oob("success", _("%(name)s refusé.", name=driver.ingame_name))
     flash(_("%(name)s refusé.", name=driver.ingame_name), "error")
     return redirect(url_for("events_admin.drivers_list"))
 
@@ -269,11 +276,11 @@ def driver_reject(driver_id):
 @events_admin_bp.route("/drivers/<int:driver_id>/delete", methods=["POST"])
 @_admin_required
 def driver_delete(driver_id):
-    driver = Driver.query.get_or_404(driver_id)
+    driver = db.get_or_404(Driver, driver_id)
     name = driver.ingame_name
     db.session.delete(driver)
     db.session.commit()
     if is_htmx():
-        return htmx_oob_toast("success", _("%(name)s supprimé.", name=name))
+        return _drivers_oob("success", _("%(name)s supprimé.", name=name))
     flash(_("%(name)s supprimé.", name=name), "success")
     return redirect(url_for("events_admin.drivers_list"))

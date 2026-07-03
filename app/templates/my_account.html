@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Mon compte') }} — {{ panel_title }}{% endblock %}
+{% block content %}
+<div class="page-shell max-w-3xl">
+
+  {# Header #}
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">{{ _('Mon compte') }}</h1>
+      <p class="page-subtitle">{{ current_user.display }}</p>
+    </div>
+  </div>
+
+  {# ── Email ── #}
+  <section class="card mb-6">
+    <div class="card-head">
+      <h2 class="card-title">{{ _('Adresse email') }}</h2>
+    </div>
+    <p class="text-sm text-dim mb-3">{{ _('Facultatif — utilisée uniquement pour vous identifier.') }}</p>
+    <form method="post" action="{{ url_for('admin.my_account_email') }}" class="flex items-center gap-3 flex-wrap">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input class="form-control" type="email" name="email" value="{{ current_user.email or '' }}"
+             placeholder="vous@exemple.com" style="max-width: 320px;">
+      <button type="submit" class="btn-primary btn-sm">{{ _('Enregistrer') }}</button>
+    </form>
+  </section>
+
+  {# ── Compte Steam ── #}
+  <section class="card mb-6">
+    <div class="card-head">
+      <h2 class="card-title">{{ _('Compte Steam') }}</h2>
+    </div>
+    {% if current_user.steam_id %}
+    <div class="flex items-center justify-between gap-4 flex-wrap">
+      <div class="flex items-center gap-2">
+        <span class="badge badge-success">✓ {{ _('Confirmé') }}</span>
+        <a href="https://steamcommunity.com/profiles/{{ current_user.steam_id }}" target="_blank" rel="noopener" class="text-sm text-dim hover:text-txt underline">
+          {{ _('Voir le profil Steam') }}
+        </a>
+      </div>
+      <form method="post" action="{{ url_for('auth.steam_unlink') }}" class="m-0">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn-secondary btn-sm" data-confirm="{{ _('Délier ce compte Steam ?') }}">{{ _('Délier') }}</button>
+      </form>
+    </div>
+    {% else %}
+    <div class="flex items-center justify-between gap-4 flex-wrap">
+      <p class="text-sm text-dim m-0">{{ _("Liez votre compte Steam pour confirmer votre identité auprès de l'organisateur.") }}</p>
+      <a href="{{ url_for('auth.steam_link') }}" class="btn-primary btn-sm shrink-0">{{ _('Lier mon compte Steam') }}</a>
+    </div>
+    {% endif %}
+  </section>
+
+</div>
+{% endblock %}

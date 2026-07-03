@@ -14,24 +14,31 @@ Interprétation des flags de tour (confirmée par observation des données) :
   flags < 64  : tour conduit avec une note (coupure légère, avertissement) — affiché avec ⚠
   flags >= 64 : tour invalide ou hors-session (out-lap, crash) — affiché en grisé
 """
+import hashlib
 import json
 import logging
 import os
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
+from datetime import timedelta
 from pathlib import Path
 
 log = logging.getLogger(__name__)
 
-# Cache immuable keyed par SessionResult.id — les résultats ne changent jamais après import.
-_parse_cache: dict[int, dict] = {}
+_MAX_PARSE_CACHE = 200
+_parse_cache: OrderedDict[int, dict] = OrderedDict()
 
 
 def get_parsed(session_result) -> dict:
-    """Retourne le résultat parsé depuis le cache, ou le parse et le met en cache."""
+    """Retourne le résultat parsé depuis le cache (LRU 200 entrées), ou le parse."""
     rid = session_result.id
-    if rid not in _parse_cache:
-        _parse_cache[rid] = parse_result_file(json.loads(session_result.raw_json))
-    return _parse_cache[rid]
+    if rid in _parse_cache:
+        _parse_cache.move_to_end(rid)
+        return _parse_cache[rid]
+    result = parse_result_file(json.loads(session_result.raw_json))
+    _parse_cache[rid] = result
+    if len(_parse_cache) > _MAX_PARSE_CACHE:
+        _parse_cache.popitem(last=False)
+    return result
 
 # ISO 3166-1 alpha-3 → alpha-2 pour les codes nation ACE EVO
 _NATION3_TO_2 = {
@@ -367,31 +374,42 @@ def parse_result_file(data: dict) -> dict:
 def import_result_file(path: Path, source: str = "file",
                        config_name: str | None = None,
                        run_id: str | None = None,
-                       server_id: int | None = None) -> bool:
-    """Importe un fichier de résultats en base. Retourne True si importé."""
+                       server_id: int | None = None,
+                       known_hashes: set[str] | None = None) -> bool:
+    """Importe un fichier de résultats en base. Retourne True si importé.
+
+    Si `known_hashes` est fourni (ensemble des raw_json_hash déjà en DB, précalculé
+    par l'appelant), le hash du fichier est vérifié contre cet ensemble en mémoire
+    avant de parser le JSON — évite de re-parser inutilement un fichier déjà importé
+    lors d'un scan de dossier. Sans `known_hashes`, comportement inchangé (une requête
+    DB par appel), adapté au cas d'un import unique (webhook)."""
     from app.services.database import db
     from app.models import SessionResult
 
     try:
-        raw  = path.read_text(encoding="utf-8")
-        data = json.loads(raw)
+        raw = path.read_text(encoding="utf-8")
     except Exception as e:
         log.error("Impossible de lire %s : %s", path, e)
         return False
 
-    parsed = parse_result_file(data)
+    raw_hash = hashlib.sha256(raw.encode()).hexdigest()
 
-    existing = SessionResult.query.filter_by(
-        track=parsed["track"],
-        session_type=parsed["session_type"],
-        source=source,
-        raw_json=raw,
-    ).first()
-    if existing:
+    if known_hashes is not None:
+        if raw_hash in known_hashes:
+            return False
+    elif SessionResult.query.filter_by(raw_json_hash=raw_hash).first():
         return False
+
+    try:
+        data = json.loads(raw)
+    except Exception as e:
+        log.error("Impossible de parser %s : %s", path, e)
+        return False
+    parsed = parse_result_file(data)
 
     result = SessionResult(
         raw_json=raw,
+        raw_json_hash=raw_hash,
         source=source,
         track=parsed["track"][:200],
         session_type=parsed["session_type"][:60],
@@ -401,19 +419,172 @@ def import_result_file(path: Path, source: str = "file",
     )
     db.session.add(result)
     db.session.commit()
+    if known_hashes is not None:
+        known_hashes.add(raw_hash)
     log.info("Résultats importés depuis %s (track=%s, run=%r)", path.name, parsed["track"], run_id)
+    try:
+        from app.routes.leaderboard import invalidate_circuits_cache
+        invalidate_circuits_cache()
+    except Exception:
+        pass
     return True
 
 
 def scan_and_import(aceserver_dir: str, config_name: str | None = None,
                     run_id: str | None = None, server_id: int | None = None) -> int:
-    """Scanne le dossier aceserver pour des fichiers de résultats non encore importés."""
-    base     = Path(aceserver_dir)
+    """Scanne le dossier aceserver pour des fichiers de résultats non encore importés.
+
+    Précalcule l'ensemble des hash déjà en DB en une seule requête, pour éviter de
+    reparser (coûteux) chaque fichier déjà importé — seul le hash (lecture + sha256,
+    peu coûteux) est recalculé pour chaque fichier du dossier."""
+    from app.models import SessionResult
+    base = Path(aceserver_dir)
+    known_hashes = {h for (h,) in SessionResult.query.with_entities(SessionResult.raw_json_hash).all()}
     imported = 0
     for f in sorted(base.rglob("result*.json")):
         if import_result_file(f, source="file", config_name=config_name,
-                              run_id=run_id, server_id=server_id):
+                              run_id=run_id, server_id=server_id,
+                              known_hashes=known_hashes):
             imported += 1
     if imported:
         log.info("scan_and_import : %d nouveau(x) fichier(s) importé(s)", imported)
     return imported
+
+
+# ── Regroupement de sessions (weekends de course) ──────────────────────────────
+
+_WEEKEND_PALETTE = [
+    "#6366f1",  # indigo
+    "#10b981",  # emerald
+    "#f59e0b",  # amber
+    "#ef4444",  # red
+    "#8b5cf6",  # violet
+    "#06b6d4",  # cyan
+    "#ec4899",  # pink
+]
+_PRACTICE_COLOR = "#64748b"
+# Max gap between two consecutive sessions to be considered part of the same race weekend.
+# In ACE EVO, Race Weekend sessions run back-to-back automatically; 2h covers restarts/pauses
+# without accidentally pulling in a standalone practice done hours earlier.
+_MAX_INTRA_GAP = timedelta(hours=2)
+
+
+def group_sessions(sessions):
+    """
+    Groupe les sessions par run_id (identifiant unique généré à chaque start_server).
+
+    Passe 1 — sessions avec run_id : regroupement exact, sans heuristique.
+    Passe 2 — sessions sans run_id (anciens résultats) : fallback anchor-on-Race.
+
+    Retourne (sessions_annotées, groupes_triés_plus_récent_en_premier).
+    """
+    if not sessions:
+        return sessions, []
+
+    chrono  = sorted(sessions, key=lambda s: s["received_at"])
+    id_to_s = {s["id"]: s for s in sessions}
+    used    = set()
+    raw_groups: list[dict] = []
+
+    # ── Passe 1 : run_id (fiable) ─────────────────────────────────────────
+    by_run: dict[str, dict] = {}
+    for s in chrono:
+        rid = s.get("run_id") or ""
+        if not rid:
+            continue
+        if rid not in by_run:
+            g = {"session_ids": [], "run_id": rid,
+                 "config_name": s.get("config_name") or ""}
+            by_run[rid] = g
+            raw_groups.append(g)
+        by_run[rid]["session_ids"].append(s["id"])
+        used.add(s["id"])
+
+    # ── Passe 2 : fallback anchor-on-Race (anciens résultats sans run_id) ─
+    remaining = [s for s in chrono if s["id"] not in used]
+    for i, s in enumerate(remaining):
+        if s["id"] in used:
+            continue
+        if (s["parsed"].get("session_type") or "").lower() != "race":
+            continue
+
+        track       = (s["parsed"].get("track") or "").strip()
+        group_ids   = [s["id"]]
+        used.add(s["id"])
+        frontier_t  = s["received_at"]
+
+        for j in range(i - 1, -1, -1):
+            prev = remaining[j]
+            if prev["id"] in used:
+                continue
+            if (prev["parsed"].get("track") or "").strip() != track:
+                break
+            if (frontier_t - prev["received_at"]) > _MAX_INTRA_GAP:
+                break
+            if (prev["parsed"].get("session_type") or "").lower() not in \
+                    {"practice", "qualifying", "warmup", "race"}:
+                break
+            group_ids.insert(0, prev["id"])
+            used.add(prev["id"])
+            frontier_t = prev["received_at"]
+
+        raw_groups.append({"session_ids": group_ids, "run_id": None, "config_name": None})
+
+    # Sessions restantes sans run_id = standalone
+    for s in chrono:
+        if s["id"] not in used:
+            raw_groups.append({"session_ids": [s["id"]], "run_id": None, "config_name": None})
+            used.add(s["id"])
+
+    # ── Couleurs ──────────────────────────────────────────────────────────
+    color_idx = 0
+    for g in raw_groups:
+        types = {
+            (id_to_s[sid]["parsed"].get("session_type") or "").lower()
+            for sid in g["session_ids"]
+        } - {""}
+        is_weekend = "race" in types or len(types) > 1
+        g["types"]      = types
+        g["is_weekend"] = is_weekend
+        if is_weekend:
+            g["color"] = _WEEKEND_PALETTE[color_idx % len(_WEEKEND_PALETTE)]
+            color_idx += 1
+        else:
+            g["color"] = _PRACTICE_COLOR
+
+    # ── Tri : groupe le plus récent en premier ────────────────────────────
+    raw_groups.sort(
+        key=lambda g: max(id_to_s[sid]["received_at"] for sid in g["session_ids"]),
+        reverse=True,
+    )
+
+    # ── Annotation + construction template ───────────────────────────────
+    id_to_group = {sid: g for g in raw_groups for sid in g["session_ids"]}
+    for s in sessions:
+        g = id_to_group.get(s["id"], {})
+        s["wkd_color"]  = g.get("color", _PRACTICE_COLOR)
+        s["is_weekend"] = g.get("is_weekend", False)
+
+    ordered_groups = []
+    for g in raw_groups:
+        group_sessions_ = sorted(
+            [id_to_s[sid] for sid in g["session_ids"]],
+            key=lambda s: s["received_at"],
+            reverse=True,
+        )
+        types = {
+            (s["parsed"].get("session_type") or "").lower()
+            for s in group_sessions_
+            if s["parsed"].get("session_type")
+        }
+        track = (group_sessions_[0]["parsed"].get("track") or "").strip() if group_sessions_ else ""
+        ordered_groups.append({
+            "color":       g["color"],
+            "is_weekend":  g["is_weekend"],
+            "track":       track,
+            "types":       types,
+            "sessions":    group_sessions_,
+            "config_name": g.get("config_name"),
+        })
+
+    return sessions, ordered_groups

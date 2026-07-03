@@ -81,16 +81,21 @@ _WEBHOOK_DB_FIELD = {
 
 
 def _resolve_url(server_id: int | None, env_key: str, fallback_env_key: str = "") -> str:
-    """Résout le webhook : DB du serveur > env var spécifique > env var générale."""
+    """Résout le webhook : DB du serveur > env var spécifique > env var générale.
+    La lecture DB nécessite un contexte Flask — depuis un thread background (bot TCP),
+    seules les env vars sont utilisées (fallback attendu).
+    """
     if server_id:
         try:
-            from app.models import Server
-            from app.services.database import db
-            srv = db.session.get(Server, server_id)
-            if srv:
-                url = getattr(srv, _WEBHOOK_DB_FIELD.get(env_key, ""), "") or ""
-                if url.strip():
-                    return url.strip()
+            from flask import has_app_context
+            if has_app_context():
+                from app.models import Server
+                from app.services.database import db
+                srv = db.session.get(Server, server_id)
+                if srv:
+                    url = getattr(srv, _WEBHOOK_DB_FIELD.get(env_key, ""), "") or ""
+                    if url.strip():
+                        return url.strip()
         except Exception:
             pass
     url = os.environ.get(env_key, "")
@@ -136,7 +141,8 @@ def _with_mention(env_key: str, embeds: list) -> dict:
 
 
 def _footer(server_name: str = "") -> dict:
-    return {"text": _local_now()}
+    text = f"[{server_name}] {_local_now()}" if server_name else _local_now()
+    return {"text": text}
 
 
 def _srv(title: str, server_name: str) -> str:
@@ -298,6 +304,8 @@ def test_webhook(url: str) -> dict:
     """Envoi synchrone pour le bouton de test — retourne {"ok": bool, "error": str|None}."""
     if not url:
         return {"ok": False, "error": "URL vide"}
+    if not url.startswith("https://discord.com/api/webhooks/"):
+        return {"ok": False, "error": "URL invalide — doit commencer par https://discord.com/api/webhooks/"}
     payload = {"embeds": [{
         "title":  "Test webhook AC EVO Panel",
         "color":  0x3498DB,

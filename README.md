@@ -91,6 +91,7 @@
 - Page d'accueil publique : serveurs en direct, événements à venir, derniers résultats
 - Fuseau horaire configurable, statut rafraîchi toutes les 5 s
 - Footer avec version, git hash et liens GitHub
+- UI v2 : Tailwind CSS v3 + HTMX + Alpine.js — actions sans rechargement, toasts temps réel, transitions fluides
 
 **Sécurité**
 - CSRF, rate limiting, HSTS, CSP, X-Frame-Options
@@ -160,7 +161,7 @@ docker compose up -d --build
 ```
 
 Deux containers sont construits puis démarrent :
-- **`ace-panel`** — Flask (Python), port 4300
+- **`ace-panel`** — Flask (Python), port 4300 — le build compile aussi le CSS Tailwind (Node.js embarqué dans l'image, aucune dépendance locale)
 - **`ace-server`** — Wine + AssettoCorsaEVOServer.exe, ports 9700 (TCP/UDP) + 8081 (HTTP)
 
 Premier démarrage : ~5 min (build des images + initialisation Wine).

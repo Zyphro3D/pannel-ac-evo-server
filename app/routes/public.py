@@ -1,6 +1,9 @@
+import hashlib
+import os
 import re
+import secrets
 import json as _json
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 _MEDIA_ROOT = Path(__file__).parent.parent.parent / "media"
@@ -11,156 +14,33 @@ from sqlalchemy.orm import selectinload as _pub_selectinload
 from flask_login import current_user, login_user, login_required
 from app import limiter
 
-from app.models import Driver, Event, EventRegistration, Server, SessionResult
+from app.models import Driver, Event, EventRegistration, Server, SessionResult, EventStatus, RegStatus, DriverStatus
 from app.routes.auth import _validate_password
 from app.services.database import db
 from app.services.process_manager import get_status, get_player_history
-from app.services.results_parser import get_parsed
+from app.services.results_parser import get_parsed, group_sessions as _group_sessions
 from app.services.server_config import get_running_server_info
 
 public_bp = Blueprint("public", __name__)
 
 _INGAME_RE = re.compile(r'^[A-Za-z0-9_\-.\s]{2,30}$')
 
-_WEEKEND_PALETTE = [
-    "#6366f1",  # indigo
-    "#10b981",  # emerald
-    "#f59e0b",  # amber
-    "#ef4444",  # red
-    "#8b5cf6",  # violet
-    "#06b6d4",  # cyan
-    "#ec4899",  # pink
-]
-_PRACTICE_COLOR = "#64748b"
-# Max gap between two consecutive sessions to be considered part of the same race weekend.
-# In ACE EVO, Race Weekend sessions run back-to-back automatically; 2h covers restarts/pauses
-# without accidentally pulling in a standalone practice done hours earlier.
-_MAX_INTRA_GAP = timedelta(hours=2)
-
-
-def _group_sessions(sessions):
-    """
-    Groupe les sessions par run_id (identifiant unique généré à chaque start_server).
-
-    Passe 1 — sessions avec run_id : regroupement exact, sans heuristique.
-    Passe 2 — sessions sans run_id (anciens résultats) : fallback anchor-on-Race.
-
-    Retourne (sessions_annotées, groupes_triés_plus_récent_en_premier).
-    """
-    if not sessions:
-        return sessions, []
-
-    chrono  = sorted(sessions, key=lambda s: s["received_at"])
-    id_to_s = {s["id"]: s for s in sessions}
-    used    = set()
-    raw_groups: list[dict] = []
-
-    # ── Passe 1 : run_id (fiable) ─────────────────────────────────────────
-    by_run: dict[str, dict] = {}
-    for s in chrono:
-        rid = s.get("run_id") or ""
-        if not rid:
-            continue
-        if rid not in by_run:
-            g = {"session_ids": [], "run_id": rid,
-                 "config_name": s.get("config_name") or ""}
-            by_run[rid] = g
-            raw_groups.append(g)
-        by_run[rid]["session_ids"].append(s["id"])
-        used.add(s["id"])
-
-    # ── Passe 2 : fallback anchor-on-Race (anciens résultats sans run_id) ─
-    remaining = [s for s in chrono if s["id"] not in used]
-    for i, s in enumerate(remaining):
-        if s["id"] in used:
-            continue
-        if (s["parsed"].get("session_type") or "").lower() != "race":
-            continue
-
-        track       = (s["parsed"].get("track") or "").strip()
-        group_ids   = [s["id"]]
-        used.add(s["id"])
-        frontier_t  = s["received_at"]
-
-        for j in range(i - 1, -1, -1):
-            prev = remaining[j]
-            if prev["id"] in used:
-                continue
-            if (prev["parsed"].get("track") or "").strip() != track:
-                break
-            if (frontier_t - prev["received_at"]) > _MAX_INTRA_GAP:
-                break
-            if (prev["parsed"].get("session_type") or "").lower() not in \
-                    {"practice", "qualifying", "warmup", "race"}:
-                break
-            group_ids.insert(0, prev["id"])
-            used.add(prev["id"])
-            frontier_t = prev["received_at"]
-
-        raw_groups.append({"session_ids": group_ids, "run_id": None, "config_name": None})
-
-    # Sessions restantes sans run_id = standalone
-    for s in chrono:
-        if s["id"] not in used:
-            raw_groups.append({"session_ids": [s["id"]], "run_id": None, "config_name": None})
-            used.add(s["id"])
-
-    # ── Couleurs ──────────────────────────────────────────────────────────
-    color_idx = 0
-    for g in raw_groups:
-        types = {
-            (id_to_s[sid]["parsed"].get("session_type") or "").lower()
-            for sid in g["session_ids"]
-        } - {""}
-        is_weekend = "race" in types or len(types) > 1
-        g["types"]      = types
-        g["is_weekend"] = is_weekend
-        if is_weekend:
-            g["color"] = _WEEKEND_PALETTE[color_idx % len(_WEEKEND_PALETTE)]
-            color_idx += 1
-        else:
-            g["color"] = _PRACTICE_COLOR
-
-    # ── Tri : groupe le plus récent en premier ────────────────────────────
-    raw_groups.sort(
-        key=lambda g: max(id_to_s[sid]["received_at"] for sid in g["session_ids"]),
-        reverse=True,
-    )
-
-    # ── Annotation + construction template ───────────────────────────────
-    id_to_group = {sid: g for g in raw_groups for sid in g["session_ids"]}
-    for s in sessions:
-        g = id_to_group.get(s["id"], {})
-        s["wkd_color"]  = g.get("color", _PRACTICE_COLOR)
-        s["is_weekend"] = g.get("is_weekend", False)
-
-    ordered_groups = []
-    for g in raw_groups:
-        group_sessions = sorted(
-            [id_to_s[sid] for sid in g["session_ids"]],
-            key=lambda s: s["received_at"],
-            reverse=True,
-        )
-        types = {
-            (s["parsed"].get("session_type") or "").lower()
-            for s in group_sessions
-            if s["parsed"].get("session_type")
-        }
-        track = (group_sessions[0]["parsed"].get("track") or "").strip() if group_sessions else ""
-        ordered_groups.append({
-            "color":       g["color"],
-            "is_weekend":  g["is_weekend"],
-            "track":       track,
-            "types":       types,
-            "sessions":    group_sessions,
-            "config_name": g.get("config_name"),
-        })
-
-    return sessions, ordered_groups
-
 
 def _now_utc():
     return datetime.now(timezone.utc).replace(tzinfo=None)
+
+
+def _require_email_confirmation() -> bool:
+    return os.environ.get("REQUIRE_EMAIL_CONFIRMATION", "false").lower() == "true"
+
+
+def _send_confirmation_email(driver):
+    from app.services import mailer
+    token = secrets.token_urlsafe(32)
+    driver.email_confirm_token         = hashlib.sha256(token.encode()).hexdigest()
+    driver.email_confirm_token_expires = _now_utc() + timedelta(hours=48)
+    db.session.commit()
+    mailer.send_email_confirmation(driver, token)
 
 
 @public_bp.route("/")
@@ -189,7 +69,7 @@ def index():
 
     now = _now_utc()
     ongoing = (Event.query
-               .filter_by(status="published")
+               .filter_by(status=EventStatus.PUBLISHED)
                .filter(Event.date < now)
                .order_by(Event.date.desc())
                .all())
@@ -204,7 +84,7 @@ def index():
         parts  = (ev.circuit or "").split("|")
         tslug  = parts[0].strip().lower().replace(" ", "_") if parts else ""
         tpath  = _MEDIA_ROOT / "circuits" / f"{tslug}.webp"
-        conf   = sum(1 for r in ev.registrations if r.status == "confirmed")
+        conf   = sum(1 for r in ev.registrations if r.status == RegStatus.CONFIRMED)
         total  = ev.total_minutes
         h, m   = divmod(total, 60)
         return {
@@ -219,7 +99,7 @@ def index():
         }
 
     raw_upcoming = (Event.query
-                    .filter_by(status="published")
+                    .filter_by(status=EventStatus.PUBLISHED)
                     .filter(Event.date >= now)
                     .options(_pub_selectinload(Event.registrations))
                     .order_by(Event.date)
@@ -339,6 +219,8 @@ def register():
             mailer.send_new_registration(driver)
             mailer.send_registration_received(driver)
             discord_notifier.safe_notify(discord_notifier.notify_new_registration, driver)
+            if _require_email_confirmation():
+                _send_confirmation_email(driver)
             flash(_("Inscription reçue ! Votre compte sera activé par un administrateur."), "success")
             return redirect(url_for("auth.login"))
 
@@ -346,6 +228,35 @@ def register():
             flash(e, "error")
 
     return render_template("register.html")
+
+
+@public_bp.route("/confirm-email/<token>")
+def confirm_email(token):
+    token_hash = hashlib.sha256(token.encode()).hexdigest()
+    driver = Driver.query.filter_by(email_confirm_token=token_hash).first()
+    if (not driver or not driver.email_confirm_token_expires
+            or driver.email_confirm_token_expires < _now_utc()):
+        flash(_("Ce lien de confirmation est invalide ou a expiré."), "error")
+        return redirect(url_for("auth.login"))
+
+    driver.email_confirmed_at          = _now_utc()
+    driver.email_confirm_token         = None
+    driver.email_confirm_token_expires = None
+    db.session.commit()
+    flash(_("Email confirmé avec succès."), "success")
+    return redirect(url_for("auth.login"))
+
+
+@public_bp.route("/pilot/email/resend-confirmation", methods=["POST"])
+@login_required
+@limiter.limit("3 per hour")
+def resend_email_confirmation():
+    if not current_user.is_pilot:
+        return redirect(url_for("admin.server"))
+    if not current_user.is_email_confirmed:
+        _send_confirmation_email(current_user)
+        flash(_("Email de confirmation renvoyé."), "success")
+    return redirect(url_for("public.pilot_dashboard"))
 
 
 @public_bp.route("/pilot/dashboard")
@@ -368,7 +279,7 @@ def pilot_dashboard():
 
     registered_ids = {r.event_id for r in regs}
     q = (Event.query
-         .filter_by(status="published", is_public=False)
+         .filter_by(status=EventStatus.PUBLISHED, is_public=False)
          .filter(Event.date >= now)
          .options(_pub_selectinload(Event.registrations)))
     if registered_ids:
@@ -378,7 +289,8 @@ def pilot_dashboard():
     return render_template("pilot_dashboard.html",
                            upcoming_regs=upcoming_regs,
                            past_regs=past_regs,
-                           available=available)
+                           available=available,
+                           require_email_confirmation=_require_email_confirmation())
 
 
 @public_bp.route("/pilot/events/<int:event_id>/register", methods=["POST"])
@@ -391,8 +303,12 @@ def pilot_register(event_id):
         flash(_("Votre compte doit être validé avant de vous inscrire."), "error")
         return redirect(url_for("public.pilot_dashboard"))
 
-    event = Event.query.get_or_404(event_id)
-    if event.status != "published":
+    if _require_email_confirmation() and not current_user.is_email_confirmed:
+        flash(_("Confirmez votre email avant de vous inscrire à un événement."), "error")
+        return redirect(url_for("public.pilot_dashboard"))
+
+    event = db.get_or_404(Event, event_id)
+    if event.status != EventStatus.PUBLISHED:
         flash(_("Cet événement n'est pas disponible."), "error")
         return redirect(url_for("public.pilot_dashboard"))
 
@@ -452,7 +368,7 @@ def results():
 def result_detail(result_id):
     from app.models import SessionResult
     from app.services.results_parser import get_parsed
-    r = SessionResult.query.get_or_404(result_id)
+    r = db.get_or_404(SessionResult, result_id)
     parsed = get_parsed(r)
     return render_template("result_detail.html", result=r, parsed=parsed)
 
@@ -464,7 +380,7 @@ def pilot_unregister(event_id):
         return redirect(url_for("auth.login"))
 
     reg = EventRegistration.query.filter_by(event_id=event_id, driver_id=current_user.id).first()
-    if reg and reg.status == "pending":
+    if reg and reg.status == RegStatus.PENDING:
         db.session.delete(reg)
         db.session.commit()
         flash(_("Désinscription effectuée."), "success")

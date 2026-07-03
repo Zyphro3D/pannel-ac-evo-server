@@ -128,6 +128,16 @@
   .table-base th {
     @apply text-left text-xs font-medium text-dim uppercase tracking-wider py-3 px-4;
   }
+  /* Spécificité égale à .table-base th (élément+classe) + la classe d'alignement :
+     permet à text-right/text-center posé sur un <th> de gagner sur le text-left par défaut.
+     (text-align en CSS brut, pas via @apply, pour éviter la dépendance circulaire Tailwind
+     détectée quand le sélecteur cible la même classe utilitaire que celle appliquée.) */
+  .table-base th.text-right {
+    text-align: right;
+  }
+  .table-base th.text-center {
+    text-align: center;
+  }
   .table-base td {
     @apply py-3 px-4 border-b border-muted/10;
   }
@@ -196,11 +206,11 @@
 
   /* ─ Sidebar layout (admin pages) ─ */
   .admin-layout {
-    @apply flex min-h-[calc(100vh-3.5rem)];
+    @apply flex min-h-[calc(100vh-4rem)];
   }
   .admin-sidebar {
     @apply hidden lg:flex flex-col w-56 shrink-0 bg-sidebar border-r border-white/5
-           px-3 py-6 sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto;
+           px-3 py-6 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto;
   }
   .admin-content {
     @apply flex-1 min-w-0 px-4 sm:px-6 py-6;
@@ -222,7 +232,7 @@
            rounded-xl shadow-xl py-1 z-50;
   }
   .nav-dropdown-item {
-    @apply flex items-center gap-2 px-3 py-2 text-sm text-dim
+    @apply flex items-center gap-2 px-3 py-2 text-sm text-txt/80
            hover:bg-surface hover:text-txt transition-colors duration-100;
   }
   .nav-dropdown-item.active { @apply text-accent; }

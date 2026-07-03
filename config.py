@@ -59,11 +59,13 @@ class Config:
     DISCORD_RACE_WEBHOOK_URL   = os.environ.get("DISCORD_RACE_WEBHOOK_URL", "")
     DISCORD_INVITE_URL         = os.environ.get("DISCORD_INVITE_URL", "")
     RESULTS_INGEST_SECRET      = os.environ.get("RESULTS_INGEST_SECRET", "")
+    REQUIRE_EMAIL_CONFIRMATION = os.environ.get("REQUIRE_EMAIL_CONFIRMATION", "false").lower() == "true"
     SERVER_SHOW_CONSOLE = os.environ.get("SERVER_SHOW_CONSOLE", "true").lower() == "true"
 
     # ── Base de données ───────────────────────────────────────────────────────
     SQLALCHEMY_DATABASE_URI     = os.environ.get("DATABASE_URL", "sqlite:///ace_evo.db")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_ENGINE_OPTIONS   = {"connect_args": {"check_same_thread": False}}
 
     # ── Email ─────────────────────────────────────────────────────────────────
     MAIL_SERVER   = os.environ.get("MAIL_SERVER",   "")
@@ -91,9 +93,10 @@ class Config:
     PANEL_GITHUB_URL = os.environ.get("PANEL_GITHUB_URL", "https://github.com/Zyphro3D/pannel-ac-evo-server")
 
     # ── SteamCMD (mise à jour du serveur de jeu) ─────────────────────────────
+    # Le mot de passe Steam n'est jamais persisté : saisi à chaque mise à jour via le
+    # formulaire (voir container_mgmt.py), donc pas de STEAM_PASSWORD ici.
     STEAMCMD_PATH     = os.environ.get("STEAMCMD_PATH",     "/opt/steamcmd/steamcmd.sh")
     STEAM_USERNAME    = os.environ.get("STEAM_USERNAME",    "anonymous")
-    STEAM_PASSWORD    = os.environ.get("STEAM_PASSWORD",    "")
 
     # ── Mode de déploiement ───────────────────────────────────────────────────
     # "docker_split" = panel contrôle le container aceserver (recommandé en prod)

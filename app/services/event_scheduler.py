@@ -8,22 +8,26 @@ log = logging.getLogger(__name__)
 
 def _loop(app):
     while True:
-        time.sleep(60)
+        for _ in range(12):   # 12 x 5s = 60s, mais réveillable rapidement pour un arrêt propre
+            time.sleep(5)
         try:
             with app.app_context():
-                from app.models import Event, EventRegistration  # noqa: F401 needed for query
+                from app.models import Event, EventRegistration, EventStatus, RegStatus
                 from app.services.database import db
                 from app.services import mailer
 
                 now    = datetime.now(timezone.utc).replace(tzinfo=None)
+                published = Event.query.filter_by(status=EventStatus.PUBLISHED).all()
+                from app.services import discord_notifier
 
-                # ── Rappels email + Discord pré-événement ────────────────────
-                for event in Event.query.filter_by(status="published", email_sent=False).all():
+                for event in published:
                     delta_min = (event.date - now).total_seconds() / 60
-                    if delta_min <= event.notify_before:
+
+                    # ── Rappels email pré-événement ───────────────────────────
+                    if not event.email_sent and delta_min <= event.notify_before:
                         from sqlalchemy.orm import selectinload as _sl
                         regs = (EventRegistration.query
-                                .filter_by(event_id=event.id, status="confirmed", notified=False)
+                                .filter_by(event_id=event.id, status=RegStatus.CONFIRMED, notified=False)
                                 .options(_sl(EventRegistration.driver))
                                 .all())
                         for reg in regs:
@@ -33,33 +37,30 @@ def _loop(app):
                         db.session.commit()
                         log.info("Rappels envoyés pour '%s' (%d pilote(s))", event.title, len(regs))
 
-                # Discord exactly ~30 min avant (fenêtre 60s, une seule fois via flag)
-                from app.services import discord_notifier
-                for event in Event.query.filter_by(status="published", discord_notified=False).all():
-                    delta_min = (event.date - now).total_seconds() / 60
-                    if 29 <= delta_min <= 31:
+                    # ── Discord exactly ~30 min avant (fenêtre 60s, une seule fois) ──
+                    if not event.discord_notified and 29 <= delta_min <= 31:
                         discord_notifier.safe_notify(discord_notifier.notify_event_soon, event)
                         event.discord_notified = True
                         db.session.commit()
                         log.info("Discord 30min envoyé pour '%s'", event.title)
 
-                # ── Lancement automatique du serveur ──────────────────────────
-                for event in (Event.query
-                              .filter_by(status="published", auto_launch=True, launched=False)
-                              .all()):
-                    if event.date > now:
-                        continue  # pas encore l'heure
-                    _launch_event(app, event, db)
+                    # ── Lancement automatique ─────────────────────────────────
+                    if event.auto_launch and not event.launched and event.date <= now:
+                        _launch_event(app, event, db)
 
-                # ── Auto-terminer les événements expirés (1h de grâce) ────────
-                for event in Event.query.filter_by(status="published").all():
+                    # ── Auto-terminer les événements expirés (1h de grâce) ────
                     event_end = event.date + timedelta(minutes=event.total_minutes + 60)
                     if now >= event_end:
-                        event.status = "finished"
+                        event.status = EventStatus.FINISHED
                         db.session.commit()
                         log.info("Auto-terminé: '%s'", event.title)
 
         except Exception:
+            # db.session.rollback() doit s'exécuter dans le même app_context() : une fois le
+            # bloc `with` sorti par l'exception, le contexte est déjà dépilé et l'appel plante
+            # avec "Working outside of application context".
+            with app.app_context():
+                db.session.rollback()
             log.exception("Erreur event_scheduler")
 
 

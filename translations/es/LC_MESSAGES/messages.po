@@ -19,10 +19,8 @@ msgid ""
 "Aucun fichier de configuration trouvé dans CONFIGS_DIR. Créez-en un via "
 "le bouton ci-dessous."
 msgstr ""
-"No se encontró ningún archivo de configuración en CONFIGS_DIR. Cree uno "
-"usando el botón de abajo.No se encontró ningún archivo de configuración "
-"en CONFIGS_DIR. Cree uno usando el botón de abajo.No se encontró ningún "
-"archivo de configuración en CONFIGS_DIR. Créalo con el botón de abajo."
+"No se encontró ningún archivo de configuración en CONFIGS_DIR. Créalo "
+"con el botón de abajo."
 
 #: app/routes/admin.py:205 app/templates/event_form.html:88
 #: app/templates/server.html:271
@@ -743,6 +741,10 @@ msgstr "Eventos admin"
 msgid "Live Admin"
 msgstr "Live Admin"
 
+#: app/templates/base.html:401
+msgid "Supprimer \"%%s\" ? Cette action est irréversible."
+msgstr "¿Eliminar \"%%s\"? Esta acción es irreversible."
+
 #: app/templates/base.html:222
 msgid ""
 "Ce site utilise uniquement des cookies techniques nécessaires à son "
@@ -1350,12 +1352,8 @@ msgid ""
 "Entrez votre identifiant ou votre adresse email. Si votre compte est "
 "approuvé, vous recevrez un lien de réinitialisation valable 1 heure."
 msgstr ""
-"Ingrese su nombre de usuario o dirección de correo electrónico. Si su "
-"cuenta está aprobada, recibirá un enlace de restablecimiento.Ingrese su "
-"nombre de usuario o dirección de correo electrónico. Si su cuenta está "
-"aprobada, recibirá un enlace de restablecimiento.Ingrese su nombre de "
-"usuario o email. Si su cuenta está aprobada, recibirá un enlace de "
-"restablecimiento válido por 1 hora."
+"Ingrese su nombre de usuario o email. Si su cuenta está aprobada, "
+"recibirá un enlace de restablecimiento válido por 1 hora."
 
 #: app/templates/forgot_password.html:19
 msgid "Nom in-game ou email"
@@ -1374,9 +1372,8 @@ msgid ""
 "Meilleurs temps par circuit — cliquez sur un circuit pour voir le détail "
 "par catégorie"
 msgstr ""
-"Mejores tiempos por circuito — haga clic en un circuito para ver el "
-"detalle por categoríaMejores tiempos por circuito — haga clic en un "
-"circuito para ver el detalle por categoría"
+"Mejores tiempos por circuito — haga clic en un circuito para ver el detalle "
+"por categoría"
 
 #: app/templates/leaderboard.html:12
 msgid "Aucune session enregistrée pour le moment."
@@ -1850,9 +1847,7 @@ msgid ""
 "à la fin de chaque session."
 msgstr ""
 "Ningún resultado disponible por el momento. Los resultados aparecen aquí "
-"al final de cada sesión.Ningún resultado disponible por el momento. Los "
-"resultados aparecen aquí al final de cada sesión.No hay resultados "
-"disponibles. Los resultados aparecen aquí al final de cada sesión."
+"al final de cada sesión."
 
 #: app/templates/server.html:21
 msgid "Nom du fichier"
@@ -2137,6 +2132,12 @@ msgstr "Máx. jugadores en espera"
 msgid "Roulement de configs"
 msgstr "Rotación de configs"
 
+msgid "Reprise auto"
+msgstr "Reanudación automática"
+
+msgid "Reprend automatiquement la config suivante au prochain arrêt du serveur (différent du cycle en cours, affiché ci-contre)."
+msgstr "Reanuda automáticamente la siguiente configuración la próxima vez que se detenga el servidor (diferente del ciclo en curso, mostrado al lado)."
+
 #: app/templates/server.html:416
 msgid "Lancer le cycle"
 msgstr "Iniciar el ciclo"
@@ -2155,8 +2156,7 @@ msgid ""
 "liste automatiquement."
 msgstr ""
 "Cuando el servidor se detiene, inicia automáticamente la siguiente "
-"configuración de la lista.Cuando el servidor se detiene, inicia "
-"automáticamente la siguiente configuración de la lista."
+"configuración de la lista."
 
 #: app/templates/server.html:438 app/templates/settings.html:732
 msgid "Ajouter"
@@ -2354,6 +2354,10 @@ msgstr "JPG, PNG, GIF, WEBP · máx. 5 MB"
 msgid "Copier"
 msgstr "Copiar"
 
+#: app/templates/settings.html:199
+msgid "Copié"
+msgstr "Copiado"
+
 #: app/templates/settings.html:196
 msgid "Aucun fichier dans media/banner/ pour le moment."
 msgstr "Ningún archivo en media/banner/ por el momento."
@@ -2463,12 +2467,9 @@ msgid ""
 "posséder ACE EVO dans sa bibliothèque Steam."
 msgstr ""
 "La contraseña se ingresa en el momento de la actualización y nunca se "
-"almacena. Este campo es solo un recordatorio para indicar si generalmente"
-" se requiere una contraseña. Déjelo vacío si usa una cuenta sin "
-"contraseña o en modo anónimo.La contraseña se ingresa en el momento de la"
-" actualización y nunca se almacena. Este campo es solo un recordatorio "
-"para indicar si generalmente se requiere una contraseña. Déjelo vacío si "
-"usa una cuenta sin contraseña o en modo anónimo."
+"almacena. Este campo es solo un recordatorio para indicar si generalmente "
+"se requiere una contraseña. Déjelo vacío si usa una cuenta sin contraseña o "
+"en modo anónimo."
 
 #: app/templates/settings.html:335
 msgid "ex: moncomptesteam"
@@ -2505,8 +2506,7 @@ msgid ""
 "pas sauvegardés."
 msgstr ""
 "Ingrese las credenciales de la cuenta Steam que posee ACE EVO. No se "
-"guardan.Ingrese las credenciales de la cuenta Steam que posee ACE EVO. No"
-" se guardan."
+"guardan."
 
 #: app/templates/settings.html:381
 msgid "Nom d'utilisateur"
@@ -2699,11 +2699,7 @@ msgstr ""
 "El bot es un cliente fantasma que se conecta silenciosamente al servidor "
 "ACE EVO a través de TCP. No ocupa un lugar de piloto. Permite enviar "
 "mensajes en el juego, comandos admin y gestionar pilotos (expulsar, "
-"silenciar, penalizaciones…) directamente desde este panel.El bot es un "
-"cliente fantasma que se conecta silenciosamente al servidor ACE EVO a "
-"través de TCP. No ocupa un lugar de piloto. Permite enviar mensajes en el"
-" juego, comandos admin y gestionar pilotos (expulsar, silenciar, "
-"penalizaciones…) directamente desde este panel."
+"silenciar, penalizaciones…) directamente desde este panel."
 
 #: app/templates/settings.html:680
 msgid "Steam ID"
@@ -2714,10 +2710,8 @@ msgid ""
 "Compte Steam dédié recommandé (pas votre compte personnel). Le Steam ID "
 "64-bit se trouve sur"
 msgstr ""
-"Se recomienda una cuenta Steam dedicada (no su cuenta personal). El Steam"
-" ID de 64 bits se rellenará automáticamente.Se recomienda una cuenta "
-"Steam dedicada (no su cuenta personal). El Steam ID de 64 bits se "
-"rellenará automáticamente."
+"Se recomienda una cuenta Steam dedicada (no su cuenta personal). El Steam "
+"ID de 64 bits se rellenará automáticamente."
 
 #: app/templates/settings.html:685
 msgid "Laisser vide pour désactiver"
@@ -2728,10 +2722,8 @@ msgid ""
 "AdminPassword vide dans la config serveur — le bot se connectera sans "
 "droits admin."
 msgstr ""
-"AdminPassword vacío en la configuración del servidor — el bot se "
-"conectará sin derechos de administrador.AdminPassword vacío en la "
-"configuración del servidor — el bot se conectará sin derechos de "
-"administrador."
+"AdminPassword vacío en la configuración del servidor — el bot se conectará "
+"sin derechos de administrador."
 
 #: app/templates/settings.html:696
 msgid "Configurer"
@@ -3612,3 +3604,109 @@ msgstr "Eléctrico"
 
 msgid "Hybrid"
 msgstr "Híbrido"
+
+#: Steam OpenID
+msgid "Ce compte Steam est déjà lié à un autre pilote."
+msgstr "Esta cuenta de Steam ya está vinculada a otro piloto."
+
+msgid "Compte Steam confirmé avec succès."
+msgstr "Cuenta de Steam confirmada correctamente."
+
+msgid "Compte Steam délié."
+msgstr "Cuenta de Steam desvinculada."
+
+msgid "Impossible de vérifier votre compte Steam. Réessayez."
+msgstr "No se pudo verificar tu cuenta de Steam. Inténtalo de nuevo."
+
+msgid "SteamID"
+msgstr "SteamID"
+
+msgid "Compte Steam"
+msgstr "Cuenta de Steam"
+
+msgid "Délier"
+msgstr "Desvincular"
+
+msgid "Délier ce compte Steam ?"
+msgstr "¿Desvincular esta cuenta de Steam?"
+
+msgid "Lier mon compte Steam"
+msgstr "Vincular mi cuenta de Steam"
+
+msgid "Liez votre compte Steam pour confirmer votre identité auprès de l'organisateur."
+msgstr "Vincula tu cuenta de Steam para confirmar tu identidad ante el organizador."
+
+msgid "Voir le profil Steam"
+msgstr "Ver perfil de Steam"
+
+#: Mon compte (admin/superadmin)
+msgid "Mon compte"
+msgstr "Mi cuenta"
+
+msgid "Email mis à jour."
+msgstr "Correo actualizado."
+
+msgid "Facultatif — utilisée uniquement pour vous identifier."
+msgstr "Opcional — se usa solo para identificarte."
+
+#: Confirmation d'email (togglable)
+msgid "Ce lien de confirmation est invalide ou a expiré."
+msgstr "Este enlace de confirmación no es válido o ha caducado."
+
+msgid "Email confirmé avec succès."
+msgstr "Correo confirmado correctamente."
+
+msgid "Email de confirmation renvoyé."
+msgstr "Correo de confirmación reenviado."
+
+msgid "Confirmez votre email avant de vous inscrire à un événement."
+msgstr "Confirma tu correo antes de inscribirte a un evento."
+
+msgid "Confirmez votre email pour pouvoir vous inscrire aux événements. Vérifiez votre boîte de réception."
+msgstr "Confirma tu correo para poder inscribirte a los eventos. Revisa tu bandeja de entrada."
+
+msgid "Renvoyer l'email de confirmation"
+msgstr "Reenviar correo de confirmación"
+
+msgid "Exige que les pilotes confirment leur email (lien envoyé à l'inscription) avant de pouvoir s'inscrire à un événement. Les comptes existants ne sont pas affectés rétroactivement."
+msgstr "Exige que los pilotos confirmen su correo (enlace enviado al registrarse) antes de poder inscribirse a un evento. Las cuentas existentes no se ven afectadas retroactivamente."
+
+#: Aperçu des templates d'email (administration)
+msgid "Email de test"
+msgstr "Correo de prueba"
+
+msgid "Nouvelle inscription (notif. admin)"
+msgstr "Nuevo registro (notif. admin)"
+
+msgid "Inscription reçue"
+msgstr "Registro recibido"
+
+msgid "Compte validé"
+msgstr "Cuenta validada"
+
+msgid "Inscription refusée"
+msgstr "Registro rechazado"
+
+msgid "Inscription événement confirmée"
+msgstr "Inscripción al evento confirmada"
+
+msgid "Inscription événement refusée"
+msgstr "Inscripción al evento rechazada"
+
+msgid "Confirmation d'email"
+msgstr "Confirmación de correo"
+
+msgid "Réinitialisation mot de passe"
+msgstr "Restablecimiento de contraseña"
+
+msgid "Rappel événement"
+msgstr "Recordatorio de evento"
+
+msgid "Aperçu du design"
+msgstr "Vista previa del diseño"
+
+msgid "Voir l'aperçu"
+msgstr "Ver vista previa"
+
+msgid "Type d'email inconnu."
+msgstr "Tipo de correo desconocido."

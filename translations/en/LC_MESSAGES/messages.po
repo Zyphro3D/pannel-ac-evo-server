@@ -20,9 +20,7 @@ msgid ""
 "le bouton ci-dessous."
 msgstr ""
 "No configuration file found in CONFIGS_DIR. Create one using the button "
-"below.No configuration file found in CONFIGS_DIR. Create one using the "
-"button below.No configuration file found in CONFIGS_DIR. Create one using"
-" the button below."
+"below."
 
 #: app/routes/admin.py:205 app/templates/event_form.html:88
 #: app/templates/server.html:271
@@ -50,6 +48,9 @@ msgstr "Dynamic"
 #: app/routes/admin.py:214
 msgid "Practice"
 msgstr "Practice"
+
+msgid "Qualifying"
+msgstr "Qualifying"
 
 #: app/routes/admin.py:215 app/templates/event_form.html:82
 #: app/templates/server.html:263
@@ -743,6 +744,10 @@ msgstr "Admin Events"
 msgid "Live Admin"
 msgstr "Live Admin"
 
+#: app/templates/base.html:401
+msgid "Supprimer \"%%s\" ? Cette action est irréversible."
+msgstr "Delete \"%%s\"? This action is irreversible."
+
 #: app/templates/base.html:222
 msgid ""
 "Ce site utilise uniquement des cookies techniques nécessaires à son "
@@ -1349,10 +1354,7 @@ msgid ""
 "approuvé, vous recevrez un lien de réinitialisation valable 1 heure."
 msgstr ""
 "Enter your username or email address. If your account is approved, you "
-"will receive a reset link.Enter your username or email address. If your "
-"account is approved, you will receive a reset link.Enter your username or"
-" email address. If your account is approved, you will receive a reset "
-"link valid for 1 hour."
+"will receive a reset link valid for 1 hour."
 
 #: app/templates/forgot_password.html:19
 msgid "Nom in-game ou email"
@@ -2127,6 +2129,12 @@ msgstr "Max. waiting players"
 msgid "Roulement de configs"
 msgstr "Config rotation"
 
+msgid "Reprise auto"
+msgstr "Auto-resume"
+
+msgid "Reprend automatiquement la config suivante au prochain arrêt du serveur (différent du cycle en cours, affiché ci-contre)."
+msgstr "Automatically resumes with the next config the next time the server stops (different from the cycle currently running, shown alongside)."
+
 #: app/templates/server.html:416
 msgid "Lancer le cycle"
 msgstr "Start cycle"
@@ -2145,8 +2153,7 @@ msgid ""
 "liste automatiquement."
 msgstr ""
 "When the server stops, it automatically starts the next configuration in "
-"the list.When the server stops, it automatically starts the next "
-"configuration in the list."
+"the list."
 
 #: app/templates/server.html:438 app/templates/settings.html:732
 msgid "Ajouter"
@@ -2342,6 +2349,10 @@ msgstr "JPG, PNG, GIF, WEBP · 5 MB max"
 msgid "Copier"
 msgstr "Copy"
 
+#: app/templates/settings.html:199
+msgid "Copié"
+msgstr "Copied"
+
 #: app/templates/settings.html:196
 msgid "Aucun fichier dans media/banner/ pour le moment."
 msgstr "No file in media/banner/ yet."
@@ -2450,13 +2461,9 @@ msgid ""
 "stocké. Ce champ pré-remplit simplement le formulaire. Le compte doit "
 "posséder ACE EVO dans sa bibliothèque Steam."
 msgstr ""
-"The password is entered at update time and is never stored. This field is"
-" just a reminder to indicate whether a password is usually required. "
-"Leave empty if you use an account without a password or in anonymous "
-"mode.The password is entered at update time and is never stored. This "
-"field is just a reminder to indicate whether a password is usually "
-"required. Leave empty if you use an account without a password or in "
-"anonymous mode."
+"The password is entered at update time and is never stored. This field is "
+"just a reminder to indicate whether a password is usually required. Leave "
+"empty if you use an account without a password or in anonymous mode."
 
 #: app/templates/settings.html:335
 msgid "ex: moncomptesteam"
@@ -2492,9 +2499,8 @@ msgid ""
 "Entrez les identifiants du compte Steam qui possède ACE EVO. Ils ne sont "
 "pas sauvegardés."
 msgstr ""
-"Enter the credentials of the Steam account that owns ACE EVO. They are "
-"not saved.Enter the credentials of the Steam account that owns ACE EVO. "
-"They are not saved."
+"Enter the credentials of the Steam account that owns ACE EVO. They are not "
+"saved."
 
 #: app/templates/settings.html:381
 msgid "Nom d'utilisateur"
@@ -2684,13 +2690,10 @@ msgid ""
 " réel (leaderboard, passages de secteurs, connexions/déconnexions) et les"
 " transmet au panel sans passer par le webhook de fin de session."
 msgstr ""
-"The bot is a ghost client that silently connects to the ACE EVO server "
-"via TCP. It does not occupy a driver slot. It allows sending in-game "
-"messages, admin commands, and managing drivers (kick, mute, penalties…) "
-"directly from this panel.The bot is a ghost client that silently connects"
-" to the ACE EVO server via TCP. It does not occupy a driver slot. It "
-"allows sending in-game messages, admin commands, and managing drivers "
-"(kick, mute, penalties…) directly from this panel."
+"The bot is a ghost client that silently connects to the ACE EVO server via "
+"TCP. It does not occupy a driver slot. It allows sending in-game messages, "
+"admin commands, and managing drivers (kick, mute, penalties…) directly from "
+"this panel."
 
 #: app/templates/settings.html:680
 msgid "Steam ID"
@@ -2701,10 +2704,8 @@ msgid ""
 "Compte Steam dédié recommandé (pas votre compte personnel). Le Steam ID "
 "64-bit se trouve sur"
 msgstr ""
-"A dedicated Steam account is recommended (not your personal account). The"
-" 64-bit Steam ID will be filled in automatically.A dedicated Steam "
-"account is recommended (not your personal account). The 64-bit Steam ID "
-"will be filled in automatically."
+"A dedicated Steam account is recommended (not your personal account). The "
+"64-bit Steam ID will be filled in automatically."
 
 #: app/templates/settings.html:685
 msgid "Laisser vide pour désactiver"
@@ -2715,9 +2716,8 @@ msgid ""
 "AdminPassword vide dans la config serveur — le bot se connectera sans "
 "droits admin."
 msgstr ""
-"AdminPassword empty in server config — the bot will connect without admin"
-" rights.AdminPassword empty in server config — the bot will connect "
-"without admin rights."
+"AdminPassword empty in server config — the bot will connect without admin "
+"rights."
 
 #: app/templates/settings.html:696
 msgid "Configurer"
@@ -3571,3 +3571,109 @@ msgstr "Electric"
 
 msgid "Hybrid"
 msgstr "Hybrid"
+
+#: Steam OpenID
+msgid "Ce compte Steam est déjà lié à un autre pilote."
+msgstr "This Steam account is already linked to another driver."
+
+msgid "Compte Steam confirmé avec succès."
+msgstr "Steam account confirmed successfully."
+
+msgid "Compte Steam délié."
+msgstr "Steam account unlinked."
+
+msgid "Impossible de vérifier votre compte Steam. Réessayez."
+msgstr "Unable to verify your Steam account. Please try again."
+
+msgid "SteamID"
+msgstr "SteamID"
+
+msgid "Compte Steam"
+msgstr "Steam account"
+
+msgid "Délier"
+msgstr "Unlink"
+
+msgid "Délier ce compte Steam ?"
+msgstr "Unlink this Steam account?"
+
+msgid "Lier mon compte Steam"
+msgstr "Link my Steam account"
+
+msgid "Liez votre compte Steam pour confirmer votre identité auprès de l'organisateur."
+msgstr "Link your Steam account to confirm your identity with the organizer."
+
+msgid "Voir le profil Steam"
+msgstr "View Steam profile"
+
+#: Mon compte (admin/superadmin)
+msgid "Mon compte"
+msgstr "My account"
+
+msgid "Email mis à jour."
+msgstr "Email updated."
+
+msgid "Facultatif — utilisée uniquement pour vous identifier."
+msgstr "Optional — used only to identify you."
+
+#: Confirmation d'email (togglable)
+msgid "Ce lien de confirmation est invalide ou a expiré."
+msgstr "This confirmation link is invalid or has expired."
+
+msgid "Email confirmé avec succès."
+msgstr "Email confirmed successfully."
+
+msgid "Email de confirmation renvoyé."
+msgstr "Confirmation email resent."
+
+msgid "Confirmez votre email avant de vous inscrire à un événement."
+msgstr "Confirm your email before registering for an event."
+
+msgid "Confirmez votre email pour pouvoir vous inscrire aux événements. Vérifiez votre boîte de réception."
+msgstr "Confirm your email to be able to register for events. Check your inbox."
+
+msgid "Renvoyer l'email de confirmation"
+msgstr "Resend confirmation email"
+
+msgid "Exige que les pilotes confirment leur email (lien envoyé à l'inscription) avant de pouvoir s'inscrire à un événement. Les comptes existants ne sont pas affectés rétroactivement."
+msgstr "Requires drivers to confirm their email (link sent at registration) before they can register for an event. Existing accounts are not retroactively affected."
+
+#: Aperçu des templates d'email (administration)
+msgid "Email de test"
+msgstr "Test email"
+
+msgid "Nouvelle inscription (notif. admin)"
+msgstr "New registration (admin notif.)"
+
+msgid "Inscription reçue"
+msgstr "Registration received"
+
+msgid "Compte validé"
+msgstr "Account approved"
+
+msgid "Inscription refusée"
+msgstr "Registration rejected"
+
+msgid "Inscription événement confirmée"
+msgstr "Event registration confirmed"
+
+msgid "Inscription événement refusée"
+msgstr "Event registration rejected"
+
+msgid "Confirmation d'email"
+msgstr "Email confirmation"
+
+msgid "Réinitialisation mot de passe"
+msgstr "Password reset"
+
+msgid "Rappel événement"
+msgstr "Event reminder"
+
+msgid "Aperçu du design"
+msgstr "Design preview"
+
+msgid "Voir l'aperçu"
+msgstr "View preview"
+
+msgid "Type d'email inconnu."
+msgstr "Unknown email type."

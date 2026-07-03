@@ -1,6 +1,6 @@
 # ROADBOOK — Panel ACE EVO Server
 > Document de référence exhaustif — architecture actuelle, interactions entre fichiers, décisions prises, roadmap multi-serveur.
-> Version : 1.7.1 — Branche active développement : `feat/multi-server`
+> Version : 1.9.0 — Branche active développement : `feat/v2-tailwind` (à merger sur `master`)
 
 ---
 
@@ -36,7 +36,7 @@
 - 2 beta testeurs actifs qui pullent rapidement → chaque push est quasi-immédiatement en production
 - **Règle absolue** : réfléchir avant tout push — les migrations DB doivent être rétrocompatibles
 
-### Fonctionnalités actuelles (v1.7.1)
+### Fonctionnalités actuelles (v1.9.0)
 - Démarrage / arrêt / redémarrage du serveur ACE EVO
 - Éditeur de configuration JSON (voitures, circuit, météo, sessions)
 - Gestion de plusieurs fichiers de configuration + config active
@@ -49,8 +49,10 @@
 - Emails SMTP (rappels, confirmations, réinitialisation mot de passe)
 - Authentification multi-rôles (superadmin / admin / pilote)
 - i18n 5 langues (fr, en, de, es, it)
-- Sélecteur de serveur dans la navbar (fondation multi-serveur)
+- Support multi-serveurs : chaque ACE EVO dans son propre container Docker
+- Sélecteur de serveur actif dans la navbar
 - Page Mods placeholder (fondation future)
+- **UI v2** : Tailwind CSS v3 + HTMX + Alpine.js — toasts temps réel, actions sans rechargement de page
 
 ---
 
@@ -102,13 +104,14 @@
 | Composant | Technologie |
 |-----------|-------------|
 | Backend | Python 3.11, Flask |
-| Serveur WSGI | Waitress |
+| Serveur WSGI | Waitress (HTTP) / Gunicorn (HTTPS) |
 | ORM | SQLAlchemy (SQLite) |
 | Auth | Flask-Login |
 | i18n | Flask-Babel (5 langues) |
 | CSRF | Flask-WTF / CSRFProtect |
 | Rate limiting | Flask-Limiter |
-| Frontend | Jinja2, CSS vanilla, JS vanilla |
+| Frontend | Jinja2, Tailwind CSS v3.4 + main.css hybride, HTMX 1.9, Alpine.js 3.x, JS vanilla |
+| CSS build | Node.js multi-stage Docker (Tailwind CLI + Flowbite v2.3.0 + @tailwindcss/forms) |
 | Docker | docker-compose, Tecnativa proxy |
 | Protocole serveur | TCP protobuf custom (port 9700) |
 | Notifs | Discord webhooks, SMTP |
@@ -146,7 +149,10 @@
 │   │   ├── rotation_manager.py  # Roulement de configs
 │   │   └── server_config.py     # Lecture/écriture configs JSON
 │   ├── static/
-│   │   ├── css/main.css     # CSS vanilla (tout le design)
+│   │   ├── css/
+│   │   │   ├── main.css         # CSS vanilla — design tokens, composants page-spécifiques (4 200 lignes)
+│   │   │   ├── input.css        # Tailwind @layer components (@apply directives — design system)
+│   │   │   └── tailwind.min.css # Compilé par le build Docker (Node+Tailwind CLI+Flowbite)
 │   │   └── js/app.js        # JS vanilla (tout l'interactif)
 │   └── templates/
 │       ├── base.html            # Template de base (navbar, footer, scripts)
@@ -841,25 +847,33 @@ removeRotConfig()
 saveRotation()
 ```
 
-### 9.4 `main.css` — Feuille de style
+### 9.4 CSS — Architecture hybride (v2)
 
-Variables CSS principales :
+Trois fichiers CSS chargés dans cet ordre dans `base.html` :
+
+1. **`tailwind.min.css`** — compilé à chaque build Docker par Node.js + Tailwind CLI + Flowbite v2.3 + @tailwindcss/forms. Contient les utilities Tailwind purgées et les composants Flowbite.
+2. **`input.css`** — design system via `@layer components` (boutons, formulaires, cartes, badges, tables, toasts, modales, page-shell). Utilise `@apply` sur les tokens Tailwind.
+3. **`main.css`** — CSS vanilla pour les composants page-spécifiques non migrés (timing, résultats, leaderboard, server admin, calendrier, etc.). Chargé en dernier → surcharge `tailwind.min.css` pour les sélecteurs en conflit.
+
+**Règle de cascade** : `tailwind.min.css` < `input.css` < `main.css` (à même spécificité).
+
+**Mode hybride** : `preflight: false` dans `tailwind.config.js` — les deux CSS coexistent sans reset global Tailwind qui écraserait `main.css`.
+
+Tokens CSS dans `main.css` :
 ```css
---accent: #e8aa28  /* orange ACE EVO */
---bg: #0d0d0d
---surface: #1a1a1a
---surface2: #252525
---dim: #888
---text: #f0f0f0
+--accent: #e03535   /* rouge ACE EVO */
+--bg: #06080c
+--surface2: #161926
+--dim: #8896a8
+--text: #e2e8f0
 ```
 
-Classes importantes :
-- `.settings-card` / `.settings-card-head` : cartes de configuration
-- `.settings-dashboard-grid` : grille responsive
-- `.btn`, `.btn-primary`, `.btn-danger` : boutons
-- `.form-control` : inputs
-- `.status-dot.green` / `.status-dot.red` : indicateur état serveur
-- `.server-selector` : sélecteur multi-serveur navbar
+Classes importantes dans `main.css` :
+- `.settings-card` / `.settings-card-head` : cartes de configuration settings
+- `.settings-dashboard-grid` : grille responsive settings
+- `.race-layout` / `.race-sidebar` / `.race-content` : layout résultats + leaderboard
+- `.timing-layout` / `.timing-sidebar` / `.timing-content` : layout timing
+- `.srv-*`, `.pi-*`, `.lb-*`, `.cars-*` : composants page serveur, leaderboard, PI filter
 
 ---
 
@@ -1105,46 +1119,37 @@ _welcome_loop_docker() → container.logs(stream=True, follow=True)
 
 ---
 
-## 14. ÉTAT ACTUEL — BRANCHE `feat/multi-server`
+## 14. ÉTAT ACTUEL — BRANCHE `feat/v2-tailwind`
 
 ### Ce qui est fait ✅
 
-#### A1 — Modèle `Server` + seed
-- **Fichier** : `app/models.py` lignes 208-224
-- **Fichier** : `app/__init__.py` fonctions `_seed_servers()` + appel dans `create_app()`
-- Server #1 créé au premier boot depuis `.env`
-- Slug : "server-1", container_name depuis `ACESERVER_CONTAINER_NAME`
+#### UI v2 — Phase 1 : HTMX + Alpine.js (v1.9.0) ✅ MERGÉ MASTER
+- Toasts unifiés (Alpine.js) remplaçant les flash messages Flask sur toutes les actions CRUD
+- Settings (11 formulaires), administration (test email/webhook), events (publier/supprimer), pilotes (approuver/supprimer), véhicules (upload image, recherche live) — tous en HTMX sans rechargement
+- Modales (configs, comptes admin, logs) converties Alpine.js `x-show` + `x-transition`
 
-#### A2 — `process_manager.py` refactoring complet
-- **Fichier** : `app/services/process_manager.py` — 740 lignes
-- `_STATE_FILE` → `_state_file(server_id: int) -> Path`
-- `_LOG_FILE` → `_log_file(server_id: int) -> Path`
-- `_launch_config_path(server_id: int) -> Path`
-- Globaux thread → `_servers: dict` + `_get_server(server_id)` lazy thread-safe
-- Toutes les fonctions publiques : `server_id: int = 1` (rétrocompatibles)
-- Noms threads : `server-watchdog-1`, `wine-prewarm-2`, `rotation-webhook-1`
+#### UI v2 — Phase 2 : Tailwind CSS (v2.0.0) ✅ SUR `feat/v2-tailwind`
+- Build Docker multi-stage : Node.js compile `tailwind.min.css` (Tailwind CLI v3.4 + Flowbite v2.3 + @tailwindcss/forms)
+- `input.css` : design system complet via `@layer components` + `@apply`
+- Tous les templates migrés vers Tailwind (navbar, forms, cards, tables, modales, badges)
+- Audit CSS mort : `main.css` 5 871 → 4 192 lignes (−1 679), net −1 414 lignes avec `input.css`
 
-#### Corrections appelants post-A2
-- `app/__init__.py:328` : `_log_file(1)` (au lieu de `_LOG_FILE`)
-- `app/routes/live.py:107` : `_log_file(1)`
-- `app/routes/live.py:284` : `_read_state(1)`
-- `app/services/server_config.py:214` : `_read_state(1)`
-- `app/routes/api.py:292` : `_pm_read_state(1)`
+#### Multi-serveur — Infrastructure (v1.8.x) ✅ MERGÉ MASTER
+- Modèle `Server` + seed + sélecteur navbar
+- `process_manager.py` refactorisé : toutes les fonctions `server_id: int = 1` (rétrocompat)
+- `ace_tcp_client.py` : pool multi-serveur opérationnel
+- Modèles `CarMeta`, `TrackMeta`, `Mod`
+- Phase 3 routes : toutes les routes server-aware via `_current_server_id()`
+- FK `server_id` sur `SessionResult` + migration
+- Création dynamique de containers depuis le panel (superadmin)
 
-#### B1/B2/C1 — Modèles `CarMeta`, `TrackMeta`, `Mod`
-- **Fichier** : `app/models.py` lignes 228-268
-- Tables créées automatiquement par `db.create_all()`
+#### Banque de données (v1.8.x) ✅ MERGÉ MASTER
+- 94 véhicules avec catégories, badges PI, images
+- 36 circuits avec layouts, longueurs, images
+- Upload images véhicules/circuits depuis le panel
 
-#### Nav/UI fondation
-- Sélecteur serveur dans `base.html` (single: non-cliquable, multi: dropdown POST)
-- Route `POST /server/select/<server_id>` dans `admin.py`
-- CSS `.server-selector*` dans `main.css`
-- `servers` + `current_server_id` injectés dans tous les templates via `_inject_globals()`
-- Page Mods placeholder (`mods.html` + route `/mods`)
-- "Mods" dans le menu nav
-
-#### Translations
-Nouvelles clés ajoutées dans les 5 langues : Mods, Serveur, véhicules/circuits, bientôt disponible, confirmations start/stop/restart.
+#### Translations ✅
+Clés i18n maintenues dans les 5 langues (fr/en/de/es/it) pour toutes les nouvelles fonctionnalités.
 
 ### Ce qui reste à faire ❌
 
@@ -1443,11 +1448,11 @@ with app.app_context():
 ### Branching strategy
 
 ```
-main               ← releases stables (pushées publiquement)
-feat/multi-server  ← développement multi-serveur (branche actuelle)
+master              ← releases stables (pushées publiquement) — actuellement v1.9.0
+feat/v2-tailwind    ← v2.0.0 en cours (Tailwind + audit CSS mort) — prête à merger
 ```
 
-Merger dans main seulement quand une feature est complète et testée.
+Merger dans master seulement quand une feature est complète et testée (rebuild + navigateur + beta testeurs).
 
 ### Versioning semver
 
@@ -1475,8 +1480,8 @@ Multi-serveur complet = MINOR minimum (nouvelles tables, nouvelles clés .env).
 
 ---
 
-*Document généré le 2026-06-20 — Version codebase 1.7.1 — Branche feat/multi-server*
-*Prochaine étape : Phase 2 (création container ace-server-2 depuis le panel) — dockerproxy vérifié OK (POST+CONTAINERS)*
+*Document mis à jour le 2026-07-03 — Version codebase 1.9.0 — Branche feat/v2-tailwind*
+*Prochaine étape : merger feat/v2-tailwind → master*
 
 ---
 

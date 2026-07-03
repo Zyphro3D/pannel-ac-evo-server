@@ -40,6 +40,19 @@
       </div>
       <button class="btn-primary whitespace-nowrap">{{ _('Envoyer un test') }}</button>
     </form>
+
+    <form method="get" action="{{ url_for('admin.mail_preview') }}" target="_blank"
+          class="flex gap-3 items-end mt-4 pt-4" style="border-top:1px solid var(--surface2)">
+      <div class="flex-1">
+        <label class="form-label text-xs">{{ _('Aperçu du design') }}</label>
+        <select name="type" class="form-control">
+          {% for key, label in mail_preview_types %}
+          <option value="{{ key }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button class="btn-secondary whitespace-nowrap">{{ _('Voir l\'aperçu') }}</button>
+    </form>
   </section>
 
   {# ── Discord Serveur ── #}

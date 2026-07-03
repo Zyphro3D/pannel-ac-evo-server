@@ -1,0 +1,49 @@
+    <div class="card-head">
+      <h2 class="card-title">{{ _('Pilotes approuvés') }}</h2>
+      <span class="badge badge-success">{{ approved|length }} {{ _('pilote(s)') }}</span>
+    </div>
+    {% if approved %}
+    <div class="table-wrapper">
+      <table class="table-base">
+        <thead>
+          <tr>
+            <th>{{ _('Nom in-game') }}</th>
+            <th>{{ _('Email') }}</th>
+            <th>{{ _('SteamID') }}</th>
+            <th>{{ _('Inscrit le') }}</th>
+            <th class="text-right">{{ _('Actions') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for d in approved %}
+          <tr id="drv-row-{{ d.id }}">
+            <td class="font-medium">{{ d.ingame_name }}</td>
+            <td class="text-dim">{{ d.email }}</td>
+            <td>
+              {% if d.steam_id %}
+              <a href="https://steamcommunity.com/profiles/{{ d.steam_id }}" target="_blank" rel="noopener" class="badge badge-success" title="{{ d.steam_id }}">✓ {{ _('Confirmé') }}</a>
+              {% else %}
+              <span class="text-dim text-xs">—</span>
+              {% endif %}
+            </td>
+            <td class="text-dim text-xs">{{ d.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+            <td>
+              <div class="flex items-center justify-end">
+                <button class="btn-danger btn-sm"
+                        hx-post="{{ url_for('events_admin.driver_delete', driver_id=d.id) }}"
+                        hx-swap="none"
+                        hx-confirm="{{ _('Supprimer définitivement') }} {{ d.ingame_name }} ?">
+                  🗑 {{ _('Supprimer définitivement') }}
+                </button>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state py-8">
+      <p class="text-sm">{{ _('Aucun pilote approuvé.') }}</p>
+    </div>
+    {% endif %}

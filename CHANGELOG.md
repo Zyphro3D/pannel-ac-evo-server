@@ -1,76 +1,72 @@
 # Changelog
 
-### v2.0.0 — 29/06/2026
+### v1.9.0 — 03/07/2026
 
-**Refonte UI complète — Tailwind CSS + Flowbite (Phase 2)**
+**Interface modernisée — HTMX + Alpine.js, puis refonte Tailwind CSS**
 
-Remplacement progressif de `main.css` par Tailwind CSS v3.4.14 compilé via build Docker multi-stage.
-
-*Infrastructure CSS*
-- Build Docker multi-stage : Node.js compile `tailwind.min.css` avec Flowbite v2.3.0 + @tailwindcss/forms
-- `input.css` : design system complet — boutons, formulaires, cartes, badges, tables, toasts, modales, page-shell, admin-layout
-- Tokens couleurs : `accent`, `bg`, `card`, `surface`, `inp`, `dim`, `muted`, `txt`, `emerald`
-- Mode hybride : `preflight: false` — `tailwind.min.css` et `main.css` coexistent pendant la migration
-
-*Templates migrés vers Tailwind*
-- `base.html` — navbar fixe, dropdowns Alpine.js, footer, cookie banner
-- `login.html`, `register.html`, `forgot_password.html`, `reset_password.html` — forms centrés
-- `pilot_dashboard.html`, `administration.html`, `mods.html` — layouts admin
-- `drivers.html`, `events_admin.html`, `servers.html`, `vehicles.html` — tables + HTMX
-- `tracks.html`, `circuits.html` — grilles d'images avec upload hover
-- `event_form.html`, `event_detail.html` — formulaires complexes
-- `live.html`, `timing.html` — hybride (structure Tailwind, classes live-*/timing-* conservées pour le JS)
-- `result_detail.html`, `public.html` — pages publiques
-- Modales dans `server.html` et `settings.html` — converties en `.modal-overlay`/`.modal-box`/`.modal-foot`
-
-*Breaking*
-- Nécessite un rebuild Docker (`docker compose up -d --build panel`) — la compilation CSS est dans le build
-
----
-
-### v1.9.0 — 29/06/2026
-
-**Modernisation UI — HTMX + Alpine.js (Phase 1)**
-
-Interface plus réactive sans rechargement de page complet sur les actions courantes.
-
-*Toasts*
+*Réactivité (HTMX + Alpine.js)*
 - Système de toasts unifié : toutes les confirmations d'action apparaissent en haut à droite avec auto-dismiss (4,5 s) et bouton fermer, sans perturber le scroll
-- Le `showToast()` JavaScript interne utilise désormais le même système Alpine.js que les toasts HTMX — un seul rendu visuel cohérent partout
+- Formulaires Paramètres, boutons de test (email/webhook), publication/refus/suppression d'événements et de pilotes, activation/suppression de serveurs, recherche véhicules : tout soumet désormais en HTMX, sans rechargement de page complet
+- Modales (config serveur, comptes administrateurs) : ouverture/fermeture en transitions Alpine.js
 
-*Settings*
-- Tous les formulaires de l'onglet Paramètres (11 formulaires) soumettent en HTMX : aucun rechargement de page, toast immédiat
+*Refonte visuelle complète — Tailwind CSS + Flowbite*
+- Remplacement progressif de `main.css` par Tailwind CSS v3.4.14 (build Docker multi-stage avec Flowbite v2.3.0 + @tailwindcss/forms), mode hybride le temps de la migration
+- Tous les templates migrés : navigation, authentification, dashboard pilote, administration, événements, véhicules, circuits, timing, résultats
+- Nettoyage : `main.css` réduit de 24 % (suppression des sélecteurs morts identifiés lors de l'audit)
+- **Breaking** : nécessite un rebuild Docker (`docker compose up -d --build panel`) — la compilation CSS est dans le build
 
-*Administration*
-- Boutons "Tester l'email" et "Tester le webhook Discord" : retour immédiat par toast sans rechargement
+**Audit 6 experts (sécurité / backend / qualité / performance / UI) — corrections**
 
-*Événements*
-- Publier / dépublier / terminer un événement : le badge de statut et les boutons se mettent à jour inline dans la ligne du tableau
-- Supprimer un événement : la ligne disparaît avec toast de confirmation simultané (OOB swap)
+*Sécurité*
+- `SESSION_COOKIE_SECURE`/`MAIL_USE_TLS` corrigés en booléens à la lecture des settings — une valeur texte libre pouvait produire un cookie de session malformé et casser le login sur une install HTTP locale
+- 64 attributs `onclick=` convertis en `addEventListener` (10 templates) — corrige les boutons cassés par le CSP `script-src-attr`
+- Upload bannière/logo réparé, validation stricte de `copy_from` (path traversal) et `steam_pass`/`guard_code` (injection SteamCMD)
+- `load_user` revérifie le statut du pilote à chaque requête ; whitelist des champs `Sessions`, correction IDOR sur `reg_assign_car`, anti-énumération des serveurs désactivés
 
-*Pilotes*
-- Approuver / refuser / supprimer un pilote : la ligne disparaît inline avec toast, sans rechargement de page
+*Backend & performance*
+- `server_delete` stoppe le bot TCP et le watchdog du serveur supprimé (fuite de threads corrigée)
+- `start_server`/`stop_server` protégés par verrou par-serveur ; écritures d'état rendues atomiques
+- `scan_and_import()` ne reparse plus les fichiers déjà importés ; comptage véhicules en une requête `GROUP BY` au lieu de 9 ; cache sur `is_running()`
+- Logique métier extraite des routes vers des services dédiés (`live_state.py`, `steam_updater.py`) ; suppression du template mort `live.html`
+- Test de fumée Playwright ajouté (`tests/smoke.spec.js`, `npm run test:smoke`)
 
-*Véhicules*
-- Recherche live par frappe (debounce 350 ms) : la grille se filtre instantanément
-- Retour visuel toast sur l'upload d'image
+**Compte Steam vérifié — pilotes et administrateurs**
+- Les pilotes peuvent lier leur compte Steam depuis leur tableau de bord via Steam OpenID (gratuit, sans clé API) : redirection vers Steam, authentification, signature revérifiée côté serveur — impossible d'usurper l'identité d'un autre joueur ou de saisir un SteamID à la main
+- Nouvelle page « Mon compte » (`/mon-compte`) pour les admins/superadmins : email et liaison Steam facultatifs, indépendants l'un de l'autre
+- Unicité du SteamID vérifiée entre tous les types de comptes (un SteamID ne peut être revendiqué qu'une seule fois, pilote ou admin)
+- Migrations DB additives : `driver.steam_id`/`steam_id_confirmed_at`, `admin_account.email`/`steam_id`/`steam_id_confirmed_at`
+- Correction d'un bug d'affichage Discord : les embeds « Meilleur tour » affichaient parfois `?` à la place du pilote/de la voiture (fonction d'alimentation du leaderboard TCP jamais appelée)
 
-*Gestion des serveurs*
-- Activer / désactiver un serveur additionnel : le statut et les boutons se mettent à jour inline
-- Supprimer un serveur : la ligne disparaît avec toast
-- Créer un serveur : erreurs de validation retournées par toast, rechargement automatique en cas de succès
+**Confirmation d'email (facultative)**
+- Nouveau réglage `REQUIRE_EMAIL_CONFIRMATION` (Paramètres → Panel, désactivé par défaut) : un email de confirmation est envoyé à l'inscription et le pilote doit cliquer le lien avant de pouvoir s'inscrire à un événement
+- Le pilote peut toujours se connecter et consulter son dashboard sans confirmer — seule l'inscription à un événement est bloquée
+- Rétrocompatible : les pilotes déjà existants sont automatiquement considérés comme confirmés (grandfathering)
+- Migration DB additive : `driver.email_confirmed_at`/`email_confirm_token`/`email_confirm_token_expires`
 
-*Modales*
-- Modales de création / renommage de config et logs serveur : ouverture/fermeture avec transition Alpine.js (`x-transition`)
-- Modales comptes administrateurs : Alpine.js `x-show` + `x-model` — fini les `style.display` JS
+**Refonte des emails du panel**
+- Nouveau design pour les 10 emails (inscription, validation, refus, confirmation, reset mot de passe, rappel événement...) : header avec titre du panel, section « hero » avec photo de circuit, icônes contextuelles, bouton d'action, footer — compatible clients mail (CSS inline, layout en table)
+- Nouveaux assets embarqués dans l'application (`app/static/mail/`) : photo de fond + 9 icônes contextuelles — disponibles directement après `git pull`, aucune configuration requise
+- Page Administration → sélecteur « Aperçu du design » : ouvre le rendu réel de n'importe quel type d'email dans un nouvel onglet, sans envoi ni configuration SMTP requise (aperçu et envoi partagent le même code de rendu)
 
-*Indicateurs de chargement*
-- Boutons HTMX pendant une requête : opacité réduite + `cursor: wait` (feedback immédiat)
+**Corrections diverses**
+- `docker-compose.override.yml` : protégé contre la transformation silencieuse en dossier lors d'un `git pull` sur une install où il n'était plus suivi par git (voir procédure de récupération ci-dessous si déjà touché)
+- `event_scheduler.py` : le `db.session.rollback()` du bloc except s'exécutait hors du contexte d'application Flask, provoquant un `RuntimeError` qui masquait l'erreur réelle dans les logs
+- Page `/administration` (config email/webhooks, test SMTP, aperçu des emails) désormais accessible depuis le menu Admin — elle n'avait aucun lien nulle part auparavant
+- `SERVER_NAME` (nom d'affichage du serveur ACE EVO) n'est plus recopié dans la config Flask interne — cette clé y est réservée pour la génération d'URL, la collision cassait silencieusement les liens absolus (callback Steam OpenID notamment) dès qu'un nom de serveur personnalisé était configuré
+
+*Si vous êtes déjà touché par le bug `docker-compose.override.yml` transformé en dossier* (message `is a directory` au `docker compose up`/`down`) :
+```bash
+docker compose down
+sudo rm -rf docker-compose.override.yml && touch docker-compose.override.yml
+docker compose up -d --build
+```
 
 **Mise à jour**
 ```
 git pull
 docker compose up -d --build panel
+# Migrations DB automatiques au démarrage — aucune action requise
+# Nouvelles variables .env optionnelles : voir .env.example (REQUIRE_EMAIL_CONFIRMATION, STEAM_USERNAME)
 ```
 
 ---

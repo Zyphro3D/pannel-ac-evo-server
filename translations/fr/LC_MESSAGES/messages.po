@@ -741,15 +741,17 @@ msgstr "Événements admin"
 msgid "Live Admin"
 msgstr "Live Admin"
 
+#: app/templates/base.html:401
+msgid "Supprimer \"%%s\" ? Cette action est irréversible."
+msgstr "Supprimer \"%%s\" ? Cette action est irréversible."
+
 #: app/templates/base.html:222
 msgid ""
 "Ce site utilise uniquement des cookies techniques nécessaires à son "
 "fonctionnement."
 msgstr ""
 "Ce site utilise uniquement des cookies techniques nécessaires à son "
-"fonctionnement.Ce site utilise uniquement des cookies techniques "
-"nécessaires à son fonctionnement.Ce site utilise uniquement des cookies "
-"techniques nécessaires à son fonctionnement."
+"fonctionnement."
 
 #: app/templates/base.html:229 app/templates/server.html:199
 #: app/templates/servers.html:41
@@ -1353,11 +1355,7 @@ msgid ""
 "approuvé, vous recevrez un lien de réinitialisation valable 1 heure."
 msgstr ""
 "Entrez votre identifiant ou votre adresse email. Si votre compte est "
-"approuvé, vous recevrez un lien de réinitialisation.Entrez votre "
-"identifiant ou votre adresse email. Si votre compte est approuvé, vous "
-"recevrez un lien de réinitialisation.Entrez votre identifiant ou votre "
-"adresse email. Si votre compte est approuvé, vous recevrez un lien de "
-"réinitialisation valable 1 heure."
+"approuvé, vous recevrez un lien de réinitialisation valable 1 heure."
 
 #: app/templates/forgot_password.html:19
 msgid "Nom in-game ou email"
@@ -1377,8 +1375,7 @@ msgid ""
 "par catégorie"
 msgstr ""
 "Meilleurs temps par circuit — cliquez sur un circuit pour voir le détail "
-"par catégorieMeilleurs temps par circuit — cliquez sur un circuit pour "
-"voir le détail par catégorie"
+"par catégorie"
 
 #: app/templates/leaderboard.html:12
 msgid "Aucune session enregistrée pour le moment."
@@ -1851,11 +1848,8 @@ msgid ""
 "Aucun résultat disponible pour le moment. Les résultats apparaissent ici "
 "à la fin de chaque session."
 msgstr ""
-"Aucun résultat disponible pour le moment. Les résultats apparaissent ici "
-"à la fin de chaque session.Aucun résultat disponible pour le moment. Les "
-"résultats apparaissent ici à la fin de chaque session.Aucun résultat "
-"disponible pour le moment. Les résultats apparaissent ici à la fin de "
-"chaque session."
+"Aucun résultat disponible pour le moment. Les résultats apparaissent ici à "
+"la fin de chaque session."
 
 #: app/templates/server.html:21
 msgid "Nom du fichier"
@@ -2140,6 +2134,12 @@ msgstr "Max. joueurs en attente"
 msgid "Roulement de configs"
 msgstr "Roulement de configs"
 
+msgid "Reprise auto"
+msgstr "Reprise auto"
+
+msgid "Reprend automatiquement la config suivante au prochain arrêt du serveur (différent du cycle en cours, affiché ci-contre)."
+msgstr "Reprend automatiquement la config suivante au prochain arrêt du serveur (différent du cycle en cours, affiché ci-contre)."
+
 #: app/templates/server.html:416
 msgid "Lancer le cycle"
 msgstr "Lancer le cycle"
@@ -2157,9 +2157,8 @@ msgid ""
 "Quand le serveur s'arrête, il démarre la configuration suivante de la "
 "liste automatiquement."
 msgstr ""
-"Quand le serveur s'arrête, il démarre la configuration suivante de la "
-"liste automatiquement.Quand le serveur s'arrête, il démarre la "
-"configuration suivante de la liste automatiquement."
+"Quand le serveur s'arrête, il démarre la configuration suivante de la liste "
+"automatiquement."
 
 #: app/templates/server.html:438 app/templates/settings.html:732
 msgid "Ajouter"
@@ -2355,6 +2354,10 @@ msgstr "JPG, PNG, GIF, WEBP · 5 Mo max"
 msgid "Copier"
 msgstr "Copier"
 
+#: app/templates/settings.html:199
+msgid "Copié"
+msgstr "Copié"
+
 #: app/templates/settings.html:196
 msgid "Aucun fichier dans media/banner/ pour le moment."
 msgstr "Aucun fichier dans media/banner/ pour le moment."
@@ -2465,12 +2468,9 @@ msgid ""
 "posséder ACE EVO dans sa bibliothèque Steam."
 msgstr ""
 "Le mot de passe est saisi au moment de la mise à jour et n'est jamais "
-"stocké. Ce champ est juste un rappel pour vous indiquer si un mot de "
-"passe est généralement requis. Laissez vide si vous utilisez un compte "
-"sans mot de passe ou en mode anonyme.Le mot de passe est saisi au moment "
-"de la mise à jour et n'est jamais stocké. Ce champ est juste un rappel "
-"pour vous indiquer si un mot de passe est généralement requis. Laissez "
-"vide si vous utilisez un compte sans mot de passe ou en mode anonyme."
+"stocké. Ce champ est juste un rappel pour vous indiquer si un mot de passe "
+"est généralement requis. Laissez vide si vous utilisez un compte sans mot "
+"de passe ou en mode anonyme."
 
 #: app/templates/settings.html:335
 msgid "ex: moncomptesteam"
@@ -2507,8 +2507,7 @@ msgid ""
 "pas sauvegardés."
 msgstr ""
 "Entrez les identifiants du compte Steam qui possède ACE EVO. Ils ne sont "
-"pas sauvegardés.Entrez les identifiants du compte Steam qui possède ACE "
-"EVO. Ils ne sont pas sauvegardés."
+"pas sauvegardés."
 
 #: app/templates/settings.html:381
 msgid "Nom d'utilisateur"
@@ -2699,14 +2698,10 @@ msgid ""
 " réel (leaderboard, passages de secteurs, connexions/déconnexions) et les"
 " transmet au panel sans passer par le webhook de fin de session."
 msgstr ""
-"Le bot est un client fantôme qui se connecte silencieusement au serveur "
-"ACE EVO via TCP. Il n'occupe pas de slot pilote. Il permet d'envoyer des "
-"messages in-game, des commandes admin, et de gérer les pilotes (kick, "
-"mute, pénalités…) directement depuis ce panel.Le bot est un client "
-"fantôme qui se connecte silencieusement au serveur ACE EVO via TCP. Il "
-"n'occupe pas de slot pilote. Il permet d'envoyer des messages in-game, "
-"des commandes admin, et de gérer les pilotes (kick, mute, pénalités…) "
-"directement depuis ce panel."
+"Le bot est un client fantôme qui se connecte silencieusement au serveur ACE "
+"EVO via TCP. Il n'occupe pas de slot pilote. Il permet d'envoyer des "
+"messages in-game, des commandes admin, et de gérer les pilotes (kick, mute, "
+"pénalités…) directement depuis ce panel."
 
 #: app/templates/settings.html:680
 msgid "Steam ID"
@@ -2718,9 +2713,7 @@ msgid ""
 "64-bit se trouve sur"
 msgstr ""
 "Compte Steam dédié recommandé (pas votre compte personnel). Le Steam ID "
-"64-bit sera renseigné automatiquement.Compte Steam dédié recommandé (pas "
-"votre compte personnel). Le Steam ID 64-bit sera renseigné "
-"automatiquement."
+"64-bit sera renseigné automatiquement."
 
 #: app/templates/settings.html:685
 msgid "Laisser vide pour désactiver"
@@ -2732,8 +2725,7 @@ msgid ""
 "droits admin."
 msgstr ""
 "AdminPassword vide dans la config serveur — le bot se connectera sans "
-"droits admin.AdminPassword vide dans la config serveur — le bot se "
-"connectera sans droits admin."
+"droits admin."
 
 #: app/templates/settings.html:696
 msgid "Configurer"
@@ -3609,3 +3601,109 @@ msgstr "Électrique"
 
 msgid "Hybrid"
 msgstr "Hybride"
+
+#: Steam OpenID
+msgid "Ce compte Steam est déjà lié à un autre pilote."
+msgstr "Ce compte Steam est déjà lié à un autre pilote."
+
+msgid "Compte Steam confirmé avec succès."
+msgstr "Compte Steam confirmé avec succès."
+
+msgid "Compte Steam délié."
+msgstr "Compte Steam délié."
+
+msgid "Impossible de vérifier votre compte Steam. Réessayez."
+msgstr "Impossible de vérifier votre compte Steam. Réessayez."
+
+msgid "SteamID"
+msgstr "SteamID"
+
+msgid "Compte Steam"
+msgstr "Compte Steam"
+
+msgid "Délier"
+msgstr "Délier"
+
+msgid "Délier ce compte Steam ?"
+msgstr "Délier ce compte Steam ?"
+
+msgid "Lier mon compte Steam"
+msgstr "Lier mon compte Steam"
+
+msgid "Liez votre compte Steam pour confirmer votre identité auprès de l'organisateur."
+msgstr "Liez votre compte Steam pour confirmer votre identité auprès de l'organisateur."
+
+msgid "Voir le profil Steam"
+msgstr "Voir le profil Steam"
+
+#: Mon compte (admin/superadmin)
+msgid "Mon compte"
+msgstr "Mon compte"
+
+msgid "Email mis à jour."
+msgstr "Email mis à jour."
+
+msgid "Facultatif — utilisée uniquement pour vous identifier."
+msgstr "Facultatif — utilisée uniquement pour vous identifier."
+
+#: Confirmation d'email (togglable)
+msgid "Ce lien de confirmation est invalide ou a expiré."
+msgstr "Ce lien de confirmation est invalide ou a expiré."
+
+msgid "Email confirmé avec succès."
+msgstr "Email confirmé avec succès."
+
+msgid "Email de confirmation renvoyé."
+msgstr "Email de confirmation renvoyé."
+
+msgid "Confirmez votre email avant de vous inscrire à un événement."
+msgstr "Confirmez votre email avant de vous inscrire à un événement."
+
+msgid "Confirmez votre email pour pouvoir vous inscrire aux événements. Vérifiez votre boîte de réception."
+msgstr "Confirmez votre email pour pouvoir vous inscrire aux événements. Vérifiez votre boîte de réception."
+
+msgid "Renvoyer l'email de confirmation"
+msgstr "Renvoyer l'email de confirmation"
+
+msgid "Exige que les pilotes confirment leur email (lien envoyé à l'inscription) avant de pouvoir s'inscrire à un événement. Les comptes existants ne sont pas affectés rétroactivement."
+msgstr "Exige que les pilotes confirment leur email (lien envoyé à l'inscription) avant de pouvoir s'inscrire à un événement. Les comptes existants ne sont pas affectés rétroactivement."
+
+#: Aperçu des templates d'email (administration)
+msgid "Email de test"
+msgstr "Email de test"
+
+msgid "Nouvelle inscription (notif. admin)"
+msgstr "Nouvelle inscription (notif. admin)"
+
+msgid "Inscription reçue"
+msgstr "Inscription reçue"
+
+msgid "Compte validé"
+msgstr "Compte validé"
+
+msgid "Inscription refusée"
+msgstr "Inscription refusée"
+
+msgid "Inscription événement confirmée"
+msgstr "Inscription événement confirmée"
+
+msgid "Inscription événement refusée"
+msgstr "Inscription événement refusée"
+
+msgid "Confirmation d'email"
+msgstr "Confirmation d'email"
+
+msgid "Réinitialisation mot de passe"
+msgstr "Réinitialisation mot de passe"
+
+msgid "Rappel événement"
+msgstr "Rappel événement"
+
+msgid "Aperçu du design"
+msgstr "Aperçu du design"
+
+msgid "Voir l'aperçu"
+msgstr "Voir l'aperçu"
+
+msgid "Type d'email inconnu."
+msgstr "Type d'email inconnu."

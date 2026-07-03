@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import re
 import threading
@@ -30,13 +31,248 @@ from app.utils import (
     is_htmx,
     htmx_redirect,
     htmx_toast as _toast,
+    flash_or_toast,
 )
 
 admin_bp = Blueprint("admin", __name__)
 
 from app.services.server_config import CAR_PROP_MAPS as _PROP_MAPS, CAR_CATEGORY_ORDER as _CATEGORY_ORDER
 
+_log = logging.getLogger(__name__)
 
+
+# ── Migrations DB (appelées depuis create_app()) ───────────────────────────────
+
+def _migrate_indexes(db):
+    """Crée les index composites manquants sur les DB existantes."""
+    import sqlalchemy as sa
+    indexes = [
+        ("ix_event_status_email_sent",       "CREATE INDEX IF NOT EXISTS ix_event_status_email_sent ON event (status, email_sent)"),
+        ("ix_event_status_discord_notified",  "CREATE INDEX IF NOT EXISTS ix_event_status_discord_notified ON event (status, discord_notified)"),
+        ("ix_car_meta_display_name",          "CREATE INDEX IF NOT EXISTS ix_car_meta_display_name ON car_meta (display_name)"),
+        ("ix_session_result_run_id",           "CREATE INDEX IF NOT EXISTS ix_session_result_run_id ON session_result (run_id)"),
+        ("ix_event_status_date",               "CREATE INDEX IF NOT EXISTS ix_event_status_date ON event (status, date)"),
+        ("ix_session_result_raw_json_hash",    "CREATE INDEX IF NOT EXISTS ix_session_result_raw_json_hash ON session_result (raw_json_hash)"),
+    ]
+    with db.engine.connect() as conn:
+        for name, sql in indexes:
+            try:
+                conn.execute(sa.text(sql))
+                conn.commit()
+            except Exception as e:
+                _log.warning("Index %s ignoré : %s", name, e)
+
+
+def _migrate_db(db):
+    """Applique les ALTER TABLE manquants sur SQLite sans casser les données existantes."""
+    import sqlalchemy as sa
+    engine = db.engine
+    allowed_tables = {"event", "driver", "session_result"}
+    allowed_columns = {
+        "practice_minutes", "qualifying_minutes", "warmup_minutes", "race_minutes",
+        "allowed_cars", "reset_token", "reset_token_expires", "is_public",
+        "auto_launch", "launched", "discord_notified", "cars_config",
+        "config_name", "run_id", "server_id", "raw_json_hash",
+    }
+    cols_to_add = [
+        ("event",  "practice_minutes",    "INTEGER DEFAULT 60"),
+        ("event",  "qualifying_minutes",  "INTEGER DEFAULT 30"),
+        ("event",  "warmup_minutes",      "INTEGER DEFAULT 10"),
+        ("event",  "race_minutes",        "INTEGER DEFAULT 60"),
+        ("event",  "allowed_cars",        "TEXT    DEFAULT '[]'"),
+        ("driver", "reset_token",         "TEXT"),
+        ("driver", "reset_token_expires", "DATETIME"),
+        ("event",  "is_public",           "INTEGER DEFAULT 0"),
+        ("event",  "auto_launch",          "INTEGER DEFAULT 0"),
+        ("event",  "launched",            "INTEGER DEFAULT 0"),
+        ("event",  "discord_notified",    "INTEGER DEFAULT 0"),
+        ("event",  "cars_config",         "TEXT    DEFAULT '{}'"),
+        ("session_result", "config_name",    "TEXT"),
+        ("session_result", "run_id",         "TEXT"),
+        ("session_result", "server_id",      "INTEGER"),
+        ("session_result", "raw_json_hash",  "VARCHAR(64)"),
+    ]
+    with engine.connect() as conn:
+        for table, col, col_def in cols_to_add:
+            try:
+                if table not in allowed_tables or col not in allowed_columns:
+                    raise ValueError(f"Migration non whitelistée: {table}.{col}")
+                existing = [r[1] for r in conn.execute(sa.text(f"PRAGMA table_info({table})"))]
+                if col not in existing:
+                    conn.execute(sa.text(f"ALTER TABLE {table} ADD COLUMN {col} {col_def}"))
+                    conn.commit()
+            except Exception as e:
+                _log.warning("Migration %s.%s ignorée : %s", table, col, e)
+
+
+def _migrate_result_hash(db):
+    """Backfille raw_json_hash sur les SessionResult existants qui n'en ont pas."""
+    import hashlib
+    from app.models import SessionResult
+    try:
+        to_fill = SessionResult.query.filter(SessionResult.raw_json_hash.is_(None)).all()
+        if to_fill:
+            for r in to_fill:
+                r.raw_json_hash = hashlib.sha256(r.raw_json.encode()).hexdigest()
+            db.session.commit()
+            _log.info("Migration: raw_json_hash backfillé pour %d résultats", len(to_fill))
+    except Exception as e:
+        db.session.rollback()
+        _log.warning("_migrate_result_hash ignoré : %s", e)
+
+
+def _migrate_server_discord(db):
+    """Ajoute les colonnes discord_webhook_* à la table server si absentes."""
+    import sqlalchemy as sa
+    cols = [
+        ("discord_webhook_main",   "TEXT DEFAULT ''"),
+        ("discord_webhook_pilots", "TEXT DEFAULT ''"),
+        ("discord_webhook_race",   "TEXT DEFAULT ''"),
+    ]
+    with db.engine.connect() as conn:
+        existing = [r[1] for r in conn.execute(sa.text("PRAGMA table_info(server)"))]
+        for col, col_def in cols:
+            if col not in existing:
+                try:
+                    conn.execute(sa.text(f"ALTER TABLE server ADD COLUMN {col} {col_def}"))
+                    conn.commit()
+                except Exception as e:
+                    _log.warning("Migration server.%s ignorée : %s", col, e)
+
+
+def _migrate_driver_steam_id(db):
+    """Ajoute steam_id/steam_id_confirmed_at à la table driver (v1.9.0+)."""
+    import sqlalchemy as sa
+    cols = [
+        ("steam_id",              "VARCHAR(32)"),
+        ("steam_id_confirmed_at", "DATETIME"),
+    ]
+    with db.engine.connect() as conn:
+        existing = [r[1] for r in conn.execute(sa.text("PRAGMA table_info(driver)"))]
+        for col, col_def in cols:
+            if col not in existing:
+                try:
+                    conn.execute(sa.text(f"ALTER TABLE driver ADD COLUMN {col} {col_def}"))
+                    conn.commit()
+                except Exception as e:
+                    _log.warning("Migration driver.%s ignorée : %s", col, e)
+        try:
+            conn.execute(sa.text(
+                "CREATE UNIQUE INDEX IF NOT EXISTS ix_driver_steam_id_unique "
+                "ON driver (steam_id) WHERE steam_id IS NOT NULL"
+            ))
+            conn.commit()
+        except Exception as e:
+            _log.warning("Index ix_driver_steam_id_unique ignoré : %s", e)
+
+
+def _migrate_admin_account_extra(db):
+    """Ajoute email/steam_id/steam_id_confirmed_at à admin_account, facultatifs (v1.9.0+)."""
+    import sqlalchemy as sa
+    cols = [
+        ("email",                  "VARCHAR(120)"),
+        ("steam_id",               "VARCHAR(32)"),
+        ("steam_id_confirmed_at",  "DATETIME"),
+    ]
+    with db.engine.connect() as conn:
+        existing = [r[1] for r in conn.execute(sa.text("PRAGMA table_info(admin_account)"))]
+        for col, col_def in cols:
+            if col not in existing:
+                try:
+                    conn.execute(sa.text(f"ALTER TABLE admin_account ADD COLUMN {col} {col_def}"))
+                    conn.commit()
+                except Exception as e:
+                    _log.warning("Migration admin_account.%s ignorée : %s", col, e)
+        try:
+            conn.execute(sa.text(
+                "CREATE UNIQUE INDEX IF NOT EXISTS ix_admin_account_steam_id_unique "
+                "ON admin_account (steam_id) WHERE steam_id IS NOT NULL"
+            ))
+            conn.execute(sa.text(
+                "CREATE UNIQUE INDEX IF NOT EXISTS ix_admin_account_email_unique "
+                "ON admin_account (email) WHERE email IS NOT NULL"
+            ))
+            conn.commit()
+        except Exception as e:
+            _log.warning("Index admin_account (steam_id/email) ignoré : %s", e)
+
+
+def _migrate_driver_email_confirmation(db):
+    """Ajoute email_confirmed_at/email_confirm_token(_expires) à driver (v1.9.0+).
+
+    Confirmation d'email facultative, activable via REQUIRE_EMAIL_CONFIRMATION.
+    Les pilotes déjà existants au moment de la migration sont "grandfather" —
+    on les marque confirmés immédiatement pour ne jamais les bloquer rétroactivement
+    si la fonctionnalité est activée plus tard.
+    """
+    import sqlalchemy as sa
+    cols = [
+        ("email_confirmed_at",          "DATETIME"),
+        ("email_confirm_token",         "VARCHAR(64)"),
+        ("email_confirm_token_expires", "DATETIME"),
+    ]
+    with db.engine.connect() as conn:
+        existing = [r[1] for r in conn.execute(sa.text("PRAGMA table_info(driver)"))]
+        added_confirmed_at = False
+        for col, col_def in cols:
+            if col not in existing:
+                try:
+                    conn.execute(sa.text(f"ALTER TABLE driver ADD COLUMN {col} {col_def}"))
+                    conn.commit()
+                    if col == "email_confirmed_at":
+                        added_confirmed_at = True
+                except Exception as e:
+                    _log.warning("Migration driver.%s ignorée : %s", col, e)
+        if added_confirmed_at:
+            try:
+                conn.execute(sa.text(
+                    "UPDATE driver SET email_confirmed_at = created_at WHERE email_confirmed_at IS NULL"
+                ))
+                conn.commit()
+            except Exception as e:
+                _log.warning("Grandfathering driver.email_confirmed_at ignoré : %s", e)
+
+
+def _migrate_event_server_id(db):
+    """Ajoute la colonne server_id à la table event (v1.8.3+)."""
+    import sqlalchemy as sa
+    with db.engine.connect() as conn:
+        try:
+            conn.execute(sa.text("ALTER TABLE event ADD COLUMN server_id INTEGER DEFAULT 1"))
+            conn.commit()
+            _log.info("Migration event.server_id : colonne ajoutée")
+        except Exception:
+            pass  # colonne déjà présente
+
+
+def _migrate_server_http_port(db):
+    """Corrige http_port 8080 → 8081 pour les installations créées avant v1.8.1."""
+    import sqlalchemy as sa
+    with db.engine.connect() as conn:
+        try:
+            result = conn.execute(sa.text(
+                "UPDATE server SET http_port = 8081 WHERE http_port = 8080"
+            ))
+            conn.commit()
+            if result.rowcount:
+                _log.info(
+                    "Migration http_port : %d serveur(s) mis à jour 8080→8081", result.rowcount
+                )
+        except Exception as e:
+            _log.warning("Migration http_port ignorée : %s", e)
+
+
+def _migrate_car_meta_props(db):
+    """Ajoute property_2_label et property_3_label à car_meta (v1.9.0+)."""
+    import sqlalchemy as sa
+    with db.engine.connect() as conn:
+        for col in ("property_2_label", "property_3_label"):
+            try:
+                conn.execute(sa.text(f"ALTER TABLE car_meta ADD COLUMN {col} VARCHAR(60) DEFAULT ''"))
+                conn.commit()
+                _log.info("Migration car_meta.%s : colonne ajoutée", col)
+            except Exception:
+                pass  # colonne déjà présente
 
 
 
@@ -49,7 +285,19 @@ def administration():
     return render_template("administration.html",
                            mail_cfg=safe_cfg,
                            webhook_url=os.environ.get("DISCORD_WEBHOOK_URL", ""),
-                           pilots_webhook_url=os.environ.get("DISCORD_PILOTS_WEBHOOK_URL", ""))
+                           pilots_webhook_url=os.environ.get("DISCORD_PILOTS_WEBHOOK_URL", ""),
+                           mail_preview_types=mailer.PREVIEW_TYPES)
+
+
+@admin_bp.route("/administration/mail-preview")
+@_admin_required
+@_superadmin_required
+def mail_preview():
+    html = mailer.render_preview(request.args.get("type", ""))
+    if html is None:
+        flash(_("Type d'email inconnu."), "error")
+        return redirect(url_for("admin.administration"))
+    return html
 
 
 @admin_bp.route("/administration/test-email", methods=["POST"])
@@ -68,6 +316,7 @@ def test_email():
                            mail_cfg=safe_cfg,
                            webhook_url=os.environ.get("DISCORD_WEBHOOK_URL", ""),
                            pilots_webhook_url=os.environ.get("DISCORD_PILOTS_WEBHOOK_URL", ""),
+                           mail_preview_types=mailer.PREVIEW_TYPES,
                            result_email=result_email)
 
 
@@ -295,6 +544,7 @@ _ENV_SECTIONS = [
         "PANEL_TITLE", "PANEL_BANNER_IMG", "PANEL_LOGO_IMG", "PANEL_URL",
         "PANEL_TIMEZONE", "DEFAULT_LOCALE",
         "SECRET_KEY", "SESSION_COOKIE_SECURE", "RESULTS_INGEST_SECRET",
+        "REQUIRE_EMAIL_CONFIRMATION",
     ]),
     ("accounts", _l("Comptes"), []),  # Géré via AdminAccount en base de données
     ("server", _l("Serveur"), [
@@ -327,6 +577,7 @@ _ENV_DESCS = {
     "SECRET_KEY":       _l("Clé de session Flask — générer avec python -c \"import secrets; print(secrets.token_hex(32))\""),
     "SESSION_COOKIE_SECURE": _l("true si HTTPS, false si HTTP local"),
     "RESULTS_INGEST_SECRET": _l("Secret HMAC du webhook résultats (/api/results/ingest)"),
+    "REQUIRE_EMAIL_CONFIRMATION": _l("Exige que les pilotes confirment leur email (lien envoyé à l'inscription) avant de pouvoir s'inscrire à un événement. Les comptes existants ne sont pas affectés rétroactivement."),
     "ACESERVER_HTTP_PORT": _l("Port HTTP de l'API du serveur (défaut 8081)"),
     "ACESERVER_TCP_HOST":  _l("Hôte TCP ACE EVO (défaut 127.0.0.1)"),
     "ACESERVER_TCP_PORT":  _l("Port TCP ACE EVO (défaut 9700)"),
@@ -377,11 +628,10 @@ _SENSITIVE = {"SECRET_KEY", "MAIL_PASSWORD", "MAIL_USERNAME",
               "RESULTS_INGEST_SECRET",
               "SERVER_DRIVER_PASSWORD", "SERVER_ADMIN_PASSWORD"}
 _SKIP_IF_EMPTY = {"MAIL_PASSWORD"}
-_CHECKBOXES = {"ACE_BOT_IS_ADMIN"}
+_CHECKBOXES = {"ACE_BOT_IS_ADMIN", "SESSION_COOKIE_SECURE", "MAIL_USE_TLS", "REQUIRE_EMAIL_CONFIRMATION"}
 
 
-_SETTINGS_PATH      = Path(__file__).parent.parent.parent / "data" / "settings.json"
-_SETTINGS_SKIP_KEYS = {"SECRET_KEY"}   # clés structurelles : restent dans .env uniquement
+from app import _SETTINGS_PATH, _SETTINGS_SKIP_KEYS, _SETTINGS_BOOL_KEYS, _APPCONFIG_RESERVED_KEYS
 
 
 def _read_env_file():
@@ -401,8 +651,11 @@ def _read_env_file():
 
 
 def _write_env_file(new_values: dict):
-    """Écrit la config dans data/settings.json (merge avec l'existant)."""
+    """Écrit la config dans data/settings.json (merge avec l'existant), en écriture atomique
+    (fichier temporaire + os.replace) pour éviter de tronquer tous les settings sur un crash
+    en cours d'écriture."""
     import json as _json
+    from app.services.process_manager import _atomic_write
     to_write = {k: v for k, v in new_values.items() if k not in _SETTINGS_SKIP_KEYS}
     existing = {}
     if _SETTINGS_PATH.exists():
@@ -412,7 +665,7 @@ def _write_env_file(new_values: dict):
             pass
     existing.update(to_write)
     _SETTINGS_PATH.parent.mkdir(parents=True, exist_ok=True)
-    _SETTINGS_PATH.write_text(_json.dumps(existing, indent=2, ensure_ascii=False), encoding="utf-8")
+    _atomic_write(_SETTINGS_PATH, _json.dumps(existing, indent=2, ensure_ascii=False))
 
 
 @admin_bp.route("/settings", methods=["GET", "POST"])
@@ -430,37 +683,17 @@ def settings():
 
         # ── Sauvegarde des champs par-serveur (DB) + env vars du même formulaire ─
         if request.form.get("_server_form") == "db" and current_srv:
-            _name = request.form.get("srv_name", "").strip()
-            _tcp  = request.form.get("srv_tcp_port", "").strip()
-            _http = request.form.get("srv_http_port", "").strip()
+            from app.services.server_config import save_server_form
+            _errors = save_server_form(current_srv, request.form)
             _port_errors = []
-            if _name:
-                current_srv.name = _name
-            if _tcp and _tcp.isdigit():
-                new_tcp = int(_tcp)
-                conflict = Server.query.filter(Server.id != current_srv.id, db.or_(
-                    Server.tcp_port == new_tcp, Server.udp_port == new_tcp
-                )).first()
-                if conflict:
-                    _msg = _("Le port %(port)d est déjà utilisé par '%(name)s'.", port=new_tcp, name=conflict.name)
-                    flash(_msg, "error")
-                    _port_errors.append(_msg)
+            for _err in _errors:
+                if _err["type"] == "invalid_range":
+                    _msg = _("Port invalide (1024–65535).")
                 else:
-                    current_srv.tcp_port = new_tcp
-                    current_srv.udp_port = new_tcp
-            if _http and _http.isdigit():
-                new_http = int(_http)
-                conflict = Server.query.filter(Server.id != current_srv.id, Server.http_port == new_http).first()
-                if conflict:
-                    _msg = _("Le port %(port)d est déjà utilisé par '%(name)s'.", port=new_http, name=conflict.name)
-                    flash(_msg, "error")
-                    _port_errors.append(_msg)
-                else:
-                    current_srv.http_port = new_http
-            current_srv.discord_webhook_main   = request.form.get("srv_discord_main",   "").strip()
-            current_srv.discord_webhook_pilots = request.form.get("srv_discord_pilots", "").strip()
-            current_srv.discord_webhook_race   = request.form.get("srv_discord_race",   "").strip()
-            db.session.commit()
+                    _msg = _("Le port %(port)d est déjà utilisé par '%(name)s'.",
+                             port=_err["port"], name=_err["name"])
+                flash(_msg, "error")
+                _port_errors.append(_msg)
             # Sauvegarde aussi les champs env vars du même formulaire
             _env_keys_in_server_form = [
                 "SERVER_MAX_PLAYERS", "SERVER_DRIVER_PASSWORD", "SERVER_ADMIN_PASSWORD",
@@ -480,7 +713,8 @@ def settings():
                     _write_env_file(new_vals)
                     for _k, _v in new_vals.items():
                         os.environ[_k] = _v
-                        current_app.config[_k] = _v
+                        if _k not in _APPCONFIG_RESERVED_KEYS:
+                            current_app.config[_k] = _v
             if is_htmx():
                 if _port_errors:
                     return _toast("error", " — ".join(_port_errors))
@@ -505,13 +739,17 @@ def settings():
         with _env_write_lock:
             _write_env_file(new_vals)
             env_values.update(new_vals)
-            # Applique immédiatement sans redémarrage
+            # Applique immédiatement sans redémarrage (sauf clés structurelles, ex. SECRET_KEY :
+            # les changer à chaud invaliderait/casserait les sessions en cours — nécessitent un redémarrage)
             for _k, _v in new_vals.items():
+                if _k in _SETTINGS_SKIP_KEYS:
+                    continue
                 os.environ[_k] = _v
-                current_app.config[_k] = _v
+                if _k not in _APPCONFIG_RESERVED_KEYS:
+                    current_app.config[_k] = (_v.lower() == "true") if _k in _SETTINGS_BOOL_KEYS else _v
         if is_htmx():
             return _toast("success", _("Paramètres sauvegardés"))
-        flash(_("Paramètres sauvegardés — redémarrez le panel pour les appliquer."), "success")
+        flash(_("Paramètres sauvegardés"), "success")
         saved = True
         return redirect(url_for("admin.settings", tab=tab))
 
@@ -520,7 +758,7 @@ def settings():
     if media_dir.exists():
         media_banners = [f.name for f in sorted(media_dir.iterdir())
                          if f.suffix.lower() in {".jpg", ".jpeg", ".png", ".gif", ".webp"}]
-    drivers_list   = Driver.query.order_by(Driver.created_at.desc()).limit(8).all()
+    drivers_list   = Driver.query.order_by(Driver.created_at.desc()).limit(8).all() if tab == "users" else []
     admin_accounts = AdminAccount.query.order_by(AdminAccount.role.desc(), AdminAccount.username).all()
     try:
         bot_cars = sorted(load_cars(), key=lambda c: c["display_name"])
@@ -692,6 +930,31 @@ def account_delete(account_id):
     return redirect(url_for("admin.settings", tab="accounts"))
 
 
+# ── Mon compte (self-service admin/superadmin : email + Steam) ───────────────
+
+@admin_bp.route("/mon-compte")
+@_admin_required
+def my_account():
+    return render_template("my_account.html")
+
+
+@admin_bp.route("/mon-compte/email", methods=["POST"])
+@_admin_required
+def my_account_email():
+    email = request.form.get("email", "").strip().lower()
+    if email:
+        conflict = AdminAccount.query.filter(
+            AdminAccount.email == email, AdminAccount.id != current_user.id
+        ).first()
+        if conflict:
+            flash(_("Cet email est déjà utilisé."), "error")
+            return redirect(url_for("admin.my_account"))
+    current_user.email = email or None
+    db.session.commit()
+    flash(_("Email mis à jour."), "success")
+    return redirect(url_for("admin.my_account"))
+
+
 # ── Sélection du serveur actif ────────────────────────────────────────────────
 
 @admin_bp.route("/server/select/<int:server_id>", methods=["POST"])
@@ -723,70 +986,32 @@ def servers_list():
 @_admin_required
 @_superadmin_required
 def server_create():
-    name = request.form.get("name", "").strip()
-    if not name:
-        if is_htmx():
-            return _toast("error", _("Le nom est requis."))
-        flash(_("Le nom est requis."), "error")
-        return redirect(url_for("admin.servers_list"))
-
-    # Ports — parse + validation de plage côté serveur
-    try:
-        tcp_port  = int(request.form.get("tcp_port")  or 9701)
-        http_port = int(request.form.get("http_port") or 8082)
-    except (ValueError, TypeError):
-        if is_htmx():
-            return _toast("error", _("Port invalide (1024–65535)."))
-        flash(_("Port invalide (1024–65535)."), "error")
-        return redirect(url_for("admin.servers_list"))
-    udp_port = tcp_port  # TCP et UDP utilisent toujours le même numéro
-    for port in (tcp_port, http_port):
-        if not (1024 <= port <= 65535):
-            if is_htmx():
-                return _toast("error", _("Port invalide (1024–65535)."))
-            flash(_("Port invalide (1024–65535)."), "error")
-            return redirect(url_for("admin.servers_list"))
-
-    # Vérifie les conflits de port avec les serveurs existants
-    used_ports = {p for s in Server.query.all() for p in (s.tcp_port, s.udp_port, s.http_port)}
-    for port in (tcp_port, http_port):
-        if port in used_ports:
-            if is_htmx():
-                return _toast("error", _("Le port %(port)d est déjà utilisé par un autre serveur.", port=port))
-            flash(_("Le port %(port)d est déjà utilisé par un autre serveur.", port=port), "error")
-            return redirect(url_for("admin.servers_list"))
-
-    # Slug unique : base + suffixe numérique si collision
-    base_slug = re.sub(r"-+", "-", re.sub(r"[^a-z0-9-]", "-", name.lower())).strip("-") or "server"
-    slug, counter = base_slug, 1
-    while Server.query.filter_by(slug=slug).first():
-        slug = f"{base_slug}-{counter}"
-        counter += 1
-
-    # container_name : toujours auto-généré depuis le slug, jamais fourni par l'utilisateur
-    container_name = f"ace-server-{slug}"
-    # suffixe numérique si collision (très rare)
-    cnt_base, cnt_i = container_name, 1
-    while Server.query.filter_by(container_name=container_name).first():
-        container_name = f"{cnt_base}-{cnt_i}"
-        cnt_i += 1
-
-    # Vérifie si le container Docker existe déjà
-    from app.services.server_docker import container_exists, create_server_container
-    if container_exists(container_name):
-        if is_htmx():
-            return _toast("error", _("Un container Docker nommé '%(name)s' existe déjà.", name=container_name))
-        flash(_("Un container Docker nommé '%(name)s' existe déjà.", name=container_name), "error")
-        return redirect(url_for("admin.servers_list"))
+    from app.services.server_docker import resolve_new_server, create_server_container
+    resolved = resolve_new_server(
+        request.form.get("name", ""),
+        request.form.get("tcp_port"),
+        request.form.get("http_port"),
+    )
+    if not resolved["ok"]:
+        _err = resolved["error"]
+        if _err == "name_required":
+            _msg = _("Le nom est requis.")
+        elif _err == "invalid_port":
+            _msg = _("Port invalide (1024–65535).")
+        elif _err == "port_conflict":
+            _msg = _("Le port %(port)d est déjà utilisé par un autre serveur.", port=resolved.get("port"))
+        else:  # container_exists
+            _msg = _("Un container Docker nommé '%(name)s' existe déjà.", name=resolved.get("container_name"))
+        return flash_or_toast("error", _msg, "admin.servers_list")
 
     # Crée l'entrée en DB
     srv = Server(
-        name           = name,
-        slug           = slug,
-        tcp_port       = tcp_port,
-        udp_port       = udp_port,
-        http_port      = http_port,
-        container_name = container_name,
+        name           = resolved["name"],
+        slug           = resolved["slug"],
+        tcp_port       = resolved["tcp_port"],
+        udp_port       = resolved["udp_port"],
+        http_port      = resolved["http_port"],
+        container_name = resolved["container_name"],
         active_config  = "default.json",
         is_enabled     = True,
         sort_order     = Server.query.count(),
@@ -798,10 +1023,9 @@ def server_create():
     result = create_server_container(srv)
     if not result["ok"]:
         db.session.rollback()
-        if is_htmx():
-            return _toast("error", _("Erreur lors de la création du container : %(err)s", err=result["error"]))
-        flash(_("Erreur lors de la création du container : %(err)s", err=result["error"]), "error")
-        return redirect(url_for("admin.servers_list"))
+        return flash_or_toast("error",
+            _("Erreur lors de la création du container : %(err)s", err=result["error"]),
+            "admin.servers_list")
 
     db.session.commit()
 
@@ -824,7 +1048,7 @@ def server_create():
 
     if is_htmx():
         return htmx_redirect(url_for("admin.servers_list"))
-    flash(_("Serveur '%(name)s' créé avec succès.", name=name), "success")
+    flash(_("Serveur '%(name)s' créé avec succès.", name=resolved["name"]), "success")
     return redirect(url_for("admin.servers_list"))
 
 
@@ -833,16 +1057,10 @@ def server_create():
 @_superadmin_required
 def server_toggle(server_id):
     if server_id == 1:
-        if is_htmx():
-            return _toast("error", _("Le serveur principal ne peut pas être désactivé."))
-        flash(_("Le serveur principal ne peut pas être désactivé."), "error")
-        return redirect(url_for("admin.servers_list"))
+        return flash_or_toast("error", _("Le serveur principal ne peut pas être désactivé."), "admin.servers_list")
     srv = db.session.get(Server, server_id)
     if not srv:
-        if is_htmx():
-            return _toast("error", _("Serveur introuvable."))
-        flash(_("Serveur introuvable."), "error")
-        return redirect(url_for("admin.servers_list"))
+        return flash_or_toast("error", _("Serveur introuvable."), "admin.servers_list")
     srv.is_enabled = not srv.is_enabled
     db.session.commit()
     msg = _("Serveur '%(name)s' activé.", name=srv.name) if srv.is_enabled else _("Serveur '%(name)s' désactivé.", name=srv.name)
@@ -862,16 +1080,15 @@ def server_toggle(server_id):
 @_superadmin_required
 def server_delete(server_id):
     if server_id == 1:
-        if is_htmx():
-            return _toast("error", _("Le serveur principal ne peut pas être supprimé."))
-        flash(_("Le serveur principal ne peut pas être supprimé."), "error")
-        return redirect(url_for("admin.servers_list"))
+        return flash_or_toast("error", _("Le serveur principal ne peut pas être supprimé."), "admin.servers_list")
     srv = db.session.get(Server, server_id)
     if not srv:
-        if is_htmx():
-            return _toast("error", _("Serveur introuvable."))
-        flash(_("Serveur introuvable."), "error")
-        return redirect(url_for("admin.servers_list"))
+        return flash_or_toast("error", _("Serveur introuvable."), "admin.servers_list")
+
+    # Stoppe les threads background du serveur (bot TCP + watchdog) avant suppression
+    from app.services import ace_tcp_client, process_manager
+    ace_tcp_client.stop(server_id)
+    process_manager.stop_watchdog(server_id)
 
     # Arrête et supprime le container Docker
     from app.services.server_docker import remove_server_container, sync_compose_override
@@ -904,7 +1121,11 @@ def vehicles():
     cars = q.all()
     if search:
         cars = [c for c in cars if search in c.display_name.lower() or search in c.slug.lower()]
-    counts = {cat: CarMeta.query.filter_by(category=cat).count() for cat in _CATEGORY_ORDER}
+    from sqlalchemy import func as _func
+    _raw_counts = dict(
+        db.session.query(CarMeta.category, _func.count()).group_by(CarMeta.category).all()
+    )
+    counts = {cat: _raw_counts.get(cat, 0) for cat in _CATEGORY_ORDER}
     if is_htmx():
         return render_template("_partials/vehicle_grid.html", cars=cars)
     return render_template("vehicles.html", cars=cars, cat_filter=cat_filter,
@@ -941,7 +1162,7 @@ def tracks():
 @_admin_required
 @_superadmin_required_json
 def track_upload_image(track_id):
-    track = TrackMeta.query.get_or_404(track_id)
+    track = db.get_or_404(TrackMeta, track_id)
     f, err = _validate_image_upload()
     if f is None:
         return err

@@ -34,7 +34,7 @@
             <option value="{{ cfg }}">{{ cfg }}</option>
             {% endfor %}
           </select>
-          <button type="button" class="btn-secondary shrink-0" onclick="importFromConfig()">
+          <button type="button" id="ef-import-config-btn" class="btn-secondary shrink-0">
             {{ _('Importer') }} ↵
           </button>
         </div>
@@ -227,8 +227,8 @@
         <div class="cars-filters">
           <div class="cars-filters-top">
             <input type="text" id="ef-car-search" class="form-control" placeholder="{{ _('Rechercher...') }}" oninput="efApplyFilters()">
-            <button type="button" class="btn-secondary btn-sm" onclick="efSelectAll(true)">{{ _('Tout sélectionner') }}</button>
-            <button type="button" class="btn-secondary btn-sm" onclick="efSelectAll(false)">{{ _('Tout désélectionner') }}</button>
+            <button type="button" id="ef-select-all-btn" class="btn-secondary btn-sm">{{ _('Tout sélectionner') }}</button>
+            <button type="button" id="ef-deselect-all-btn" class="btn-secondary btn-sm">{{ _('Tout désélectionner') }}</button>
           </div>
           <div class="pi-filter-row">
             <span class="pi-filter-label">PI</span>
@@ -246,10 +246,10 @@
             </span>
           </div>
           {% if car_categories %}
-          <div class="cat-filter-row">
-            <button type="button" class="cat-btn active" data-cat="all" onclick="efSetCat(this)">{{ _('Tous') }}</button>
+          <div class="cat-filter-row" id="ef-cat-filter-row">
+            <button type="button" class="cat-btn active" data-cat="all">{{ _('Tous') }}</button>
             {% for cat in car_categories %}
-            <button type="button" class="cat-btn" data-cat="{{ cat }}" onclick="efSetCat(this)">{{ cat }}</button>
+            <button type="button" class="cat-btn" data-cat="{{ cat }}">{{ cat }}</button>
             {% endfor %}
           </div>
           {% endif %}
@@ -309,6 +309,7 @@
     </form>
   </div>
 </div>
+{% endblock %}
 
 {% block scripts %}
 <script nonce="{{ csp_nonce }}">
@@ -362,6 +363,10 @@ function efSetCat(btn) {
   _activeCat = btn.dataset.cat;
   efApplyFilters(true);
 }
+document.getElementById('ef-cat-filter-row')?.addEventListener('click', (e) => {
+  const btn = e.target.closest('.cat-btn');
+  if (btn) efSetCat(btn);
+});
 
 function efApplyFilters(autoSelect = false) {
   const q = (document.getElementById('ef-car-search')?.value || '').toLowerCase();
@@ -387,6 +392,8 @@ function efSelectAll(checked) {
   });
   efUpdateCount();
 }
+document.getElementById('ef-select-all-btn')?.addEventListener('click', () => efSelectAll(true));
+document.getElementById('ef-deselect-all-btn')?.addEventListener('click', () => efSelectAll(false));
 function efUpdateCount() {
   const n  = document.querySelectorAll('.ef-car-check:checked').length;
   const el = document.getElementById('cars-sel-count');
@@ -405,6 +412,7 @@ document.getElementById('event-form').addEventListener('submit', function() {
   document.getElementById('ef-cars-config-json').value = JSON.stringify(cfg);
 });
 
+document.getElementById('ef-import-config-btn')?.addEventListener('click', importFromConfig);
 async function importFromConfig() {
   const sel = document.getElementById('import-config-select');
   if (!sel || !sel.value) return;
@@ -463,5 +471,4 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 </script>
-{% endblock %}
 {% endblock %}

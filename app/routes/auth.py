@@ -9,12 +9,16 @@ from datetime import datetime, timedelta, timezone
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from flask_babel import _
 from flask_login import login_user, logout_user, login_required, current_user
-from app.models import AdminAccount, Driver
+from app.models import AdminAccount, Driver, DriverStatus
 from app.services.database import db
 from app import limiter
 
 auth_bp = Blueprint("auth", __name__)
 log = logging.getLogger(__name__)
+
+
+def _steam_owner_redirect():
+    return url_for("public.pilot_dashboard") if current_user.is_pilot else url_for("admin.my_account")
 
 # ── Brute-force protection ────────────────────────────────────────────────────
 _BF_LOCK      = threading.Lock()
@@ -97,9 +101,9 @@ def login():
         driver = (Driver.query.filter_by(email=identifier.lower()).first()
                   or Driver.query.filter_by(ingame_name=identifier).first())
         if driver and driver.check_password(password):
-            if driver.status == "pending":
+            if driver.status == DriverStatus.PENDING:
                 flash(_("Votre compte est en attente de validation."), "warning")
-            elif driver.status == "rejected":
+            elif driver.status == DriverStatus.REJECTED:
                 flash(_("Votre compte a été refusé."), "error")
             else:
                 _bf_ok(ip)
@@ -136,7 +140,7 @@ def forgot_password():
         # Même message qu'il existe ou non (sécurité anti-énumération)
         flash(_("Un email de réinitialisation a été envoyé si le compte existe."), "success")
 
-        if driver and driver.status == "approved":
+        if driver and driver.status == DriverStatus.APPROVED:
             token      = secrets.token_urlsafe(32)
             token_hash = hashlib.sha256(token.encode()).hexdigest()
             driver.reset_token         = token_hash
@@ -187,9 +191,61 @@ def reset_password(token):
     return render_template("reset_password.html", token=token)
 
 
+@auth_bp.route("/pilot/steam/link")
+@login_required
+@limiter.limit("10 per minute")
+def steam_link():
+    from app.services.steam_openid import build_auth_url
+    realm     = request.url_root
+    return_to = url_for("auth.steam_callback", _external=True)
+    return redirect(build_auth_url(return_to, realm))
+
+
+@auth_bp.route("/pilot/steam/callback")
+@login_required
+@limiter.limit("10 per minute")
+def steam_callback():
+    from app.services.steam_openid import verify_callback
+    steam_id = verify_callback(request.args)
+    if not steam_id:
+        flash(_("Impossible de vérifier votre compte Steam. Réessayez."), "error")
+        return redirect(_steam_owner_redirect())
+
+    is_driver_conflict = Driver.query.filter(
+        Driver.steam_id == steam_id, Driver.id != (current_user.id if current_user.is_pilot else -1)
+    ).first()
+    is_admin_conflict = AdminAccount.query.filter(
+        AdminAccount.steam_id == steam_id, AdminAccount.id != (current_user.id if current_user.is_admin else -1)
+    ).first()
+    if is_driver_conflict or is_admin_conflict:
+        flash(_("Ce compte Steam est déjà lié à un autre pilote."), "error")
+        return redirect(_steam_owner_redirect())
+
+    current_user.steam_id = steam_id
+    current_user.steam_id_confirmed_at = datetime.now(timezone.utc).replace(tzinfo=None)
+    db.session.commit()
+    flash(_("Compte Steam confirmé avec succès."), "success")
+    return redirect(_steam_owner_redirect())
+
+
+@auth_bp.route("/pilot/steam/unlink", methods=["POST"])
+@login_required
+@limiter.limit("10 per minute")
+def steam_unlink():
+    current_user.steam_id = None
+    current_user.steam_id_confirmed_at = None
+    db.session.commit()
+    flash(_("Compte Steam délié."), "success")
+    return redirect(_steam_owner_redirect())
+
+
 @auth_bp.route("/lang/<lang>")
 def set_language(lang):
     from config import Config
+    from urllib.parse import urlparse
     if lang in Config.BABEL_SUPPORTED_LOCALES:
         session["lang"] = lang
-    return redirect(request.referrer or url_for("public.index"))
+    referrer = request.referrer
+    if referrer and urlparse(referrer).netloc == urlparse(request.url).netloc:
+        return redirect(referrer)
+    return redirect(url_for("public.index"))

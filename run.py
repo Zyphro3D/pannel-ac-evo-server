@@ -13,7 +13,8 @@ _file_handler = RotatingFileHandler(
 _file_handler.setFormatter(_fmt)
 _console_handler = logging.StreamHandler()
 _console_handler.setFormatter(_fmt)
-logging.basicConfig(level=logging.INFO, handlers=[_file_handler, _console_handler])
+_log_level = getattr(logging, os.environ.get("LOG_LEVEL", "INFO").upper(), logging.INFO)
+logging.basicConfig(level=_log_level, handlers=[_file_handler, _console_handler])
 
 _version = (Path(__file__).parent / "VERSION").read_text().strip()
 
