@@ -6,7 +6,7 @@
 {% block content %}
 
 {# ── Section 1 : Hero ── #}
-<div class="h-hero" style="background-image: url('{{ url_for('serve_media', filename='banner/hero_banner.png') }}')">
+<div class="h-hero"{% if panel_banner_img %} style="background-image: url('{{ url_for('serve_media', filename='banner/' ~ panel_banner_img) }}')"{% endif %}>
   <div class="h-hero-content">
     <h1 class="h-hero-title">
       {{ _('Vivez la simulation.') }}<br>

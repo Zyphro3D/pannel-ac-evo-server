@@ -56,6 +56,8 @@
 - Page `/administration` (config email/webhooks, test SMTP, aperçu des emails) désormais accessible depuis le menu Admin — elle n'avait aucun lien nulle part auparavant
 - `SERVER_NAME` (nom d'affichage du serveur ACE EVO) n'est plus recopié dans la config Flask interne — cette clé y est réservée pour la génération d'URL, la collision cassait silencieusement les liens absolus (callback Steam OpenID notamment) dès qu'un nom de serveur personnalisé était configuré
 - Timeout de connexion SMTP remonté de 8 à 20 secondes — la connexion à certains relais (OVH notamment) peut occasionnellement dépasser 8s, provoquant un échec `Connection unexpectedly closed: timed out` sur un envoi pourtant valide
+- `/server` : plantait avec une 500 si `cars.json` ou les fichiers `events_*.json` étaient absents (ex: avant toute installation d'ACE EVO via SteamCMD) — `load_cars()`/`load_events()` dégradent maintenant proprement (liste vide + warning), comme le fait déjà `_sync_car_meta()` pour le même cas
+- Page d'accueil : l'image de fond du hero était codée en dur (`banner/hero_banner.png`) au lieu d'utiliser le réglage `PANEL_BANNER_IMG` — cassait le chargement (404 → erreur console) sur toute installation sans ce fichier précis présent dans `media/banner/`
 
 *Si vous êtes déjà touché par le bug `docker-compose.override.yml` transformé en dossier* (message `is a directory` au `docker compose up`/`down`) :
 ```bash

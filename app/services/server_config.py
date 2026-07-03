@@ -595,13 +595,22 @@ def apply_server_patch(patch: dict, is_superadmin: bool = False) -> dict:
 # ── Données de référence ─────────────────────────────────────────────────────
 
 def load_cars() -> list:
-    with open(_cars_path(), "r", encoding="utf-8") as f:
-        return json.load(f).get("cars", [])
+    try:
+        with open(_cars_path(), "r", encoding="utf-8") as f:
+            return json.load(f).get("cars", [])
+    except FileNotFoundError:
+        log.warning("load_cars: %s introuvable (ACE EVO pas encore installé ?)", _cars_path())
+        return []
 
 
 def load_events(mode: str = "practice") -> list:
-    with open(_events_path(mode), "r", encoding="utf-8") as f:
-        return json.load(f).get("events", [])
+    path = _events_path(mode)
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f).get("events", [])
+    except FileNotFoundError:
+        log.warning("load_events: %s introuvable (ACE EVO pas encore installé ?)", path)
+        return []
 
 
 # ── Template config vide ─────────────────────────────────────────────────────
