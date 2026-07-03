@@ -521,17 +521,6 @@ def server():
 
 # ── Helpers .env ──────────────────────────────────────────────────────────────
 
-def _mail_template_keys() -> list:
-    """Clés MAIL_TPL_* générées depuis mailer.MAIL_TEMPLATE_FIELDS (édition des templates mail)."""
-    keys = []
-    for type_key, _label, _vars in mailer.MAIL_TEMPLATE_FIELDS:
-        fields = ["eyebrow", "h1", "h2", "body"]
-        if "cta" in mailer.MAIL_TEMPLATE_DEFAULTS[type_key]:
-            fields.append("cta")
-        keys.extend(mailer._tpl_key(type_key, f) for f in fields)
-    return keys
-
-
 _ENV_SECTIONS = [
     ("panel", "Panel", [
         "PANEL_TITLE", "PANEL_BANNER_IMG", "PANEL_LOGO_IMG", "PANEL_URL",
@@ -559,7 +548,6 @@ _ENV_SECTIONS = [
         "DISCORD_MSG_BEST_LAP", "DISCORD_MSG_ADMIN_ACTION",
         "MAIL_SERVER", "MAIL_PORT", "MAIL_USE_TLS", "MAIL_USERNAME",
         "MAIL_PASSWORD", "MAIL_FROM", "MAIL_ADMIN",
-        *_mail_template_keys(),
     ]),
 ]
 _ENV_DESCS = {
@@ -781,10 +769,7 @@ def settings():
                            current_srv=current_srv,
                            server_status=get_status(sid),
                            mail_cfg=mail_cfg,
-                           mail_preview_types=mailer.PREVIEW_TYPES,
-                           mail_template_fields=mailer.MAIL_TEMPLATE_FIELDS,
-                           mail_template_defaults=mailer.MAIL_TEMPLATE_DEFAULTS,
-                           mail_tpl_key=mailer._tpl_key)
+                           mail_preview_types=mailer.PREVIEW_TYPES)
 
 
 def _validate_image_upload(allowed_exts=None):

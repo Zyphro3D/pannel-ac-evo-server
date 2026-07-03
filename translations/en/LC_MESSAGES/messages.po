@@ -3687,31 +3687,3 @@ msgstr "Test — Server"
 
 msgid "Tester — Pilotes"
 msgstr "Test — Drivers"
-
-#: Éditeur de templates mail (Paramètres > Notifications)
-msgid "Templates des emails"
-msgstr "Email templates"
-
-msgid "Personnalisez le texte de chacun des emails envoyés par le panel. Laisser un champ vide restaure le texte par défaut. Les variables entre accolades sont remplacées automatiquement à l'envoi."
-msgstr "Customize the text of each email sent by the panel. Leaving a field empty restores the default text. Variables in curly braces are substituted automatically when sending."
-
-msgid "Eyebrow (contexte)"
-msgstr "Eyebrow (context)"
-
-msgid "Titre — ligne 1"
-msgstr "Title — line 1"
-
-msgid "Titre — ligne 2"
-msgstr "Title — line 2"
-
-msgid "Texte du bouton"
-msgstr "Button text"
-
-msgid "Corps du message"
-msgstr "Message body"
-
-msgid "Ligne vide = nouveau paragraphe"
-msgstr "Empty line = new paragraph"
-
-msgid "Enregistrer les templates"
-msgstr "Save templates"

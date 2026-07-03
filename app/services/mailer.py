@@ -1,5 +1,4 @@
 import html as _html
-import os
 import smtplib
 import socket
 import threading
@@ -47,108 +46,6 @@ _FONT   = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sa
 
 def _icon_url(name: str) -> str:
     return f"{_cfg['icon_base']}/{name}.png"
-
-
-# ── Templates éditables (eyebrow/titre/corps/CTA), stockés en settings ───────
-# Même mécanisme que les DISCORD_MSG_* : os.environ.get() à l'appel, jamais
-# à l'init, pour refléter les changements settings en direct.
-
-def _tpl_key(type_key: str, field: str) -> str:
-    return f"MAIL_TPL_{type_key.upper()}_{field.upper()}"
-
-
-def _tmpl(key: str, default: str, **kwargs) -> str:
-    """Résout un template court (eyebrow/titre/CTA) depuis les settings, avec variables.
-    Une valeur vide est traitée comme non définie : restaure le texte par défaut."""
-    tpl = os.environ.get(key, "").strip() or default
-    try:
-        return tpl.format(**kwargs)
-    except (KeyError, ValueError):
-        return tpl
-
-
-def _tmpl_body(key: str, default: str, **kwargs) -> str:
-    """Résout le corps d'un email : ligne(s) vide(s) = nouveau paragraphe, \\n simple = <br>."""
-    text = _tmpl(key, default, **kwargs)
-    paras = [p.strip() for p in text.split("\n\n") if p.strip()]
-    if not paras:
-        return ""
-    parts = []
-    for i, p in enumerate(paras):
-        margin = "margin:0" if i == len(paras) - 1 else "margin:0 0 10px"
-        parts.append(f'<p style="{margin}">{p.replace(chr(10), "<br>")}</p>')
-    return "\n".join(parts)
-
-
-# (type_key, label, variables disponibles dans le corps)
-MAIL_TEMPLATE_FIELDS = [
-    ("new_registration",             _l("Nouvelle inscription (notif. admin)"), ["name", "email", "date"]),
-    ("registration_received",        _l("Inscription reçue"),                   ["name"]),
-    ("registration_approved",        _l("Compte validé"),                       ["name"]),
-    ("registration_rejected",        _l("Inscription refusée"),                 ["name"]),
-    ("event_registration_confirmed", _l("Inscription événement confirmée"),     ["name", "event", "date", "circuit", "mode"]),
-    ("event_registration_rejected",  _l("Inscription événement refusée"),       ["name", "event"]),
-    ("email_confirmation",           _l("Confirmation d'email"),                ["name"]),
-    ("password_reset",               _l("Réinitialisation mot de passe"),       ["name"]),
-    ("event_reminder",               _l("Rappel événement"),                    ["name", "event", "date", "circuit", "mode", "weather", "car"]),
-]
-
-MAIL_TEMPLATE_DEFAULTS = {
-    "new_registration": {
-        "eyebrow": "Notification admin", "h1": "NOUVEAU", "h2": "PILOTE",
-        "cta": "Voir les pilotes en attente",
-        "body": "Un nouveau pilote attend une validation :\n\n{name}\n{email}\n{date} UTC",
-    },
-    "registration_received": {
-        "eyebrow": "Inscription", "h1": "DEMANDE", "h2": "REÇUE",
-        "body": "Bonjour {name},\n\nVotre demande d'inscription a bien été reçue. Un administrateur va examiner votre compte et vous recevrez un email dès qu'il sera validé.",
-    },
-    "registration_approved": {
-        "eyebrow": "Bienvenue dans la communauté", "h1": "INSCRIPTION", "h2": "CONFIRMÉE",
-        "cta": "Accéder au panel",
-        "body": "Bonjour {name},\n\nVotre compte pilote a été validé. Vous pouvez dès maintenant vous connecter et vous inscrire aux événements.",
-    },
-    "registration_rejected": {
-        "eyebrow": "Inscription", "h1": "DEMANDE", "h2": "REFUSÉE",
-        "body": "Bonjour {name},\n\nVotre demande d'inscription a été refusée. Si vous pensez qu'il s'agit d'une erreur, contactez l'administrateur.",
-    },
-    "event_registration_confirmed": {
-        "eyebrow": "Événement", "h1": "INSCRIPTION", "h2": "CONFIRMÉE",
-        "cta": "Accéder au panel",
-        "body": "Bonjour {name},\n\nVotre inscription à {event} a été confirmée !\n\n{date}\n{circuit} · {mode}",
-    },
-    "event_registration_rejected": {
-        "eyebrow": "Événement", "h1": "INSCRIPTION", "h2": "REFUSÉE",
-        "body": "Bonjour {name},\n\nVotre inscription à {event} a été refusée. Si vous pensez qu'il s'agit d'une erreur, contactez l'administrateur.",
-    },
-    "email_confirmation": {
-        "eyebrow": "Sécurité du compte", "h1": "CONFIRMEZ", "h2": "VOTRE EMAIL",
-        "cta": "Confirmer mon email",
-        "body": "Bonjour {name},\n\nMerci de confirmer votre adresse email pour pouvoir vous inscrire aux événements. Ce lien est valable 48 heures.",
-    },
-    "password_reset": {
-        "eyebrow": "Sécurité du compte", "h1": "RÉINITIALISATION", "h2": "MOT DE PASSE",
-        "cta": "Réinitialiser mon mot de passe",
-        "body": "Bonjour {name},\n\nUne demande de réinitialisation de mot de passe a été effectuée pour votre compte. Ce lien est valable 1 heure. Si vous n'êtes pas à l'origine de cette demande, ignorez cet email.",
-    },
-    "event_reminder": {
-        "eyebrow": "Rappel événement", "h1": "ÇA COMMENCE", "h2": "BIENTÔT",
-        "cta": "Accéder au panel",
-        "body": "Bonjour {name},\n\n{event} commence bientôt !\n\n{date}\n{circuit} · {mode} · {weather}\nVoiture assignée : {car}{password_line}",
-    },
-}
-
-
-def _render_type(type_key: str, *, features=None, cta_url=None, **variables) -> str:
-    """Construit le HTML d'un email éditable à partir de MAIL_TEMPLATE_DEFAULTS + settings."""
-    d = MAIL_TEMPLATE_DEFAULTS[type_key]
-    eyebrow = _tmpl(_tpl_key(type_key, "eyebrow"), d["eyebrow"])
-    h1      = _tmpl(_tpl_key(type_key, "h1"), d["h1"])
-    h2      = _tmpl(_tpl_key(type_key, "h2"), d["h2"])
-    body    = _tmpl_body(_tpl_key(type_key, "body"), d["body"], **variables)
-    cta_label = _tmpl(_tpl_key(type_key, "cta"), d["cta"]) if "cta" in d else None
-    return _layout(eyebrow=eyebrow, headline1=h1, headline2=h2, body_html=body,
-                   features=features, cta_url=cta_url if cta_label else None, cta_label=cta_label)
 
 
 def _button(url: str, label: str) -> str:
@@ -333,12 +230,21 @@ def send_test(to: str) -> dict:
 
 
 def _html_new_registration(driver) -> str:
-    return _render_type(
-        "new_registration",
+    url  = f"{_cfg['panel_url']}/drivers"
+    date = driver.created_at.strftime("%d/%m/%Y %H:%M")
+    body = f"""
+<p style="margin:0 0 10px">Un nouveau pilote attend une validation&nbsp;:</p>
+<p style="margin:0"><strong>{_e(driver.ingame_name)}</strong><br>
+{_e(driver.email)}<br>
+{date} UTC</p>
+"""
+    return _layout(
+        eyebrow="Notification admin",
+        headline1="NOUVEAU",
+        headline2="PILOTE",
+        body_html=body,
         features=[("icon-user-plus", "Nouvelle demande", "Compte en attente de validation admin")],
-        cta_url=f"{_cfg['panel_url']}/drivers",
-        name=_e(driver.ingame_name), email=_e(driver.email),
-        date=driver.created_at.strftime("%d/%m/%Y %H:%M"),
+        cta_url=url, cta_label="Voir les pilotes en attente",
     )
 
 
@@ -353,10 +259,16 @@ def send_new_registration(driver):
 
 
 def _html_registration_received(driver) -> str:
-    return _render_type(
-        "registration_received",
+    body = f"""
+<p style="margin:0 0 10px">Bonjour <strong>{_e(driver.ingame_name)}</strong>,</p>
+<p style="margin:0">Votre demande d'inscription a bien été reçue. Un administrateur va examiner votre compte et vous recevrez un email dès qu'il sera validé.</p>
+"""
+    return _layout(
+        eyebrow="Inscription",
+        headline1="DEMANDE",
+        headline2="REÇUE",
+        body_html=body,
         features=[("icon-clock", "En attente", "Validation par un administrateur")],
-        name=_e(driver.ingame_name),
     )
 
 
@@ -365,15 +277,22 @@ def send_registration_received(driver):
 
 
 def _html_registration_approved(driver) -> str:
-    return _render_type(
-        "registration_approved",
+    url  = f"{_cfg['panel_url']}/login"
+    body = f"""
+<p style="margin:0 0 10px">Bonjour <strong>{_e(driver.ingame_name)}</strong>,</p>
+<p style="margin:0">Votre compte pilote a été validé. Vous pouvez dès maintenant vous connecter et vous inscrire aux événements.</p>
+"""
+    return _layout(
+        eyebrow="Bienvenue dans la communauté",
+        headline1="INSCRIPTION",
+        headline2="CONFIRMÉE",
+        body_html=body,
         features=[
             ("icon-users",  "Compte créé",    "Votre compte est désormais actif et prêt à l'emploi"),
             ("icon-flag",   "Accès complet",  "Vous avez accès à toutes les fonctionnalités du panel"),
             ("icon-trophy", "Prêt à rouler",  "Rejoignez les sessions et affrontez la communauté !"),
         ],
-        cta_url=f"{_cfg['panel_url']}/login",
-        name=_e(driver.ingame_name),
+        cta_url=url, cta_label="Accéder au panel",
     )
 
 
@@ -382,10 +301,16 @@ def send_registration_approved(driver):
 
 
 def _html_registration_rejected(driver) -> str:
-    return _render_type(
-        "registration_rejected",
+    body = f"""
+<p style="margin:0 0 10px">Bonjour <strong>{_e(driver.ingame_name)}</strong>,</p>
+<p style="margin:0">Votre demande d'inscription a été refusée. Si vous pensez qu'il s'agit d'une erreur, contactez l'administrateur.</p>
+"""
+    return _layout(
+        eyebrow="Inscription",
+        headline1="DEMANDE",
+        headline2="REFUSÉE",
+        body_html=body,
         features=[("icon-x-circle", "Non validée", "Contactez l'administrateur pour plus d'informations")],
-        name=_e(driver.ingame_name),
     )
 
 
@@ -395,12 +320,19 @@ def send_registration_rejected(driver):
 
 def _html_event_registration_confirmed(driver, event) -> str:
     date_str = event.date.strftime("%d/%m/%Y à %H:%M") + " UTC"
-    return _render_type(
-        "event_registration_confirmed",
+    url = _cfg["panel_url"]
+    body = f"""
+<p style="margin:0 0 10px">Bonjour <strong>{_e(driver.ingame_name)}</strong>,</p>
+<p style="margin:0 0 10px">Votre inscription à <strong>{_e(event.title)}</strong> a été confirmée&nbsp;!</p>
+<p style="margin:0">{date_str}<br>{_e(event.circuit_display or event.circuit or "—")} &middot; {_e(event.mode_display)}</p>
+"""
+    return _layout(
+        eyebrow="Événement",
+        headline1="INSCRIPTION",
+        headline2="CONFIRMÉE",
+        body_html=body,
         features=[("icon-flag", "C'est parti", "Votre place est réservée pour cet événement")],
-        cta_url=_cfg["panel_url"],
-        name=_e(driver.ingame_name), event=_e(event.title), date=date_str,
-        circuit=_e(event.circuit_display or event.circuit or "—"), mode=_e(event.mode_display),
+        cta_url=url, cta_label="Accéder au panel",
     )
 
 
@@ -410,10 +342,16 @@ def send_event_registration_confirmed(driver, event):
 
 
 def _html_event_registration_rejected(driver, event) -> str:
-    return _render_type(
-        "event_registration_rejected",
+    body = f"""
+<p style="margin:0 0 10px">Bonjour <strong>{_e(driver.ingame_name)}</strong>,</p>
+<p style="margin:0">Votre inscription à <strong>{_e(event.title)}</strong> a été refusée. Si vous pensez qu'il s'agit d'une erreur, contactez l'administrateur.</p>
+"""
+    return _layout(
+        eyebrow="Événement",
+        headline1="INSCRIPTION",
+        headline2="REFUSÉE",
+        body_html=body,
         features=[("icon-x-circle", "Non retenue", "Contactez l'administrateur pour plus d'informations")],
-        name=_e(driver.ingame_name), event=_e(event.title),
     )
 
 
@@ -423,11 +361,18 @@ def send_event_registration_rejected(driver, event):
 
 
 def _html_email_confirmation(driver, token: str) -> str:
-    return _render_type(
-        "email_confirmation",
+    url  = f"{_cfg['panel_url']}/confirm-email/{token}"
+    body = f"""
+<p style="margin:0 0 10px">Bonjour <strong>{_e(driver.ingame_name)}</strong>,</p>
+<p style="margin:0">Merci de confirmer votre adresse email pour pouvoir vous inscrire aux événements. Ce lien est valable 48 heures.</p>
+"""
+    return _layout(
+        eyebrow="Sécurité du compte",
+        headline1="CONFIRMEZ",
+        headline2="VOTRE EMAIL",
+        body_html=body,
         features=[("icon-mail-check", "Une étape rapide", "Cliquez sur le bouton ci-dessous pour confirmer")],
-        cta_url=f"{_cfg['panel_url']}/confirm-email/{token}",
-        name=_e(driver.ingame_name),
+        cta_url=url, cta_label="Confirmer mon email",
     )
 
 
@@ -436,11 +381,18 @@ def send_email_confirmation(driver, token: str):
 
 
 def _html_password_reset(driver, token: str) -> str:
-    return _render_type(
-        "password_reset",
+    url  = f"{_cfg['panel_url']}/reset-password/{token}"
+    body = f"""
+<p style="margin:0 0 10px">Bonjour <strong>{_e(driver.ingame_name)}</strong>,</p>
+<p style="margin:0">Une demande de réinitialisation de mot de passe a été effectuée pour votre compte. Ce lien est valable 1 heure. Si vous n'êtes pas à l'origine de cette demande, ignorez cet email.</p>
+"""
+    return _layout(
+        eyebrow="Sécurité du compte",
+        headline1="RÉINITIALISATION",
+        headline2="MOT DE PASSE",
+        body_html=body,
         features=[("icon-key", "Lien à usage unique", "Valable 1 heure, ignorez si non demandé")],
-        cta_url=f"{_cfg['panel_url']}/reset-password/{token}",
-        name=_e(driver.ingame_name),
+        cta_url=url, cta_label="Réinitialiser mon mot de passe",
     )
 
 
@@ -451,14 +403,21 @@ def send_password_reset(driver, token: str):
 def _html_event_reminder(driver, event, registration) -> str:
     date_str = event.date.strftime("%d/%m/%Y à %H:%M") + " UTC"
     car_info = registration.car_display or registration.assigned_car or "Non assignée"
-    password_line = f"\nMot de passe serveur : {_e(event.password)}" if event.password else ""
-    return _render_type(
-        "event_reminder",
+    pwd_line = f"<br>Mot de passe serveur&nbsp;: <strong>{_e(event.password)}</strong>" if event.password else ""
+    url  = _cfg["panel_url"]
+    body = f"""
+<p style="margin:0 0 10px">Bonjour <strong>{_e(driver.ingame_name)}</strong>,</p>
+<p style="margin:0 0 10px"><strong>{_e(event.title)}</strong> commence bientôt&nbsp;!</p>
+<p style="margin:0">{date_str}<br>{_e(event.circuit_display or event.circuit)} &middot; {_e(event.mode_display)} &middot; {_e(event.weather_display)}<br>
+Voiture assignée&nbsp;: <strong>{_e(car_info)}</strong>{pwd_line}</p>
+"""
+    return _layout(
+        eyebrow="Rappel événement",
+        headline1="ÇA COMMENCE",
+        headline2="BIENTÔT",
+        body_html=body,
         features=[("icon-bell", "Ne manquez pas le départ", "Retrouvez tous les détails sur le panel")],
-        cta_url=_cfg["panel_url"],
-        name=_e(driver.ingame_name), event=_e(event.title), date=date_str,
-        circuit=_e(event.circuit_display or event.circuit), mode=_e(event.mode_display),
-        weather=_e(event.weather_display), car=_e(car_info), password_line=password_line,
+        cta_url=url, cta_label="Accéder au panel",
     )
 
 

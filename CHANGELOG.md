@@ -2,12 +2,6 @@
 
 ### v1.9.1 — 09/07/2026
 
-**Templates d'emails éditables**
-
-- Nouvelle section « Templates des emails » (Paramètres → Notifications) : l'eyebrow, les 2 lignes de titre, le corps du message et le texte du bouton sont personnalisables pour chacun des 10 emails du panel (inscription, validation, refus, confirmation, reset mot de passe, rappel événement...). Un champ laissé vide restaure le texte par défaut.
-- Variables disponibles selon le type d'email (`{name}`, `{event}`, `{date}`, `{circuit}`, `{mode}`, `{weather}`, `{car}`...), affichées sous chaque champ. Une ligne vide dans le corps du message crée un nouveau paragraphe.
-- Même mécanisme que les messages Discord déjà configurables (`_tmpl()`), stockage dans `data/settings.json` comme le reste des réglages.
-
 **Suppression de la page Administration**
 
 - La page `/administration` est supprimée. Son contenu (config email en lecture seule, test SMTP, test des webhooks Discord, aperçu du design des emails) est déplacé dans Paramètres → Notifications, à côté des réglages correspondants.
@@ -15,7 +9,6 @@
 
 **Correction**
 
-- Un champ de template mail laissé vide affichait un email vide au lieu de revenir au texte par défaut (`_tmpl()` traitait la chaîne vide comme une valeur définie).
 - Les fichiers `.mo` compilés committés dans git n'étaient plus synchronisés avec leurs `.po` sources depuis plusieurs changements (le conteneur recompile en interne à chaque build Docker, sans jamais remonter le résultat sur le disque hôte). Sans impact sur les déploiements réels (`docker compose up -d --build` recompile toujours les traductions à jour au build), mais corrigé pour la cohérence du dépôt.
 
 ### v1.9.0 — 03/07/2026
