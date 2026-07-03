@@ -178,11 +178,11 @@ def _html_to_plain(html: str) -> str:
 def _smtp_send(msg: MIMEMultipart, to: str):
     port = _cfg["port"]
     if port == 465:
-        with smtplib.SMTP_SSL(_cfg["server"], port, timeout=8) as smtp:
+        with smtplib.SMTP_SSL(_cfg["server"], port, timeout=20) as smtp:
             smtp.login(_cfg["username"], _cfg["password"])
             smtp.sendmail(msg["From"], [to], msg.as_string())
     else:
-        with smtplib.SMTP(_cfg["server"], port, timeout=8) as smtp:
+        with smtplib.SMTP(_cfg["server"], port, timeout=20) as smtp:
             if _cfg.get("use_tls"):
                 smtp.starttls()
             smtp.login(_cfg["username"], _cfg["password"])

@@ -53,6 +53,7 @@
 - `event_scheduler.py` : le `db.session.rollback()` du bloc except s'exécutait hors du contexte d'application Flask, provoquant un `RuntimeError` qui masquait l'erreur réelle dans les logs
 - Page `/administration` (config email/webhooks, test SMTP, aperçu des emails) désormais accessible depuis le menu Admin — elle n'avait aucun lien nulle part auparavant
 - `SERVER_NAME` (nom d'affichage du serveur ACE EVO) n'est plus recopié dans la config Flask interne — cette clé y est réservée pour la génération d'URL, la collision cassait silencieusement les liens absolus (callback Steam OpenID notamment) dès qu'un nom de serveur personnalisé était configuré
+- Timeout de connexion SMTP remonté de 8 à 20 secondes — la connexion à certains relais (OVH notamment) peut occasionnellement dépasser 8s, provoquant un échec `Connection unexpectedly closed: timed out` sur un envoi pourtant valide
 
 *Si vous êtes déjà touché par le bug `docker-compose.override.yml` transformé en dossier* (message `is a directory` au `docker compose up`/`down`) :
 ```bash
