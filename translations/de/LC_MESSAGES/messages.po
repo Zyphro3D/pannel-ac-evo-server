@@ -2545,6 +2545,14 @@ msgstr "Installierter Build"
 msgid "Mise à jour disponible"
 msgstr "Update verfügbar"
 
+#: app/templates/settings.html
+msgid "Jamais vérifié"
+msgstr "Nie überprüft"
+
+#: app/templates/settings.html
+msgid "À jour"
+msgstr "Aktuell"
+
 #: app/templates/settings.html:425
 msgid "Mettre à jour"
 msgstr "Aktualisieren"
@@ -3708,3 +3716,22 @@ msgstr "Testen — Server"
 
 msgid "Tester — Pilotes"
 msgstr "Testen — Fahrer"
+
+#: Vérification SteamCMD séparée de la mise à jour
+msgid "Vérifier les mises à jour"
+msgstr "Nach Updates suchen"
+
+msgid "Vérification en cours…"
+msgstr "Wird geprüft…"
+
+msgid "Vérification échouée"
+msgstr "Prüfung fehlgeschlagen"
+
+msgid "Vérifier"
+msgstr "Prüfen"
+
+msgid "Dernier build public Steam"
+msgstr "Neuester öffentlicher Steam-Build"
+
+msgid "Une opération SteamCMD est déjà en cours"
+msgstr "Eine SteamCMD-Operation läuft bereits"

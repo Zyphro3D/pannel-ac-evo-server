@@ -398,13 +398,18 @@
             </div>
             <div class="bg-surface2 rounded-lg px-4 py-3.5">
               <div class="text-[0.75rem] text-dim uppercase tracking-[.05em] mb-1.5">{{ _('Version') }}</div>
-              <div id="ctr-version-installed" class="text-[0.9rem]">—</div>
-              <div id="ctr-version-target" class="text-[0.78rem] text-dim mt-0.5">—</div>
+              <div class="flex items-center gap-2">
+                <span class="dot offline" id="ctr-update-dot"></span>
+                <strong id="ctr-update-status">{{ _('Jamais vérifié') }}</strong>
+              </div>
+              <div id="ctr-version-installed" class="text-[0.78rem] text-dim mt-1">—</div>
+              <div id="ctr-version-checked" class="text-[0.78rem] text-dim mt-0.5">—</div>
             </div>
           </div>
           <div class="flex gap-3 flex-wrap mb-6">
             <button id="ctr-btn-restart" class="btn btn-secondary" type="button">{{ _('Redémarrer le serveur') }}</button>
-            <button id="ctr-btn-update" class="btn btn-primary" type="button">{{ _('Vérifier et mettre à jour') }}</button>
+            <button id="ctr-btn-check" class="btn btn-secondary" type="button">{{ _('Vérifier les mises à jour') }}</button>
+            <button id="ctr-btn-update" class="btn btn-primary" type="button">{{ _('Mettre à jour') }}</button>
           </div>
           <div id="ctr-terminal-wrap" style="display:none">
             <div class="text-[0.75rem] text-dim uppercase tracking-[.05em] mb-1.5">{{ _('Sortie SteamCMD') }}</div>
@@ -460,18 +465,27 @@
           const label = document.getElementById('ctr-status-label');
           const uptime = document.getElementById('ctr-uptime');
           const vi = document.getElementById('ctr-version-installed');
-          const vt = document.getElementById('ctr-version-target');
-          const btnU = document.getElementById('ctr-btn-update');
+          const vc = document.getElementById('ctr-version-checked');
+          const udot = document.getElementById('ctr-update-dot');
+          const ustatus = document.getElementById('ctr-update-status');
           dot.className = d.container.status === 'running' ? 'dot online' : 'dot offline';
           label.textContent = d.container.status === 'running' ? '{{ _("En cours") }}' : (d.container.status || '{{ _("Inconnu") }}');
           uptime.textContent = d.container.status === 'running' ? '{{ _("Depuis") }} ' + _fmtUptime(d.container.uptime_s) : '';
           vi.textContent = `{{ _("Build installé") }} : ${d.installed_build}`;
-          if (d.update_pending) {
-            vt.innerHTML = `<span style="color:var(--yellow,#f0a500)">⚠ {{ _("Mise à jour disponible") }} : ${d.target_build}</span>`;
-            btnU.textContent = '⬆ {{ _("Mettre à jour") }}';
+          vc.textContent = d.last_checked ? `{{ _("Vérifié le") }} ${d.last_checked}` : '';
+          if (d.update_status === 'up_to_date') {
+            udot.className = 'dot online';
+            ustatus.textContent = '✓ {{ _("À jour") }}';
+            ustatus.style.color = '';
+          } else if (d.update_status === 'update_pending') {
+            udot.className = 'dot';
+            udot.style.background = 'var(--accent2)';
+            ustatus.textContent = `⚠ {{ _("Mise à jour disponible") }} (${d.checked_build})`;
+            ustatus.style.color = 'var(--accent2)';
           } else {
-            vt.textContent = d.last_updated ? `{{ _("Vérifié le") }} ${d.last_updated}` : '';
-            btnU.textContent = '{{ _("Vérifier et mettre à jour") }}';
+            udot.className = 'dot offline';
+            ustatus.textContent = '{{ _("Jamais vérifié") }}';
+            ustatus.style.color = '';
           }
         } catch(e) {
           document.getElementById('ctr-msg').textContent = '{{ _("Erreur de chargement") }}';
@@ -492,10 +506,14 @@
           btn.disabled = false; btn.textContent = '{{ _("Redémarrer le serveur") }}';
         }
       }
-      function ctrModalOpen() {
+      let _steamModalAction = 'update';
+      function ctrModalOpen(action) {
+        _steamModalAction = action || 'update';
         document.getElementById('sm-user').value = {{ env_values.get('STEAM_USERNAME', '')|tojson }};
         document.getElementById('sm-pass').value = '';
         document.getElementById('sm-guard').value = '';
+        document.getElementById('sm-btn-ok').textContent =
+          _steamModalAction === 'check' ? '🔎 {{ _("Vérifier") }}' : '⬆ {{ _("Lancer la mise à jour") }}';
         const modal = document.getElementById('steam-modal');
         modal.style.display = 'flex';
         setTimeout(() => document.getElementById('sm-pass').focus(), 50);
@@ -507,16 +525,74 @@
         const guard = document.getElementById('sm-guard').value.trim().toUpperCase();
         if (!user || !pass) { document.getElementById('sm-pass').focus(); return; }
         ctrModalClose();
-        ctrUpdate(user, pass, guard);
+        if (_steamModalAction === 'check') {
+          ctrCheckUpdate(user, pass, guard);
+        } else {
+          ctrUpdate(user, pass, guard);
+        }
       }
       document.getElementById('steam-modal').addEventListener('keydown', e => {
         if (e.key === 'Enter') ctrModalConfirm();
         if (e.key === 'Escape') ctrModalClose();
       });
       document.getElementById('ctr-btn-restart').addEventListener('click', ctrRestart);
-      document.getElementById('ctr-btn-update').addEventListener('click', ctrModalOpen);
+      document.getElementById('ctr-btn-check').addEventListener('click', () => ctrModalOpen('check'));
+      document.getElementById('ctr-btn-update').addEventListener('click', () => ctrModalOpen('update'));
       document.getElementById('sm-btn-cancel').addEventListener('click', ctrModalClose);
       document.getElementById('sm-btn-ok').addEventListener('click', ctrModalConfirm);
+
+      async function ctrCheckUpdate(steamUser, steamPass, steamGuard) {
+        const btn = document.getElementById('ctr-btn-check');
+        const wrap = document.getElementById('ctr-terminal-wrap');
+        const term = document.getElementById('ctr-terminal');
+        const msg = document.getElementById('ctr-msg');
+        btn.disabled = true; btn.textContent = '{{ _("Vérification en cours…") }}';
+        wrap.style.display = ''; term.textContent = ''; msg.textContent = '';
+        const body = {username: steamUser, password: steamPass};
+        if (steamGuard) body.guard_code = steamGuard;
+        try {
+          term.textContent = '⏳ {{ _("Connexion...") }}\n';
+          const resp = await fetch('/api/container/check-update', {
+            method:'POST',
+            headers:{'X-CSRFToken':_CSRF,'Content-Type':'application/json'},
+            body: JSON.stringify(body),
+          });
+          if (!resp.ok) {
+            term.textContent += `\n✗ {{ _("Erreur HTTP") }} ${resp.status}: ${await resp.text()}`;
+            msg.textContent = '✗ {{ _("Vérification échouée") }}';
+            return;
+          }
+          const reader = resp.body.getReader();
+          const decoder = new TextDecoder();
+          let buf = '';
+          while (true) {
+            const {done, value} = await reader.read();
+            if (done) break;
+            buf += decoder.decode(value, {stream:true});
+            const parts = buf.split('\n'); buf = parts.pop();
+            for (const part of parts) {
+              if (part.startsWith('data: ')) {
+                try {
+                  const ev = JSON.parse(part.slice(6));
+                  term.textContent += ev.msg + '\n';
+                  term.scrollTop = term.scrollHeight;
+                  if (ev.done) {
+                    if (!ev.error && ev.latest_build) {
+                      msg.textContent = '✓ {{ _("Dernier build public Steam") }} : ' + ev.latest_build;
+                    } else {
+                      msg.textContent = '✗ {{ _("Vérification échouée") }}';
+                    }
+                  }
+                } catch(_) {}
+              }
+            }
+          }
+        } catch(e) {
+          term.textContent += `\n✗ ${e}`;
+        } finally {
+          btn.disabled = false; btn.textContent = '{{ _("Vérifier les mises à jour") }}';
+        }
+      }
       async function ctrUpdate(steamUser, steamPass, steamGuard) {
         const btn = document.getElementById('ctr-btn-update');
         const wrap = document.getElementById('ctr-terminal-wrap');
@@ -563,7 +639,7 @@
         } catch(e) {
           term.textContent += `\n✗ ${e}`;
         } finally {
-          btn.disabled = false; btn.textContent = '{{ _("Vérifier et mettre à jour") }}';
+          btn.disabled = false; btn.textContent = '{{ _("Mettre à jour") }}';
         }
       }
       ctrLoadInfo();

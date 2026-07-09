@@ -69,24 +69,36 @@ def _get_container_status() -> dict:
 @login_required
 @admin_required
 def container_info():
-    acf    = _parse_acf()
-    status = _get_container_status()
-    installed  = acf.get("buildid", "?")
-    target     = acf.get("TargetBuildID", installed)
-    last_upd   = acf.get("LastUpdated", "")
-    last_upd_dt = ""
-    if last_upd.isdigit():
+    from app.services import steam_updater
+
+    acf       = _parse_acf()
+    status    = _get_container_status()
+    installed = acf.get("buildid", "?")
+
+    last_check    = steam_updater.load_last_check()
+    checked_build = last_check.get("latest_build")
+    checked_at    = last_check.get("checked_at")
+    checked_at_str = ""
+    if checked_at:
         try:
-            last_upd_dt = datetime.fromtimestamp(int(last_upd), tz=timezone.utc).strftime("%d/%m/%Y %H:%M")
+            checked_at_str = datetime.fromtimestamp(checked_at, tz=timezone.utc).strftime("%d/%m/%Y %H:%M")
         except Exception:
             pass
+
+    if not checked_build or installed == "?":
+        update_status = "unknown"
+    elif checked_build != installed:
+        update_status = "update_pending"
+    else:
+        update_status = "up_to_date"
+
     return jsonify({
-        "container":      status,
+        "container":       status,
         "installed_build": installed,
-        "target_build":   target,
-        "update_pending": installed != target and target != "?",
-        "last_updated":   last_upd_dt,
-        "updating":       _updating.locked(),
+        "checked_build":   checked_build,
+        "update_status":   update_status,
+        "last_checked":    checked_at_str,
+        "updating":        _updating.locked(),
     })
 
 
@@ -105,26 +117,64 @@ def container_restart():
         return jsonify({"ok": False, "error": _("Erreur lors du redémarrage du container")}), 500
 
 
+def _steam_creds_from_request(data: dict):
+    """Valide et normalise les identifiants Steam d'une requête. Retourne
+    (steam_user, steam_pass, steam_guard, error_response|None)."""
+    steam_user  = (data.get("username") or current_app.config.get("STEAM_USERNAME", "anonymous")).strip() or "anonymous"
+    steam_pass  = (data.get("password") or "").strip()
+    steam_guard = (data.get("guard_code") or "").strip()
+
+    import re as _re
+    if not _re.fullmatch(r'[\w.\-@]{1,64}', steam_user):
+        return None, None, None, (jsonify({"error": _("Nom d'utilisateur Steam invalide")}), 400)
+    if len(steam_pass) > 128:
+        return None, None, None, (jsonify({"error": _("Mot de passe Steam trop long")}), 400)
+    if any(ch in steam_pass for ch in ("\n", "\r", "\x00")):
+        return None, None, None, (jsonify({"error": _("Mot de passe Steam invalide")}), 400)
+    if steam_guard and not _re.fullmatch(r'[A-Za-z0-9]{1,16}', steam_guard):
+        return None, None, None, (jsonify({"error": _("Code Steam Guard invalide")}), 400)
+    return steam_user, steam_pass, steam_guard, None
+
+
+@container_mgmt_bp.route("/api/container/check-update", methods=["POST"])
+@superadmin_required
+def container_check_update():
+    """Interroge Steam pour la dernière version publique disponible — ne télécharge rien,
+    ne touche pas au serveur de jeu en cours."""
+    data = request.get_json(silent=True) or {}
+    steamcmd = current_app.config.get("STEAMCMD_PATH", "/opt/steamcmd/steamcmd.sh")
+    steam_user, steam_pass, steam_guard, err = _steam_creds_from_request(data)
+    if err:
+        return err
+
+    if not _updating.acquire(blocking=False):
+        return jsonify({"error": _("Une opération SteamCMD est déjà en cours")}), 409
+
+    from app.services import steam_updater
+
+    def _gen():
+        try:
+            yield from steam_updater.check_update(steamcmd, steam_user, steam_pass, steam_guard, _APPID)
+        finally:
+            _updating.release()
+
+    return Response(
+        stream_with_context(_gen()),
+        mimetype="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
+
+
 @container_mgmt_bp.route("/api/container/update", methods=["POST"])
 @superadmin_required
 def container_update():
     data          = request.get_json(silent=True) or {}
     steamcmd      = current_app.config.get("STEAMCMD_PATH",  "/opt/steamcmd/steamcmd.sh")
     aceserver_dir = current_app.config.get("ACESERVER_DIR", "/aceserver")
-    steam_user    = (data.get("username") or current_app.config.get("STEAM_USERNAME", "anonymous")).strip() or "anonymous"
-    steam_pass    = (data.get("password") or "").strip()
-    steam_guard   = (data.get("guard_code") or "").strip()
-
-    import re as _re
-    if not _re.fullmatch(r'[\w.\-@]{1,64}', steam_user):
-        return jsonify({"error": _("Nom d'utilisateur Steam invalide")}), 400
-    if len(steam_pass) > 128:
-        return jsonify({"error": _("Mot de passe Steam trop long")}), 400
-    if any(ch in steam_pass for ch in ("\n", "\r", "\x00")):
-        return jsonify({"error": _("Mot de passe Steam invalide")}), 400
-    if steam_guard and not _re.fullmatch(r'[A-Za-z0-9]{1,16}', steam_guard):
-        return jsonify({"error": _("Code Steam Guard invalide")}), 400
-    appid         = _APPID
+    steam_user, steam_pass, steam_guard, err = _steam_creds_from_request(data)
+    if err:
+        return err
+    appid = _APPID
 
     # Le verrou n'est acquis qu'après validation complète des entrées, pour ne jamais
     # rester bloqué (locked) si la requête est rejetée avant le début du generator SSE.

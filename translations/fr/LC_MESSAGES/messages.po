@@ -2545,6 +2545,14 @@ msgstr "Build installé"
 msgid "Mise à jour disponible"
 msgstr "Mise à jour disponible"
 
+#: app/templates/settings.html
+msgid "Jamais vérifié"
+msgstr "Jamais vérifié"
+
+#: app/templates/settings.html
+msgid "À jour"
+msgstr "À jour"
+
 #: app/templates/settings.html:425
 msgid "Mettre à jour"
 msgstr "Mettre à jour"
@@ -3717,3 +3725,22 @@ msgstr "Tester — Serveur"
 
 msgid "Tester — Pilotes"
 msgstr "Tester — Pilotes"
+
+#: Vérification SteamCMD séparée de la mise à jour
+msgid "Vérifier les mises à jour"
+msgstr "Vérifier les mises à jour"
+
+msgid "Vérification en cours…"
+msgstr "Vérification en cours…"
+
+msgid "Vérification échouée"
+msgstr "Vérification échouée"
+
+msgid "Vérifier"
+msgstr "Vérifier"
+
+msgid "Dernier build public Steam"
+msgstr "Dernier build public Steam"
+
+msgid "Une opération SteamCMD est déjà en cours"
+msgstr "Une opération SteamCMD est déjà en cours"

@@ -2,6 +2,20 @@
 
 ### v1.9.1 — 09/07/2026
 
+**Nouveau bouton "Vérifier les mises à jour"**
+
+- Sépare la vérification de version Steam (interroge `app_info_print`, aucun téléchargement, ne touche pas au serveur en cours) de la mise à jour effective. Auparavant, le seul bouton disponible arrêtait le serveur et lançait `app_update` même pour une simple vérification.
+- Le résultat de la dernière vérification (build public connu, date) est persisté (`data/steamcmd_last_check.json`, survit aux rebuilds) et affiché sous forme de statut clair : ✓ À jour / ⚠ Mise à jour disponible / Jamais vérifié, avec la vraie date de dernière vérification — auparavant la date affichée provenait du fichier `.acf` local (mis à jour uniquement lors d'une installation effective), donc figée à la dernière install et sans rapport avec une simple vérification.
+
+**Correction — mise à jour SteamCMD pouvait rester bloquée indéfiniment**
+
+- `steamcmd.sh` est un script bash qui re-exec/relance en interne (auto-mise à jour au premier lancement). Le processus tué en cas de blocage (Steam Guard, identifiants refusés, timeout) n'était que le PID direct suivi par `subprocess.Popen` : les processus petits-enfants issus du re-exec restaient orphelins et gardaient le pipe de sortie ouvert, empêchant toute détection de fin de process côté panel. Résultat côté utilisateur : le serveur de jeu restait arrêté et l'appel HTTP finissait en erreur réseau côté navigateur sans jamais recevoir de réponse.
+- Le sous-processus est maintenant lancé dans son propre groupe de processus (`start_new_session=True`) et le nettoyage cible tout le groupe (`os.killpg`) plutôt que le seul PID direct.
+- `+runscript <fichier>` s'est révélé peu fiable dans cet environnement : l'erreur `Failed to load script file` survenait de façon reproductible dès qu'un login était impliqué, y compris sur un fichier de script valide fraîchement écrit. Remplacé par le mode interactif de SteamCMD (commandes envoyées sur son entrée standard, `steamcmd.sh` lancé sans arguments) — la méthode d'automatisation SteamCMD la plus répandue, validée en test contre le vrai binaire. Bénéfice supplémentaire : les identifiants Steam ne transitent plus par un fichier sur disque ni par les arguments de ligne de commande (visibles via `/proc/<pid>/cmdline`, `ps aux`, etc. sur cette machine partagée).
+- Une passe de "préchauffe" (`+quit` en argument direct) absorbe l'auto-mise à jour de SteamCMD avant le vrai script.
+- Le flux SSE de vérification transmet maintenant chaque ligne de sortie au navigateur pendant la connexion (auparavant silencieux plusieurs dizaines de secondes, risquant une coupure de connexion par un proxy intermédiaire pour inactivité).
+- Extraction du build public corrigée : la réponse `app_info_print` contient plusieurs blocs `"public"` imbriqués (un par dépôt sous `"manifests"`, sans buildid) en plus de celui recherché sous `"branches"`. Le premier reconnu par erreur faisait échouer la détection ("Impossible de déterminer le dernier build"). Le nouveau parseur cible spécifiquement `"branches"."public"."buildid"`.
+
 **Suppression de la page Administration**
 
 - La page `/administration` est supprimée. Son contenu (config email en lecture seule, test SMTP, test des webhooks Discord, aperçu du design des emails) est déplacé dans Paramètres → Notifications, à côté des réglages correspondants.
