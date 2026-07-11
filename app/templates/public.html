@@ -230,7 +230,6 @@
 
 {# ── Section 4 : Derniers résultats ── #}
 {% if recent_sessions %}
-{% set ordinals = [_('1er'), _('2e'), _('3e'), _('4e')] %}
 <div class="h-panel">
   <div class="h-panel-header">
     <span class="h-panel-title">{{ _('Derniers résultats') }}</span>
@@ -240,11 +239,19 @@
     {% for s in recent_sessions[:4] %}
     {% set p = s.parsed %}
     {% set winner = p.standings[0] if p.standings else none %}
+    {% set stype = (p.session_type or '') | lower %}
+    {% if p.is_race %}
+      {% set place_label = _('Vainqueur') %}
+    {% elif stype in ('qualify', 'qualifying') %}
+      {% set place_label = _('Pole position') %}
+    {% else %}
+      {% set place_label = _('Meilleur tour') %}
+    {% endif %}
     <a href="{{ url_for('public.result_detail', result_id=s.id) }}"
        class="h-result-card{% if loop.first %} is-first{% endif %}"
        {% if s.track_banner %}style="--srv-banner:url('{{ url_for('serve_media', filename=s.track_banner) }}')"{% endif %}>
 
-      <span class="h-place">{{ ordinals[loop.index0] }}</span>
+      <span class="h-place">{{ place_label }}</span>
 
       <div class="h-result-body">
         <h4>{{ p.track or '—' }}</h4>
@@ -255,6 +262,18 @@
           {% if p.is_race %}{{ winner.race_time or winner.best_lap }}{% else %}{{ winner.best_lap }}{% endif %}
         </div>
         <span class="h-result-driver">{{ winner.nickname }}</span>
+        {% endif %}
+
+        {% if p.standings|length > 1 %}
+        <div class="h-result-podium">
+          {% for drv in p.standings[1:3] %}
+          <div class="h-result-podium-row">
+            <span class="h-podium-pos">{{ drv.position }}</span>
+            <span class="h-podium-name">{{ drv.nickname }}</span>
+            <span class="h-podium-gap">{{ drv.gap }}</span>
+          </div>
+          {% endfor %}
+        </div>
         {% endif %}
 
         <div class="h-result-footer">

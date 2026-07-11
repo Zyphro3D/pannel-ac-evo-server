@@ -1,5 +1,33 @@
 # Changelog
 
+### v1.9.3 — 11/07/2026
+
+> Deux des corrections ci-dessous (rejet du bot, serveur introuvable dans la liste multijoueur) sont directement causées par "la mise à jour du jeu" (build ACE EVO Server 24104623) : bump silencieux de la version de protocole réseau, et validation par Kunos qui filtre les serveurs sur un build trop ancien. Si tu mets à jour ACE EVO Server plus tard et que le bot ou la visibilité multijoueur cassent à nouveau, commence par vérifier ces deux points.
+
+**UI — section "Derniers résultats" de la page d'accueil, clarifiée**
+
+- Le badge "1er/2e/3e/4e" ne représentait pas un classement mais juste le rang de fraîcheur (les 4 dernières sessions affichées, tous types confondus) — visuellement stylé comme un ruban de podium, ça laissait croire à un vrai classement alors que le contenu pouvait venir d'une simple séance de qualification ou d'essais. Remplacé par un badge sémantique qui dit ce qui est réellement affiché : **Vainqueur** (Race), **Pole position** (Qualifying), **Meilleur tour** (Practice/Warmup).
+- Ajout du 2e et 3e (nom + écart au 1er, ex. `+0.849` ou `+2 tours` en course) dans un petit encadré à fond flouté sous le nom du vainqueur/pole — mini-podium compact, sans changer le reste de la mise en page (voiture, date, image inchangés).
+- 2 nouvelles clés de traduction (Vainqueur, Pole position) dans les 5 langues ; "Meilleur tour" réutilise une clé déjà existante ailleurs dans l'app.
+
+**Correction — le bot admin se faisait rejeter par ACE EVO ("incorrect car or parts")**
+
+- `_get_car_model()` (`ace_tcp_client.py`) choisissait `cars[0]` de la config active — littéralement la première voiture de la liste, sans vérifier si elle était réellement sélectionnée pour la session. Dans l'ordre de la liste de référence (`cars.json`), la première voiture est presque toujours désélectionnée par défaut (ex. `preset_695b_mech_1`, une Abarth 695, alphabétiquement première), donc le bot se connectait quasi systématiquement avec un modèle non autorisé par la session en cours et se faisait rejeter par ACE EVO Server dès la connexion (`Ranked server: incorrect car or parts ..., discarding the connection`) — jamais de chat in-game, jamais de leaderboard temps réel, jamais de notifications de connexion/déconnexion joueur.
+- Corrigé : le bot cherche maintenant la première voiture avec `is_selected`/`IsSelected` à `true`, et ne retombe sur `cars[0]` que si aucune voiture n'est sélectionnée (garde-fou, ne devrait jamais arriver en pratique).
+- Trouvé en creusant un signalement utilisateur ("serveur introuvable dans la liste multijoueur" — en réalité un problème réseau Docker sans rapport, mais l'investigation a fait remonter ce rejet de connexion bot dans les logs du serveur). Vérifié en conditions réelles : avant le fix, `Ranked server: incorrect car or parts preset_695b_mech_1, discarding the connection` à chaque tentative ; après le fix, le bot choisit `preset_r8gt3_mech_1` (première voiture réellement sélectionnée) et la connexion aboutit (`ace_tcp_client: connecté à ace-server:9700`), plus aucun rejet dans les logs du serveur de jeu.
+
+**Correction — bot rejeté après une mise à jour du serveur de jeu ("ConnectToServerResult_ClientOutdated")**
+
+- Le build ACE EVO Server 24104623 a bumpé la version de protocole interne de 5 à 6. `_build_connection_request()` (`ace_tcp_client.py`) envoyait toujours la version 5, codée en dur — rejeté par le serveur (`Network Version Mismatch. Current: (Server:6, Protocol:8), Requested: (Server:5, Protocol:8)`). Corrigé (`6` au lieu de `5`), avec un commentaire expliquant le contexte pour la prochaine mise à jour qui rebumpera probablement ce numéro. Ce genre de mise à jour côté jeu peut donc casser silencieusement la connexion du bot (chat in-game, leaderboard live, notifications) sans casser le serveur lui-même — à surveiller après chaque mise à jour Steam.
+
+**Investigation — serveur introuvable dans la liste multijoueur du jeu**
+
+Cause réelle trouvée en plusieurs étapes, aucune n'étant un bug du panel proprement dit sauf la dernière :
+1. Le build du serveur était en retard (23658359 installé vs 24104623 disponible) — Kunos filtre silencieusement les serveurs sur un build trop ancien de la liste publique, sans jamais renvoyer d'erreur explicite au niveau de l'enregistrement (`MultiplayerServerListRequestRegisterServer` répond `Success: true` même filtré). Résolu par la mise à jour Steam.
+2. Après la mise à jour, la synchronisation `CarMeta`/`TrackMeta` (véhicules/circuits) ne se fait qu'au démarrage du panel, jamais automatiquement après une mise à jour Steam — nécessite un redémarrage manuel du panel pour que la nouvelle liste de véhicules/circuits soit prise en compte dans l'UI (97 véhicules et 36 circuits après cette mise à jour, contre 94/35 avant). À automatiser dans une prochaine version (redémarrage auto du panel en fin de mise à jour SteamCMD, ou resynchronisation à chaud sans redémarrage complet).
+3. Bug du bot corrigé ci-dessus (version de protocole), trouvé en marge de cette investigation.
+4. **Deux serveurs configurés avec le même port HTTP externe (8081)** en base de données — le second serveur ne pouvait jamais démarrer correctement avec une configuration réseau valide tant que le premier occupait ce port. Pas de garde-fou empêchant deux serveurs de partager le même port HTTP à la création — à ajouter dans une prochaine version (même validation que pour les ports TCP/UDP, qui eux sont déjà vérifiés à la création/modification d'un serveur).
+
 ### v1.9.2 — 10/07/2026
 
 **Nouveau — support de la nouvelle version du launcher AC EVO Server (véhicules officiels/mods)**

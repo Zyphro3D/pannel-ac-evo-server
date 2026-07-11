@@ -165,8 +165,9 @@ def _wrap(name: str, payload: bytes) -> bytes:
 def _build_connection_request(c: dict, cfg: dict | None = None) -> bytes:
     payload = (
         _field_varint(1, 1) +
-        _field_varint(5, 8) +
-        _field_varint(6, 5) +
+        _field_varint(5, 8) +   # protocol version — inchangé depuis le build 23658359
+        _field_varint(6, 6) +   # server version — bump 5→6 avec le build ACE EVO Server 24104623,
+                                 # sinon rejet "ConnectToServerResult_ClientOutdated"
         _field_str(7, c["steam_id"]) +
         _field_str(9, _get_car_model(c, cfg))
     )
@@ -452,16 +453,23 @@ def _read_active_config() -> dict | None:
 
 
 def _get_car_model(c: dict, cfg: dict | None = None) -> str:
-    """Lit la première voiture de la config active. Fallback sur c['car_model']."""
+    """Lit la première voiture SÉLECTIONNÉE de la config active — le bot doit se connecter
+    avec un modèle réellement autorisé par la session, sinon ACE EVO rejette la connexion
+    ("incorrect car or parts"). cars[0] n'est qu'un ordre de liste, pas une sélection.
+    Fallback sur cars[0] si aucune n'est sélectionnée, puis sur c['car_model']."""
     if cfg is None:
         cfg = _read_active_config()
     if not cfg:
         return c["car_model"]
     cars = cfg.get("Event", {}).get("Cars", [])
     if cars:
-        model = cars[0].get("name", "")
+        selected = next((car for car in cars if car.get("is_selected") or car.get("IsSelected")), None)
+        car = selected or cars[0]
+        model = car.get("name", "")
         if model:
-            log.info("ace_tcp_client: car_model auto-détecté depuis '%s': %s", cfg.get("__name__", "?"), model)
+            log.info("ace_tcp_client: car_model auto-détecté depuis '%s': %s%s",
+                     cfg.get("__name__", "?"), model,
+                     "" if selected else " (aucune voiture sélectionnée, fallback sur la 1ère de la liste)")
             return model
     return c["car_model"]
 

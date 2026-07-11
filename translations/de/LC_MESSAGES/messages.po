@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-07-10 13:43+0000\n"
+"POT-Creation-Date: 2026-07-11 06:50+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: de\n"
@@ -1788,39 +1788,36 @@ msgstr "Dauer"
 msgid "Aucun événement à venir."
 msgstr "Keine bevorstehenden Veranstaltungen."
 
-#: app/templates/public.html:233
-msgid "1er"
-msgstr "1."
-
-#: app/templates/public.html:233
-msgid "2e"
-msgstr "2."
-
-#: app/templates/public.html:233
-msgid "3e"
-msgstr "3."
-
-#: app/templates/public.html:233
-msgid "4e"
-msgstr "4."
-
-#: app/templates/public.html:236 app/templates/results.html:58
+#: app/templates/public.html:235 app/templates/results.html:58
 msgid "Derniers résultats"
 msgstr "Letzte Ergebnisse"
 
-#: app/templates/public.html:237
+#: app/templates/public.html:236
 msgid "Voir tous"
 msgstr "Alle anzeigen"
 
-#: app/templates/public.html:289
+#: app/templates/public.html:244
+msgid "Vainqueur"
+msgstr "Sieger"
+
+#: app/templates/public.html:246
+msgid "Pole position"
+msgstr "Pole-Position"
+
+#: app/templates/public.html:248 app/templates/result_detail.html:65
+#: app/templates/timing.html:62
+msgid "Meilleur tour"
+msgstr "Beste Runde"
+
+#: app/templates/public.html:296
 msgid "j"
 msgstr "T"
 
-#: app/templates/public.html:289
+#: app/templates/public.html:296
 msgid "h"
 msgstr "h"
 
-#: app/templates/public.html:289
+#: app/templates/public.html:296
 msgid "min"
 msgstr "Min"
 
@@ -1911,10 +1908,6 @@ msgstr "Startaufstellung"
 #: app/templates/result_detail.html:64
 msgid "Temps course"
 msgstr "Rennzeit"
-
-#: app/templates/result_detail.html:65 app/templates/timing.html:62
-msgid "Meilleur tour"
-msgstr "Beste Runde"
 
 #: app/templates/result_detail.html:67
 msgid "Best"
@@ -4196,4 +4189,16 @@ msgstr "Bild aktualisiert"
 
 #~ msgid "SteamID"
 #~ msgstr "SteamID"
+
+#~ msgid "1er"
+#~ msgstr "1."
+
+#~ msgid "2e"
+#~ msgstr "2."
+
+#~ msgid "3e"
+#~ msgstr "3."
+
+#~ msgid "4e"
+#~ msgstr "4."
 

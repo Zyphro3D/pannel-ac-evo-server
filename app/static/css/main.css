@@ -1793,6 +1793,46 @@ body::before {
   text-shadow: 0 1px 8px rgba(0,0,0,0.7);
 }
 
+/* ─── Mini-podium : 2e/3e sous le vainqueur, écart au 1er ─────── */
+.h-result-podium {
+  margin-top: 8px;
+  padding: 6px 10px;
+  background: rgba(6,9,20,0.55);
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.h-result-podium-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 0.74rem;
+  color: rgba(255,255,255,0.65);
+  text-shadow: 0 1px 6px rgba(0,0,0,0.7);
+}
+.h-result-podium-row + .h-result-podium-row {
+  margin-top: 2px;
+}
+.h-podium-pos {
+  font-weight: 700;
+  color: rgba(255,255,255,0.45);
+  min-width: 1em;
+}
+.h-podium-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.h-podium-gap {
+  font-family: var(--mono);
+  color: rgba(255,255,255,0.5);
+  flex-shrink: 0;
+}
+
 /* ─── Footer : date + image voiture ─────────────────────────── */
 .h-result-footer {
   display: flex;

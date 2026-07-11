@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-07-10 13:43+0000\n"
+"POT-Creation-Date: 2026-07-11 06:50+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -1778,39 +1778,36 @@ msgstr "Duration"
 msgid "Aucun événement à venir."
 msgstr "No upcoming events."
 
-#: app/templates/public.html:233
-msgid "1er"
-msgstr "1st"
-
-#: app/templates/public.html:233
-msgid "2e"
-msgstr "2nd"
-
-#: app/templates/public.html:233
-msgid "3e"
-msgstr "3rd"
-
-#: app/templates/public.html:233
-msgid "4e"
-msgstr "4th"
-
-#: app/templates/public.html:236 app/templates/results.html:58
+#: app/templates/public.html:235 app/templates/results.html:58
 msgid "Derniers résultats"
 msgstr "Latest results"
 
-#: app/templates/public.html:237
+#: app/templates/public.html:236
 msgid "Voir tous"
 msgstr "See all"
 
-#: app/templates/public.html:289
+#: app/templates/public.html:244
+msgid "Vainqueur"
+msgstr "Winner"
+
+#: app/templates/public.html:246
+msgid "Pole position"
+msgstr "Pole position"
+
+#: app/templates/public.html:248 app/templates/result_detail.html:65
+#: app/templates/timing.html:62
+msgid "Meilleur tour"
+msgstr "Best lap"
+
+#: app/templates/public.html:296
 msgid "j"
 msgstr "d"
 
-#: app/templates/public.html:289
+#: app/templates/public.html:296
 msgid "h"
 msgstr "h"
 
-#: app/templates/public.html:289
+#: app/templates/public.html:296
 msgid "min"
 msgstr "min"
 
@@ -1901,10 +1898,6 @@ msgstr "Grid"
 #: app/templates/result_detail.html:64
 msgid "Temps course"
 msgstr "Race time"
-
-#: app/templates/result_detail.html:65 app/templates/timing.html:62
-msgid "Meilleur tour"
-msgstr "Best lap"
 
 #: app/templates/result_detail.html:67
 msgid "Best"
@@ -4168,4 +4161,16 @@ msgstr "Image updated"
 
 #~ msgid "SteamID"
 #~ msgstr "SteamID"
+
+#~ msgid "1er"
+#~ msgstr "1st"
+
+#~ msgid "2e"
+#~ msgstr "2nd"
+
+#~ msgid "3e"
+#~ msgstr "3rd"
+
+#~ msgid "4e"
+#~ msgstr "4th"
 
