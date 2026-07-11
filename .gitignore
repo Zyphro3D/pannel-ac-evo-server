@@ -74,6 +74,13 @@ AUDIT.md
 # Notes internes — pas destinées au dépôt public
 ROADBOOK.md
 
+# Fichiers locaux uniquement : audits, notes de travail, suite de tests pytest —
+# rien ici n'est nécessaire à l'application ni destiné au dépôt public/aux archives
+# de release (le script de build de .github/workflows/release.yml zippe tout ce
+# qui n'est pas explicitement exclu, donc ce qui traîne à la racine finit livré
+# aux utilisateurs). Tout nouveau fichier de ce genre va dans .local/.
+.local/
+
 # Docker override — généré dynamiquement par le panel (données spécifiques à l'instance)
 docker-compose.override.yml
 

@@ -1,5 +1,0 @@
-{% extends "base.html" %}
-{% block title %}{{ _('Classement') }} — {{ panel_title }}{% endblock %}
-{% block content %}
-<script nonce="{{ csp_nonce }}">window.location.replace("{{ url_for('public.results', v='leaderboard') }}");</script>
-{% endblock %}
