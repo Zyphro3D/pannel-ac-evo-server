@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <title>{% block title %}{{ panel_title }}{% endblock %}</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='img/favicon-32x32.png', v=static_version) }}">
+  <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='img/favicon-16x16.png', v=static_version) }}">
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='img/apple-touch-icon.png', v=static_version) }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/tailwind.min.css', v=static_version) }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css', v=static_version) }}">
   <script src="{{ url_for('static', filename='js/htmx.min.js', v=static_version) }}"></script>

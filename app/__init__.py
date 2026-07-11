@@ -334,6 +334,12 @@ def _register_jinja(app):
     def serve_media(filename):
         return send_from_directory(str(_media_dir), filename)
 
+    @app.route("/favicon.ico")
+    def favicon():
+        # Les navigateurs redemandent systématiquement /favicon.ico (hors des <link>
+        # du <head>) — sans cette route, ça finit en 404 silencieux dans la console.
+        return send_from_directory(str(_STATIC_DIR / "img"), "favicon.ico")
+
     _panel_tz = _ZoneInfo(Config.PANEL_TIMEZONE)
 
     def _local_dt(dt):
