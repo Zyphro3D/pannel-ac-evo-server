@@ -470,8 +470,8 @@ def _watchdog_rotate_docker(container, next_cfg: str, auto_restart: bool,
     cfg_data, sc_b64, sd_b64, new_run_id, _srv = result
 
     lcp = _launch_config_path(server_id)
-    lcp.write_text(json.dumps({"serverconfig": sc_b64, "seasondefinition": sd_b64}))
     try:
+        lcp.write_text(json.dumps({"serverconfig": sc_b64, "seasondefinition": sd_b64}))
         container.reload()
         if container.status == "running":
             container.restart(timeout=10)
@@ -686,21 +686,27 @@ def _watchdog_loop(server_id: int):
     srv = _get_server(server_id)
     log.info("Watchdog started (mode=%s, server=%d)", _DEPLOY_MODE, server_id)
     while not srv["watchdog_stop"].wait(timeout=10):
-        if is_running(server_id):
-            _sample_player_history(server_id)
+        try:
+            if is_running(server_id):
+                _sample_player_history(server_id)
+                if _DEPLOY_MODE == "docker_split":
+                    _sample_container_stats(server_id)
+
+            state = _read_state(server_id)
+            if not state:
+                continue
+
             if _DEPLOY_MODE == "docker_split":
-                _sample_container_stats(server_id)
-
-        state = _read_state(server_id)
-        if not state:
-            continue
-
-        if _DEPLOY_MODE == "docker_split":
-            container = _get_aceserver_container(server_id)
-            if container:
-                _watchdog_handle_docker(container, state, server_id)
-        else:
-            _watchdog_handle_native(srv, state, server_id)
+                container = _get_aceserver_container(server_id)
+                if container:
+                    _watchdog_handle_docker(container, state, server_id)
+            else:
+                _watchdog_handle_native(srv, state, server_id)
+        except Exception:
+            # Une exception non gérée ici tuerait le thread daemon en silence : plus de
+            # détection de crash, plus de rotation, plus d'échantillonnage jusqu'au
+            # redémarrage du panel. On log et on continue à la prochaine itération.
+            log.exception("Watchdog: erreur non gérée (server=%d)", server_id)
 
     log.info("Watchdog stopped (server=%d)", server_id)
 

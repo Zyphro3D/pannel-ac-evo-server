@@ -4,7 +4,6 @@ import os
 import re
 import threading
 import uuid
-from datetime import datetime
 from pathlib import Path
 
 _env_write_lock = threading.Lock()  # protects concurrent os.environ writes in settings POST
@@ -53,6 +52,7 @@ def _migrate_indexes(db):
         ("ix_session_result_run_id",           "CREATE INDEX IF NOT EXISTS ix_session_result_run_id ON session_result (run_id)"),
         ("ix_event_status_date",               "CREATE INDEX IF NOT EXISTS ix_event_status_date ON event (status, date)"),
         ("ix_session_result_raw_json_hash",    "CREATE INDEX IF NOT EXISTS ix_session_result_raw_json_hash ON session_result (raw_json_hash)"),
+        ("ix_event_registration_driver_id",    "CREATE INDEX IF NOT EXISTS ix_event_registration_driver_id ON event_registration (driver_id)"),
     ]
     with db.engine.connect() as conn:
         for name, sql in indexes:
@@ -418,6 +418,7 @@ def server():
 
     present: set[str] = set()
     for car in cars:
+        car["is_mod"] = bool(car.get("is_mod", False))
         for key, mapping in _PROP_MAPS.items():
             val   = car.get(key)
             label = mapping.get(val, "") if val is not None else ""
@@ -613,18 +614,17 @@ _SKIP_IF_EMPTY = {"MAIL_PASSWORD"}
 _CHECKBOXES = {"ACE_BOT_IS_ADMIN", "SESSION_COOKIE_SECURE", "MAIL_USE_TLS", "REQUIRE_EMAIL_CONFIRMATION"}
 
 
-from app import _SETTINGS_PATH, _SETTINGS_SKIP_KEYS, _SETTINGS_BOOL_KEYS, _APPCONFIG_RESERVED_KEYS
+from app import _SETTINGS_PATH, _SETTINGS_SKIP_KEYS, _SETTINGS_BOOL_KEYS, _APPCONFIG_RESERVED_KEYS, _APP_VERSION
 
 
 def _read_env_file():
     """Lit la config depuis data/settings.json, avec fallback sur os.environ."""
-    import json as _json
     values = {}
     if _SETTINGS_PATH.exists():
         try:
-            values = _json.loads(_SETTINGS_PATH.read_text(encoding="utf-8"))
-        except Exception:
-            pass
+            values = json.loads(_SETTINGS_PATH.read_text(encoding="utf-8"))
+        except Exception as e:
+            _log.warning("_read_env_file: settings.json illisible, fallback sur os.environ : %s", e)
     all_keys = {k for _, _, keys in _ENV_SECTIONS for k in keys}
     for k in all_keys:
         if k not in values and k in os.environ:
@@ -636,18 +636,85 @@ def _write_env_file(new_values: dict):
     """Écrit la config dans data/settings.json (merge avec l'existant), en écriture atomique
     (fichier temporaire + os.replace) pour éviter de tronquer tous les settings sur un crash
     en cours d'écriture."""
-    import json as _json
     from app.services.process_manager import _atomic_write
     to_write = {k: v for k, v in new_values.items() if k not in _SETTINGS_SKIP_KEYS}
     existing = {}
     if _SETTINGS_PATH.exists():
         try:
-            existing = _json.loads(_SETTINGS_PATH.read_text(encoding="utf-8"))
-        except Exception:
-            pass
+            existing = json.loads(_SETTINGS_PATH.read_text(encoding="utf-8"))
+        except Exception as e:
+            _log.warning("_write_env_file: settings.json illisible, on repart d'un dict vide : %s", e)
     existing.update(to_write)
     _SETTINGS_PATH.parent.mkdir(parents=True, exist_ok=True)
-    _atomic_write(_SETTINGS_PATH, _json.dumps(existing, indent=2, ensure_ascii=False))
+    _atomic_write(_SETTINGS_PATH, json.dumps(existing, indent=2, ensure_ascii=False))
+
+
+# ── Bandeau "nouveautés .env" après une mise à jour ──────────────────────────
+# Ajouter une entrée ici à chaque release qui introduit une variable .env, même
+# optionnelle — c'est ce qui alimente le bandeau affiché aux admins tant qu'ils
+# ne l'ont pas explicitement fermé (cf. dismiss_env_notice ci-dessous).
+NEW_ENV_VARS_BY_VERSION: dict[str, list[tuple[str, str]]] = {
+    "1.9.2": [
+        ("STEAM_HOME", _l("Dossier de session Steam à monter si le panel est lancé via systemd "
+                          "ou sudo sans -E (sinon ça reste vide et $HOME est utilisé, comme avant).")),
+    ],
+}
+
+_LAST_SEEN_VERSION_KEY = "__last_seen_version"
+
+
+def _get_last_seen_version() -> str:
+    if not _SETTINGS_PATH.exists():
+        return "0.0.0"
+    try:
+        data = json.loads(_SETTINGS_PATH.read_text(encoding="utf-8"))
+        return data.get(_LAST_SEEN_VERSION_KEY, "0.0.0")
+    except Exception:
+        return "0.0.0"
+
+
+def _set_last_seen_version(version: str) -> None:
+    from app.services.process_manager import _atomic_write
+    data = {}
+    if _SETTINGS_PATH.exists():
+        try:
+            data = json.loads(_SETTINGS_PATH.read_text(encoding="utf-8"))
+        except Exception as e:
+            _log.warning("_set_last_seen_version: settings.json illisible, on repart d'un dict vide : %s", e)
+    data[_LAST_SEEN_VERSION_KEY] = version
+    _SETTINGS_PATH.parent.mkdir(parents=True, exist_ok=True)
+    _atomic_write(_SETTINGS_PATH, json.dumps(data, indent=2, ensure_ascii=False))
+
+
+def _version_tuple(v: str) -> tuple:
+    try:
+        return tuple(int(x) for x in v.strip().split("."))
+    except (ValueError, AttributeError):
+        return (0, 0, 0)
+
+
+def get_pending_env_notices() -> list[tuple[str, str]]:
+    """Variables .env introduites depuis la dernière version vue par l'admin et
+    absentes de l'environnement actuel. Liste vide = rien à signaler (défaut sûr
+    déjà en place, ou déjà configuré, ou déjà vu et fermé)."""
+    last_seen = _version_tuple(_get_last_seen_version())
+    current   = _version_tuple(_APP_VERSION)
+    notices: list[tuple[str, str]] = []
+    for version, entries in NEW_ENV_VARS_BY_VERSION.items():
+        if last_seen < _version_tuple(version) <= current:
+            for key, desc in entries:
+                if not os.environ.get(key, "").strip():
+                    notices.append((key, desc))
+    return notices
+
+
+@admin_bp.route("/settings/dismiss-env-notice", methods=["POST"])
+@_admin_required
+def dismiss_env_notice():
+    _set_last_seen_version(_APP_VERSION)
+    # 200 (pas 204) : htmx ne swap jamais le contenu sur un 204, or on veut bien
+    # que le hx-swap="outerHTML" fasse disparaître le bandeau.
+    return "", 200
 
 
 @admin_bp.route("/settings", methods=["GET", "POST"])

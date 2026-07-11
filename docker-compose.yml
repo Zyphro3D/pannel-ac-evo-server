@@ -44,8 +44,10 @@ services:
       - ./.env:/panel/.env
       # SteamCMD (mise à jour du serveur de jeu depuis le panel)
       - /opt/steamcmd:/opt/steamcmd
-      # Session Steam authentifiée du host (pour accéder aux apps nécessitant un compte)
-      - ${HOME}/Steam:/root/Steam
+      # Session Steam authentifiée du host (pour accéder aux apps nécessitant un compte).
+      # ${HOME} est vide sous systemd ou sudo sans -E : définissez STEAM_HOME dans .env
+      # dans ce cas (le bind se ferait sinon sur /Steam, un dossier root vide).
+      - ${STEAM_HOME:-${HOME}}/Steam:/root/Steam
       # HTTPS intégré (Let's Encrypt) — décommentez et adaptez SSL_CERTFILE/SSL_KEYFILE dans .env
       # - /etc/letsencrypt:/etc/letsencrypt:ro
       # Fichier override Docker Compose — le panel le régénère à chaque création/suppression de serveur
@@ -79,7 +81,7 @@ services:
       dockerfile: Dockerfile.aceserver
     container_name: ace-server
     ports:
-      - "8081:8081"       # API HTTP du serveur de jeu (port officiel ACE EVO)
+      - "${ACESERVER_HTTP_PORT:-8081}:${ACESERVER_HTTP_PORT:-8081}"   # API HTTP du serveur de jeu
       - "9700:9700/tcp"   # Connexions joueurs TCP
       - "9700:9700/udp"   # Connexions joueurs UDP
     volumes:

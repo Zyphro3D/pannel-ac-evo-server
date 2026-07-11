@@ -17,19 +17,20 @@ Interprétation des flags de tour (confirmée par observation des données) :
 import hashlib
 import json
 import logging
-import os
 from collections import defaultdict, OrderedDict
 from datetime import timedelta
 from pathlib import Path
 
 log = logging.getLogger(__name__)
 
-_MAX_PARSE_CACHE = 200
+## Aligné sur le plus gros scan existant (leaderboard.py::build_circuits, jusqu'à 2000
+# lignes) : un cache plus petit que le scan réévince en boucle et re-parse à chaque hit.
+_MAX_PARSE_CACHE = 2000
 _parse_cache: OrderedDict[int, dict] = OrderedDict()
 
 
 def get_parsed(session_result) -> dict:
-    """Retourne le résultat parsé depuis le cache (LRU 200 entrées), ou le parse."""
+    """Retourne le résultat parsé depuis le cache (LRU), ou le parse."""
     rid = session_result.id
     if rid in _parse_cache:
         _parse_cache.move_to_end(rid)

@@ -315,7 +315,10 @@ def results_ingest():
     """Reçoit la notification de fin de session d'AssettoCorsaEVOServer."""
     # server_id identifie quel serveur envoie ce webhook (serveur N configure
     # ResultsPostUrl avec ?server_id=N). Défaut 1 pour rétrocompat.
-    sid = int(request.args.get("server_id", 1) or 1)
+    try:
+        sid = int(request.args.get("server_id", 1) or 1)
+    except (ValueError, TypeError):
+        sid = 1
 
     # ACE EVO peut envoyer le webhook après avoir arrêté le serveur — is_running()
     # serait False et get_status() retournerait config=None. On lit l'état brut
@@ -389,6 +392,18 @@ def results_ingest():
     return jsonify({"ok": True, "imported": imported})
 
 
+def _strip_pii_for_pilot(parsed: dict, raw: dict | None = None) -> None:
+    """Retire les identifiants Steam pour les pilotes non-admin, comme _TIMING_STRIP_FIELDS
+    dans live.py. Sans ça, tout pilote connecté peut scripter /api/results/<id> sur toute la
+    plage d'ID et reconstituer la table SteamID → pseudo de la communauté."""
+    for row in parsed.get("standings", []):
+        row.pop("player_id", None)
+    if raw is not None:
+        for d in raw.get("drivers", []):
+            d.pop("player_id", None)
+            d.pop("guid", None)
+
+
 @api_bp.route("/results")
 @login_required
 def get_results():
@@ -403,6 +418,8 @@ def get_results():
         except Exception as e:
             log.warning("Failed to parse result id=%s: %s", r.id, e)
             parsed = {}
+        if not current_user.is_admin:
+            _strip_pii_for_pilot(parsed)
         out.append({
             "id":           r.id,
             "received_at":  r.received_at.isoformat(),
@@ -448,15 +465,25 @@ def rotation_start():
             log.warning("_ensure_race_weekend_file failed: %s", e)
 
     inject_global_server_settings(cfg_data)
-    sc, sd = config_builder.build_launch_args(cfg_data)
+
+    # Ports et nom propres au serveur (multi-serveur), comme _do_start : sans ça,
+    # le port/nom global de SERVER_TCP_PORT/SERVER_NAME écrase le port/nom du serveur
+    # réellement sélectionné (sid) dès qu'on démarre un roulement sur un serveur != 1.
+    from app.models import Server as _Server
+    _rot_start_srv = db.session.get(_Server, sid)
+
+    sc, sd = config_builder.build_launch_args(
+        cfg_data,
+        tcp_listener=_rot_start_srv.tcp_port if _rot_start_srv else None,
+        udp_listener=_rot_start_srv.udp_port if _rot_start_srv else None,
+        server_name=_rot_start_srv.name     if _rot_start_srv else None,
+    )
     result  = start_server(sc, sd, first_cfg, auto_restart=False, server_id=sid)
 
     if result.get("ok"):
-        from app.models import Server as _Server
-        _rot_srv = db.session.get(_Server, sid)
         discord_notifier.safe_notify(
             discord_notifier.notify_rotation_start, rot["configs"], bool(rot.get("cycle")),
-            server_id=sid, server_name=_rot_srv.name if _rot_srv else "",
+            server_id=sid, server_name=_rot_start_srv.name if _rot_start_srv else "",
         )
 
     return jsonify(result)
@@ -484,12 +511,15 @@ def get_result(result_id):
     """Retourne le détail complet d'une session."""
     r = db.get_or_404(SessionResult, result_id)
     parsed = get_parsed(r)
+    raw = json.loads(r.raw_json)
+    if not current_user.is_admin:
+        _strip_pii_for_pilot(parsed, raw)
     return jsonify({
         "id":           r.id,
         "received_at":  r.received_at.isoformat(),
         "source":       r.source,
         "parsed":       parsed,
-        "raw":          json.loads(r.raw_json),
+        "raw":          raw,
     })
 
 
@@ -559,7 +589,7 @@ def live_admin_cmd():
                 from app.services import discord_notifier
                 from app.models import Server as _Server
                 _cmd_srv  = db.session.get(_Server, _cmd_sid)
-                driver = ace_tcp_client.get_driver_by_num(car_num) if car_num else {}
+                driver = ace_tcp_client.get_driver_by_num(car_num, _cmd_sid) if car_num else {}
                 discord_notifier.safe_notify(
                     discord_notifier.notify_admin_action,
                     cmd,

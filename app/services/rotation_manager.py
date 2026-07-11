@@ -30,10 +30,19 @@ def get_rotation() -> dict:
 
 
 def save_rotation(data: dict):
+    from app.services.server_config import _valid_config_name
+    configs = [str(c) for c in data.get("configs", [])]
+    valid_configs = [c for c in configs if _valid_config_name(c)]
+    if len(valid_configs) != len(configs):
+        import logging
+        logging.getLogger(__name__).warning(
+            "save_rotation: nom(s) de config invalide(s) ignoré(s) : %s",
+            set(configs) - set(valid_configs),
+        )
     _rotation_path().write_text(json.dumps({
         "enabled": bool(data.get("enabled", False)),
         "cycle":   bool(data.get("cycle",   False)),
-        "configs": [str(c) for c in data.get("configs", [])],
+        "configs": valid_configs,
     }))
 
 

@@ -5,14 +5,13 @@ from zoneinfo import ZoneInfo
 
 from flask import Blueprint, render_template, redirect, url_for, request, flash, current_app
 from flask_babel import _
-from flask_login import current_user
 from sqlalchemy.orm import selectinload
 
 from app.models import Event, EventRegistration, Driver, EventStatus, DriverStatus, RegStatus
 from app.services.database import db
 from app.services.server_config import load_events as load_tracks, load_cars, list_configs
 from app.services import mailer, entry_list
-from app.utils import admin_required as _admin_required, is_htmx, htmx_toast, htmx_oob_toast
+from app.utils import admin_required as _admin_required, is_htmx, htmx_oob_toast
 
 log = logging.getLogger(__name__)
 
@@ -79,6 +78,7 @@ from app.services.server_config import CAR_PROP_MAPS as _PROP_MAPS, CAR_CATEGORY
 def _cars_context(cars):
     present = set()
     for car in cars:
+        car["is_mod"] = bool(car.get("is_mod", False))
         for key, mapping in _PROP_MAPS.items():
             val = car.get(key)
             label = mapping.get(val, "") if val is not None else ""

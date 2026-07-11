@@ -104,9 +104,9 @@ def iter_log_lines(since_hours: int = 12, server_id: int = 1):
     """Yield log lines. docker_split → Docker SDK ; native → log file."""
     if _DEPLOY_MODE == "docker_split":
         try:
-            import docker as _docker
             import time as _time
-            client    = _docker.from_env()
+            from app.services.process_manager import _get_docker_client
+            client    = _get_docker_client()
             container = client.containers.get(container_name(server_id))
             since_ts  = int(_time.time()) - since_hours * 3600
             raw = container.logs(stream=False, since=since_ts)
@@ -126,26 +126,18 @@ def iter_log_lines(since_hours: int = 12, server_id: int = 1):
             log.warning("live: log file error (server=%d): %s", server_id, e)
 
 
-def iter_log_stream(server_id: int = 1):
-    """Generator that yields new log lines indefinitely (docker_split only)."""
-    if _DEPLOY_MODE != "docker_split":
-        return
-    try:
-        import docker as _docker
-        import time as _time
-        client    = _docker.from_env()
-        container = client.containers.get(container_name(server_id))
-        for chunk in container.logs(stream=True, follow=True, since=int(_time.time()) - 5):
-            yield chunk.decode("utf-8", errors="replace")
-    except Exception as e:
-        log.warning("live stream error: %s", e)
 
 
 # ── Build current session state ───────────────────────────────────────────────
 
 _state_cache: dict[int, tuple[float, dict]] = {}
 _state_cache_lock = threading.Lock()
-_STATE_TTL = 10.0  # seconds — aligns with the 15s client poll interval
+_STATE_TTL = 12.0  # seconds — au-dessus des 10s de poll client (timing.html) pour que le cache serve vraiment
+# Plafond de sécurité : les pilotes connectés ne sont identifiés qu'une fois dans les logs
+# (ligne "connected", jamais réémise) — réduire la fenêtre sous started_at pourrait faire
+# disparaître un pilote toujours connecté. On borne donc au démarrage du serveur, avec ce
+# plafond pour les serveurs qui tournent sans interruption depuis plus de 24h.
+_MAX_SCAN_HOURS = 24
 
 
 def build_state_cached(server_id: int = 1) -> dict:
@@ -171,7 +163,15 @@ def build_state(server_id: int = 1) -> dict:
     events:          list[dict]       = []
     player_count = 0
 
-    for raw_line in iter_log_lines(since_hours=24, server_id=server_id):
+    from app.services.process_manager import get_server_raw_state
+    started_at = get_server_raw_state(server_id).get("started_at")
+    if started_at:
+        elapsed_hours = (time.time() - started_at) / 3600
+        since_hours = max(1, min(_MAX_SCAN_HOURS, int(elapsed_hours) + 1))
+    else:
+        since_hours = _MAX_SCAN_HOURS
+
+    for raw_line in iter_log_lines(since_hours=since_hours, server_id=server_id):
         for line in raw_line.splitlines():
             if m := _RE_NEWLAP.search(line):
                 car_id = m.group(1)

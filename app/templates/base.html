@@ -219,7 +219,7 @@
       {# ── Hamburger (mobile) ── #}
       <button @click="$dispatch('toggle-mobile-nav')"
               class="lg:hidden p-2 rounded-lg text-txt/80 hover:text-txt hover:bg-white/5
-                     transition-colors duration-150" aria-label="Menu">
+                     transition-colors duration-150" aria-label="{{ _('Menu') }}">
         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
         </svg>
@@ -283,6 +283,25 @@
       {% for warn in system_warnings %}
         <div class="flash flash-warning mx-4 mt-4">⚠ {{ warn }}</div>
       {% endfor %}
+    {% endif %}
+    {% if pending_env_notices %}
+      <div class="flash flash-warning mx-4 mt-4" id="env-notice-banner">
+        <strong>{{ _('Mise à jour vers %(version)s', version=app_version) }}</strong>
+        — {{ _('nouvelle(s) variable(s) .env disponible(s) (optionnelle(s)) :') }}
+        <ul class="mt-1 ml-4 list-disc">
+          {% for key, desc in pending_env_notices %}
+            <li><code>{{ key }}</code> — {{ desc }}</li>
+          {% endfor %}
+        </ul>
+        <div class="mt-2 flex gap-2">
+          <a href="{{ url_for('admin.settings') }}" class="btn-secondary btn-sm">{{ _('Voir les Paramètres') }}</a>
+          <button type="button" class="btn-secondary btn-sm"
+                  hx-post="{{ url_for('admin.dismiss_env_notice') }}"
+                  hx-target="#env-notice-banner" hx-swap="outerHTML">
+            {{ _('Compris') }}
+          </button>
+        </div>
+      </div>
     {% endif %}
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% for cat, msg in messages %}
@@ -378,6 +397,8 @@ const I18N = {
   networkError:      "{{ _('Erreur réseau') }}",
   serverStarted:     "{{ _('Serveur démarré') }}",
   serverStopped:     "{{ _('Serveur arrêté') }}",
+  cycleStarted:      "{{ _('Cycle démarré') }}",
+  cycleStopped:      "{{ _('Cycle arrêté') }}",
   serverRestarted:   "{{ _('Serveur redémarré') }}",
   serverStarting:    "{{ _('Démarrage…') }}",
   serverStopping:    "{{ _('Arrêt…') }}",

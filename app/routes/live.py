@@ -2,13 +2,9 @@
 Live session monitoring — streame les logs du serveur ACE EVO en temps réel
 et expose une API de l'état courant de la session.
 """
-import json
-import queue
 import re
-import time
-import threading
 import logging
-from flask import Blueprint, render_template, Response, stream_with_context, jsonify, request, session, redirect, url_for
+from flask import Blueprint, render_template, jsonify, request, session, redirect, url_for
 from flask_login import current_user, login_required
 from flask_babel import _
 from app import limiter
@@ -225,52 +221,3 @@ def timing_react():
     return jsonify({"ok": ok})
 
 
-@live_bp.route("/api/live/stream")
-@login_required
-def live_stream():
-    """SSE endpoint — envoie les nouveaux événements au fil des logs."""
-    sid = _get_server_id()
-    is_admin = current_user.is_admin
-
-    def _generate():
-        yield "data: {\"type\":\"connected\"}\n\n"
-        if _DEPLOY_MODE != "docker_split":
-            return
-
-        q: queue.Queue[str | None] = queue.Queue(maxsize=100)
-
-        def _reader():
-            try:
-                import docker as _docker
-                client    = _docker.from_env()
-                container = client.containers.get(_live_state.container_name(sid))
-                for chunk in container.logs(stream=True, follow=True, since=int(time.time()) - 5):
-                    q.put(chunk.decode("utf-8", errors="replace"))
-            except Exception as e:
-                log.warning("live stream reader error: %s", e)
-            finally:
-                q.put(None)
-
-        t = threading.Thread(target=_reader, daemon=True)
-        t.start()
-
-        while True:
-            try:
-                raw = q.get(timeout=20)
-            except queue.Empty:
-                yield "data: {\"type\":\"heartbeat\"}\n\n"
-                continue
-            if raw is None:
-                break
-            for line in raw.splitlines():
-                ev = _live_state.parse_line(line)
-                if ev:
-                    if not is_admin:
-                        ev = {k: v for k, v in ev.items() if k not in _TIMING_STRIP_FIELDS}
-                    yield f"data: {json.dumps(ev)}\n\n"
-
-    return Response(
-        stream_with_context(_generate()),
-        mimetype="text/event-stream",
-        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
-    )

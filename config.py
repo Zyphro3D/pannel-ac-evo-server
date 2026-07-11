@@ -12,6 +12,14 @@ def _required_env(name: str) -> str:
     return value
 
 
+# Défauts des messages du bot TCP — réutilisés tels quels par ace_tcp_client.py
+# (paramètre par défaut de _welcome_loop_native/docker et fallback de _tcp_cfg_from_settings)
+# pour éviter que les 2 côtés divergent si un seul est modifié.
+DEFAULT_BOT_MSG_WELCOME = "Bienvenue {name} !"
+DEFAULT_BOT_MSG_DISCORD = "Rejoins le discord : {discord_url}"
+DEFAULT_BOT_MSG_SITE    = "Retrouve tes resultats et evenements sur : {site_url}"
+
+
 class Config:
     SECRET_KEY          = _required_env("SECRET_KEY")
     ADMIN_USERNAME      = os.environ.get("ADMIN_USERNAME", "admin")
@@ -51,9 +59,9 @@ class Config:
     ACE_BOT_STEAM_ID       = os.environ.get("ACE_BOT_STEAM_ID",       "")
     ACE_BOT_CAR_MODEL      = os.environ.get("ACE_BOT_CAR_MODEL",      "preset_190e_mech_1")
     ACE_BOT_IS_ADMIN       = os.environ.get("ACE_BOT_IS_ADMIN",       "false")
-    ACE_BOT_MSG_WELCOME    = os.environ.get("ACE_BOT_MSG_WELCOME",    "Bienvenue {name} !")
-    ACE_BOT_MSG_DISCORD    = os.environ.get("ACE_BOT_MSG_DISCORD",    "Rejoins le discord : {discord_url}")
-    ACE_BOT_MSG_SITE       = os.environ.get("ACE_BOT_MSG_SITE",       "Retrouve tes resultats et evenements sur : {site_url}")
+    ACE_BOT_MSG_WELCOME    = os.environ.get("ACE_BOT_MSG_WELCOME",    DEFAULT_BOT_MSG_WELCOME)
+    ACE_BOT_MSG_DISCORD    = os.environ.get("ACE_BOT_MSG_DISCORD",    DEFAULT_BOT_MSG_DISCORD)
+    ACE_BOT_MSG_SITE       = os.environ.get("ACE_BOT_MSG_SITE",       DEFAULT_BOT_MSG_SITE)
     DISCORD_WEBHOOK_URL        = os.environ.get("DISCORD_WEBHOOK_URL", "")
     DISCORD_PILOTS_WEBHOOK_URL = os.environ.get("DISCORD_PILOTS_WEBHOOK_URL", "")
     DISCORD_RACE_WEBHOOK_URL   = os.environ.get("DISCORD_RACE_WEBHOOK_URL", "")

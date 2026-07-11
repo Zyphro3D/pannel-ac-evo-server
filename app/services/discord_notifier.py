@@ -82,15 +82,17 @@ _WEBHOOK_DB_FIELD = {
 
 def _resolve_url(server_id: int | None, env_key: str, fallback_env_key: str = "") -> str:
     """Résout le webhook : DB du serveur > env var spécifique > env var générale.
-    La lecture DB nécessite un contexte Flask — depuis un thread background (bot TCP),
-    seules les env vars sont utilisées (fallback attendu).
+    Les appels depuis un thread background (bot TCP) n'ont pas de contexte Flask —
+    on en ouvre un via process_manager._db_context() pour que les webhooks par-serveur
+    configurés en DB soient quand même pris en compte (sinon ils sont silencieusement
+    ignorés au profit des env vars globales).
     """
     if server_id:
         try:
-            from flask import has_app_context
-            if has_app_context():
-                from app.models import Server
-                from app.services.database import db
+            from app.services.process_manager import _db_context
+            from app.models import Server
+            from app.services.database import db
+            with _db_context():
                 srv = db.session.get(Server, server_id)
                 if srv:
                     url = getattr(srv, _WEBHOOK_DB_FIELD.get(env_key, ""), "") or ""

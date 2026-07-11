@@ -1,5 +1,73 @@
 # Changelog
 
+### v1.9.2 — 10/07/2026
+
+**Nouveau — support de la nouvelle version du launcher AC EVO Server (véhicules officiels/mods)**
+
+- La nouvelle version du launcher ajoute des véhicules, des circuits, et un tag `is_mod` par véhicule dans `cars.json` (régénéré automatiquement par la mise à jour Steam — aucune action requise). Le panel propage désormais `is_mod`/`IsMod`/`IsModText` dans les configs qu'il écrit (`_car_dict()`), et le schéma de config connaît la nouvelle clé `ShowOnlyOfficial` (`ShowOnlySelected` a son pendant).
+- Ajout d'un filtre "Véhicules officiels uniquement" + badge **MOD** sur les deux sélecteurs de véhicules du panel (page Serveur et création/édition d'événement) — le panel a son propre sélecteur, indépendant de celui du launcher.
+- Nouveaux véhicules et circuits : rien à faire, ils remontent automatiquement (lecture dynamique de `cars.json`/`events_*.json`). Un nouveau circuit n'aura simplement pas de carte SVG tant que `track_map.py` n'a pas son entrée (nécessite les assets extraits de `content.kspkg`).
+- `SelectOnlyOfficialCarsCommand` (présent dans le JSON du launcher) n'est volontairement pas reproduit : c'est un artefact de sérialisation MVVM/WPF du launcher (binding de bouton), sans donnée exploitable côté serveur.
+
+**Nouveau — bandeau "nouvelles variables .env" après une mise à jour**
+
+- Un admin qui se connecte après une mise à jour voit maintenant un bandeau listant les nouvelles variables `.env` introduites depuis sa dernière visite (optionnelles, valeurs par défaut sûres — rien ne casse si elles restent absentes), avec un lien vers Paramètres et un bouton "Compris" qui masque le bandeau définitivement (persisté dans `data/settings.json`, survit aux redémarrages).
+- Cette version l'inaugure avec `STEAM_HOME` (voir section DevOps). Pour les prochaines releases : ajouter une entrée dans `NEW_ENV_VARS_BY_VERSION` (`app/routes/admin.py`) à chaque nouvelle clé `.env`, même optionnelle.
+
+**Sécurité**
+
+- `/api/results` et `/api/results/<id>` ne renvoient plus le SteamID64 (`player_id`/`guid`) à un pilote non-admin — n'importe quel compte pilote pouvait auparavant scripter ces routes sur toute la plage d'ID et reconstituer la table SteamID → pseudo de la communauté.
+- `deploy_config()` et `save_rotation()` valident maintenant le nom de config (`_valid_config_name()`), comme tous les autres points d'entrée du même genre.
+- `server_id` sur `/api/results/ingest` est casté défensivement (un `?server_id=abc` renvoyait un 500 avant la vérification HMAC, renvoie maintenant un 403 propre).
+
+**Multi-serveur**
+
+- `ResultsPostUrl` (générée pour chaque serveur au déploiement de config) porte désormais `?server_id=N` : les résultats du serveur 2+ étaient jusqu'ici attribués au serveur 1 (rotation et historique du mauvais serveur avançaient). Vérifié avec un vrai appel HTTP signé HMAC : `server_id=2` atterrit bien en base avec le bon `server_id`.
+- L'auto-launch d'un événement programmé sur un serveur ≠ 1 déploie maintenant la config et annonce le bon port/nom (`deploy_config()` + `tcp_listener`/`udp_listener`/`server_name`), au lieu du port par défaut du serveur 1.
+- **Le bouton "Démarrer le roulement" (`/api/rotation/start`) annonçait le port et le nom globaux (`SERVER_TCP_PORT`/`SERVER_NAME`) au lieu de ceux du serveur réellement sélectionné** — signalé par un utilisateur sur GitHub (le nom configuré par-serveur dans Paramètres → Serveur était silencieusement ignoré au démarrage d'un roulement sur un serveur ≠ 1). Le nom par-serveur (`Server.name`, éditable dans Paramètres → Serveur → "Nom du serveur") fonctionnait déjà correctement pour un démarrage normal et pour l'avancement automatique du roulement (webhook) ; seul ce point d'entrée avait été oublié. Même correctif que les deux points ci-dessus : port/nom du `Server` DB passés à `build_launch_args()`. Vérifié par un test qui intercepte les appels (sans toucher aux vrais conteneurs) : le port et le nom du serveur 2 sont bien ceux transmis.
+- Un kick/mute/etc. déclenché sur le serveur 2 résout maintenant le nom du pilote sur le bon leaderboard pour l'embed Discord.
+- Les webhooks Discord configurés par-serveur (onglet Paramètres → Serveur) sont maintenant pris en compte même depuis les threads du bot TCP (qui n'ont pas de contexte Flask par défaut) — ils retombaient silencieusement sur les webhooks globaux.
+
+**Performance**
+
+- La reconstruction de l'état live (`/timing`) ne rescane plus 24h de logs container à chaque appel : la fenêtre de lecture est bornée au démarrage réel du serveur (sûr par construction — aucun pilote connecté ne peut avoir une ligne de log antérieure au démarrage du container), et le client Docker est réutilisé au lieu d'être recréé à chaque appel.
+- Le cache TTL de cet état passe de 10s à 12s pour rester au-dessus du poll client réel (10s) — avant, le cache expirait quasiment à chaque requête.
+- Le cache LRU des résultats parsés est aligné sur la taille du plus gros scan existant (2000, au lieu de 200) — au-delà de 200 résultats en base, chaque affichage de `/results` réévinçait et re-parsait en boucle.
+- Page d'accueil publique (`/`) : rate limit ajouté (60/min), comme les autres routes publiques.
+- Endpoint SSE `/api/live/stream` supprimé : confirmé mort (aucun `EventSource`/extension SSE htmx branchée dessus nulle part dans le projet), il monopolisait un thread Waitress par connexion sans aucun bénéfice actuel.
+
+**Fiabilité**
+
+- Le watchdog (surveillance crash/rotation des serveurs) ne peut plus mourir silencieusement sur une exception imprévue (ex. erreur disque pendant une rotation) — le corps de la boucle est maintenant protégé par un `try/except` qui logue et continue, comme le fait déjà le planificateur d'événements.
+- `send_chat()` (bot TCP) ne tient plus le lock partagé pendant l'envoi réseau (`sendall`) — évite un blocage de `is_connected()`/de la reconnexion si le buffer TCP est plein.
+- `settings.json` corrompu : `_read_env_file`/`_write_env_file` loguent maintenant un avertissement au lieu d'échouer silencieusement.
+
+**UI / Traductions**
+
+- ~19 clés de traduction manquantes ou vides ajoutées dans les 5 langues (fr/en/de/es/it) : ordinaux (1er/2e/3e/4e), unités de durée (h/j/min), plusieurs libellés de `/timing`, `/results`, `/settings`. Vérifié en navigateur dans les 4 langues non-françaises.
+- 11 textes en dur (attributs `aria-label`, `title`, `placeholder`) passés en clés de traduction.
+- Les toasts de démarrage/arrêt du cycle de rotation ont leurs propres clés (`cycleStarted`/`cycleStopped`) au lieu de réutiliser celles du serveur (l'utilisateur voyait « Serveur démarré » en lançant un cycle de rotation).
+- `car_display_name` échappé avant injection dans le DOM sur `/timing` (principe de précaution — la donnée vient du jeu, pas d'un attaquant HTTP).
+- Rebuild Tailwind : les classes `text-inherit`/`underline` (déjà utilisées dans le HTML) manquaient du CSS compilé, qui était simplement périmé.
+
+**Qualité de code**
+
+- Nouvelle suite de tests `tests/unit/` (pytest, `requirements-dev.txt` séparé — non installé dans l'image de production) : parser de résultats, migrations DB, authentification. 18 tests.
+- 8 imports morts retirés ; les défauts des messages du bot TCP (dupliqués à 4 endroits) centralisés dans `config.py`.
+
+**DevOps**
+
+- `.env.example` complété : `ACESERVER_HTTP_PORT`, `ACESERVER_TCP_PORT` (déjà lues par `config.py`, non documentées) et `STEAM_HOME` (nouvelle, optionnelle — voir ci-dessous).
+- Port HTTP du serveur de jeu dans `docker-compose.yml` : configurable via `ACESERVER_HTTP_PORT` au lieu de codé en dur.
+- Montage de la session Steam (`docker-compose.yml`) : nouvelle variable optionnelle `STEAM_HOME`, à définir dans `.env` si le panel est lancé via systemd ou `sudo` sans `-E` (`$HOME` y est vide, ce qui montait un dossier root vide et dégradait silencieusement la mise à jour SteamCMD). Sans action, comportement inchangé (`$HOME` de l'utilisateur courant).
+- `CHANGELOG.md` v1.9.1 : ajout d'une ligne « Breaking (URLs) » qui manquait pour le renommage `/administration/*` → `/settings/*`.
+
+**Base de données**
+
+- Nouvel index `ix_event_registration_driver_id` (migration additive, automatique au démarrage — `filter_by(driver_id=...)` était en full-scan sur la page d'accueil, le dashboard pilote, et l'inscription/désinscription aux événements).
+
+Aucune clé `.env` n'est obligatoire pour cette version (toutes ont un défaut sûr). Migration DB automatique au démarrage, comme d'habitude.
+
 ### v1.9.1 — 09/07/2026
 
 **Nouveau bouton "Vérifier les mises à jour"**
@@ -20,6 +88,7 @@
 
 - La page `/administration` est supprimée. Son contenu (config email en lecture seule, test SMTP, test des webhooks Discord, aperçu du design des emails) est déplacé dans Paramètres → Notifications, à côté des réglages correspondants.
 - Les routes `/administration/test-email`, `/administration/test-webhook` et `/administration/mail-preview` deviennent `/settings/test-email`, `/settings/test-webhook` et `/settings/mail-preview`.
+- **Breaking (URLs)** : aucun impact DB ni `.env`, mais tout marque-page ou lien externe pointant vers `/administration/*` casse. Mettre à jour vers `/settings/*`.
 
 **Correction**
 

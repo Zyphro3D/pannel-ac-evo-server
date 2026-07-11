@@ -761,41 +761,41 @@
               <div class="dc-channel-head">{{ _('Channel principal') }}</div>
               <div class="dc-field">
                 <div class="dc-field-label"><strong>{{ _('Serveur démarré') }}</strong><div class="dc-vars"><code class="dc-var">{config}</code><code class="dc-var">{mode}</code><code class="dc-var">{circuit}</code></div></div>
-                <input class="form-control" type="text" name="DISCORD_MSG_SERVER_START" value="{{ env_values.get('DISCORD_MSG_SERVER_START', '') }}" placeholder="🏁 Serveur démarré">
+                <input class="form-control" type="text" name="DISCORD_MSG_SERVER_START" value="{{ env_values.get('DISCORD_MSG_SERVER_START', '') }}" placeholder="{{ _('🏁 Serveur démarré') }}">
               </div>
               <div class="dc-field">
                 <div class="dc-field-label"><strong>{{ _('Serveur arrêté') }}</strong><div class="dc-vars"><code class="dc-var">{config}</code></div></div>
-                <input class="form-control" type="text" name="DISCORD_MSG_SERVER_STOP" value="{{ env_values.get('DISCORD_MSG_SERVER_STOP', '') }}" placeholder="⏹ Serveur arrêté">
+                <input class="form-control" type="text" name="DISCORD_MSG_SERVER_STOP" value="{{ env_values.get('DISCORD_MSG_SERVER_STOP', '') }}" placeholder="{{ _('⏹ Serveur arrêté') }}">
               </div>
               <div class="dc-field">
                 <div class="dc-field-label"><strong>{{ _('Crash détecté') }}</strong><div class="dc-vars"><code class="dc-var">{config}</code></div></div>
-                <input class="form-control" type="text" name="DISCORD_MSG_SERVER_CRASH" value="{{ env_values.get('DISCORD_MSG_SERVER_CRASH', '') }}" placeholder="💥 Crash détecté — Relance auto">
+                <input class="form-control" type="text" name="DISCORD_MSG_SERVER_CRASH" value="{{ env_values.get('DISCORD_MSG_SERVER_CRASH', '') }}" placeholder="{{ _('💥 Crash détecté — Relance auto') }}">
               </div>
             </div>
             <div>
               <div class="dc-channel-head">{{ _('Channel pilotes') }}</div>
               <div class="dc-field">
                 <div class="dc-field-label"><strong>{{ _('Connexion joueur') }}</strong><div class="dc-vars"><code class="dc-var">{name}</code><code class="dc-var">{num}</code><code class="dc-var">{car}</code><code class="dc-var">{steam_id}</code></div></div>
-                <input class="form-control" type="text" name="DISCORD_MSG_PLAYER_JOIN" value="{{ env_values.get('DISCORD_MSG_PLAYER_JOIN', '') }}" placeholder="🟢 {num} — {name}">
+                <input class="form-control" type="text" name="DISCORD_MSG_PLAYER_JOIN" value="{{ env_values.get('DISCORD_MSG_PLAYER_JOIN', '') }}" placeholder="{{ _('🟢 {num} — {name}') }}">
               </div>
               <div class="dc-field">
                 <div class="dc-field-label"><strong>{{ _('Déconnexion joueur') }}</strong><div class="dc-vars"><code class="dc-var">{name}</code><code class="dc-var">{duration}</code><code class="dc-var">{steam_id}</code></div></div>
-                <input class="form-control" type="text" name="DISCORD_MSG_PLAYER_DISCONNECT" value="{{ env_values.get('DISCORD_MSG_PLAYER_DISCONNECT', '') }}" placeholder="🔴 {name}">
+                <input class="form-control" type="text" name="DISCORD_MSG_PLAYER_DISCONNECT" value="{{ env_values.get('DISCORD_MSG_PLAYER_DISCONNECT', '') }}" placeholder="{{ _('🔴 {name}') }}">
               </div>
               <div class="dc-field">
                 <div class="dc-field-label"><strong>{{ _('Changement de véhicule') }}</strong><div class="dc-vars"><code class="dc-var">{name}</code><code class="dc-var">{num}</code><code class="dc-var">{old_car}</code><code class="dc-var">{new_car}</code></div></div>
-                <input class="form-control" type="text" name="DISCORD_MSG_VEHICLE_CHANGE" value="{{ env_values.get('DISCORD_MSG_VEHICLE_CHANGE', '') }}" placeholder="🔄 {name} — Changement de véhicule">
+                <input class="form-control" type="text" name="DISCORD_MSG_VEHICLE_CHANGE" value="{{ env_values.get('DISCORD_MSG_VEHICLE_CHANGE', '') }}" placeholder="{{ _('🔄 {name} — Changement de véhicule') }}">
               </div>
             </div>
             <div>
               <div class="dc-channel-head">{{ _('Channel course') }}</div>
               <div class="dc-field">
                 <div class="dc-field-label"><strong>{{ _('Meilleur tour du serveur') }}</strong><div class="dc-vars"><code class="dc-var">{name}</code><code class="dc-var">{lap}</code><code class="dc-var">{car}</code></div></div>
-                <input class="form-control" type="text" name="DISCORD_MSG_BEST_LAP" value="{{ env_values.get('DISCORD_MSG_BEST_LAP', '') }}" placeholder="⏱ Nouveau meilleur tour du serveur">
+                <input class="form-control" type="text" name="DISCORD_MSG_BEST_LAP" value="{{ env_values.get('DISCORD_MSG_BEST_LAP', '') }}" placeholder="{{ _('⏱ Nouveau meilleur tour du serveur') }}">
               </div>
               <div class="dc-field">
                 <div class="dc-field-label"><strong>{{ _('Action admin') }}</strong><div class="dc-vars"><code class="dc-var">{action}</code><code class="dc-var">{target}</code><code class="dc-var">{admin}</code><code class="dc-var">{detail}</code></div></div>
-                <input class="form-control" type="text" name="DISCORD_MSG_ADMIN_ACTION" value="{{ env_values.get('DISCORD_MSG_ADMIN_ACTION', '') }}" placeholder="⚙️ {action} — {target}">
+                <input class="form-control" type="text" name="DISCORD_MSG_ADMIN_ACTION" value="{{ env_values.get('DISCORD_MSG_ADMIN_ACTION', '') }}" placeholder="{{ _('⚙️ {action} — {target}') }}">
               </div>
             </div>
           </div>

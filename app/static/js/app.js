@@ -551,6 +551,7 @@ function toggleCat(btn) {
 function filterCars(autoSelect = false) {
   const search = (document.getElementById('car-search')?.value || '').toLowerCase();
   const showSelected = document.getElementById('show-selected-only')?.checked || false;
+  const officialOnly = document.getElementById('show-official-only')?.checked || false;
   const minR = document.getElementById('pi-range-min');
   const maxR = document.getElementById('pi-range-max');
   const piMin = minR ? parseFloat(minR.value) : 0;
@@ -570,11 +571,12 @@ function filterCars(autoSelect = false) {
     const matchPi       = pi >= piMin && pi <= piMax;
     const matchSearch   = name.includes(search);
     const matchSelected = !showSelected || row.querySelector('.car-check')?.checked;
-    const visible = matchCat && matchPi && matchSearch && matchSelected;
+    const matchOfficial = !officialOnly || row.dataset.ismod !== '1';
+    const visible = matchCat && matchPi && matchSearch && matchSelected && matchOfficial;
     row.classList.toggle('hidden', !visible);
     if (autoSelect) {
       const cb = row.querySelector('.car-check');
-      if (cb) cb.checked = matchCat && matchPi; // sélection basée sur catégorie+PI uniquement (pas la recherche)
+      if (cb) cb.checked = matchCat && matchPi && matchOfficial; // sélection basée sur catégorie+PI+officiel (pas la recherche)
     }
   });
   updateSelectedCount();
@@ -725,7 +727,7 @@ async function startRotationCycle() {
     const r = await fetch('/api/rotation/start', { method: 'POST', headers: _csrfHeaders() });
     const d = await r.json();
     if (d.ok) {
-      showToast(I18N.serverStarted || 'Cycle démarré', 'success');
+      showToast(I18N.cycleStarted || 'Cycle démarré', 'success');
       [1000, 3000, 6000, 10000].forEach(ms => setTimeout(fetchStatus, ms));
     } else {
       showToast(d.error || I18N.error, 'error');
@@ -759,7 +761,7 @@ async function stopRotationCycle() {
     const r = await fetch('/api/server/stop', { method: 'POST', headers: _csrfHeaders() });
     const d = await r.json();
     if (d.ok) {
-      showToast(I18N.serverStopped || 'Cycle arrêté', 'success');
+      showToast(I18N.cycleStopped || 'Cycle arrêté', 'success');
       [1000, 3000].forEach(ms => setTimeout(fetchStatus, ms));
     } else {
       showToast(d.error || I18N.error, 'error');

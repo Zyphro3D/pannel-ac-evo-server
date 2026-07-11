@@ -32,7 +32,7 @@
           <input class="form-control" type="text" name="ingame_name"
                  required minlength="2" maxlength="30"
                  pattern="[A-Za-z0-9_\-.\s]{2,30}"
-                 placeholder="Ex: Jean-Pierre_Dupont"
+                 placeholder="{{ _('Ex: Jean-Pierre_Dupont') }}"
                  value="{{ request.form.get('ingame_name', '') }}">
         </div>
 

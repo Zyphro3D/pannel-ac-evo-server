@@ -602,6 +602,10 @@
             <input type="checkbox" id="show-selected-only" class="switch" onchange="filterCars()">
             <span>{{ _('Sélectionnés seulement') }}</span>
           </label>
+          <label class="toggle-label">
+            <input type="checkbox" id="show-official-only" class="switch" onchange="filterCars()">
+            <span>{{ _('Véhicules officiels uniquement') }}</span>
+          </label>
           <button class="btn btn-secondary" id="cars-select-all-btn">{{ _('Tout sélectionner') }}</button>
           <button class="btn btn-secondary" id="cars-deselect-all-btn">{{ _('Tout désélectionner') }}</button>
         </div>
@@ -635,7 +639,7 @@
               <th></th>
               <th>{{ _('Véhicule') }}</th>
               <th>{{ _('Type') }}</th>
-              <th class="pi-sort-th car-pi-th" id="pi-sort-th" title="Trier par PI">PI <span class="pi-sort-icon" id="pi-sort-icon">⇅</span></th>
+              <th class="pi-sort-th car-pi-th" id="pi-sort-th" title="{{ _('Trier par PI') }}">PI <span class="pi-sort-icon" id="pi-sort-icon">⇅</span></th>
               <th>{{ _('Ballast') }}</th>
               <th>{{ _('Restrictor') }}</th>
             </tr>
@@ -649,6 +653,7 @@
                 data-p1="{{ car.property_1_label }}"
                 data-p2="{{ car.property_2_label }}"
                 data-p3="{{ car.property_3_label }}"
+                data-ismod="{{ '1' if car.is_mod else '0' }}"
                 data-idx="{{ loop.index0 }}">
               <td>
                 <input type="checkbox" class="car-check" data-car="{{ car.name }}"
@@ -660,6 +665,9 @@
                   {{ parts[0] }}<small class="car-name-variant"> · {{ parts[1] }}</small>
                 {% else %}
                   {{ car.display_name }}
+                {% endif %}
+                {% if car.is_mod %}
+                  <span class="car-tag car-tag-mod">{{ _('MOD') }}</span>
                 {% endif %}
               </td>
               <td class="car-type">

@@ -66,10 +66,11 @@ def _loop(app):
 
 def _launch_event(app, event, db):
     try:
-        from app.services.server_config import build_config_from_event, save_event_config
+        from app.services.server_config import build_config_from_event, save_event_config, deploy_config
         from app.services.config_builder import build_launch_args
         from app.services.process_manager import start_server, stop_server, is_running
         from app.services import discord_notifier
+        from app.models import Server
 
         server_id = int(event.server_id or 1)
 
@@ -79,10 +80,21 @@ def _launch_event(app, event, db):
             stop_server(server_id)
             time.sleep(3)
 
+        # Ports et nom propres au serveur (multi-serveur), comme _do_start dans api.py
+        server = db.session.get(Server, server_id)
+        if server is None:
+            log.error("Auto-launch: serveur %d introuvable pour '%s'", server_id, event.title)
+            return
+
         # Construire et sauvegarder la config
         cfg         = build_config_from_event(event)
         config_name = save_event_config(event, cfg)
-        sc_b64, sd_b64 = build_launch_args(cfg)
+
+        # Déploie la config dans server-{id}/ avec les bons ports/ResultsPostUrl
+        deploy_config(config_name, server_id)
+
+        sc_b64, sd_b64 = build_launch_args(
+            cfg, tcp_listener=server.tcp_port, udp_listener=server.udp_port, server_name=server.name)
 
         result = start_server(sc_b64, sd_b64, config_name, auto_restart=True, server_id=server_id)
         if result["ok"]:
@@ -90,7 +102,8 @@ def _launch_event(app, event, db):
             db.session.commit()
             log.info("Auto-launch: '%s' lancé (PID %s, config %s)",
                      event.title, result.get("pid"), config_name)
-            discord_notifier.safe_notify(discord_notifier.notify_start, cfg, config_name, server_id=server_id)
+            discord_notifier.safe_notify(discord_notifier.notify_start, cfg, config_name,
+                                         server_id=server_id, server_name=server.name or "")
         else:
             log.error("Auto-launch: échec pour '%s' — %s", event.title, result.get("error"))
 

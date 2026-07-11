@@ -11,10 +11,10 @@ _MEDIA_ROOT = Path(__file__).parent.parent.parent / "media"
 from flask import Blueprint, render_template, redirect, url_for, request, flash, current_app
 from flask_babel import _, get_locale
 from sqlalchemy.orm import selectinload as _pub_selectinload
-from flask_login import current_user, login_user, login_required
+from flask_login import current_user, login_required
 from app import limiter
 
-from app.models import Driver, Event, EventRegistration, Server, SessionResult, EventStatus, RegStatus, DriverStatus
+from app.models import Driver, Event, EventRegistration, Server, SessionResult, EventStatus, RegStatus
 from app.routes.auth import _validate_password
 from app.services.database import db
 from app.services.process_manager import get_status, get_player_history
@@ -44,6 +44,7 @@ def _send_confirmation_email(driver):
 
 
 @public_bp.route("/")
+@limiter.limit("60 per minute")
 def index():
     servers = (Server.query
                .filter_by(is_enabled=True)

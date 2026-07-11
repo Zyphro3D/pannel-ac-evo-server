@@ -227,6 +227,10 @@
         <div class="cars-filters">
           <div class="cars-filters-top">
             <input type="text" id="ef-car-search" class="form-control" placeholder="{{ _('Rechercher...') }}" oninput="efApplyFilters()">
+            <label class="toggle-label">
+              <input type="checkbox" id="ef-official-only" class="switch" onchange="efApplyFilters(true)">
+              <span>{{ _('Véhicules officiels uniquement') }}</span>
+            </label>
             <button type="button" id="ef-select-all-btn" class="btn-secondary btn-sm">{{ _('Tout sélectionner') }}</button>
             <button type="button" id="ef-deselect-all-btn" class="btn-secondary btn-sm">{{ _('Tout désélectionner') }}</button>
           </div>
@@ -281,12 +285,18 @@
                   data-name="{{ car.display_name | lower }}"
                   data-pi="{{ car.performance_indicator | default(0) }}"
                   data-cats="{{ cats | join(' ') | lower }}"
+                  data-ismod="{{ '1' if car.is_mod else '0' }}"
                   data-car="{{ car.name }}">
                 <td>
                   <input type="checkbox" name="allowed_cars" value="{{ car.name }}" class="ef-car-check"
                          {% if car.name in allowed_list %}checked{% endif %}>
                 </td>
-                <td class="car-name">{{ car.display_name }}</td>
+                <td class="car-name">
+                  {{ car.display_name }}
+                  {% if car.is_mod %}
+                    <span class="car-tag car-tag-mod">{{ _('MOD') }}</span>
+                  {% endif %}
+                </td>
                 <td class="car-pi">{{ "%.0f"|format(car.performance_indicator) }}</td>
                 <td class="text-xs text-dim">{{ cats | join(' · ') }}</td>
                 <td><input type="number" class="form-control ef-car-ballast" value="{{ car_cfg.get('ballast', 0) }}" min="0" step="1"></td>
@@ -370,17 +380,19 @@ document.getElementById('ef-cat-filter-row')?.addEventListener('click', (e) => {
 
 function efApplyFilters(autoSelect = false) {
   const q = (document.getElementById('ef-car-search')?.value || '').toLowerCase();
+  const officialOnly = document.getElementById('ef-official-only')?.checked || false;
   document.querySelectorAll('#ef-cars-table .car-row').forEach(row => {
     const name    = row.dataset.name || '';
     const pi      = parseFloat(row.dataset.pi || 0);
     const cats    = row.dataset.cats || '';
-    const matchPi  = pi >= _piMin && pi <= _piMax;
-    const matchCat = _activeCat === 'all' || cats.includes(_activeCat.toLowerCase());
-    const show    = name.includes(q) && matchPi && matchCat;
+    const matchPi       = pi >= _piMin && pi <= _piMax;
+    const matchCat      = _activeCat === 'all' || cats.includes(_activeCat.toLowerCase());
+    const matchOfficial = !officialOnly || row.dataset.ismod !== '1';
+    const show    = name.includes(q) && matchPi && matchCat && matchOfficial;
     row.classList.toggle('hidden', !show);
     if (autoSelect) {
       const cb = row.querySelector('.ef-car-check');
-      if (cb) cb.checked = matchPi && matchCat;
+      if (cb) cb.checked = matchPi && matchCat && matchOfficial;
     }
   });
   efUpdateCount();

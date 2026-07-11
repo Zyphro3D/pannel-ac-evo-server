@@ -220,7 +220,7 @@ class EventRegistration(db.Model):
 
     id           = db.Column(db.Integer, primary_key=True)
     event_id     = db.Column(db.Integer, db.ForeignKey("event.id"),  nullable=False)
-    driver_id    = db.Column(db.Integer, db.ForeignKey("driver.id"), nullable=False)
+    driver_id    = db.Column(db.Integer, db.ForeignKey("driver.id"), nullable=False, index=True)
     assigned_car = db.Column(db.String(100), default="")  # car.name depuis cars.json
     car_display  = db.Column(db.String(150), default="")  # car.display_name
     status       = db.Column(db.String(20),  default=RegStatus.PENDING)  # pending/confirmed/rejected

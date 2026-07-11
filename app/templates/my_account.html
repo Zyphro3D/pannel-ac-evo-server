@@ -20,7 +20,7 @@
     <form method="post" action="{{ url_for('admin.my_account_email') }}" class="flex items-center gap-3 flex-wrap">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <input class="form-control" type="email" name="email" value="{{ current_user.email or '' }}"
-             placeholder="vous@exemple.com" style="max-width: 320px;">
+             placeholder="{{ _('vous@exemple.com') }}" style="max-width: 320px;">
       <button type="submit" class="btn-primary btn-sm">{{ _('Enregistrer') }}</button>
     </form>
   </section>

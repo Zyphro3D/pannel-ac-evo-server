@@ -186,12 +186,12 @@ function _esc(s) {
 }
 
 function _carLabel(entry) {
-  if (entry.car_display_name) return entry.car_display_name;
+  if (entry.car_display_name) return _esc(entry.car_display_name);
   const raw = entry.car_raw || '';
   if (!raw) return '—';
-  return raw.replace(/^ks_/, '').replace(/^preset_/, '')
+  return _esc(raw.replace(/^ks_/, '').replace(/^preset_/, '')
             .replace(/_mech_\d+$/, '').replace(/_/g, ' ')
-            .replace(/\b\w/g, c => c.toUpperCase());
+            .replace(/\b\w/g, c => c.toUpperCase()));
 }
 
 let _refreshTimer = null;

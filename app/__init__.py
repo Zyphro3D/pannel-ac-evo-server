@@ -295,7 +295,7 @@ def _register_blueprints(app):
     from app.routes.public          import public_bp
     from app.routes.events_admin    import events_admin_bp
     from app.routes.leaderboard     import leaderboard_bp
-    from app.routes.live            import live_bp, live_stream
+    from app.routes.live            import live_bp
     from app.routes.container_mgmt import container_mgmt_bp
 
     app.register_blueprint(auth_bp)
@@ -306,9 +306,8 @@ def _register_blueprints(app):
     app.register_blueprint(leaderboard_bp)
     app.register_blueprint(live_bp)
     app.register_blueprint(container_mgmt_bp)
-    # SSE endpoint can't carry CSRF tokens — exempt individually.
-    csrf.exempt(live_stream)
-    csrf.exempt(results_ingest)  # Webhook protégé par HMAC/réseau privé.
+    # Webhook protégé par HMAC/réseau privé, pas par CSRF (pas de session navigateur).
+    csrf.exempt(results_ingest)
 
 
 def _register_jinja(app):
@@ -453,6 +452,17 @@ def _register_request_hooks(app):
         except Exception:
             pass
         return {"system_warnings": []}
+
+    @app.context_processor
+    def _inject_env_notices():
+        from flask_login import current_user
+        try:
+            if current_user.is_authenticated and current_user.is_admin:
+                from app.routes.admin import get_pending_env_notices
+                return {"pending_env_notices": get_pending_env_notices()}
+        except Exception:
+            pass
+        return {"pending_env_notices": []}
 
 
 def _start_services(app):

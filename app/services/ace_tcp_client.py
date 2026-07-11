@@ -19,6 +19,8 @@ import threading
 import time
 import logging
 
+from config import DEFAULT_BOT_MSG_WELCOME, DEFAULT_BOT_MSG_DISCORD, DEFAULT_BOT_MSG_SITE
+
 log = logging.getLogger(__name__)
 
 # Per-server client state (keyed by server_id)
@@ -55,9 +57,9 @@ def _get_client(server_id: int) -> dict:
                 "deploy_mode":           "native",
                 "log_file":              "",
                 "container_name":        "ace-server",
-                "msg_welcome":           "Bienvenue {name} !",
-                "msg_discord":           "Rejoins le discord : {discord_url}",
-                "msg_site":              "Retrouve tes resultats et evenements sur : {site_url}",
+                "msg_welcome":           DEFAULT_BOT_MSG_WELCOME,
+                "msg_discord":           DEFAULT_BOT_MSG_DISCORD,
+                "msg_site":              DEFAULT_BOT_MSG_SITE,
             }
         return _clients[server_id]
 
@@ -357,15 +359,16 @@ def send_chat(text: str, server_id: int = 1) -> bool:
     """Envoie un message dans le tchat du jeu. Retourne True si envoyé."""
     c = _get_client(server_id)
     with c["lock"]:
-        if c["sock"] is None:
-            return False
-        try:
-            c["sock"].sendall(_build_chat(text))
-            log.info("ace_tcp_client: chat envoyé : %r", text)
-            sent = True
-        except Exception as e:
-            log.warning("ace_tcp_client: erreur envoi chat : %s", e)
-            sent = False
+        sock = c["sock"]
+    if sock is None:
+        return False
+    try:
+        sock.sendall(_build_chat(text))
+        log.info("ace_tcp_client: chat envoyé : %r", text)
+        sent = True
+    except Exception as e:
+        log.warning("ace_tcp_client: erreur envoi chat : %s", e)
+        sent = False
     if sent:
         ts = time.strftime("%H:%M:%S")
         with c["lb_lock"]:
@@ -742,9 +745,9 @@ def start(host: str, port: int, steam_id: str,
           car_model: str      = "preset_190_evo_ii",
           discord_url: str    = "",
           site_url: str       = "",
-          msg_welcome: str    = "Bienvenue {name} !",
-          msg_discord: str    = "Rejoins le discord : {discord_url}",
-          msg_site: str       = "Retrouve tes resultats et evenements sur : {site_url}",
+          msg_welcome: str    = DEFAULT_BOT_MSG_WELCOME,
+          msg_discord: str    = DEFAULT_BOT_MSG_DISCORD,
+          msg_site: str       = DEFAULT_BOT_MSG_SITE,
           deploy_mode: str    = "native",
           log_file: str       = "",
           container_name: str = "ace-server",
@@ -790,7 +793,9 @@ def elevate_admin(server_id: int = 1) -> str | None:
     Retourne None si ok, message d'erreur sinon.
     """
     c = _get_client(server_id)
-    if not c["connected"]:
+    with c["lock"]:
+        connected = c["connected"]
+    if not connected:
         return "Bot TCP non connecté"
     try:
         configs_dir, name = _get_active_config_name()
@@ -831,9 +836,9 @@ def start_for_server(srv, cfg: dict):
         server_name    = srv.name,
         discord_url    = cfg.get("DISCORD_INVITE_URL", ""),
         site_url       = cfg.get("PANEL_URL", ""),
-        msg_welcome    = cfg.get("ACE_BOT_MSG_WELCOME", "Bienvenue {name} !"),
-        msg_discord    = cfg.get("ACE_BOT_MSG_DISCORD", "Rejoins le discord : {discord_url}"),
-        msg_site       = cfg.get("ACE_BOT_MSG_SITE",    "Retrouve tes resultats et evenements sur : {site_url}"),
+        msg_welcome    = cfg.get("ACE_BOT_MSG_WELCOME", DEFAULT_BOT_MSG_WELCOME),
+        msg_discord    = cfg.get("ACE_BOT_MSG_DISCORD", DEFAULT_BOT_MSG_DISCORD),
+        msg_site       = cfg.get("ACE_BOT_MSG_SITE",    DEFAULT_BOT_MSG_SITE),
         deploy_mode    = _DEPLOY_MODE,
         log_file       = str(_log_file(srv.id)),
         container_name = srv.container_name,

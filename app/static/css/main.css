@@ -2440,6 +2440,7 @@ body::before {
 .car-tag-modern  { background: rgba(148,163,184,.1);  color: #94a3b8; }
 .car-tag-vintage { background: rgba(180,140,80,.12);  color: #c9a85c; }
 .car-tag-yt      { background: rgba(148,163,184,.1);  color: #94a3b8; }
+.car-tag-mod     { background: rgba(237,28,36,.13);   color: #f08a8a; }
 .car-ballast, .car-restrictor {
   width: 60px; background: var(--surface2); border: 1px solid var(--border);
   border-radius: var(--radius-sm); color: var(--text); padding: 2px 6px;

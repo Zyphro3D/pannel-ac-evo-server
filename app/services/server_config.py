@@ -35,9 +35,22 @@ def _runtime_dir(server_id: int) -> Path:
     return d
 
 
+def _results_post_url(server_id: int) -> str:
+    """URL du webhook d'ingestion de résultats, avec le server_id pour que le
+    panel sache quel serveur a envoyé le résultat (cf. api.py:results_ingest)."""
+    import os as _os
+    port       = _os.environ.get("PANEL_PORT", "4300")
+    deploy     = _os.environ.get("DEPLOY_MODE", "native")
+    panel_host = "panel" if deploy == "docker_split" else "127.0.0.1"
+    return f"http://{panel_host}:{port}/api/results/ingest?server_id={server_id}"
+
+
 def deploy_config(config_name: str, server_id: int) -> None:
     """Copie config_name depuis la bibliothèque partagée vers server-{id}/,
-    en injectant TcpPort/UdpPort/HttpPort propres à ce serveur."""
+    en injectant TcpPort/UdpPort/HttpPort/ResultsPostUrl propres à ce serveur."""
+    if not _valid_config_name(config_name):
+        log.warning("deploy_config: nom de config invalide refusé : %r", config_name)
+        return
     base = _configs_base()
     src  = base / config_name
     if not src.exists():
@@ -47,12 +60,13 @@ def deploy_config(config_name: str, server_id: int) -> None:
     runtime.mkdir(parents=True, exist_ok=True)
     dst  = runtime / config_name
     data = json.loads(src.read_text(encoding="utf-8"))
+    data.setdefault("Server", {})["ResultsPostUrl"] = _results_post_url(server_id)
     try:
         from app.models import Server
         from app.services.database import db
         srv = db.session.get(Server, server_id)
         if srv:
-            data.setdefault("Server", {}).update({
+            data["Server"].update({
                 "TcpPort":  srv.tcp_port,
                 "UdpPort":  srv.udp_port,
                 "HttpPort": srv.http_port,
@@ -405,6 +419,7 @@ def get_running_server_info(server_id: int = 1) -> dict | None:
 
 def _car_dict(car: dict, selected: bool, ballast: float, restrictor: float) -> dict:
     """Construit le dict complet d'une voiture (clés camelCase + snake_case pour ACE EVO)."""
+    is_mod = bool(car.get("is_mod", False))
     return {
         "is_selected": selected,   "IsSelected": selected,
         "ballast": ballast,        "Ballast": ballast,
@@ -414,6 +429,7 @@ def _car_dict(car: dict, selected: bool, ballast: float, restrictor: float) -> d
         "property_1": car.get("property_1"), "P1": car.get("property_1"),
         "property_2": car.get("property_2"), "P2": car.get("property_2"),
         "property_3": car.get("property_3"), "P3": car.get("property_3"),
+        "is_mod": is_mod, "IsMod": is_mod, "IsModText": car.get("is_mod_text", ""),
         "name": car["name"], "display_name": car["display_name"],
     }
 
@@ -543,7 +559,7 @@ def apply_server_patch(patch: dict, is_superadmin: bool = False) -> dict:
     event_fields = {
         "SelectedSessionTypeValue", "SelectedWeatherTypeValue",
         "SelectedWeatherBehaviorValue", "SelectedInitialGripValue",
-        "SelectedTrackValue", "ShowOnlySelected",
+        "SelectedTrackValue", "ShowOnlySelected", "ShowOnlyOfficial",
     }
 
     for key, value in patch.items():
@@ -617,9 +633,6 @@ def load_events(mode: str = "practice") -> list:
 
 def _default_config() -> dict:
     import os as _os
-    _port       = _os.environ.get("PANEL_PORT", "4300")
-    _deploy     = _os.environ.get("DEPLOY_MODE", "native")
-    _panel_host = "panel" if _deploy == "docker_split" else "127.0.0.1"
 
     def _env_int(key, default):
         val = _os.environ.get(key, "").strip()
@@ -643,7 +656,7 @@ def _default_config() -> dict:
             "SpectatorPassword": "",
             "AdminPassword":  _os.environ.get("SERVER_ADMIN_PASSWORD",  ""),
             "EntryListUrl": "",
-            "ResultsPostUrl": f"http://{_panel_host}:{_port}/api/results/ingest",
+            "ResultsPostUrl": _results_post_url(1),
             "EntryListPath":  _os.environ.get("SERVER_ENTRY_LIST_PATH", ""),
             "ResultsPath":    _os.environ.get("SERVER_RESULTS_PATH",    ""),
         },
@@ -655,6 +668,7 @@ def _default_config() -> dict:
             "SelectedTrackValue": "brands_hatch|GP|GP Time Attack|3916",
             "Cars": [],
             "ShowOnlySelected": False,
+            "ShowOnlyOfficial": False,
         },
         "Sessions": {
             "PracticeSession": {
