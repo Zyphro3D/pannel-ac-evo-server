@@ -5,7 +5,7 @@
 <h1 align="center">AC EVO Server Panel</h1>
 
 <p align="center">
-  <img src="https://img.shields.io/github/license/Zyphro3D/pannel-ac-evo-server" alt="Licence">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/licence-CC%20BY--NC%204.0-lightgrey" alt="Licence"></a>
   <img src="https://img.shields.io/github/v/release/Zyphro3D/pannel-ac-evo-server" alt="Dernière release">
   <img src="https://img.shields.io/github/last-commit/Zyphro3D/pannel-ac-evo-server" alt="Dernier commit">
   <img src="https://img.shields.io/github/issues/Zyphro3D/pannel-ac-evo-server" alt="Issues ouvertes">
