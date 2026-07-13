@@ -179,7 +179,8 @@ def timing_state():
 def bot_elevate_admin():
     """Envoie \\admin <password> au serveur via le bot TCP, même si ACE_BOT_IS_ADMIN=false."""
     from app.services.ace_tcp_client import elevate_admin
-    err = elevate_admin()
+    from app.services.server_config import _current_server_id
+    err = elevate_admin(_current_server_id())
     if err:
         return jsonify({"ok": False, "error": err}), 400
     return jsonify({"ok": True})

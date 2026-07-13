@@ -133,6 +133,14 @@
                      placeholder="{{ _('Valeur par défaut') }}">
             </label>
             {% endfor %}
+            <label class="settings-field">
+              <span>
+                <strong>LAP_HISTORY_RETENTION_MONTHS</strong>
+                {% if 'LAP_HISTORY_RETENTION_MONTHS' in env_descs %}<em>{{ env_descs['LAP_HISTORY_RETENTION_MONTHS'] }}</em>{% endif %}
+              </span>
+              <input class="form-control" type="number" min="1" name="LAP_HISTORY_RETENTION_MONTHS"
+                     value="{{ env_values.get('LAP_HISTORY_RETENTION_MONTHS', '6') }}">
+            </label>
           </div>
           <button type="submit" class="btn btn-primary settings-save-btn">{{ _('Enregistrer les modifications') }}</button>
         </form>

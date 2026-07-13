@@ -94,6 +94,9 @@ class Config:
     # ── Fuseau horaire ────────────────────────────────────────────────────────
     PANEL_TIMEZONE = os.environ.get("PANEL_TIMEZONE", "Europe/Paris")
 
+    # ── Historique des tours en direct ──────────────────────────────────────
+    LAP_HISTORY_RETENTION_MONTHS = os.environ.get("LAP_HISTORY_RETENTION_MONTHS", "6")
+
     # ── Personnalisation du panel ─────────────────────────────────────────────
     PANEL_TITLE      = os.environ.get("PANEL_TITLE",      "AC EVO Panel")
     PANEL_BANNER_IMG = os.environ.get("PANEL_BANNER_IMG", "")   # nom de fichier dans media/banner/

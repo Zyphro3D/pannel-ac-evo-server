@@ -14,7 +14,7 @@ from sqlalchemy.orm import selectinload as _pub_selectinload
 from flask_login import current_user, login_required
 from app import limiter
 
-from app.models import Driver, Event, EventRegistration, Server, SessionResult, EventStatus, RegStatus
+from app.models import Driver, Event, EventRegistration, Server, SessionResult, EventStatus, RegStatus, LapRecord, LapArchive
 from app.routes.auth import _validate_password
 from app.services.database import db
 from app.services.process_manager import get_status, get_player_history
@@ -294,6 +294,56 @@ def pilot_dashboard():
                            require_email_confirmation=_require_email_confirmation())
 
 
+def _fmt_lap_ms(ms: int) -> str:
+    minutes, rest = divmod(int(ms), 60000)
+    seconds, millis = divmod(rest, 1000)
+    return f"{minutes}:{seconds:02d}.{millis:03d}"
+
+
+def _track_label(track_value: str) -> str:
+    """Reprend la même convention d'affichage que get_running_server_info (server_config.py)."""
+    parts = track_value.split("|") if track_value else []
+    return f"{parts[0]} — {parts[1]}" if len(parts) >= 2 else (parts[0] if parts else "—")
+
+
+@public_bp.route("/pilot/history")
+@login_required
+def pilot_history():
+    home = url_for("public.pilot_dashboard") if current_user.is_pilot else url_for("admin.my_account")
+    if not current_user.is_pilot and not current_user.is_admin:
+        return redirect(url_for("admin.server"))
+    if not current_user.steam_id:
+        flash(_("Liez votre compte Steam pour accéder à votre historique de tours."), "warning")
+        return redirect(home)
+
+    from app.services.kspkg_reader import get_car_name
+
+    recent = (LapRecord.query
+              .filter_by(steam_id=current_user.steam_id)
+              .order_by(LapRecord.recorded_at.desc())
+              .limit(500)
+              .all())
+    archived = (LapArchive.query
+                .filter_by(steam_id=current_user.steam_id)
+                .order_by(LapArchive.period.desc())
+                .all())
+
+    for lap in recent:
+        lap.car_display   = get_car_name(lap.car)
+        lap.track_display = _track_label(lap.track_value)
+        lap.time_display  = _fmt_lap_ms(lap.lap_time_ms)
+    for arc in archived:
+        arc.track_display     = _track_label(arc.track_value)
+        arc.best_lap_display  = _fmt_lap_ms(arc.best_lap_ms)
+        arc.avg_lap_display   = _fmt_lap_ms(arc.avg_lap_ms)
+        arc.laps = _json.loads(arc.laps_json)
+        for entry in arc.laps:
+            entry["car_display"]  = get_car_name(entry.get("car", ""))
+            entry["time_display"] = _fmt_lap_ms(entry.get("t", 0))
+
+    return render_template("pilot_history.html", recent=recent, archived=archived)
+
+
 @public_bp.route("/pilot/events/<int:event_id>/register", methods=["POST"])
 @login_required
 def pilot_register(event_id):
@@ -330,7 +380,7 @@ def pilot_register(event_id):
 @public_bp.route("/results")
 @limiter.limit("60 per minute")
 def results():
-    from app.routes.leaderboard import build_circuits
+    from app.routes.leaderboard import build_circuit_overview
 
     initial_view = request.args.get("v", "overview")
     if initial_view not in ("overview", "results", "leaderboard"):
@@ -356,7 +406,7 @@ def results():
         banner = _MEDIA_ROOT / "circuits" / f"{track_slug}.webp"
         s["track_banner"] = f"circuits/{track_slug}.webp" if track_slug and banner.exists() else ""
 
-    circuits = build_circuits()
+    circuits = build_circuit_overview()
 
     return render_template("results.html",
                            sessions=sessions, groups=groups,

@@ -23,7 +23,7 @@ from pathlib import Path
 
 log = logging.getLogger(__name__)
 
-## Aligné sur le plus gros scan existant (leaderboard.py::build_circuits, jusqu'à 2000
+## Aligné sur le plus gros scan existant (leaderboard.py::_collect_best_by_track, jusqu'à 2000
 # lignes) : un cache plus petit que le scan réévince en boucle et re-parse à chaque hit.
 _MAX_PARSE_CACHE = 2000
 _parse_cache: OrderedDict[int, dict] = OrderedDict()

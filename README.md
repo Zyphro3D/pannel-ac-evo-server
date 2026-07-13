@@ -5,6 +5,14 @@
 <h1 align="center">AC EVO Server Panel</h1>
 
 <p align="center">
+  <img src="https://img.shields.io/github/license/Zyphro3D/pannel-ac-evo-server" alt="Licence">
+  <img src="https://img.shields.io/github/v/release/Zyphro3D/pannel-ac-evo-server" alt="Dernière release">
+  <img src="https://img.shields.io/github/last-commit/Zyphro3D/pannel-ac-evo-server" alt="Dernier commit">
+  <img src="https://img.shields.io/github/issues/Zyphro3D/pannel-ac-evo-server" alt="Issues ouvertes">
+  <img src="https://img.shields.io/github/stars/Zyphro3D/pannel-ac-evo-server" alt="Stars">
+</p>
+
+<p align="center">
   Interface web pour gérer un ou plusieurs serveurs dédiés Assetto Corsa EVO.<br>
   <strong>Déploiement Docker (Linux) — panel et serveur dans des containers séparés.</strong>
 </p>
@@ -14,6 +22,7 @@
   <a href="#configuration">Configuration</a> •
   <a href="#mise-à-jour">Mise à jour</a> •
   <a href="#changelog">Changelog</a> •
+  <a href="CONTRIBUTING.md">Contribuer</a> •
   <a href="https://ko-fi.com/zyphro3d">☕ Soutenir</a>
 </p>
 
@@ -59,48 +68,49 @@
 
 ## Fonctionnalités
 
-**Serveur de jeu**
-- Démarrage, arrêt et restart depuis l'interface — pas d'accès SSH nécessaire
-- Auto-restart watchdog (relance automatique en cas de crash)
-- Statut en temps réel : joueurs connectés, uptime, métriques CPU/RAM du container, logs en direct
-- Support multi-serveurs : chaque serveur ACE EVO tourne dans son propre container Docker
-- Création de serveurs supplémentaires depuis le panel (superadmin)
-- Sélecteur de serveur actif dans la navbar
+Organisées par niveau d'accès — chaque rôle hérite des fonctionnalités des rôles en dessous.
 
-**Configuration**
+**🌍 Public — aucun compte requis**
+- Page d'accueil : serveurs en direct (joueurs connectés, circuit en cours), calendrier des prochains événements, derniers résultats
+- Timing en direct par serveur, tours invalides signalés en temps réel (track limits, split manqué)
+- Réactions emoji vers le chat in-game depuis la page timing
+- Résultats de session détaillés : drapeaux, meilleurs tours, secteurs color-codés, gap au leader
+- Classement par circuit avec filtres (véhicule, catégorie, plage de performance/PI) et meilleur temps mis en avant
+- Inscription pilote (validation manuelle ensuite par un admin), confirmation d'email optionnelle
+- Interface multilingue : FR / EN / ES / DE / IT
+
+**🏎️ Pilote — compte connecté**
+- Tableau de bord : inscriptions à venir/passées, événements privés disponibles, désinscription tant que l'inscription est en attente
+- **Historique personnel des tours** : chaque tour roulé est enregistré en direct (temps, voiture, circuit), sans attendre la fin d'une session — au-delà d'une rétention configurable, l'historique est condensé en résumés mensuels plutôt que supprimé
+- Liaison de compte Steam (identité vérifiée, requise pour l'historique des tours)
+
+**🛠️ Admin**
+- Démarrage / arrêt / restart du serveur, watchdog auto-restart, logs et métriques CPU/RAM en direct
 - Éditeur de config JSON complet : circuit, météo, sessions (Practice / Qualifying / Warmup / Race), voitures
-- Banque de véhicules (94 voitures, catégories Road/Race/Track, filtres, images)
-- Banque de circuits (36 circuits avec layout et longueur, images)
-- Roulement de configs avec file d'attente et glisser-déposer, option cycle
-
-**Événements**
-- Calendrier mensuel avec création/édition d'événements (publics ou privés)
-- Lancement automatique du serveur à l'heure prévue, arrêt après la dernière session
-- Inscriptions pilotes avec validation manuelle et génération de l'`entry_list.json`
+- Banque de véhicules (97 voitures, catégories Road/Race/Track, filtres, images) et banque de circuits (36 circuits, layout, longueur, images)
+- Roulement de configs avec file d'attente, glisser-déposer, option cycle
+- Gestion complète des événements (création, publication, inscriptions, génération de l'`entry_list.json`) et des comptes pilotes (approbation/rejet)
 - Emails transactionnels (approbation, rejet, rappel)
+- Modération in-game depuis le panel : chat admin, kick, envoi aux stands, mute, pénalités, lest/restricteur, saut de session
+- Élévation du bot du panel en admin in-game à la demande, redémarrage du container du serveur de jeu
 
-**Live & Résultats**
-- Timing en direct mis à jour toutes les 15 secondes via le bot TCP du serveur
-- Tours invalides signalés en temps réel (track limits, split manqué)
-- Import automatique des résultats en fin de session (webhook)
-- Classement détaillé : drapeaux, meilleurs tours, secteurs color-codés, gap au leader
-- Leaderboard global de la saison par voiture
+**👑 Superadmin**
+- Toutes les variables `.env` éditables depuis l'interface, sans accès SSH
+- Gestion des comptes admin/superadmin (création, désactivation, suppression)
+- Multi-serveurs : création, activation/désactivation, suppression de serveurs — chacun dans son propre container Docker, avec son propre bot et son propre watchdog
+- **Mise à jour du serveur de jeu ACE EVO depuis l'interface** (SteamCMD, identifiants + code Steam Guard, suivi de progression en direct) — distincte de la mise à jour du panel lui-même
+- Upload des images véhicules/circuits
 
-**Interface**
-- Multilingue : FR / EN / ES / DE / IT
-- Page d'accueil publique : serveurs en direct, événements à venir, derniers résultats
+**🔒 Sécurité**
+- CSRF, rate limiting, protection anti brute-force sur le login (blocage IP après 5 échecs), HSTS, CSP, X-Frame-Options
+
+**🔔 Notifications Discord**
+- Webhooks configurables par serveur : démarrage/arrêt/crash, connexions joueurs, meilleur tour, actions admin — avec fallback sur le webhook global
+
+**🎨 Interface**
+- UI Tailwind CSS v3 + HTMX + Alpine.js — actions sans rechargement, toasts temps réel, transitions fluides
 - Fuseau horaire configurable, statut rafraîchi toutes les 5 s
 - Footer avec version, git hash et liens GitHub
-- UI v2 : Tailwind CSS v3 + HTMX + Alpine.js — actions sans rechargement, toasts temps réel, transitions fluides
-
-**Sécurité**
-- CSRF, rate limiting, HSTS, CSP, X-Frame-Options
-- Deux niveaux admin : `admin` et `superadmin`
-- Toutes les variables `.env` éditables depuis l'interface sans accès SSH
-
-**Notifications Discord**
-- Webhooks configurables : démarrage/arrêt/crash, connexions joueurs, meilleur tour, actions admin
-- Webhook par serveur (multi-serveur) avec fallback sur le webhook global
 
 ---
 
@@ -273,6 +283,8 @@ Référence complète des variables `.env` (voir aussi `.env.example`) :
 | `SESSION_COOKIE_SECURE` | `true` derrière HTTPS, `false` en HTTP direct | `true` |
 | `PANEL_PORT` | Port d'écoute du panel | `4300` |
 | `PANEL_GITHUB_URL` | URL GitHub du projet (affichée dans le footer) | dépôt officiel |
+| `RESULTS_INGEST_SECRET` | Secret HMAC du webhook résultats (`/api/results/ingest`) — sans lui, l'endpoint n'accepte que les réseaux privés/locaux | — |
+| `LAP_HISTORY_RETENTION_MONTHS` | Nombre de mois de conservation détaillée de l'historique des tours pilote, au-delà archivé en résumé mensuel | `6` |
 
 ### Serveur de jeu
 
@@ -350,6 +362,8 @@ Le `.env` et la base de données ne sont jamais modifiés par une mise à jour. 
 > **Personnalisations Docker locales** : ne modifiez pas `docker-compose.yml` directement — vos changements créeraient des conflits à chaque `git pull`. Utilisez `docker-compose.override.yml` à la place (Docker Compose le fusionne automatiquement). Notez que le panel régénère ce fichier pour la section `services` des serveurs additionnels ; ajoutez vos surcharges dans une section séparée.
 
 > **Configs serveur** : les fichiers `aceserver/configs/*.json` sont créés et gérés par le panel, ils ne sont pas versionnés dans git. Un `git pull` ne les modifiera jamais.
+
+> **Ceci met à jour le panel, pas le serveur de jeu.** Pour mettre à jour ACE EVO Server lui-même (nouveau build Steam), utilisez le bouton de mise à jour dans l'interface (superadmin) — il lance SteamCMD avec suivi de progression, sans passer par la ligne de commande.
 
 ---
 

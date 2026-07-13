@@ -220,8 +220,18 @@ function showToast(msg, type = 'success') {
 const _activeConfig = document.body.dataset.activeConfig || '';
 
 async function toggleAutoRestart(enabled) {
-  const chk = document.getElementById('chk-auto-restart');
-  if (!chk) return;
+  // Deux checkboxes possibles selon la page (barre de contrôle / widget statut) —
+  // ne jamais dépendre de la présence d'une seule des deux pour continuer.
+  const checkboxes = ['chk-auto-restart', 'srv-auto-restart-card']
+    .map(id => document.getElementById(id))
+    .filter(Boolean);
+  const label = document.getElementById('srv-auto-restart-label');
+
+  const syncUI = (value) => {
+    checkboxes.forEach(chk => { chk.checked = value; });
+    if (label) label.textContent = value ? I18N.autoRestartOn : I18N.autoRestartOff;
+  };
+
   try {
     const r = await fetch('/api/server/auto-restart', {
       method: 'POST',
@@ -230,13 +240,14 @@ async function toggleAutoRestart(enabled) {
     });
     const d = await r.json();
     if (!d.ok) {
-      chk.checked = !enabled;
+      syncUI(!enabled);
       showToast(I18N.error + ': ' + (d.error || ''), 'error');
     } else {
+      syncUI(enabled);
       showToast(enabled ? I18N.autoRestartOn : I18N.autoRestartOff, 'success');
     }
   } catch (_) {
-    chk.checked = !enabled;
+    syncUI(!enabled);
     showToast(I18N.networkError, 'error');
   }
 }

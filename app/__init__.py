@@ -220,7 +220,10 @@ def _sync_track_meta(db):
             return _re.sub(r"[^a-z0-9]+", "_", s.lower()).strip("_")
 
         # Collect tracks from the full events catalogue (practice + race)
-        # Key: (track_name, layout) → (track_value, length_m)  — first seen wins
+        # Clé de dédup : (slug track, slug layout) normalisé — évite les doublons quand
+        # une config a une casse/format différent du catalogue pour le même circuit
+        # réel (ex: config "brands_hatch" vs catalogue "Brands Hatch"). Le nom du
+        # catalogue est toujours préféré (traité en premier, "first seen wins").
         track_map: dict = {}
         for mode in ("practice", "race"):
             try:
@@ -235,8 +238,9 @@ def _sync_track_meta(db):
                 if not tn:
                     continue
                 tv = f"{tn}|{ly}|{en}|{lm}" if lm else f"{tn}|{ly}|{en}"
-                if (tn, ly) not in track_map:
-                    track_map[(tn, ly)] = (tv, lm)
+                norm_key = (_slug_img(tn), _slug_img(ly))
+                if norm_key not in track_map:
+                    track_map[norm_key] = (tn, ly, tv, lm)
 
         # Also scan existing configs for custom tracks not in the events catalogue
         for cfg_path in _configs_dir.glob("*.json"):
@@ -249,17 +253,32 @@ def _sync_track_meta(db):
                 parts = tv.split("|")
                 tn = parts[0] if parts else ""
                 ly = parts[1] if len(parts) > 1 else ""
-                if tn and (tn, ly) not in track_map:
+                norm_key = (_slug_img(tn), _slug_img(ly))
+                if tn and norm_key not in track_map:
                     try:
                         lm = int(parts[3]) if len(parts) > 3 else None
                     except (ValueError, IndexError):
                         lm = None
-                    track_map[(tn, ly)] = (tv, lm)
+                    track_map[norm_key] = (tn, ly, tv, lm)
             except Exception:
                 continue
 
-        for (track_name, layout), (tv, length_m) in track_map.items():
-            if TrackMeta.query.filter_by(track_value=tv).first():
+        existing_by_norm = {
+            (_slug_img(t.track_name), _slug_img(t.layout)): t
+            for t in TrackMeta.query.all()
+        }
+
+        for (track_name, layout, tv, length_m) in track_map.values():
+            existing = existing_by_norm.get((_slug_img(track_name), _slug_img(layout)))
+            if existing:
+                if not existing.image_path:
+                    for candidate in (
+                        f"{_slug_img(track_name)}_{_slug_img(layout)}.webp",
+                        f"{_slug_img(track_name)}.webp",
+                    ):
+                        if (_media_circ / candidate).exists():
+                            existing.image_path = f"circuits/{candidate}"
+                            break
                 continue
             img = ""
             for candidate in (
@@ -530,8 +549,12 @@ def _start_services(app):
     from app.services.event_scheduler import init as init_scheduler
     init_scheduler(app)
 
+    from app.services.lap_archiver import init as init_lap_archiver
+    init_lap_archiver(app)
+
     if app.config.get("ACE_BOT_STEAM_ID", ""):
         from app.services import ace_tcp_client
+        ace_tcp_client.init_app(app)
         with app.app_context():
             from app.models import Server as _BotServer
             for _srv in _BotServer.query.filter_by(is_enabled=True).order_by(_BotServer.id).all():

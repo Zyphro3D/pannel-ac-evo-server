@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}{{ track.track_name }} — {{ panel_title }}{% endblock %}
+{% block content %}
+<div class="page-shell max-w-[1100px]">
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">{{ track.track_name }}</h1>
+      <p class="page-subtitle">
+        {{ track.layout }}
+        {% if track.length_m %} · {{ "%.2f"|format(track.length_m / 1000) }} km{% endif %}
+      </p>
+    </div>
+    <a href="{{ url_for('public.results', v='leaderboard') }}" class="btn-secondary btn-sm">{{ _('Retour') }}</a>
+  </div>
+
+  {# ── En-tête circuit : image + meilleur temps ── #}
+  <div class="card p-0 overflow-hidden mb-6">
+    <div class="relative aspect-[21/9] bg-surface">
+      {% if track.image_path %}
+      <img src="{{ url_for('serve_media', filename=track.image_path) }}"
+           alt="{{ track.track_name }}" class="w-full h-full object-cover">
+      {% else %}
+      <div class="w-full h-full flex items-center justify-center text-muted/40 font-bold text-2xl">
+        {{ track.track_name[:3].upper() }}
+      </div>
+      {% endif %}
+      {% if entries %}
+      <div class="absolute bottom-0 left-0 right-0 p-4"
+           style="background: linear-gradient(to top, rgba(6,9,20,0.85), transparent);">
+        <span class="text-xs uppercase tracking-wide text-dim">{{ _('Meilleur temps') }}</span>
+        <div class="flex items-baseline gap-3 flex-wrap">
+          <span class="text-2xl font-bold text-txt font-mono">{{ entries[0].time }}</span>
+          <span class="text-sm text-dim">{{ entries[0].driver }} — {{ entries[0].car }}</span>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  {# ── Filtres ── #}
+  <form class="flex flex-wrap items-center gap-2 mb-5"
+        hx-get="{{ url_for('leaderboard.circuit_detail', track_id=track.id) }}"
+        hx-trigger="change"
+        hx-target="#circuit-results"
+        hx-swap="innerHTML">
+    <div class="w-44">
+      <select name="cat" class="form-control">
+        <option value="">{{ _('Toutes catégories') }}</option>
+        {% for cat in filter_options.categories %}
+        <option value="{{ cat }}" {% if category == cat %}selected{% endif %}>{{ _(cat) }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="w-56">
+      <select name="car" class="form-control">
+        <option value="">{{ _('Tous véhicules') }}</option>
+        {% for c in filter_options.cars %}
+        <option value="{{ c }}" {% if car == c %}selected{% endif %}>{{ c }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="w-24">
+      <input type="number" name="pi_min" value="{{ pi_min or '' }}" placeholder="{{ _('PI min') }}"
+             class="form-control">
+    </div>
+    <div class="w-24">
+      <input type="number" name="pi_max" value="{{ pi_max or '' }}" placeholder="{{ _('PI max') }}"
+             class="form-control">
+    </div>
+    {% if car or category or pi_min or pi_max %}
+    <a href="{{ url_for('leaderboard.circuit_detail', track_id=track.id) }}" class="btn-secondary btn-sm">{{ _('Réinitialiser') }}</a>
+    {% endif %}
+  </form>
+
+  {# ── Résultats ── #}
+  <div class="card">
+    <div id="circuit-results">
+      {% include "_partials/circuit_results_table.html" %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

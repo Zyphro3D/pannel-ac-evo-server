@@ -126,6 +126,13 @@ textarea { resize: vertical; }
   overflow: hidden;
 }
 .card + .card { margin-top: 16px; }
+/* Neutralise la marge ci-dessus quand .card est utilisée comme item de grille
+   (grilles de circuits/véhicules/sessions) — la règle n'a de sens que pour des
+   cartes empilées verticalement, pas pour un élément de grid dont l'espacement
+   est déjà géré par `gap`. Sans ça, la 1re carte de chaque ligne (sans .card
+   précédente dans le DOM) n'a pas la marge, décalant son alignement vertical
+   par rapport aux autres cartes de la même ligne. */
+.grid > .card + .card { margin-top: 0; }
 .card > .card-header {
   padding: 14px 20px;
   border-bottom: 1px solid var(--border);
@@ -1285,125 +1292,6 @@ button.htmx-request,
 .icon-run::before   { content: '▶'; }
 
 /* ─── Leaderboard page ───────────────────────────────────────── */
-.lb-grid { display: flex; flex-direction: column; gap: 14px; }
-.lb-card {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
-  transition: border-color 0.2s;
-}
-.lb-card:hover { border-color: var(--border-light); }
-.lb-card-header {
-  display: flex;
-  align-items: center;
-  gap: 13px;
-  padding: 14px 16px;
-  cursor: pointer;
-  user-select: none;
-  transition: background 0.15s;
-}
-.lb-card.open .lb-card-header { border-bottom: 1px solid var(--border); }
-.lb-card-header:hover { background: var(--bg-hover); }
-.lb-map {
-  position: relative;
-  width: 54px; height: 34px;
-  flex-shrink: 0;
-  border-radius: 6px;
-  overflow: hidden;
-  background: linear-gradient(135deg, var(--bg-card), var(--bg));
-  border: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.lb-map svg { width: 90%; height: 90%; color: var(--dim); }
-.lb-circuit-name {
-  flex: 1;
-  min-width: 0;
-  font-family: 'Barlow Condensed', var(--condensed);
-  font-weight: 800;
-  text-transform: uppercase;
-  font-size: 1.1rem;
-  letter-spacing: 0.02em;
-  color: #fff;
-}
-.lb-card-meta { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
-.lb-count { font-size: 0.78rem; color: var(--dim); }
-.lb-expand-icon { color: var(--dim); font-size: 0.8rem; transition: transform .2s; }
-.lb-card.open .lb-expand-icon { transform: rotate(90deg); }
-.lb-detail { display: none; }
-.lb-card.open .lb-detail { display: block; }
-.lb-best {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-  padding: 13px 18px;
-  background: rgba(224,53,53,0.04);
-  border-bottom: 1px solid var(--border);
-}
-.lb-best-block { display: flex; flex-direction: column; gap: 2px; flex-shrink: 0; }
-.lb-best-label {
-  font-size: 0.6rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.09em;
-  color: var(--accent);
-}
-.lb-best-time {
-  font-family: var(--mono);
-  font-size: 1.45rem;
-  font-weight: 700;
-  color: #fff;
-  line-height: 1;
-}
-.lb-best-driver { font-weight: 700; font-size: 0.95rem; color: var(--text); }
-.lb-best-car { font-size: 0.88rem; color: var(--dim); }
-.lb-best .lb-pi-badge { margin-left: auto; }
-.lb-pi-badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 5px;
-  font-family: var(--mono);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  border: 1px solid;
-  white-space: nowrap;
-}
-.lb-pi-s { background: rgba(239,68,68,0.12);  color: #f87171; border-color: rgba(239,68,68,0.35); }
-.lb-pi-a { background: rgba(245,158,11,0.12); color: #fbbf24; border-color: rgba(245,158,11,0.35); }
-.lb-pi-b { background: rgba(59,130,246,0.12); color: #60a5fa; border-color: rgba(59,130,246,0.35); }
-.lb-pi-c { background: rgba(16,185,129,0.12); color: #34d399; border-color: rgba(16,185,129,0.35); }
-.lb-pi-d { background: rgba(100,116,139,0.12); color: #94a3b8; border-color: rgba(100,116,139,0.35); }
-.lb-pi-x { background: rgba(139,92,246,0.12); color: #a78bfa; border-color: rgba(139,92,246,0.35); }
-.lb-detail { background: var(--bg); }
-.lb-cat { padding: 12px 18px 8px; }
-.lb-cat:not(:last-child) { border-bottom: 1px solid var(--border); }
-.lb-cat-title {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 0.72rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--dim);
-  margin-bottom: 10px;
-}
-.lb-cat-dot {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  background: var(--muted);
-  flex-shrink: 0;
-}
-.lb-cat-dot-s { background: #f87171; }
-.lb-cat-dot-a { background: #fbbf24; }
-.lb-cat-dot-b { background: #60a5fa; }
-.lb-cat-dot-c { background: #34d399; }
-.lb-cat-dot-d { background: #94a3b8; }
-.lb-cat-dot-x { background: #a78bfa; }
 .lb-table {
   width: 100%;
   border-collapse: collapse;
@@ -1431,6 +1319,12 @@ button.htmx-request,
 .lb-driver { font-weight: 600; color: var(--text); }
 .lb-row-gold .lb-driver { color: #fff; }
 .lb-car-name { color: var(--dim); }
+.lb-splits {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--dim);
+  white-space: nowrap;
+}
 .lb-time {
   font-family: var(--mono);
   font-weight: 600;
@@ -1491,6 +1385,61 @@ button.htmx-request,
   overflow: hidden;
   text-overflow: ellipsis;
   flex-shrink: 0;
+}
+
+/* ─── Badge "meilleur temps" sur les cartes circuit (page Résultats) ──── */
+.circuit-best-badge {
+  display: inline-block;
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 0.82rem;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+.circuit-best-badge-empty {
+  font-family: inherit;
+  font-weight: 500;
+  font-size: 0.72rem;
+  color: var(--dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.circuit-best-badge-sm { font-size: 0.72rem; }
+.circuit-best-badge-sm.circuit-best-badge-empty { font-size: 0.6rem; }
+
+.circuit-top1-box {
+  position: absolute;
+  top: 6px; left: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  padding: 3px 7px;
+  border-radius: 6px;
+  background: rgba(6,9,20,0.82);
+  border: 1px solid rgba(224,53,53,0.55);
+  backdrop-filter: blur(2px);
+  max-width: calc(100% - 12px);
+}
+.circuit-top1-label {
+  font-size: 0.52rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  line-height: 1;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.circuit-top1-time {
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 0.82rem;
+  color: #fff;
+  line-height: 1.15;
+  white-space: nowrap;
 }
 
 /* ─── Scrollbar ──────────────────────────────────────────────── */

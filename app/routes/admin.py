@@ -527,7 +527,7 @@ _ENV_SECTIONS = [
         "PANEL_TITLE", "PANEL_BANNER_IMG", "PANEL_LOGO_IMG", "PANEL_URL",
         "PANEL_TIMEZONE", "DEFAULT_LOCALE",
         "SECRET_KEY", "SESSION_COOKIE_SECURE", "RESULTS_INGEST_SECRET",
-        "REQUIRE_EMAIL_CONFIRMATION",
+        "REQUIRE_EMAIL_CONFIRMATION", "LAP_HISTORY_RETENTION_MONTHS",
     ]),
     ("accounts", _l("Comptes"), []),  # Géré via AdminAccount en base de données
     ("server", _l("Serveur"), [
@@ -561,6 +561,7 @@ _ENV_DESCS = {
     "SESSION_COOKIE_SECURE": _l("true si HTTPS, false si HTTP local"),
     "RESULTS_INGEST_SECRET": _l("Secret HMAC du webhook résultats (/api/results/ingest)"),
     "REQUIRE_EMAIL_CONFIRMATION": _l("Exige que les pilotes confirment leur email (lien envoyé à l'inscription) avant de pouvoir s'inscrire à un événement. Les comptes existants ne sont pas affectés rétroactivement."),
+    "LAP_HISTORY_RETENTION_MONTHS": _l("Nombre de mois de conservation détaillée de l'historique des tours (temps, voiture, circuit). Au-delà, archivé en résumé mensuel compact plutôt que supprimé."),
     "ACESERVER_HTTP_PORT": _l("Port HTTP de l'API du serveur (défaut 8081)"),
     "ACESERVER_TCP_HOST":  _l("Hôte TCP ACE EVO (défaut 127.0.0.1)"),
     "ACESERVER_TCP_PORT":  _l("Port TCP ACE EVO (défaut 9700)"),

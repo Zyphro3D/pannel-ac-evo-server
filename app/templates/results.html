@@ -87,16 +87,17 @@
         {% endfor %}
       </div>
 
-      {% if circuits %}
+      {% set _raced_circuits = circuits | selectattr('best') | list %}
+      {% if _raced_circuits %}
       <div class="block-head">
         <span class="block-head-title">{{ _('Aperçu du classement') }}</span>
         <a class="block-link" data-view="leaderboard">{{ _('Voir le classement complet →') }}</a>
       </div>
       <div class="lb-summary">
-        {% for c in circuits[:6] %}
+        {% for c in _raced_circuits[:6] %}
         <a class="lb-sum-row" data-view="leaderboard">
-          <span class="lb-sum-name">{{ c.name }}</span>
-          {% if c.best.pi %}<span class="lb-pi-badge lb-pi-{{ c.best.p1 | lower }}">PI {{ c.best.pi }}</span>{% endif %}
+          <span class="lb-sum-name">{{ c.track_meta.track_name }}</span>
+          {% if c.best.pi %}<span class="veh-badge veh-badge-{{ c.best.p1 | lower }}">{{ c.best.pi }}</span>{% endif %}
           <span class="lb-sum-time">{{ c.best.time }}</span>
           <span class="lb-sum-driver">{{ c.best.driver }}</span>
         </a>
@@ -133,35 +134,33 @@
               <span class="rg-chev">▴</span>
             </span>
           </div>
-          <div class="results-sessions-row">
+          <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-7 xl:grid-cols-8 gap-3">
             {% for s in g.sessions %}
             {% set p = s.parsed %}
             {% set winner = p.standings[0] if p.standings else none %}
             <a href="{{ url_for('public.result_detail', result_id=s.id) }}"
-               class="result-card"
-               style="border-top-color:{{ s.wkd_color }}{% if s.track_banner %};background-image:url('{{ url_for('serve_media', filename=s.track_banner) }}'){% endif %}">
-              <div class="result-card-top">
-                <span class="badge badge-info">{{ p.session_type | session_type_label or '—' }}</span>
-                <span class="result-card-date">{{ s.received_at | local_dt_short }}</span>
+               class="card p-0 overflow-hidden group block">
+              <div class="relative aspect-[4/3] bg-surface">
+                {% if s.track_banner %}
+                <img src="{{ url_for('serve_media', filename=s.track_banner) }}"
+                     alt="{{ p.track or '' }}" class="w-full h-full object-cover" loading="lazy">
+                {% else %}
+                <div class="w-full h-full flex items-center justify-center text-muted/40 font-bold text-sm">
+                  {{ (p.track or '—')[:3].upper() }}
+                </div>
+                {% endif %}
+                <span class="absolute top-1.5 right-1.5 badge badge-info text-[0.58rem]">{{ p.session_type | session_type_label or '—' }}</span>
+                {% if winner %}
+                <div class="circuit-top1-box">
+                  <span class="circuit-top1-label">{{ _('1er') }} · {{ winner.nickname }}</span>
+                  <span class="circuit-top1-time">{% if p.is_race %}{{ winner.race_time or winner.best_lap }}{% else %}{{ winner.best_lap }}{% endif %}</span>
+                </div>
+                {% endif %}
               </div>
-              <div class="result-card-track">{{ p.track or '—' }}</div>
-              {% if p.layout %}<div class="result-card-layout">{{ p.layout }}</div>{% endif %}
-              {% if winner %}
-              <div class="result-card-winner">
-                <span class="result-card-pos">1</span>
-                <span class="result-card-nick">{{ winner.nickname }}</span>
-                <span class="result-card-time">{% if p.is_race %}{{ winner.race_time or winner.best_lap }}{% else %}{{ winner.best_lap }}{% endif %}</span>
+              <div class="p-2">
+                <div class="text-xs font-medium text-txt truncate">{{ p.track or '—' }}</div>
+                <div class="text-[0.68rem] text-dim truncate">{{ s.received_at | local_dt_short }} · {{ p.standings|length }} {{ _('pilote(s)') }}</div>
               </div>
-              {% if p.standings|length > 1 %}
-              {% set p2 = p.standings[1] %}
-              <div class="result-card-winner mt-1">
-                <span class="result-card-pos text-dim text-sm">2</span>
-                <span class="result-card-nick text-dim">{{ p2.nickname }}</span>
-                <span class="result-card-time text-dim">{% if p.is_race %}{{ p2.race_time or p2.best_lap }}{% else %}{{ p2.best_lap }}{% endif %}</span>
-              </div>
-              {% endif %}
-              {% endif %}
-              <div class="result-card-footer">{{ p.standings|length }} {{ _('pilote(s)') }}</div>
             </a>
             {% endfor %}
           </div>
@@ -183,69 +182,39 @@
 
       {% if not circuits %}
       <div class="card p-7 text-center text-dim">
-        {{ _('Aucune session enregistrée pour le moment.') }}
+        {{ _('Aucun circuit configuré pour le moment.') }}
       </div>
       {% else %}
-      <div class="lb-grid">
+      <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-7 xl:grid-cols-8 gap-3">
         {% for c in circuits %}
-        <div class="lb-card">
-          <div class="lb-card-header">
-            <span class="lb-map">
-              <svg viewBox="0 0 60 40" fill="none" stroke="currentColor" stroke-width="2.4">
-                <path d="M8 28c-3-6 2-12 8-12s6 6 12 6 8-10 16-8 12 10 6 16-14 4-20 0-12-4-16-8-9 2-12 6Z"/>
-              </svg>
-            </span>
-            <span class="lb-circuit-name">{{ c.name }}</span>
-            <span class="lb-card-meta">
-              <span class="lb-count">{{ c.total }} {{ _('véhicule(s)') }}</span>
-              <span class="lb-expand-icon">▶</span>
-            </span>
-          </div>
-          <div class="lb-detail">
-            <div class="lb-best">
-              <div class="lb-best-block">
-                <span class="lb-best-label">{{ _('Meilleur temps') }}</span>
-                <span class="lb-best-time">{{ c.best.time }}</span>
-              </div>
-              <span class="lb-best-driver">{{ c.best.driver }}</span>
-              <span class="lb-best-car">{{ c.best.car }}</span>
-              {% if c.best.pi %}<span class="lb-pi-badge lb-pi-{{ c.best.p1 | lower }}">PI {{ c.best.pi }}</span>{% endif %}
+        <a href="{{ url_for('leaderboard.circuit_detail', track_id=c.track_meta.id) }}"
+           class="card p-0 overflow-hidden group block">
+          <div class="relative aspect-[4/3] bg-surface">
+            {% if c.track_meta.image_path %}
+            <img src="{{ url_for('serve_media', filename=c.track_meta.image_path) }}"
+                 alt="{{ c.track_meta.track_name }}" class="w-full h-full object-cover" loading="lazy">
+            {% else %}
+            <div class="w-full h-full flex items-center justify-center text-muted/40 font-bold text-sm">
+              {{ c.track_meta.track_name[:3].upper() }}
             </div>
-            {% for cat_name, entries in c.categories %}
-            <div class="lb-cat">
-              <div class="lb-cat-title">
-                <span class="lb-cat-dot lb-cat-dot-{{ cat_name | lower }}"></span>
-                {{ cat_name }}
-              </div>
-              <table class="lb-table">
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>{{ _('Pilote') }}</th>
-                    <th>{{ _('Véhicule') }}</th>
-                    <th>PI</th>
-                    <th>{{ _('Temps') }}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for entry in entries[:15] %}
-                  <tr class="{{ 'lb-row-gold' if loop.first }}">
-                    <td class="lb-pos">{{ loop.index }}</td>
-                    <td class="lb-driver">{{ entry.driver }}</td>
-                    <td class="lb-car-name">{{ entry.car }}</td>
-                    <td>{% if entry.pi %}<span class="lb-pi-badge lb-pi-{{ entry.p1 | lower }}">{{ entry.pi }}</span>{% endif %}</td>
-                    <td class="lb-time {{ 'lb-time-gold' if loop.first }}">{{ entry.time }}</td>
-                  </tr>
-                  {% endfor %}
-                  {% if entries|length > 15 %}
-                  <tr><td colspan="5" class="lb-more">+{{ entries|length - 15 }} {{ _('autres résultats') }}</td></tr>
-                  {% endif %}
-                </tbody>
-              </table>
+            {% endif %}
+            {% if c.best %}
+            <div class="circuit-top1-box">
+              <span class="circuit-top1-label">{{ _('Top 1') }}</span>
+              <span class="circuit-top1-time">{{ c.best.time }}</span>
             </div>
-            {% endfor %}
+            {% else %}
+            <div class="absolute bottom-0 left-0 right-0 p-1.5"
+                 style="background: linear-gradient(to top, rgba(6,9,20,0.88), transparent);">
+              <span class="circuit-best-badge circuit-best-badge-empty circuit-best-badge-sm">{{ _('Aucun résultat') }}</span>
+            </div>
+            {% endif %}
           </div>
-        </div>
+          <div class="p-2">
+            <div class="text-xs font-medium text-txt truncate">{{ c.track_meta.track_name }}</div>
+            <div class="text-[0.68rem] text-dim truncate">{{ c.track_meta.layout }}</div>
+          </div>
+        </a>
         {% endfor %}
       </div>
       {% endif %}
@@ -275,9 +244,6 @@ document.addEventListener('click', (e) => {
 });
 document.querySelectorAll('.results-group-header').forEach((h) => {
   h.addEventListener('click', () => h.closest('.results-group').classList.toggle('collapsed'));
-});
-document.querySelectorAll('.lb-card-header').forEach((h) => {
-  h.addEventListener('click', () => h.closest('.lb-card').classList.toggle('open'));
 });
 </script>
 {% endblock %}

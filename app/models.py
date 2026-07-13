@@ -250,6 +250,43 @@ class SessionResult(db.Model):
     raw_json_hash = db.Column(db.String(64), nullable=True, index=True)  # SHA-256[:64] pour dédup rapide
 
 
+# ── LapRecord / LapArchive (historique de tours en direct, indépendant des fins
+#    de session — voir CHANGELOG v1.9.4) ──────────────────────────────────────
+
+class LapRecord(db.Model):
+    __tablename__ = "lap_record"
+
+    id           = db.Column(db.Integer, primary_key=True)
+    server_id    = db.Column(db.Integer, nullable=False, index=True)
+    steam_id     = db.Column(db.String(32),  nullable=False, index=True)
+    nickname     = db.Column(db.String(100), default="")
+    car          = db.Column(db.String(120), default="")   # slug, convention CarMeta.slug
+    track_value  = db.Column(db.String(300), default="")   # convention TrackMeta.track_value
+    session_type = db.Column(db.String(60),  default="")   # "Practice" / "Race Weekend"
+    lap_time_ms  = db.Column(db.Integer, nullable=False)
+    recorded_at  = db.Column(db.DateTime, default=_utcnow, index=True)
+
+
+class LapArchive(db.Model):
+    __tablename__ = "lap_archive"
+
+    id           = db.Column(db.Integer, primary_key=True)
+    server_id    = db.Column(db.Integer, nullable=False, index=True)
+    steam_id     = db.Column(db.String(32),  nullable=False, index=True)
+    nickname     = db.Column(db.String(100), default="")
+    track_value  = db.Column(db.String(300), default="")
+    session_type = db.Column(db.String(60),  default="")
+    period       = db.Column(db.String(7),  nullable=False)   # "2026-01"
+    laps_json    = db.Column(db.Text, nullable=False)         # [{"t": ms, "car": slug}, ...]
+    best_lap_ms  = db.Column(db.Integer, nullable=False)
+    avg_lap_ms   = db.Column(db.Integer, nullable=False)
+    lap_count    = db.Column(db.Integer, nullable=False)
+
+    __table_args__ = (db.UniqueConstraint(
+        "server_id", "steam_id", "track_value", "session_type", "period",
+        name="uq_lap_archive_bucket"),)
+
+
 # ── Server (instance ACE EVO gérée par le panel) ─────────────────────────────
 
 class Server(db.Model):

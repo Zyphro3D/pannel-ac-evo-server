@@ -414,6 +414,7 @@ def get_running_server_info(server_id: int = 1) -> dict | None:
         "session_changed_at":     session_changed_at,
         "current_session_label":  cur_sess_label,
         "track_slug":             track_slug,
+        "track_value":            track_raw,
     }
 
 

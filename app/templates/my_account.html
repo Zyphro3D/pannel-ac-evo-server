@@ -37,6 +37,9 @@
         <a href="https://steamcommunity.com/profiles/{{ current_user.steam_id }}" target="_blank" rel="noopener" class="text-sm text-dim hover:text-txt underline">
           {{ _('Voir le profil Steam') }}
         </a>
+        <a href="{{ url_for('public.pilot_history') }}" class="text-sm text-dim hover:text-txt underline">
+          {{ _('Mes temps') }}
+        </a>
       </div>
       <form method="post" action="{{ url_for('auth.steam_unlink') }}" class="m-0">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

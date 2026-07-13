@@ -27,6 +27,16 @@ log = logging.getLogger(__name__)
 _clients: dict    = {}
 _clients_lock     = threading.Lock()
 
+# Référence à l'app Flask, nécessaire pour ouvrir un app_context depuis les
+# threads de fond du bot (persistance LapRecord) — fournie par init_app().
+_flask_app = None
+
+
+def init_app(app):
+    """Donne au module une référence à l'app Flask pour les accès DB en thread."""
+    global _flask_app
+    _flask_app = app
+
 
 def _get_client(server_id: int) -> dict:
     """Returns per-server state dict, creating it on first access."""
@@ -60,6 +70,8 @@ def _get_client(server_id: int) -> dict:
                 "msg_welcome":           DEFAULT_BOT_MSG_WELCOME,
                 "msg_discord":           DEFAULT_BOT_MSG_DISCORD,
                 "msg_site":              DEFAULT_BOT_MSG_SITE,
+                "track_cache":           {"track_value": "", "session_type": "", "fetched_at": 0.0},
+                "manual_admin":          False,
             }
         return _clients[server_id]
 
@@ -281,9 +293,17 @@ def _handle_message(name: str, payload: bytes, server_id: int):
 
 # ── Boucle de réception ───────────────────────────────────────────────────────
 
-def _recv_loop(sock: socket.socket, server_id: int):
-    c   = _get_client(server_id)
+def _recv_loop(sock: socket.socket, server_id: int, keepalive_payload: bytes | None = None):
+    """Boucle de réception. ACE EVO Server déconnecte le bot après ~60s sans trafic reçu
+    ("software timeout") — ce client minimal n'envoyant jamais rien après le handshake
+    initial. En l'absence de tout message serveur pendant KEEPALIVE_S secondes, on
+    renvoie la requête de connexion d'origine (message déjà accepté par le serveur,
+    sans effet de bord visible côté jeu) pour faire office de heartbeat et éviter la
+    coupure. Voir CHANGELOG v1.9.4."""
+    c = _get_client(server_id)
     buf = b''
+    KEEPALIVE_S = 20.0
+    sock.settimeout(KEEPALIVE_S)
     while c["running"]:
         try:
             chunk = sock.recv(8192)
@@ -309,6 +329,14 @@ def _recv_loop(sock: socket.socket, server_id: int):
                     _handle_message(name, payload, server_id)
                 except Exception as e:
                     log.debug("handle_message %s error: %s", name, e)
+        except socket.timeout:
+            if keepalive_payload is None:
+                continue
+            try:
+                sock.sendall(keepalive_payload)
+                log.debug("ace_tcp_client: keepalive envoyé (server=%d)", server_id)
+            except OSError:
+                break
         except OSError:
             break
     log.info("ace_tcp_client: connexion terminée (server=%d)", server_id)
@@ -325,20 +353,28 @@ def _connect_loop(server_id: int):
             sock.settimeout(10)
             sock.connect((c["host"], c["port"]))
             sock.settimeout(None)
-            _active_cfg = _read_active_config()
-            sock.sendall(_build_connection_request(c, _active_cfg))
+            _active_cfg = _read_active_config(server_id)
+            _conn_req = _build_connection_request(c, _active_cfg)
+            sock.sendall(_conn_req)
             log.info("ace_tcp_client: connecté à %s:%d (steam=%s, server=%d)",
                      c["host"], c["port"], c["steam_id"], server_id)
             with c["lock"]:
                 c["sock"]      = sock
                 c["connected"] = True
-            # S'élève admin dès la connexion si configuré (même config déjà lue ci-dessus)
+            # S'élève admin dès la connexion si configuré (même config déjà lue ci-dessus),
+            # ou si une élévation manuelle a déjà été demandée sur ce serveur — le serveur de
+            # jeu déconnecte le bot toutes les ~60s ("software timeout", aucun keepalive
+            # envoyé par ce client minimal), et chaque reconnexion repart sans droits admin :
+            # sans ce re-envoi automatique, l'élévation manuelle ne "tenait" qu'une minute.
             _pwd = _get_admin_password(_active_cfg)
+            if not _pwd and c.get("manual_admin") and _active_cfg:
+                _pwd = _active_cfg.get("Server", {}).get("AdminPassword", "")
             if _pwd:
                 time.sleep(1)
                 send_chat(f"\\admin {_pwd}", server_id)
-                log.info("ace_tcp_client: élévation admin envoyée (server=%d)", server_id)
-            _recv_loop(sock, server_id)
+                log.info("ace_tcp_client: élévation admin envoyée (server=%d)%s", server_id,
+                          " [ré-élévation manuelle après reconnexion]" if c.get("manual_admin") else "")
+            _recv_loop(sock, server_id, keepalive_payload=_conn_req)
         except Exception as e:
             log.debug("ace_tcp_client: erreur connexion %s:%d — %s", c["host"], c["port"], e)
         finally:
@@ -424,31 +460,40 @@ _RE_PLAYERS_LOG = re.compile(r'\[server\] \[info\] Server updated: (\d+) players
 _RE_CHAT_LOG    = re.compile(r'\[server\] \[info\] Chat from (.+?) \[(\d+)\]: (.+)')
 
 
-def _get_active_config_name() -> tuple[str, str]:
-    """Retourne (configs_dir, active_config_filename) depuis .active_config ou le premier .json."""
-    configs_dir = os.environ.get("CONFIGS_DIR", "/aceserver/configs")
-    active_file = os.path.join(configs_dir, ".active_config")
-    if os.path.exists(active_file):
-        with open(active_file) as f:
-            name = f.read().strip()
-    else:
-        files = sorted(glob.glob(os.path.join(configs_dir, "*.json")))
-        name = os.path.basename(files[0]) if files else ""
+def _get_active_config_name(server_id: int = 1) -> tuple[str, str]:
+    """Retourne (configs_dir, config_filename) de la config réellement déployée pour ce
+    serveur — lue depuis l'état du process manager (le nom de la config effectivement
+    lancée), dans le sous-dossier server-{id}/ où deploy_config() écrit la copie propre
+    à ce serveur.
+
+    Auparavant, cette fonction lisait un marqueur .active_config à la racine de
+    CONFIGS_DIR (dossier commun à tous les serveurs, pas le sous-dossier par serveur) —
+    ce fichier n'était jamais écrit nulle part dans le code, donc le fallback ("premier
+    .json par ordre alphabétique") était systématiquement utilisé, sans rapport avec la
+    session réellement en cours ni avec server_id. Corrigé : v1.9.4."""
+    from app.services.process_manager import _read_state
+    configs_dir = os.path.join(os.environ.get("CONFIGS_DIR", "/aceserver/configs"), f"server-{server_id}")
+    state = _read_state(server_id)
+    name = state.get("config", "") if state else ""
+    if name and os.path.exists(os.path.join(configs_dir, name)):
+        return configs_dir, name
+    files = sorted(glob.glob(os.path.join(configs_dir, "*.json")))
+    name = os.path.basename(files[0]) if files else ""
     return configs_dir, name
 
 
-def _read_active_config() -> dict | None:
+def _read_active_config(server_id: int = 1) -> dict | None:
     """Lit et parse la config active une seule fois (partagée par _get_car_model et
     _get_admin_password pour éviter de relire le même fichier deux fois par tentative
     de connexion)."""
     try:
-        configs_dir, name = _get_active_config_name()
+        configs_dir, name = _get_active_config_name(server_id)
         if not name:
             return None
         with open(os.path.join(configs_dir, name), encoding="utf-8") as f:
             return json.load(f) | {"__name__": name}
     except Exception as e:
-        log.debug("ace_tcp_client: erreur lecture config active: %s", e)
+        log.debug("ace_tcp_client: erreur lecture config active (server=%d): %s", server_id, e)
         return None
 
 
@@ -638,6 +683,37 @@ def _on_newlap_log(m, c, server_id):
             )
         except Exception:
             pass
+    if sid:
+        _record_lap(c, server_id, sid, name, car_raw, lap_ms)
+
+
+def _record_lap(c, server_id, sid, name, car_raw, lap_ms):
+    """Persiste un tour en DB, indépendamment de toute fin de session (v1.9.4)."""
+    if _flask_app is None:
+        return
+    cache = c["track_cache"]
+    now = time.time()
+    if now - cache["fetched_at"] > 60:
+        try:
+            from app.services.server_config import get_running_server_info
+            info = get_running_server_info(server_id) or {}
+            cache["track_value"]   = info.get("track_value", "")
+            cache["session_type"]  = info.get("current_session_label", "")
+            cache["fetched_at"]    = now
+        except Exception:
+            log.exception("Échec rafraîchissement track_cache (server_id=%s)", server_id)
+    try:
+        with _flask_app.app_context():
+            from app.services.database import db
+            from app.models import LapRecord
+            db.session.add(LapRecord(
+                server_id=server_id, steam_id=sid, nickname=name, car=car_raw,
+                track_value=cache["track_value"], session_type=cache["session_type"],
+                lap_time_ms=lap_ms,
+            ))
+            db.session.commit()
+    except Exception:
+        log.exception("Échec persistance LapRecord (server_id=%s, sid=%s)", server_id, sid)
 
 
 def _on_lap_invalid(m, c):
@@ -806,7 +882,7 @@ def elevate_admin(server_id: int = 1) -> str | None:
     if not connected:
         return "Bot TCP non connecté"
     try:
-        configs_dir, name = _get_active_config_name()
+        configs_dir, name = _get_active_config_name(server_id)
         if not name:
             return "Aucune configuration active trouvée"
         with open(os.path.join(configs_dir, name), encoding="utf-8") as f:
@@ -818,6 +894,7 @@ def elevate_admin(server_id: int = 1) -> str | None:
     sent = send_chat(f"\\admin {pwd}", server_id)
     if not sent:
         return "Échec envoi — bot TCP non connecté"
+    c["manual_admin"] = True
     log.info("ace_tcp_client: élévation admin manuelle envoyée (server=%d)", server_id)
     return None
 

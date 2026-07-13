@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Mes temps') }} — {{ panel_title }}{% endblock %}
+{% block content %}
+<div class="page-shell max-w-3xl">
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">{{ _('Mes temps') }}</h1>
+      <p class="page-subtitle">{{ current_user.ingame_name if current_user.is_pilot else current_user.display }}</p>
+    </div>
+    <a href="{{ url_for('public.pilot_dashboard') if current_user.is_pilot else url_for('admin.my_account') }}" class="btn-secondary btn-sm">{{ _('Retour') }}</a>
+  </div>
+
+  <p class="text-sm text-dim mb-6">
+    {{ _("Chaque tour roulé est enregistré en direct, sans attendre la fin d'une session. Au-delà du délai de rétention configuré par l'organisateur, l'historique détaillé est condensé en résumé mensuel.") }}
+  </p>
+
+  {# ── Historique récent ── #}
+  <section class="card mb-6">
+    <div class="card-head">
+      <h2 class="card-title">{{ _('Tours récents') }}</h2>
+      <span class="badge badge-neutral">{{ recent|length }}</span>
+    </div>
+    {% if recent %}
+    <div class="divide-y divide-muted/10">
+      {% for lap in recent %}
+      <div class="flex items-center justify-between gap-4 py-2.5 first:pt-0 last:pb-0 text-sm">
+        <div class="flex-1 min-w-0">
+          <span class="font-mono text-txt">{{ lap.time_display }}</span>
+          <span class="text-dim"> — {{ lap.track_display }} · {{ lap.car_display }} · {{ lap.session_type or '—' }}</span>
+        </div>
+        <div class="text-dim shrink-0">{{ lap.recorded_at | local_dt_short }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-sm text-dim m-0">{{ _('Aucun tour enregistré pour le moment. Roulez sur un serveur du panel pour voir vos temps apparaître ici.') }}</p>
+    {% endif %}
+  </section>
+
+  {# ── Archives compactées ── #}
+  {% if archived %}
+  <section class="card mb-6">
+    <div class="card-head">
+      <h2 class="card-title">{{ _('Archives') }}</h2>
+      <span class="badge badge-neutral">{{ archived|length }}</span>
+    </div>
+    <p class="text-xs text-dim mt-0 mb-4">{{ _("Résumés mensuels — l'horodatage précis de chaque tour n'est plus conservé au-delà du délai de rétention, mais le détail temps/voiture reste disponible ci-dessous.") }}</p>
+    <div class="divide-y divide-muted/10">
+      {% for arc in archived %}
+      <details class="py-3 first:pt-0 last:pb-0">
+        <summary class="flex items-center justify-between gap-4 text-sm cursor-pointer">
+          <div class="flex-1 min-w-0">
+            <span class="font-medium text-txt">{{ arc.period }}</span>
+            <span class="text-dim"> — {{ arc.track_display }} · {{ arc.session_type or '—' }}</span>
+          </div>
+          <div class="text-dim shrink-0">
+            {{ _('Meilleur') }} <span class="font-mono text-txt">{{ arc.best_lap_display }}</span>
+            · {{ _('Moyenne') }} <span class="font-mono">{{ arc.avg_lap_display }}</span>
+            · {{ arc.lap_count }} {{ _('tours') }}
+          </div>
+        </summary>
+        <div class="mt-2 pl-2 border-l border-muted/20 space-y-1">
+          {% for entry in arc.laps %}
+          <div class="text-xs text-dim font-mono">{{ entry.time_display }} — {{ entry.car_display }}</div>
+          {% endfor %}
+        </div>
+      </details>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+</div>
+{% endblock %}

@@ -1,0 +1,34 @@
+{% if entries %}
+<table class="lb-table">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>{{ _('Pilote') }}</th>
+      <th>{{ _('Véhicule') }}</th>
+      <th>{{ _('Catégorie') }}</th>
+      <th>PI</th>
+      <th>{{ _('Secteur 1') }}</th>
+      <th>{{ _('Secteur 2') }}</th>
+      <th>{{ _('Secteur 3') }}</th>
+      <th>{{ _('Temps') }}</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for entry in entries %}
+    <tr class="{{ 'lb-row-gold' if loop.first }}">
+      <td class="lb-pos">{{ loop.index }}</td>
+      <td class="lb-driver">{{ entry.driver }}</td>
+      <td class="lb-car-name">{{ entry.car }}</td>
+      <td>{% if entry.p1 %}<span class="veh-badge veh-badge-{{ entry.p1 | lower }}">{{ _(entry.p1) }}</span>{% endif %}</td>
+      <td class="lb-pos">{{ entry.pi or '—' }}</td>
+      <td class="lb-splits">{{ entry.splits[0] if entry.splits|length > 0 else '—' }}</td>
+      <td class="lb-splits">{{ entry.splits[1] if entry.splits|length > 1 else '—' }}</td>
+      <td class="lb-splits">{{ entry.splits[2] if entry.splits|length > 2 else '—' }}</td>
+      <td class="lb-time {{ 'lb-time-gold' if loop.first }}">{{ entry.time }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<div class="card p-6 text-center text-dim">{{ _('Aucun résultat pour ces filtres.') }}</div>
+{% endif %}
