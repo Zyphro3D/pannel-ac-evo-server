@@ -311,17 +311,25 @@ def run_update(steamcmd: str, aceserver_dir: str, steam_user: str, steam_pass: s
         yield _msg(f"✗ Erreur redémarrage : {e}", error=True, done=True)
         return
 
-    # 4 — Attente de la régénération des données (cars.json, events)
+    # 4 — Attente de la régénération des données (cars.json, events). Le serveur de jeu
+    # met normalement plusieurs dizaines de secondes à réécrire ces fichiers après un
+    # redémarrage — sans message de progression pendant cette attente (jusqu'à 90s), cette
+    # étape donne l'impression d'être bloquée alors qu'elle travaille simplement en silence.
     yield _msg("⏳ Synchronisation véhicules et circuits...")
     cars_path = os.path.join(aceserver_dir, "cars.json")
     ev_p_path = os.path.join(aceserver_dir, "events_practice.json")
     ev_r_path = os.path.join(aceserver_dir, "events_race_weekend.json")
     old_cars_mt = os.path.getmtime(cars_path) if os.path.exists(cars_path) else 0
     deadline = time.time() + 90
+    started = time.time()
+    last_progress = started
     while time.time() < deadline:
         time.sleep(3)
         if os.path.exists(cars_path) and os.path.getmtime(cars_path) > old_cars_mt:
             break
+        if time.time() - last_progress >= 15:
+            last_progress = time.time()
+            yield _msg(f"⏳ Toujours en attente... ({int(time.time() - started)}s écoulées)")
     try:
         with open(cars_path, encoding="utf-8") as f:
             cars_count = len(json.load(f).get("cars", []))

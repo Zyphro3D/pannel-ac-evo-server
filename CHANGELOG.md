@@ -1,5 +1,12 @@
 # Changelog
 
+### v1.9.5 — non publiée
+
+**Correction — mise à jour Steam : l'étape "Synchronisation véhicules et circuits" semblait bloquée**
+
+- Signalé par un utilisateur : à la fin d'une mise à jour du serveur de jeu, l'étape de synchronisation des véhicules/circuits donnait l'impression de rester figée. Ce n'est pas un vrai blocage — le serveur de jeu met simplement plusieurs dizaines de secondes (jusqu'à 90s max) à régénérer ses fichiers après redémarrage, et cette attente ne produisait **aucun message** entre le début et la fin.
+- Corrigé (`steam_updater.py`) : un message de progression ("Toujours en attente... Ns écoulées") s'affiche désormais toutes les 15 secondes pendant cette attente, pour qu'il soit clair que ça travaille toujours plutôt que d'avoir l'air figé.
+
 ### v1.9.4 — 13/07/2026
 
 **Ajout — images véhicules/circuits manquantes (Kyalami, Brands Hatch GP, Audi R8 LMS GT3 Evo II, Datsun 240Z Standard/Tuned, Porsche 935, Porsche 911 GT2 RS Clubsport Evo, KTM X-Bow GT2/GT4, Golf 8 R)**
