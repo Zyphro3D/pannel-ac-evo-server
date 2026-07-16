@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-07-13 02:55+0000\n"
+"POT-Creation-Date: 2026-07-16 05:15+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -40,20 +40,20 @@ msgstr "Erreur webhook"
 
 #: app/routes/admin.py:399
 msgid ""
-"Aucun fichier de configuration trouvé dans CONFIGS_DIR. Créez-en un via le "
-"bouton ci-dessous."
+"Aucun fichier de configuration trouvé dans CONFIGS_DIR. Créez-en un via "
+"le bouton ci-dessous."
 msgstr ""
-"Aucun fichier de configuration trouvé dans CONFIGS_DIR. Créez-en un via le "
-"bouton ci-dessous."
+"Aucun fichier de configuration trouvé dans CONFIGS_DIR. Créez-en un via "
+"le bouton ci-dessous."
 
 #: app/routes/admin.py:409
 #, python-format
 msgid ""
-"Fichier de configuration invalide (%(name)s) : erreur JSON ligne %(line)s "
-"colonne %(col)s. Corrigez et sauvegardez depuis l'onglet Configuration."
+"Fichier de configuration invalide (%(name)s) : erreur JSON ligne %(line)s"
+" colonne %(col)s. Corrigez et sauvegardez depuis l'onglet Configuration."
 msgstr ""
-"Fichier de configuration invalide (%(name)s) : erreur JSON ligne %(line)s "
-"colonne %(col)s. Corrigez et sauvegardez depuis l'onglet Configuration."
+"Fichier de configuration invalide (%(name)s) : erreur JSON ligne %(line)s"
+" colonne %(col)s. Corrigez et sauvegardez depuis l'onglet Configuration."
 
 #: app/routes/admin.py:437 app/templates/event_form.html:101
 #: app/templates/server.html:389
@@ -91,10 +91,11 @@ msgstr "Race Weekend"
 msgid "Comptes"
 msgstr "Comptes"
 
-#: app/routes/admin.py:533 app/templates/base.html:54 app/templates/base.html:144
-#: app/templates/base.html:262 app/templates/server.html:2
-#: app/templates/server.html:228 app/templates/settings.html:70
-#: app/templates/settings.html:258 app/templates/settings.html:855
+#: app/routes/admin.py:533 app/templates/base.html:54
+#: app/templates/base.html:144 app/templates/base.html:262
+#: app/templates/server.html:2 app/templates/server.html:228
+#: app/templates/settings.html:70 app/templates/settings.html:258
+#: app/templates/settings.html:855
 msgid "Serveur"
 msgstr "Serveur"
 
@@ -140,23 +141,23 @@ msgstr "Secret HMAC du webhook résultats (/api/results/ingest)"
 
 #: app/routes/admin.py:563
 msgid ""
-"Exige que les pilotes confirment leur email (lien envoyé à l'inscription) "
-"avant de pouvoir s'inscrire à un événement. Les comptes existants ne sont "
-"pas affectés rétroactivement."
+"Exige que les pilotes confirment leur email (lien envoyé à l'inscription)"
+" avant de pouvoir s'inscrire à un événement. Les comptes existants ne "
+"sont pas affectés rétroactivement."
 msgstr ""
-"Exige que les pilotes confirment leur email (lien envoyé à l'inscription) "
-"avant de pouvoir s'inscrire à un événement. Les comptes existants ne sont "
-"pas affectés rétroactivement."
+"Exige que les pilotes confirment leur email (lien envoyé à l'inscription)"
+" avant de pouvoir s'inscrire à un événement. Les comptes existants ne "
+"sont pas affectés rétroactivement."
 
 #: app/routes/admin.py:564
 msgid ""
-"Nombre de mois de conservation détaillée de l'historique des tours (temps, "
-"voiture, circuit). Au-delà, archivé en résumé mensuel compact plutôt que "
-"supprimé."
+"Nombre de mois de conservation détaillée de l'historique des tours "
+"(temps, voiture, circuit). Au-delà, archivé en résumé mensuel compact "
+"plutôt que supprimé."
 msgstr ""
-"Nombre de mois de conservation détaillée de l'historique des tours (temps, "
-"voiture, circuit). Au-delà, archivé en résumé mensuel compact plutôt que "
-"supprimé."
+"Nombre de mois de conservation détaillée de l'historique des tours "
+"(temps, voiture, circuit). Au-delà, archivé en résumé mensuel compact "
+"plutôt que supprimé."
 
 #: app/routes/admin.py:565
 msgid "Port HTTP de l'API du serveur (défaut 8081)"
@@ -180,11 +181,11 @@ msgstr "Dossier des fichiers de configuration JSON"
 
 #: app/routes/admin.py:570
 msgid ""
-"Nom du serveur affiché dans la liste des serveurs ACE EVO (commun à toutes "
-"les configs)"
+"Nom du serveur affiché dans la liste des serveurs ACE EVO (commun à "
+"toutes les configs)"
 msgstr ""
-"Nom du serveur affiché dans la liste des serveurs ACE EVO (commun à toutes "
-"les configs)"
+"Nom du serveur affiché dans la liste des serveurs ACE EVO (commun à "
+"toutes les configs)"
 
 #: app/routes/admin.py:571
 msgid "Nombre maximum de joueurs simultanés (1–128, défaut 8)"
@@ -199,20 +200,28 @@ msgstr ""
 "firewall"
 
 #: app/routes/admin.py:573
-msgid "Port UDP du serveur de jeu (défaut 9700) — généralement identique au port TCP"
-msgstr "Port UDP du serveur de jeu (défaut 9700) — généralement identique au port TCP"
+msgid ""
+"Port UDP du serveur de jeu (défaut 9700) — généralement identique au port"
+" TCP"
+msgstr ""
+"Port UDP du serveur de jeu (défaut 9700) — généralement identique au port"
+" TCP"
 
 #: app/routes/admin.py:574
-msgid "Mot de passe d'accès au serveur pour les pilotes. Laisser vide = accès libre"
-msgstr "Mot de passe d'accès au serveur pour les pilotes. Laisser vide = accès libre"
+msgid ""
+"Mot de passe d'accès au serveur pour les pilotes. Laisser vide = accès "
+"libre"
+msgstr ""
+"Mot de passe d'accès au serveur pour les pilotes. Laisser vide = accès "
+"libre"
 
 #: app/routes/admin.py:575
 msgid ""
-"Mot de passe admin serveur (commandes /kick, /next, etc.) — utilisé aussi "
-"par le bot TCP"
+"Mot de passe admin serveur (commandes /kick, /next, etc.) — utilisé aussi"
+" par le bot TCP"
 msgstr ""
-"Mot de passe admin serveur (commandes /kick, /next, etc.) — utilisé aussi "
-"par le bot TCP"
+"Mot de passe admin serveur (commandes /kick, /next, etc.) — utilisé aussi"
+" par le bot TCP"
 
 #: app/routes/admin.py:576
 msgid "Chemin vers le fichier entry_list.ini (laisser vide si non utilisé)"
@@ -240,38 +249,38 @@ msgstr "Voiture utilisée par le bot pour rejoindre la session."
 
 #: app/routes/admin.py:580
 msgid ""
-"Activer les droits admin pour le bot (true/false). Le mot de passe est lu "
-"automatiquement depuis la config serveur active."
+"Activer les droits admin pour le bot (true/false). Le mot de passe est lu"
+" automatiquement depuis la config serveur active."
 msgstr ""
-"Activer les droits admin pour le bot (true/false). Le mot de passe est lu "
-"automatiquement depuis la config serveur active."
+"Activer les droits admin pour le bot (true/false). Le mot de passe est lu"
+" automatiquement depuis la config serveur active."
 
 #: app/routes/admin.py:581
 #, python-brace-format
 msgid ""
-"Message de bienvenue envoyé à chaque connexion. Variable : {name}. Laisser "
-"vide pour désactiver."
+"Message de bienvenue envoyé à chaque connexion. Variable : {name}. "
+"Laisser vide pour désactiver."
 msgstr ""
-"Message de bienvenue envoyé à chaque connexion. Variable : {name}. Laisser "
-"vide pour désactiver."
+"Message de bienvenue envoyé à chaque connexion. Variable : {name}. "
+"Laisser vide pour désactiver."
 
 #: app/routes/admin.py:582
 #, python-brace-format
 msgid ""
-"Message Discord envoyé si DISCORD_INVITE_URL est défini. Variables : {name},"
-" {discord_url}. Laisser vide pour désactiver."
+"Message Discord envoyé si DISCORD_INVITE_URL est défini. Variables : "
+"{name}, {discord_url}. Laisser vide pour désactiver."
 msgstr ""
-"Message Discord envoyé si DISCORD_INVITE_URL est défini. Variables : {name},"
-" {discord_url}. Laisser vide pour désactiver."
+"Message Discord envoyé si DISCORD_INVITE_URL est défini. Variables : "
+"{name}, {discord_url}. Laisser vide pour désactiver."
 
 #: app/routes/admin.py:583
 #, python-brace-format
 msgid ""
-"Message site envoyé si PANEL_URL est défini. Variables : {name}, {site_url}."
-" Laisser vide pour désactiver."
+"Message site envoyé si PANEL_URL est défini. Variables : {name}, "
+"{site_url}. Laisser vide pour désactiver."
 msgstr ""
-"Message site envoyé si PANEL_URL est défini. Variables : {name}, {site_url}."
-" Laisser vide pour désactiver."
+"Message site envoyé si PANEL_URL est défini. Variables : {name}, "
+"{site_url}. Laisser vide pour désactiver."
 
 #: app/routes/admin.py:584
 msgid ""
@@ -299,11 +308,11 @@ msgstr "Lien d'invitation Discord affiché sur le panel"
 
 #: app/routes/admin.py:589
 msgid ""
-"Mention envoyée avec les événements serveur (ex: @here ou <@&123456789>). "
-"Laisser vide pour désactiver."
+"Mention envoyée avec les événements serveur (ex: @here ou <@&123456789>)."
+" Laisser vide pour désactiver."
 msgstr ""
-"Mention envoyée avec les événements serveur (ex: @here ou <@&123456789>). "
-"Laisser vide pour désactiver."
+"Mention envoyée avec les événements serveur (ex: @here ou <@&123456789>)."
+" Laisser vide pour désactiver."
 
 #: app/routes/admin.py:590
 msgid "Mention envoyée avec les connexions joueurs. Laisser vide pour désactiver."
@@ -330,22 +339,30 @@ msgstr "Titre embed — Crash détecté. Variables : {config}"
 
 #: app/routes/admin.py:595
 #, python-brace-format
-msgid "Titre embed — Connexion joueur. Variables : {name}, {num}, {car}, {steam_id}"
-msgstr "Titre embed — Connexion joueur. Variables : {name}, {num}, {car}, {steam_id}"
+msgid ""
+"Titre embed — Connexion joueur. Variables : {name}, {num}, {car}, "
+"{steam_id}"
+msgstr ""
+"Titre embed — Connexion joueur. Variables : {name}, {num}, {car}, "
+"{steam_id}"
 
 #: app/routes/admin.py:596
 #, python-brace-format
-msgid "Titre embed — Déconnexion joueur. Variables : {name}, {duration}, {steam_id}"
-msgstr "Titre embed — Déconnexion joueur. Variables : {name}, {duration}, {steam_id}"
+msgid ""
+"Titre embed — Déconnexion joueur. Variables : {name}, {duration}, "
+"{steam_id}"
+msgstr ""
+"Titre embed — Déconnexion joueur. Variables : {name}, {duration}, "
+"{steam_id}"
 
 #: app/routes/admin.py:597
 #, python-brace-format
 msgid ""
-"Titre embed — Changement de véhicule. Variables : {name}, {num}, {old_car}, "
-"{new_car}"
+"Titre embed — Changement de véhicule. Variables : {name}, {num}, "
+"{old_car}, {new_car}"
 msgstr ""
-"Titre embed — Changement de véhicule. Variables : {name}, {num}, {old_car}, "
-"{new_car}"
+"Titre embed — Changement de véhicule. Variables : {name}, {num}, "
+"{old_car}, {new_car}"
 
 #: app/routes/admin.py:598
 #, python-brace-format
@@ -354,8 +371,12 @@ msgstr "Titre embed — Meilleur tour serveur. Variables : {name}, {lap}, {car}"
 
 #: app/routes/admin.py:599
 #, python-brace-format
-msgid "Titre embed — Action admin. Variables : {action}, {target}, {admin}, {detail}"
-msgstr "Titre embed — Action admin. Variables : {action}, {target}, {admin}, {detail}"
+msgid ""
+"Titre embed — Action admin. Variables : {action}, {target}, {admin}, "
+"{detail}"
+msgstr ""
+"Titre embed — Action admin. Variables : {action}, {target}, {admin}, "
+"{detail}"
 
 #: app/routes/admin.py:600
 msgid "Serveur SMTP (laisser vide pour désactiver les emails)"
@@ -391,148 +412,148 @@ msgstr "Langue par défaut : fr, en, es, de, it"
 
 #: app/routes/admin.py:659
 msgid ""
-"Dossier de session Steam à monter si le panel est lancé via systemd ou sudo "
-"sans -E (sinon ça reste vide et $HOME est utilisé, comme avant)."
+"Dossier de session Steam à monter si le panel est lancé via systemd ou "
+"sudo sans -E (sinon ça reste vide et $HOME est utilisé, comme avant)."
 msgstr ""
-"Dossier de session Steam à monter si le panel est lancé via systemd ou sudo "
-"sans -E (sinon ça reste vide et $HOME est utilisé, comme avant)."
+"Dossier de session Steam à monter si le panel est lancé via systemd ou "
+"sudo sans -E (sinon ça reste vide et $HOME est utilisé, comme avant)."
 
-#: app/routes/admin.py:741 app/routes/admin.py:1053
+#: app/routes/admin.py:749 app/routes/admin.py:1061
 msgid "Port invalide (1024–65535)."
 msgstr "Port invalide (1024–65535)."
 
-#: app/routes/admin.py:743
+#: app/routes/admin.py:751
 #, python-format
 msgid "Le port %(port)d est déjà utilisé par '%(name)s'."
 msgstr "Le port %(port)d est déjà utilisé par '%(name)s'."
 
-#: app/routes/admin.py:771 app/routes/admin.py:772
+#: app/routes/admin.py:779 app/routes/admin.py:780
 msgid "Paramètres du serveur sauvegardés."
 msgstr "Paramètres du serveur sauvegardés."
 
-#: app/routes/admin.py:801 app/routes/admin.py:802
+#: app/routes/admin.py:809 app/routes/admin.py:810
 msgid "Paramètres sauvegardés"
 msgstr "Paramètres sauvegardés"
 
-#: app/routes/admin.py:850
+#: app/routes/admin.py:858
 msgid "Fichier trop volumineux (max 5 Mo)"
 msgstr "Fichier trop volumineux (max 5 Mo)"
 
-#: app/routes/admin.py:853
+#: app/routes/admin.py:861
 msgid "Aucun fichier fourni"
 msgstr "Aucun fichier fourni"
 
-#: app/routes/admin.py:856
+#: app/routes/admin.py:864
 msgid "Type non autorisé"
 msgstr "Type non autorisé"
 
-#: app/routes/admin.py:867
+#: app/routes/admin.py:875
 msgid "Signature de fichier invalide"
 msgstr "Signature de fichier invalide"
 
-#: app/routes/admin.py:898
+#: app/routes/admin.py:906
 msgid "Identifiant et mot de passe requis."
 msgstr "Identifiant et mot de passe requis."
 
-#: app/routes/admin.py:903 app/routes/admin.py:934
+#: app/routes/admin.py:911 app/routes/admin.py:942
 msgid "Cet identifiant est déjà utilisé."
 msgstr "Cet identifiant est déjà utilisé."
 
-#: app/routes/admin.py:909
+#: app/routes/admin.py:917
 msgid "Compte créé avec succès."
 msgstr "Compte créé avec succès."
 
-#: app/routes/admin.py:919 app/routes/admin.py:970
+#: app/routes/admin.py:927 app/routes/admin.py:978
 msgid "Compte introuvable."
 msgstr "Compte introuvable."
 
-#: app/routes/admin.py:930
+#: app/routes/admin.py:938
 msgid "Impossible : il doit rester au moins un superadmin actif."
 msgstr "Impossible : il doit rester au moins un superadmin actif."
 
-#: app/routes/admin.py:942
+#: app/routes/admin.py:950
 msgid "Compte mis à jour."
 msgstr "Compte mis à jour."
 
-#: app/routes/admin.py:952
+#: app/routes/admin.py:960
 msgid "Compte introuvable"
 msgstr "Compte introuvable"
 
-#: app/routes/admin.py:956
+#: app/routes/admin.py:964
 msgid "Dernier superadmin actif — impossible de désactiver"
 msgstr "Dernier superadmin actif — impossible de désactiver"
 
-#: app/routes/admin.py:958
+#: app/routes/admin.py:966
 msgid "Impossible de vous désactiver vous-même"
 msgstr "Impossible de vous désactiver vous-même"
 
-#: app/routes/admin.py:973
+#: app/routes/admin.py:981
 msgid "Impossible de supprimer votre propre compte."
 msgstr "Impossible de supprimer votre propre compte."
 
-#: app/routes/admin.py:978
+#: app/routes/admin.py:986
 msgid "Impossible : il doit rester au moins un superadmin."
 msgstr "Impossible : il doit rester au moins un superadmin."
 
-#: app/routes/admin.py:982
+#: app/routes/admin.py:990
 msgid "Compte supprimé."
 msgstr "Compte supprimé."
 
-#: app/routes/admin.py:1003 app/routes/public.py:212
+#: app/routes/admin.py:1011 app/routes/public.py:212
 msgid "Cet email est déjà utilisé."
 msgstr "Cet email est déjà utilisé."
 
-#: app/routes/admin.py:1007
+#: app/routes/admin.py:1015
 msgid "Email mis à jour."
 msgstr "Email mis à jour."
 
-#: app/routes/admin.py:1051
+#: app/routes/admin.py:1059
 msgid "Le nom est requis."
 msgstr "Le nom est requis."
 
-#: app/routes/admin.py:1055
+#: app/routes/admin.py:1063
 #, python-format
 msgid "Le port %(port)d est déjà utilisé par un autre serveur."
 msgstr "Le port %(port)d est déjà utilisé par un autre serveur."
 
-#: app/routes/admin.py:1057
+#: app/routes/admin.py:1065
 #, python-format
 msgid "Un container Docker nommé '%(name)s' existe déjà."
 msgstr "Un container Docker nommé '%(name)s' existe déjà."
 
-#: app/routes/admin.py:1080
+#: app/routes/admin.py:1088
 #, python-format
 msgid "Erreur lors de la création du container : %(err)s"
 msgstr "Erreur lors de la création du container : %(err)s"
 
-#: app/routes/admin.py:1104
+#: app/routes/admin.py:1112
 #, python-format
 msgid "Serveur '%(name)s' créé avec succès."
 msgstr "Serveur '%(name)s' créé avec succès."
 
-#: app/routes/admin.py:1113
+#: app/routes/admin.py:1121
 msgid "Le serveur principal ne peut pas être désactivé."
 msgstr "Le serveur principal ne peut pas être désactivé."
 
-#: app/routes/admin.py:1116 app/routes/admin.py:1139
+#: app/routes/admin.py:1124 app/routes/admin.py:1147
 msgid "Serveur introuvable."
 msgstr "Serveur introuvable."
 
-#: app/routes/admin.py:1119
+#: app/routes/admin.py:1127
 #, python-format
 msgid "Serveur '%(name)s' activé."
 msgstr "Serveur '%(name)s' activé."
 
-#: app/routes/admin.py:1119
+#: app/routes/admin.py:1127
 #, python-format
 msgid "Serveur '%(name)s' désactivé."
 msgstr "Serveur '%(name)s' désactivé."
 
-#: app/routes/admin.py:1136
+#: app/routes/admin.py:1144
 msgid "Le serveur principal ne peut pas être supprimé."
 msgstr "Le serveur principal ne peut pas être supprimé."
 
-#: app/routes/admin.py:1159 app/routes/admin.py:1160
+#: app/routes/admin.py:1167 app/routes/admin.py:1168
 #, python-format
 msgid "Serveur '%(name)s' supprimé."
 msgstr "Serveur '%(name)s' supprimé."
@@ -914,42 +935,64 @@ msgstr "Voir les Paramètres"
 msgid "Compris"
 msgstr "Compris"
 
-#: app/templates/base.html:336
+#: app/templates/base.html:317
+msgid "Réglages .env ignorés"
+msgstr "Réglages .env ignorés"
+
+#: app/templates/base.html:318
+msgid ""
+"ces valeurs ont été modifiées dans votre fichier .env après la première "
+"installation, elles n'ont donc aucun effet (seule la page Paramètres "
+"compte désormais) :"
+msgstr ""
+"ces valeurs ont été modifiées dans votre fichier .env après la première "
+"installation, elles n'ont donc aucun effet (seule la page Paramètres "
+"compte désormais) :"
+
+#: app/templates/base.html:325
+msgid "Corriger dans Paramètres"
+msgstr "Corriger dans Paramètres"
+
+#: app/templates/base.html:350
 msgid "Panel open-source pour serveurs Assetto Corsa EVO"
 msgstr "Panel open-source pour serveurs Assetto Corsa EVO"
 
-#: app/templates/base.html:358
+#: app/templates/base.html:372
 msgid "Documentation"
 msgstr "Documentation"
 
-#: app/templates/base.html:360
+#: app/templates/base.html:374
 msgid "Signaler un bug"
 msgstr "Signaler un bug"
 
-#: app/templates/base.html:362
+#: app/templates/base.html:376
 msgid "Licence MIT"
 msgstr "Licence MIT"
 
-#: app/templates/base.html:370
+#: app/templates/base.html:384
 msgid "Sous licence MIT"
 msgstr "Sous licence MIT"
 
-#: app/templates/base.html:372
-msgid "Projet non officiel, non affilié à Kunos Simulazioni ni à Assetto Corsa EVO."
-msgstr "Projet non officiel, non affilié à Kunos Simulazioni ni à Assetto Corsa EVO."
+#: app/templates/base.html:386
+msgid ""
+"Projet non officiel, non affilié à Kunos Simulazioni ni à Assetto Corsa "
+"EVO."
+msgstr ""
+"Projet non officiel, non affilié à Kunos Simulazioni ni à Assetto Corsa "
+"EVO."
 
-#: app/templates/base.html:383 app/templates/event_form.html:314
+#: app/templates/base.html:397 app/templates/event_form.html:314
 #: app/templates/pilot_dashboard.html:126 app/templates/server.html:36
 #: app/templates/server.html:63 app/templates/settings.html:455
 #: app/templates/settings.html:1067 app/templates/settings.html:1102
 msgid "Annuler"
 msgstr "Annuler"
 
-#: app/templates/base.html:384 app/templates/event_detail.html:80
+#: app/templates/base.html:398 app/templates/event_detail.html:80
 msgid "Confirmer"
 msgstr "Confirmer"
 
-#: app/templates/base.html:393
+#: app/templates/base.html:407
 msgid ""
 "Ce site utilise uniquement des cookies techniques nécessaires à son "
 "fonctionnement."
@@ -957,149 +1000,149 @@ msgstr ""
 "Ce site utilise uniquement des cookies techniques nécessaires à son "
 "fonctionnement."
 
-#: app/templates/_partials/server_row.html:15 app/templates/base.html:402
+#: app/templates/_partials/server_row.html:15 app/templates/base.html:416
 #: app/templates/server.html:314
 msgid "En ligne"
 msgstr "En ligne"
 
-#: app/templates/base.html:403 app/templates/public.html:50
+#: app/templates/base.html:417 app/templates/public.html:50
 #: app/templates/public.html:115 app/templates/settings.html:81
 msgid "Hors ligne"
 msgstr "Hors ligne"
 
-#: app/templates/base.html:404
+#: app/templates/base.html:418
 msgid "Sauvegardé"
 msgstr "Sauvegardé"
 
-#: app/templates/base.html:405
+#: app/templates/base.html:419
 msgid "Erreur"
 msgstr "Erreur"
 
-#: app/templates/base.html:406 app/templates/settings.html:1158
+#: app/templates/base.html:420 app/templates/settings.html:1158
 msgid "Erreur réseau"
 msgstr "Erreur réseau"
 
-#: app/templates/base.html:407 app/templates/settings.html:771
+#: app/templates/base.html:421 app/templates/settings.html:771
 msgid "Serveur démarré"
 msgstr "Serveur démarré"
 
-#: app/templates/base.html:408 app/templates/settings.html:775
+#: app/templates/base.html:422 app/templates/settings.html:775
 msgid "Serveur arrêté"
 msgstr "Serveur arrêté"
 
-#: app/templates/base.html:409
+#: app/templates/base.html:423
 msgid "Cycle démarré"
 msgstr "Cycle démarré"
 
-#: app/templates/base.html:410
+#: app/templates/base.html:424
 msgid "Cycle arrêté"
 msgstr "Cycle arrêté"
 
-#: app/templates/base.html:411 app/templates/settings.html:509
+#: app/templates/base.html:425 app/templates/settings.html:509
 msgid "Serveur redémarré"
 msgstr "Serveur redémarré"
 
-#: app/templates/base.html:412
+#: app/templates/base.html:426
 msgid "Démarrage…"
 msgstr "Démarrage…"
 
-#: app/templates/base.html:413
+#: app/templates/base.html:427
 msgid "Arrêt…"
 msgstr "Arrêt…"
 
-#: app/templates/base.html:414 app/templates/settings.html:504
+#: app/templates/base.html:428 app/templates/settings.html:504
 msgid "Redémarrage…"
 msgstr "Redémarrage…"
 
-#: app/templates/base.html:415
+#: app/templates/base.html:429
 msgid "Arrêter le serveur ? Les joueurs connectés seront déconnectés."
 msgstr "Arrêter le serveur ? Les joueurs connectés seront déconnectés."
 
-#: app/templates/base.html:416
+#: app/templates/base.html:430
 msgid "Redémarrer le serveur ? Les joueurs connectés seront déconnectés."
 msgstr "Redémarrer le serveur ? Les joueurs connectés seront déconnectés."
 
-#: app/templates/base.html:417
+#: app/templates/base.html:431
 msgid "Sessions sauvegardées"
 msgstr "Sessions sauvegardées"
 
-#: app/templates/base.html:418
+#: app/templates/base.html:432
 msgid "Véhicules sauvegardés"
 msgstr "Véhicules sauvegardés"
 
-#: app/templates/base.html:419
+#: app/templates/base.html:433
 msgid "Nom requis"
 msgstr "Nom requis"
 
-#: app/templates/base.html:420
+#: app/templates/base.html:434
 msgid "Dupliquer la configuration"
 msgstr "Dupliquer la configuration"
 
-#: app/templates/base.html:421 app/templates/server.html:26
+#: app/templates/base.html:435 app/templates/server.html:26
 #: app/templates/server.html:300
 msgid "Nouvelle configuration"
 msgstr "Nouvelle configuration"
 
-#: app/templates/base.html:422
+#: app/templates/base.html:436
 msgid "Config réparée"
 msgstr "Configuration réparée"
 
-#: app/templates/base.html:423
+#: app/templates/base.html:437
 msgid "Auto-restart activé"
 msgstr "Auto-restart activé"
 
-#: app/templates/base.html:424
+#: app/templates/base.html:438
 msgid "Auto-restart désactivé"
 msgstr "Auto-restart désactivé"
 
-#: app/templates/_partials/server_row.html:17 app/templates/base.html:425
+#: app/templates/_partials/server_row.html:17 app/templates/base.html:439
 #: app/templates/server.html:320
 msgid "joueur(s)"
 msgstr "joueur(s)"
 
-#: app/templates/base.html:426
+#: app/templates/base.html:440
 msgid "Aucun tour enregistré"
 msgstr "Aucun tour enregistré"
 
-#: app/templates/base.html:427 app/templates/settings.html:499
+#: app/templates/base.html:441 app/templates/settings.html:499
 msgid "Erreur de chargement"
 msgstr "Erreur de chargement"
 
-#: app/templates/base.html:428 app/templates/server.html:691
+#: app/templates/base.html:442 app/templates/server.html:691
 msgid "véhicule(s) sélectionné(s)"
 msgstr "véhicule(s) sélectionné(s)"
 
-#: app/templates/base.html:429
+#: app/templates/base.html:443
 msgid "Aucune configuration dans le roulement."
 msgstr "Aucune configuration dans le roulement."
 
-#: app/templates/base.html:430
+#: app/templates/base.html:444
 msgid "Le serveur tourne avec la configuration"
 msgstr "Le serveur tourne avec la configuration"
 
-#: app/templates/base.html:431
+#: app/templates/base.html:445
 msgid "Remplacer par"
 msgstr "Remplacer par"
 
-#: app/templates/_partials/event_row.html:15 app/templates/base.html:432
+#: app/templates/_partials/event_row.html:15 app/templates/base.html:446
 #: app/templates/events_admin.html:89 app/templates/events_admin.html:174
 msgid "Terminé"
 msgstr "Terminé"
 
-#: app/templates/base.html:433
+#: app/templates/base.html:447
 msgid "LEADER"
 msgstr "LEADER"
 
-#: app/templates/base.html:434 app/templates/result_detail.html:194
+#: app/templates/base.html:448 app/templates/result_detail.html:194
 msgid "Tour"
 msgstr "Tour"
 
-#: app/templates/base.html:435
+#: app/templates/base.html:449
 #, python-format
 msgid "Supprimer \"%%s\" ? Cette action est irréversible."
 msgstr "Supprimer \"%%s\" ? Cette action est irréversible."
 
-#: app/templates/base.html:436
+#: app/templates/base.html:450
 msgid "(dernier)"
 msgstr "(dernier)"
 
@@ -1112,23 +1155,23 @@ msgstr "Retour"
 msgid "Meilleur temps"
 msgstr "Meilleur temps"
 
-#: app/templates/circuit_detail.html:48
+#: app/templates/circuit_detail.html:49
 msgid "Toutes catégories"
 msgstr "Toutes catégories"
 
-#: app/templates/circuit_detail.html:54
+#: app/templates/circuit_detail.html:57
 msgid "Tous véhicules"
 msgstr "Tous véhicules"
 
-#: app/templates/circuit_detail.html:59
+#: app/templates/circuit_detail.html:64
 msgid "PI min"
 msgstr "PI min"
 
-#: app/templates/circuit_detail.html:61
+#: app/templates/circuit_detail.html:68
 msgid "PI max"
 msgstr "PI max"
 
-#: app/templates/circuit_detail.html:64
+#: app/templates/circuit_detail.html:72
 msgid "Réinitialiser"
 msgstr "Réinitialiser"
 
@@ -1145,14 +1188,14 @@ msgstr "Générer entry list"
 #: app/templates/_partials/drivers_approved.html:24
 #: app/templates/event_detail.html:25 app/templates/event_detail.html:69
 #: app/templates/my_account.html:36 app/templates/pilot_dashboard.html:35
-#: app/templates/pilot_dashboard.html:119 app/templates/pilot_dashboard.html:162
-#: app/templates/public.html:4
+#: app/templates/pilot_dashboard.html:119
+#: app/templates/pilot_dashboard.html:162 app/templates/public.html:4
 msgid "Confirmé"
 msgstr "Confirmé"
 
 #: app/templates/event_detail.html:26 app/templates/event_detail.html:70
-#: app/templates/pilot_dashboard.html:118 app/templates/pilot_dashboard.html:161
-#: app/templates/public.html:4
+#: app/templates/pilot_dashboard.html:118
+#: app/templates/pilot_dashboard.html:161 app/templates/public.html:4
 msgid "En attente"
 msgstr "En attente"
 
@@ -1425,8 +1468,9 @@ msgid "Créer ce jour"
 msgstr "Créer ce jour"
 
 #: app/templates/_partials/drivers_oob.html:17
-#: app/templates/_partials/oob_toast.html:10 app/templates/_partials/toast.html:9
-#: app/templates/events_admin.html:52 app/templates/server.html:101
+#: app/templates/_partials/oob_toast.html:10
+#: app/templates/_partials/toast.html:9 app/templates/events_admin.html:52
+#: app/templates/server.html:101
 msgid "Fermer"
 msgstr "Fermer"
 
@@ -1450,23 +1494,28 @@ msgstr "Publié"
 msgid "Modifier"
 msgstr "Modifier"
 
-#: app/templates/_partials/event_row.html:28 app/templates/events_admin.html:104
+#: app/templates/_partials/event_row.html:28
+#: app/templates/events_admin.html:104
 msgid "Dépublier"
 msgstr "Dépublier"
 
-#: app/templates/_partials/event_row.html:28 app/templates/events_admin.html:104
+#: app/templates/_partials/event_row.html:28
+#: app/templates/events_admin.html:104
 msgid "Publier"
 msgstr "Publier"
 
-#: app/templates/_partials/event_row.html:35 app/templates/events_admin.html:111
+#: app/templates/_partials/event_row.html:35
+#: app/templates/events_admin.html:111
 msgid "Marquer comme terminé ?"
 msgstr "Marquer comme terminé ?"
 
-#: app/templates/_partials/event_row.html:36 app/templates/events_admin.html:112
+#: app/templates/_partials/event_row.html:36
+#: app/templates/events_admin.html:112
 msgid "Terminer"
 msgstr "Terminer"
 
-#: app/templates/_partials/event_row.html:42 app/templates/events_admin.html:118
+#: app/templates/_partials/event_row.html:42
+#: app/templates/events_admin.html:118
 msgid "Supprimer cet événement ?"
 msgstr "Supprimer cet événement ?"
 
@@ -1710,11 +1759,11 @@ msgstr "Lier mon compte Steam"
 
 #: app/templates/pilot_dashboard.html:18
 msgid ""
-"Confirmez votre email pour pouvoir vous inscrire aux événements. Vérifiez "
-"votre boîte de réception."
+"Confirmez votre email pour pouvoir vous inscrire aux événements. Vérifiez"
+" votre boîte de réception."
 msgstr ""
-"Confirmez votre email pour pouvoir vous inscrire aux événements. Vérifiez "
-"votre boîte de réception."
+"Confirmez votre email pour pouvoir vous inscrire aux événements. Vérifiez"
+" votre boîte de réception."
 
 #: app/templates/pilot_dashboard.html:21
 msgid "Renvoyer l'email de confirmation"
@@ -1736,8 +1785,9 @@ msgstr "Compte en attente"
 msgid "Inscriptions à venir"
 msgstr "Inscriptions à venir"
 
-#: app/templates/pilot_dashboard.html:113 app/templates/pilot_dashboard.html:156
-#: app/templates/result_detail.html:62 app/templates/timing.html:61
+#: app/templates/pilot_dashboard.html:113
+#: app/templates/pilot_dashboard.html:156 app/templates/result_detail.html:62
+#: app/templates/timing.html:61
 msgid "Voiture"
 msgstr "Voiture"
 
@@ -1769,11 +1819,11 @@ msgstr "Tours récents"
 
 #: app/templates/pilot_history.html:37
 msgid ""
-"Aucun tour enregistré pour le moment. Roulez sur un serveur du panel pour "
-"voir vos temps apparaître ici."
+"Aucun tour enregistré pour le moment. Roulez sur un serveur du panel pour"
+" voir vos temps apparaître ici."
 msgstr ""
-"Aucun tour enregistré pour le moment. Roulez sur un serveur du panel pour "
-"voir vos temps apparaître ici."
+"Aucun tour enregistré pour le moment. Roulez sur un serveur du panel pour"
+" voir vos temps apparaître ici."
 
 #: app/templates/pilot_history.html:45
 msgid "Archives"
@@ -1781,13 +1831,13 @@ msgstr "Archives"
 
 #: app/templates/pilot_history.html:48
 msgid ""
-"Résumés mensuels — l'horodatage précis de chaque tour n'est plus conservé "
-"au-delà du délai de rétention, mais le détail temps/voiture reste disponible"
-" ci-dessous."
+"Résumés mensuels — l'horodatage précis de chaque tour n'est plus conservé"
+" au-delà du délai de rétention, mais le détail temps/voiture reste "
+"disponible ci-dessous."
 msgstr ""
-"Résumés mensuels — l'horodatage précis de chaque tour n'est plus conservé "
-"au-delà du délai de rétention, mais le détail temps/voiture reste disponible"
-" ci-dessous."
+"Résumés mensuels — l'horodatage précis de chaque tour n'est plus conservé"
+" au-delà du délai de rétention, mais le détail temps/voiture reste "
+"disponible ci-dessous."
 
 #: app/templates/pilot_history.html:58
 msgid "Meilleur"
@@ -1907,7 +1957,8 @@ msgid "Inscription pilote"
 msgstr "Inscription pilote"
 
 #: app/templates/_partials/drivers_approved.html:10
-#: app/templates/_partials/drivers_pending.html:10 app/templates/register.html:29
+#: app/templates/_partials/drivers_pending.html:10
+#: app/templates/register.html:29
 msgid "Nom in-game"
 msgstr "Nom in-game"
 
@@ -2076,11 +2127,11 @@ msgstr "Voir tous les résultats →"
 
 #: app/templates/results.html:85 app/templates/results.html:171
 msgid ""
-"Aucun résultat disponible pour le moment. Les résultats apparaissent ici à "
-"la fin de chaque session."
+"Aucun résultat disponible pour le moment. Les résultats apparaissent ici "
+"à la fin de chaque session."
 msgstr ""
-"Aucun résultat disponible pour le moment. Les résultats apparaissent ici à "
-"la fin de chaque session."
+"Aucun résultat disponible pour le moment. Les résultats apparaissent ici "
+"à la fin de chaque session."
 
 #: app/templates/results.html:93
 msgid "Aperçu du classement"
@@ -2216,11 +2267,11 @@ msgstr "Vérification..."
 
 #: app/templates/server.html:125
 msgid ""
-"La configuration a été modifiée. Redémarrez le serveur pour appliquer les "
-"changements."
+"La configuration a été modifiée. Redémarrez le serveur pour appliquer les"
+" changements."
 msgstr ""
-"La configuration a été modifiée. Redémarrez le serveur pour appliquer les "
-"changements."
+"La configuration a été modifiée. Redémarrez le serveur pour appliquer les"
+" changements."
 
 #: app/templates/server.html:134
 msgid "Serveur ACE EVO"
@@ -2478,11 +2529,11 @@ msgstr "Reprise auto"
 
 #: app/templates/server.html:546
 msgid ""
-"Quand le serveur s'arrête, il démarre la configuration suivante de la liste "
-"automatiquement."
+"Quand le serveur s'arrête, il démarre la configuration suivante de la "
+"liste automatiquement."
 msgstr ""
-"Quand le serveur s'arrête, il démarre la configuration suivante de la liste "
-"automatiquement."
+"Quand le serveur s'arrête, il démarre la configuration suivante de la "
+"liste automatiquement."
 
 #: app/templates/server.html:556 app/templates/settings.html:960
 msgid "Ajouter"
@@ -2651,11 +2702,11 @@ msgstr "Aucun fichier dans media/banner/ pour le moment."
 
 #: app/templates/settings.html:261
 msgid ""
-"Ces paramètres sont propres au serveur sélectionné. Changez de serveur via "
-"le sélecteur en haut pour modifier un autre serveur."
+"Ces paramètres sont propres au serveur sélectionné. Changez de serveur "
+"via le sélecteur en haut pour modifier un autre serveur."
 msgstr ""
-"Ces paramètres sont propres au serveur sélectionné. Changez de serveur via "
-"le sélecteur en haut pour modifier un autre serveur."
+"Ces paramètres sont propres au serveur sélectionné. Changez de serveur "
+"via le sélecteur en haut pour modifier un autre serveur."
 
 #: app/templates/settings.html:265
 msgid "Identité"
@@ -2675,11 +2726,11 @@ msgstr "Port TCP/UDP joueurs"
 
 #: app/templates/settings.html:283
 msgid ""
-"Port externe annoncé aux joueurs et à Kunos (doit être ouvert dans le pare-"
-"feu)"
+"Port externe annoncé aux joueurs et à Kunos (doit être ouvert dans le "
+"pare-feu)"
 msgstr ""
-"Port externe annoncé aux joueurs et à Kunos (doit être ouvert dans le pare-"
-"feu)"
+"Port externe annoncé aux joueurs et à Kunos (doit être ouvert dans le "
+"pare-feu)"
 
 #: app/templates/settings.html:287
 msgid "Port de l'API HTTP du serveur de jeu (état, joueurs)"
@@ -2707,11 +2758,11 @@ msgstr "Laisser vide si non utilisé"
 
 #: app/templates/settings.html:324
 msgid ""
-"Webhooks propres à ce serveur. Laisser vide = utilise les webhooks globaux "
-"configurés dans l'onglet Notifications."
+"Webhooks propres à ce serveur. Laisser vide = utilise les webhooks "
+"globaux configurés dans l'onglet Notifications."
 msgstr ""
-"Webhooks propres à ce serveur. Laisser vide = utilise les webhooks globaux "
-"configurés dans l'onglet Notifications."
+"Webhooks propres à ce serveur. Laisser vide = utilise les webhooks "
+"globaux configurés dans l'onglet Notifications."
 
 #: app/templates/settings.html:328 app/templates/settings.html:685
 msgid "Webhook principal"
@@ -2757,9 +2808,9 @@ msgid ""
 "posséder ACE EVO dans sa bibliothèque Steam."
 msgstr ""
 "Le mot de passe est saisi au moment de la mise à jour et n'est jamais "
-"stocké. Ce champ est juste un rappel pour vous indiquer si un mot de passe "
-"est généralement requis. Laissez vide si vous utilisez un compte sans mot de"
-" passe ou en mode anonyme."
+"stocké. Ce champ est juste un rappel pour vous indiquer si un mot de "
+"passe est généralement requis. Laissez vide si vous utilisez un compte "
+"sans mot de passe ou en mode anonyme."
 
 #: app/templates/settings.html:385
 msgid "ex: moncomptesteam"
@@ -2799,11 +2850,11 @@ msgstr "Connexion Steam"
 
 #: app/templates/settings.html:437
 msgid ""
-"Entrez les identifiants du compte Steam qui possède ACE EVO. Ils ne sont pas"
-" sauvegardés."
+"Entrez les identifiants du compte Steam qui possède ACE EVO. Ils ne sont "
+"pas sauvegardés."
 msgstr ""
-"Entrez les identifiants du compte Steam qui possède ACE EVO. Ils ne sont pas"
-" sauvegardés."
+"Entrez les identifiants du compte Steam qui possède ACE EVO. Ils ne sont "
+"pas sauvegardés."
 
 #: app/templates/settings.html:439
 msgid "Nom d'utilisateur"
@@ -2931,11 +2982,11 @@ msgstr "Mentions"
 
 #: app/templates/settings.html:736
 msgid ""
-"Texte envoyé avant l'embed pour mentionner un rôle ou @here. Laisser vide "
-"pour désactiver."
+"Texte envoyé avant l'embed pour mentionner un rôle ou @here. Laisser vide"
+" pour désactiver."
 msgstr ""
-"Texte envoyé avant l'embed pour mentionner un rôle ou @here. Laisser vide "
-"pour désactiver."
+"Texte envoyé avant l'embed pour mentionner un rôle ou @here. Laisser vide"
+" pour désactiver."
 
 #: app/templates/settings.html:737
 msgid "Exemples"
@@ -2965,13 +3016,13 @@ msgstr "Messages de notification"
 
 #: app/templates/settings.html:765
 msgid ""
-"Titre des embeds Discord envoyés dans chaque channel. Laisser vide = texte "
-"par défaut. Les variables entre accolades sont remplacées automatiquement à "
-"l'envoi."
+"Titre des embeds Discord envoyés dans chaque channel. Laisser vide = "
+"texte par défaut. Les variables entre accolades sont remplacées "
+"automatiquement à l'envoi."
 msgstr ""
-"Titre des embeds Discord envoyés dans chaque channel. Laisser vide = texte "
-"par défaut. Les variables entre accolades sont remplacées automatiquement à "
-"l'envoi."
+"Titre des embeds Discord envoyés dans chaque channel. Laisser vide = "
+"texte par défaut. Les variables entre accolades sont remplacées "
+"automatiquement à l'envoi."
 
 #: app/templates/settings.html:772
 msgid "🏁 Serveur démarré"
@@ -3079,15 +3130,15 @@ msgstr "Bot TCP"
 
 #: app/templates/settings.html:894
 msgid ""
-"Le bot est un client fantôme qui se connecte silencieusement au serveur ACE "
-"EVO via TCP (port 9700). Il écoute les événements de session en temps réel "
-"(leaderboard, passages de secteurs, connexions/déconnexions) et les transmet"
-" au panel sans passer par le webhook de fin de session."
+"Le bot est un client fantôme qui se connecte silencieusement au serveur "
+"ACE EVO via TCP (port 9700). Il écoute les événements de session en temps"
+" réel (leaderboard, passages de secteurs, connexions/déconnexions) et les"
+" transmet au panel sans passer par le webhook de fin de session."
 msgstr ""
-"Le bot est un client fantôme qui se connecte silencieusement au serveur ACE "
-"EVO via TCP. Il n'occupe pas de slot pilote. Il permet d'envoyer des "
-"messages in-game, des commandes admin, et de gérer les pilotes (kick, mute, "
-"pénalités…) directement depuis ce panel."
+"Le bot est un client fantôme qui se connecte silencieusement au serveur "
+"ACE EVO via TCP. Il n'occupe pas de slot pilote. Il permet d'envoyer des "
+"messages in-game, des commandes admin, et de gérer les pilotes (kick, "
+"mute, pénalités…) directement depuis ce panel."
 
 #: app/templates/settings.html:895
 msgid "Steam ID"
@@ -3107,11 +3158,11 @@ msgstr "Laisser vide pour désactiver"
 
 #: app/templates/settings.html:910
 msgid ""
-"AdminPassword vide dans la config serveur — le bot se connectera sans droits"
-" admin."
+"AdminPassword vide dans la config serveur — le bot se connectera sans "
+"droits admin."
 msgstr ""
-"AdminPassword vide dans la config serveur — le bot se connectera sans droits"
-" admin."
+"AdminPassword vide dans la config serveur — le bot se connectera sans "
+"droits admin."
 
 #: app/templates/settings.html:911
 msgid "Configurer"
@@ -3623,8 +3674,8 @@ msgstr "Aucun véhicule trouvé."
 #~ msgstr "Fuseau horaire (ex: Europe/Paris)"
 
 #~ msgid ""
-#~ "Clé de session Flask — générer avec"
-#~ " python -c \"import secrets; "
+#~ "Clé de session Flask — générer "
+#~ "avec python -c \"import secrets; "
 #~ "print(secrets.token_hex(32))\""
 #~ msgstr "Clé de session Flask — générer avec python -c"
 
@@ -3647,44 +3698,44 @@ msgstr "Aucun véhicule trouvé."
 #~ msgstr "Dossier des fichiers de configuration JSON"
 
 #~ msgid ""
-#~ "Steam ID 64-bit du compte bot — "
-#~ "le bot se connecte au serveur avec"
-#~ " ce compte. Laisser vide pour désactiver"
-#~ " le bot."
+#~ "Steam ID 64-bit du compte bot —"
+#~ " le bot se connecte au serveur "
+#~ "avec ce compte. Laisser vide pour "
+#~ "désactiver le bot."
 #~ msgstr ""
-#~ "Steam ID 64-bit du compte bot — "
-#~ "le bot se connecte au serveur avec"
-#~ " ce Steam ID."
+#~ "Steam ID 64-bit du compte bot —"
+#~ " le bot se connecte au serveur "
+#~ "avec ce Steam ID."
 
 #~ msgid "Voiture utilisée par le bot pour rejoindre la session."
 #~ msgstr "Voiture utilisée par le bot pour rejoindre la session."
 
 #~ msgid ""
-#~ "Activer les droits admin pour le bot"
-#~ " (true/false). Le mot de passe est "
-#~ "lu automatiquement depuis la config serveur"
-#~ " active."
+#~ "Activer les droits admin pour le "
+#~ "bot (true/false). Le mot de passe "
+#~ "est lu automatiquement depuis la config"
+#~ " serveur active."
 #~ msgstr ""
-#~ "Activer les droits admin pour le bot"
-#~ " (true/false). Le mot de passe est "
-#~ "lu depuis BOT_ADMIN_PASSWORD."
+#~ "Activer les droits admin pour le "
+#~ "bot (true/false). Le mot de passe "
+#~ "est lu depuis BOT_ADMIN_PASSWORD."
 
 #~ msgid ""
 #~ "Message de bienvenue envoyé à chaque "
-#~ "connexion. Variable : {name}. Laisser vide"
-#~ " pour désactiver."
+#~ "connexion. Variable : {name}. Laisser "
+#~ "vide pour désactiver."
 #~ msgstr ""
 #~ "Message de bienvenue envoyé à chaque "
-#~ "connexion. Variable : {name}. Laisser vide"
-#~ " pour désactiver."
+#~ "connexion. Variable : {name}. Laisser "
+#~ "vide pour désactiver."
 
 #~ msgid ""
-#~ "Message Discord envoyé si DISCORD_INVITE_URL "
-#~ "est défini. Variables : {name}, "
+#~ "Message Discord envoyé si DISCORD_INVITE_URL"
+#~ " est défini. Variables : {name}, "
 #~ "{discord_url}. Laisser vide pour désactiver."
 #~ msgstr ""
-#~ "Message Discord envoyé si DISCORD_INVITE_URL "
-#~ "est défini. Variables : {name}, "
+#~ "Message Discord envoyé si DISCORD_INVITE_URL"
+#~ " est défini. Variables : {name}, "
 #~ "{discord_url}."
 
 #~ msgid ""
@@ -3697,13 +3748,13 @@ msgstr "Aucun véhicule trouvé."
 
 #~ msgid ""
 #~ "Pré-remplit le formulaire de mise à "
-#~ "jour. Le mot de passe est saisi "
-#~ "au moment de la mise à jour, "
-#~ "jamais stocké."
+#~ "jour. Le mot de passe est saisi"
+#~ " au moment de la mise à jour,"
+#~ " jamais stocké."
 #~ msgstr ""
 #~ "Pré-remplit le formulaire de mise à "
-#~ "jour. Le mot de passe est saisi "
-#~ "au moment du lancement."
+#~ "jour. Le mot de passe est saisi"
+#~ " au moment du lancement."
 
 #~ msgid "Lien d'invitation Discord affiché sur le panel"
 #~ msgstr "Lien d'invitation Discord affiché sur le panel"
@@ -3813,29 +3864,30 @@ msgstr "Aucun véhicule trouvé."
 #~ "Si un mot de passe admin est "
 #~ "défini, il peut aussi envoyer des "
 #~ "commandes dans le chat privé (ex: "
-#~ "/kick, /time) — consultez la doc ACE"
-#~ " EVO pour la liste complète.Si un "
-#~ "mot de passe admin est défini, il "
-#~ "peut aussi envoyer des commandes dans "
-#~ "le chat privé (ex: /kick, /time) —"
-#~ " consultez la doc ACE EVO pour la"
-#~ " liste complète."
+#~ "/kick, /time) — consultez la doc "
+#~ "ACE EVO pour la liste complète.Si "
+#~ "un mot de passe admin est défini,"
+#~ " il peut aussi envoyer des commandes"
+#~ " dans le chat privé (ex: /kick, "
+#~ "/time) — consultez la doc ACE EVO"
+#~ " pour la liste complète."
 
 #~ msgid "Voiture du bot"
 #~ msgstr "Voiture du bot"
 
 #~ msgid ""
 #~ "Auto-sélectionnée depuis la première "
-#~ "voiture de la config active — se "
-#~ "met à jour à chaque rotation de "
-#~ "session."
+#~ "voiture de la config active — se"
+#~ " met à jour à chaque rotation "
+#~ "de session."
 #~ msgstr ""
 #~ "Auto-sélectionnée depuis la première "
-#~ "voiture de la config active — se "
-#~ "met à jour au redémarrage du serveur"
-#~ ".Auto-sélectionnée depuis la première voiture"
-#~ " de la config active — se met "
-#~ "à jour au redémarrage du serveur."
+#~ "voiture de la config active — se"
+#~ " met à jour au redémarrage du "
+#~ "serveur.Auto-sélectionnée depuis la première"
+#~ " voiture de la config active — "
+#~ "se met à jour au redémarrage du"
+#~ " serveur."
 
 #~ msgid "Automatique"
 #~ msgstr "Automatique"
@@ -3876,18 +3928,18 @@ msgstr "Aucun véhicule trouvé."
 #~ msgstr "Aucun compte"
 
 #~ msgid ""
-#~ "La gestion complète des événements conserve"
-#~ " son écran dédié. Ce raccourci reste "
-#~ "ici pour garder le hub paramètres "
-#~ "cohérent."
+#~ "La gestion complète des événements "
+#~ "conserve son écran dédié. Ce raccourci"
+#~ " reste ici pour garder le hub "
+#~ "paramètres cohérent."
 #~ msgstr ""
-#~ "La gestion complète des événements conserve"
-#~ " son écran dédié. Ce raccourci reste "
-#~ "accessible via le menu Admin → "
-#~ "Événements.La gestion complète des événements "
-#~ "conserve son écran dédié. Ce raccourci "
-#~ "reste accessible via le menu Admin →"
-#~ " Événements."
+#~ "La gestion complète des événements "
+#~ "conserve son écran dédié. Ce raccourci"
+#~ " reste accessible via le menu Admin"
+#~ " → Événements.La gestion complète des "
+#~ "événements conserve son écran dédié. Ce"
+#~ " raccourci reste accessible via le "
+#~ "menu Admin → Événements."
 
 #~ msgid "Liste des événements"
 #~ msgstr "Liste des événements"
@@ -3899,18 +3951,18 @@ msgstr "Aucun véhicule trouvé."
 #~ msgstr "Ouvrir le live"
 
 #~ msgid ""
-#~ "Le live admin garde sa page temps "
-#~ "réel dédiée. Le raccourci est maintenant"
-#~ " intégré au hub sans casser la "
-#~ "navigation verticale."
+#~ "Le live admin garde sa page temps"
+#~ " réel dédiée. Le raccourci est "
+#~ "maintenant intégré au hub sans casser"
+#~ " la navigation verticale."
 #~ msgstr ""
-#~ "Le live admin garde sa page temps "
-#~ "réel dédiée. Le raccourci est maintenant"
-#~ " intégré directement dans le tableau de"
-#~ " bord.Le live admin garde sa page "
-#~ "temps réel dédiée. Le raccourci est "
+#~ "Le live admin garde sa page temps"
+#~ " réel dédiée. Le raccourci est "
 #~ "maintenant intégré directement dans le "
-#~ "tableau de bord."
+#~ "tableau de bord.Le live admin garde "
+#~ "sa page temps réel dédiée. Le "
+#~ "raccourci est maintenant intégré directement"
+#~ " dans le tableau de bord."
 
 #~ msgid "Messages — Serveur"
 #~ msgstr "Messages — Serveur"
@@ -3946,19 +3998,27 @@ msgstr "Aucun véhicule trouvé."
 #~ msgstr "Webhook course — meilleur tour, actions admin (kick, pénalités…)"
 
 #~ msgid ""
-#~ "Mention envoyée avec les événements serveur"
-#~ " (ex: @here ou <@&123456789>). Laisser "
-#~ "vide pour désactiver."
+#~ "Mention envoyée avec les événements "
+#~ "serveur (ex: @here ou <@&123456789>). "
+#~ "Laisser vide pour désactiver."
 #~ msgstr ""
-#~ "Mention envoyée avec les événements serveur"
-#~ " (ex: @here ou <@&123456789>). Laisser "
-#~ "vide pour désactiver."
+#~ "Mention envoyée avec les événements "
+#~ "serveur (ex: @here ou <@&123456789>). "
+#~ "Laisser vide pour désactiver."
 
-#~ msgid "Mention envoyée avec les connexions joueurs. Laisser vide pour désactiver."
-#~ msgstr "Mention envoyée avec les connexions joueurs. Laisser vide pour désactiver."
+#~ msgid ""
+#~ "Mention envoyée avec les connexions "
+#~ "joueurs. Laisser vide pour désactiver."
+#~ msgstr ""
+#~ "Mention envoyée avec les connexions "
+#~ "joueurs. Laisser vide pour désactiver."
 
-#~ msgid "Mention envoyée avec les événements course. Laisser vide pour désactiver."
-#~ msgstr "Mention envoyée avec les événements course. Laisser vide pour désactiver."
+#~ msgid ""
+#~ "Mention envoyée avec les événements "
+#~ "course. Laisser vide pour désactiver."
+#~ msgstr ""
+#~ "Mention envoyée avec les événements "
+#~ "course. Laisser vide pour désactiver."
 
 #~ msgid "Titre embed — Serveur démarré. Variables : {config}, {mode}, {circuit}"
 #~ msgstr "Titre embed — Serveur démarré. Variables : {config}, {mode}, {circuit}"
@@ -3970,37 +4030,39 @@ msgstr "Aucun véhicule trouvé."
 #~ msgstr "Titre embed — Crash détecté. Variables : {config}"
 
 #~ msgid ""
-#~ "Titre embed — Connexion joueur. Variables"
-#~ " : {name}, {num}, {car}, {steam_id}"
+#~ "Titre embed — Connexion joueur. "
+#~ "Variables : {name}, {num}, {car}, "
+#~ "{steam_id}"
 #~ msgstr ""
-#~ "Titre embed — Connexion joueur. Variables"
-#~ " : {name}, {num}, {car}, {steam_id}"
+#~ "Titre embed — Connexion joueur. "
+#~ "Variables : {name}, {num}, {car}, "
+#~ "{steam_id}"
 
 #~ msgid ""
-#~ "Titre embed — Déconnexion joueur. Variables"
-#~ " : {name}, {duration}, {steam_id}"
+#~ "Titre embed — Déconnexion joueur. "
+#~ "Variables : {name}, {duration}, {steam_id}"
 #~ msgstr ""
-#~ "Titre embed — Déconnexion joueur. Variables"
-#~ " : {name}, {duration}, {steam_id}"
+#~ "Titre embed — Déconnexion joueur. "
+#~ "Variables : {name}, {duration}, {steam_id}"
 
 #~ msgid ""
-#~ "Titre embed — Changement de véhicule. "
-#~ "Variables : {name}, {num}, {old_car}, "
+#~ "Titre embed — Changement de véhicule."
+#~ " Variables : {name}, {num}, {old_car}, "
 #~ "{new_car}"
 #~ msgstr ""
-#~ "Titre embed — Changement de véhicule. "
-#~ "Variables : {name}, {num}, {old_car}, "
+#~ "Titre embed — Changement de véhicule."
+#~ " Variables : {name}, {num}, {old_car}, "
 #~ "{new_car}"
 
 #~ msgid "Titre embed — Meilleur tour serveur. Variables : {name}, {lap}, {car}"
 #~ msgstr "Titre embed — Meilleur tour serveur. Variables : {name}, {lap}, {car}"
 
 #~ msgid ""
-#~ "Titre embed — Action admin. Variables "
-#~ ": {action}, {target}, {admin}, {detail}"
+#~ "Titre embed — Action admin. Variables"
+#~ " : {action}, {target}, {admin}, {detail}"
 #~ msgstr ""
-#~ "Titre embed — Action admin. Variables "
-#~ ": {action}, {target}, {admin}, {detail}"
+#~ "Titre embed — Action admin. Variables"
+#~ " : {action}, {target}, {admin}, {detail}"
 
 #~ msgid "Accès non autorisé"
 #~ msgstr "Accès non autorisé"
@@ -4058,12 +4120,12 @@ msgstr "Aucun véhicule trouvé."
 
 #~ msgid ""
 #~ "Doit être différent du serveur #1 "
-#~ "(9700). TCP et UDP utilisent le même"
-#~ " numéro."
+#~ "(9700). TCP et UDP utilisent le "
+#~ "même numéro."
 #~ msgstr ""
 #~ "Doit être différent du serveur #1 "
-#~ "(9700). TCP et UDP utilisent le même"
-#~ " numéro."
+#~ "(9700). TCP et UDP utilisent le "
+#~ "même numéro."
 
 #~ msgid "Road"
 #~ msgstr "Route"
@@ -4196,13 +4258,13 @@ msgstr "Aucun véhicule trouvé."
 #~ msgstr "Aucun pilote approuvé."
 
 #~ msgid ""
-#~ "Meilleurs temps par circuit — cliquez "
-#~ "sur un circuit pour voir le détail"
-#~ " par catégorie"
+#~ "Meilleurs temps par circuit — cliquez"
+#~ " sur un circuit pour voir le "
+#~ "détail par catégorie"
 #~ msgstr ""
-#~ "Meilleurs temps par circuit — cliquez "
-#~ "sur un circuit pour voir le détail"
-#~ " par catégorie"
+#~ "Meilleurs temps par circuit — cliquez"
+#~ " sur un circuit pour voir le "
+#~ "détail par catégorie"
 
 #~ msgid "Session en direct"
 #~ msgstr "Session en direct"
@@ -4283,13 +4345,13 @@ msgstr "Aucun véhicule trouvé."
 #~ msgstr "Serveur principal"
 
 #~ msgid ""
-#~ "Webhooks propres à ce serveur. Laisser "
-#~ "vide = utilise les webhooks globaux "
-#~ "configurés dans l'onglet Notifications"
+#~ "Webhooks propres à ce serveur. Laisser"
+#~ " vide = utilise les webhooks globaux"
+#~ " configurés dans l'onglet Notifications"
 #~ msgstr ""
-#~ "Webhooks propres à ce serveur. Laisser "
-#~ "vide = utilise les webhooks globaux "
-#~ "configurés dans l'onglet Notifications."
+#~ "Webhooks propres à ce serveur. Laisser"
+#~ " vide = utilise les webhooks globaux"
+#~ " configurés dans l'onglet Notifications."
 
 #~ msgid "Vérifier et mettre à jour"
 #~ msgstr "Vérifier et mettre à jour"
@@ -4364,13 +4426,13 @@ msgstr "Aucun véhicule trouvé."
 #~ msgstr "Activer / Désactiver"
 
 #~ msgid ""
-#~ "Aucun circuit trouvé. Les circuits sont "
-#~ "détectés automatiquement depuis les configs "
-#~ "de serveur."
+#~ "Aucun circuit trouvé. Les circuits sont"
+#~ " détectés automatiquement depuis les "
+#~ "configs de serveur."
 #~ msgstr ""
-#~ "Aucun circuit trouvé. Les circuits sont "
-#~ "détectés automatiquement depuis les configs "
-#~ "de serveur."
+#~ "Aucun circuit trouvé. Les circuits sont"
+#~ " détectés automatiquement depuis les "
+#~ "configs de serveur."
 
 #~ msgid "Aucune session enregistrée pour le moment."
 #~ msgstr "Aucune session enregistrée pour le moment."

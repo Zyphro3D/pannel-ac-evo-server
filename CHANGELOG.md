@@ -2,6 +2,16 @@
 
 ### v1.9.5 — non publiée
 
+**Correction — images véhicules/circuits absentes après un clone du repo**
+
+- `media/` était entièrement gitignoré (destiné aux assets uploadés à l'exécution), ce qui excluait aussi les photos par défaut des véhicules/circuits officiels. Tout clone frais du repo récupérait donc un dossier `media/` vide — aucune image ne s'affichait nulle part, sauf le tracé SVG de la page Live (qui vient de `app/static/`, non concerné).
+- Corrigé : `.gitignore` affiné pour ne garder l'exclusion que sur les dossiers réellement spécifiques à l'instance (`banner/`, `mail/`, `events/`) ; `media/cars/` et `media/circuits/` sont désormais versionnés.
+
+**Ajout — avertissement quand `.env` est modifié après la première installation sans effet**
+
+- `data/settings.json` devient la seule source de vérité dès sa création (migration one-time depuis `.env`) — toute modification de `.env` après coup est silencieusement ignorée, y compris pour des réglages sensibles (mot de passe admin, cookies sécurisés...). Aucune erreur, aucun avertissement : piège classique pour un utilisateur qui édite `.env` en pensant que ça s'applique.
+- Corrigé : au démarrage, le panel compare `.env` à `settings.json` et signale toute divergence — un avertissement dans les logs (`docker compose logs panel`) et un bandeau dans l'interface (visible sur toutes les pages admin) listant les clés concernées, avec un lien direct vers Paramètres.
+
 **Correction — mise à jour Steam : l'étape "Synchronisation véhicules et circuits" semblait bloquée**
 
 - Signalé par un utilisateur : à la fin d'une mise à jour du serveur de jeu, l'étape de synchronisation des véhicules/circuits donnait l'impression de rester figée. Ce n'est pas un vrai blocage — le serveur de jeu met simplement plusieurs dizaines de secondes (jusqu'à 90s max) à régénérer ses fichiers après redémarrage, et cette attente ne produisait **aucun message** entre le début et la fin.

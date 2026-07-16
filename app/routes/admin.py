@@ -718,6 +718,14 @@ def dismiss_env_notice():
     return "", 200
 
 
+def get_env_settings_drift() -> list[tuple[str, str]]:
+    """Variables dont la valeur .env actuelle diffère de settings.json — donc
+    ignorée. Piège classique : éditer .env après la 1re installation n'a plus
+    aucun effet une fois settings.json créé (seule la page Paramètres compte)."""
+    from app import _ENV_SETTINGS_DRIFT
+    return [(k, _ENV_DESCS.get(k, "")) for k in _ENV_SETTINGS_DRIFT]
+
+
 @admin_bp.route("/settings", methods=["GET", "POST"])
 @_admin_required
 @_superadmin_required

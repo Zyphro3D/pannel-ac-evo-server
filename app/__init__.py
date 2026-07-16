@@ -52,9 +52,17 @@ _SETTINGS_BOOL_KEYS = {"SESSION_COOKIE_SECURE", "MAIL_USE_TLS", "ACE_BOT_IS_ADMI
 _APPCONFIG_RESERVED_KEYS = {"SERVER_NAME"}
 
 
+# Clés dont la valeur .env actuelle diffère de settings.json au dernier démarrage —
+# donc silencieusement ignorée (settings.json est la seule source de vérité une fois
+# créé, cf. _migrate_dotenv_to_settings). Alimente le bandeau admin, cf. get_env_settings_drift().
+_ENV_SETTINGS_DRIFT: list[str] = []
+
+
 def _load_settings(app):
     """Charge data/settings.json dans os.environ + app.config au démarrage."""
     import json as _json
+    global _ENV_SETTINGS_DRIFT
+    _ENV_SETTINGS_DRIFT = []
     if not _SETTINGS_PATH.exists():
         return
     try:
@@ -62,11 +70,20 @@ def _load_settings(app):
         count = 0
         for k, v in data.items():
             if k not in _SETTINGS_SKIP_KEYS:
+                env_val = os.environ.get(k, "").strip()
+                if env_val and env_val != str(v):
+                    _ENV_SETTINGS_DRIFT.append(k)
                 os.environ[k] = str(v)
                 if k not in _APPCONFIG_RESERVED_KEYS:
                     app.config[k] = (str(v).lower() == "true") if k in _SETTINGS_BOOL_KEYS else v
                 count += 1
         _log.getLogger(__name__).info("settings.json chargé : %d clé(s)", count)
+        if _ENV_SETTINGS_DRIFT:
+            _log.getLogger(__name__).warning(
+                "%d valeur(s) .env ignorée(s) car différente(s) de settings.json — modifiable "
+                "uniquement via Paramètres après la 1re installation : %s",
+                len(_ENV_SETTINGS_DRIFT), ", ".join(_ENV_SETTINGS_DRIFT),
+            )
     except Exception as e:
         _log.getLogger(__name__).warning("settings.json illisible : %s", e)
 
@@ -488,6 +505,17 @@ def _register_request_hooks(app):
         except Exception:
             pass
         return {"pending_env_notices": []}
+
+    @app.context_processor
+    def _inject_env_drift():
+        from flask_login import current_user
+        try:
+            if current_user.is_authenticated and current_user.is_admin:
+                from app.routes.admin import get_env_settings_drift
+                return {"env_settings_drift": get_env_settings_drift()}
+        except Exception:
+            pass
+        return {"env_settings_drift": []}
 
 
 def _start_services(app):
