@@ -57,8 +57,12 @@ aceserver/configs/*.json
 !aceserver/configs/*.json.example
 aceserver/configs/server-*/
 
-# Assets uploadés (générés à l'exécution, pas versionnés)
-media/
+# Assets uploadés à l'exécution (bannière/logo perso, aperçus mail) — spécifiques
+# à chaque instance, jamais versionnés. cars/ et circuits/ sont livrés avec le
+# projet (photos par défaut des véhicules/circuits officiels) et NE sont PAS ignorés.
+media/banner/
+media/mail/
+media/events/
 
 # IDE
 .vscode/
