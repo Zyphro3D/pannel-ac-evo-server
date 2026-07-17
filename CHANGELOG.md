@@ -1,6 +1,6 @@
 # Changelog
 
-### v1.9.5 — non publiée
+### v1.9.5 — 17/07/2026
 
 **Correction — mot de passe admin configuré via Paramètres ignoré par le bot ("reopen")**
 
