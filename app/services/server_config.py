@@ -47,7 +47,14 @@ def _results_post_url(server_id: int) -> str:
 
 def deploy_config(config_name: str, server_id: int) -> None:
     """Copie config_name depuis la bibliothèque partagée vers server-{id}/,
-    en injectant TcpPort/UdpPort/HttpPort/ResultsPostUrl propres à ce serveur."""
+    en injectant TcpPort/UdpPort/HttpPort/ResultsPostUrl propres à ce serveur.
+
+    Relit la source depuis le disque plutôt que de réutiliser un dict déjà en
+    mémoire (appelant potentiellement différent) — doit donc réappliquer
+    inject_global_server_settings() elle-même. Sans ça, le fichier déployé (celui
+    que lit le bot pour s'élever admin) ne recevait jamais SERVER_ADMIN_PASSWORD
+    ni les autres réglages globaux, même si les arguments de lancement du jeu
+    (construits séparément depuis le dict déjà injecté) l'avaient bien."""
     if not _valid_config_name(config_name):
         log.warning("deploy_config: nom de config invalide refusé : %r", config_name)
         return
@@ -60,6 +67,7 @@ def deploy_config(config_name: str, server_id: int) -> None:
     runtime.mkdir(parents=True, exist_ok=True)
     dst  = runtime / config_name
     data = json.loads(src.read_text(encoding="utf-8"))
+    inject_global_server_settings(data)
     data.setdefault("Server", {})["ResultsPostUrl"] = _results_post_url(server_id)
     try:
         from app.models import Server

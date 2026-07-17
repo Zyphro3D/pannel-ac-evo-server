@@ -2,6 +2,13 @@
 
 ### v1.9.5 — non publiée
 
+**Correction — mot de passe admin configuré via Paramètres ignoré par le bot ("reopen")**
+
+- Signalé à nouveau après le correctif v1.9.4 : mot de passe admin bien configuré (via la page Paramètres, pas `.env`), mais le bot refuse toujours de s'élever en prétendant qu'aucun mot de passe n'est configuré.
+- Cause racine trouvée en reproduisant le scénario exact : `deploy_config()` (qui écrit le fichier réellement lu par le bot pour l'élévation) relit la config source **directement depuis le disque**, sans jamais réappliquer `inject_global_server_settings()` — contrairement aux arguments de lancement envoyés au jeu, construits séparément à partir d'un dict qui, lui, avait bien reçu l'injection. Résultat : le mot de passe admin global atteignait bien le serveur de jeu, mais jamais le fichier que le bot consulte pour s'élever — peu importe le nombre de redémarrages.
+- Corrigé : `deploy_config()` applique désormais `inject_global_server_settings()` sur les données avant de les écrire.
+- Vérifié en reproduisant le scénario exact (config sans mot de passe propre, mot de passe configuré via Paramètres après coup, serveur redémarré) : élévation en échec avant le correctif, réussie après, sans changer quoi que ce soit d'autre.
+
 **Correction — images véhicules/circuits absentes après un clone du repo**
 
 - `media/` était entièrement gitignoré (destiné aux assets uploadés à l'exécution), ce qui excluait aussi les photos par défaut des véhicules/circuits officiels. Tout clone frais du repo récupérait donc un dossier `media/` vide — aucune image ne s'affichait nulle part, sauf le tracé SVG de la page Live (qui vient de `app/static/`, non concerné).
