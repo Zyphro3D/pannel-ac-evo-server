@@ -721,9 +721,24 @@ def dismiss_env_notice():
 def get_env_settings_drift() -> list[tuple[str, str]]:
     """Variables dont la valeur .env actuelle diffère de settings.json — donc
     ignorée. Piège classique : éditer .env après la 1re installation n'a plus
-    aucun effet une fois settings.json créé (seule la page Paramètres compte)."""
-    from app import _ENV_SETTINGS_DRIFT
-    return [(k, _ENV_DESCS.get(k, "")) for k in _ENV_SETTINGS_DRIFT]
+    aucun effet une fois settings.json créé (seule la page Paramètres compte).
+
+    Recalculé à chaque appel (contrairement à _ENV_SETTINGS_DRIFT, un instantané
+    pris une seule fois au démarrage) : sinon le bandeau reste affiché après
+    correction du .env ou sauvegarde depuis Paramètres, tant que le panel n'a
+    pas été redémarré — source de confusion confirmée en usage réel."""
+    from dotenv import dotenv_values, find_dotenv
+    env_file_values = dotenv_values(find_dotenv())
+    if not env_file_values:
+        return []
+    current, _ = _read_env_file()
+    drift = []
+    for k, env_val in env_file_values.items():
+        if not env_val or k in _SETTINGS_SKIP_KEYS or k not in current:
+            continue
+        if str(current[k]) != str(env_val):
+            drift.append((k, _ENV_DESCS.get(k, "")))
+    return drift
 
 
 @admin_bp.route("/settings", methods=["GET", "POST"])

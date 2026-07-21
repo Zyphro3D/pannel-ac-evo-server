@@ -1,5 +1,13 @@
 # Changelog
 
+### v1.9.6 — non publiée
+
+**Correction — le bandeau "Réglages .env ignorés" restait affiché après correction**
+
+- Signalé par un utilisateur : `.env` et Paramètres avaient bien la même valeur pour `SESSION_COOKIE_SECURE`, mais le bandeau d'avertissement (ajouté en v1.9.5) continuait de s'afficher.
+- Cause : la détection de divergence n'était calculée qu'une seule fois, au démarrage du panel (`_ENV_SETTINGS_DRIFT`). Corriger `.env` ou sauvegarder depuis Paramètres ne rafraîchissait pas cet instantané tant que le panel n'était pas redémarré.
+- Corrigé : `get_env_settings_drift()` relit désormais `.env` et `settings.json` à chaque affichage, sans dépendre d'un état figé au démarrage.
+
 ### v1.9.5 — 17/07/2026
 
 **Correction — mot de passe admin configuré via Paramètres ignoré par le bot ("reopen")**
