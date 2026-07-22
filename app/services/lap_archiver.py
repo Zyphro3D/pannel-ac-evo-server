@@ -48,7 +48,7 @@ def archive_old_laps(app):
     from app.services.database import db
 
     retention_months = int(app.config.get("LAP_HISTORY_RETENTION_MONTHS", "6") or 6)
-    cutoff = datetime.utcnow() - timedelta(days=retention_months * 30)
+    cutoff = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=retention_months * 30)
 
     old_laps = LapRecord.query.filter(LapRecord.recorded_at < cutoff).all()
     if not old_laps:

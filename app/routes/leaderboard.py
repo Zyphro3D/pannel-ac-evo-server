@@ -2,6 +2,7 @@ import logging
 import time
 from flask import Blueprint, redirect, url_for, request, render_template
 from app.models import SessionResult, TrackMeta
+from app.services.database import db
 from app.services.server_config import load_cars, CAR_PROP_MAPS as _PROP_MAPS, CAR_CATEGORY_ORDER as _CAT_ORDER
 
 log = logging.getLogger(__name__)
@@ -150,7 +151,7 @@ def leaderboard():
 
 @leaderboard_bp.route("/results/circuit/<int:track_id>")
 def circuit_detail(track_id):
-    tm = TrackMeta.query.get_or_404(track_id)
+    tm = db.get_or_404(TrackMeta, track_id)
     car      = request.args.get("car") or None
     category = request.args.get("cat") or None
     pi_min   = request.args.get("pi_min", type=float)

@@ -393,20 +393,27 @@ def _connect_loop(server_id: int):
 # ── API publique ──────────────────────────────────────────────────────────────
 
 def send_chat(text: str, server_id: int = 1) -> bool:
-    """Envoie un message dans le tchat du jeu. Retourne True si envoyé."""
+    """Envoie un message dans le tchat du jeu. Retourne True si envoyé.
+
+    Les commandes serveur (préfixe « \\ », ex. \\admin, \\kick) ne sont jamais
+    journalisées en clair ni ajoutées à l'historique de chat : ce dernier est
+    exposé publiquement via /api/live/chat-history, et \\admin contient le mot
+    de passe admin du serveur de jeu."""
     c = _get_client(server_id)
+    is_command = text.lstrip().startswith("\\")
     with c["lock"]:
         sock = c["sock"]
     if sock is None:
         return False
     try:
         sock.sendall(_build_chat(text))
-        log.info("ace_tcp_client: chat envoyé : %r", text)
+        _logged = "\\admin ***" if text.lstrip().lower().startswith("\\admin") else text
+        log.info("ace_tcp_client: chat envoyé : %r", _logged)
         sent = True
     except Exception as e:
         log.warning("ace_tcp_client: erreur envoi chat : %s", e)
         sent = False
-    if sent:
+    if sent and not is_command:
         ts = time.strftime("%H:%M:%S")
         with c["lb_lock"]:
             c["chat_buffer"].append({"author": "Panel", "text": text, "ts": ts, "source": "panel"})

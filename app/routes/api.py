@@ -313,6 +313,13 @@ def get_events(mode):
 @limiter.limit("60 per hour")
 def results_ingest():
     """Reçoit la notification de fin de session d'AssettoCorsaEVOServer."""
+    # Vérifie la signature HMAC AVANT tout traitement : une requête non signée ne
+    # doit déclencher aucune lecture d'état (fichier disque, appel Docker is_running,
+    # requête HTTP de comptage joueurs). Refuser d'abord, agir ensuite.
+    raw_body = request.get_data(cache=True) or b""
+    if not _verify_ingest_signature(raw_body):
+        return jsonify({"ok": False, "error": "invalid_signature"}), 403
+
     # server_id identifie quel serveur envoie ce webhook (serveur N configure
     # ResultsPostUrl avec ?server_id=N). Défaut 1 pour rétrocompat.
     try:
@@ -328,10 +335,6 @@ def results_ingest():
     _st = get_status(sid)
     current_config = _st.get("config") or _raw_state.get("config") or None
     current_run_id = _st.get("run_id")  or _raw_state.get("run_id")  or None
-
-    raw_body = request.get_data(cache=True) or b""
-    if not _verify_ingest_signature(raw_body):
-        return jsonify({"ok": False, "error": "invalid_signature"}), 403
 
     imported = 0
     data = request.get_json(silent=True)
@@ -615,13 +618,14 @@ def live_tcp_debug():
     """Endpoint de diagnostic : retourne les données brutes reçues via TCP."""
     try:
         from app.services import ace_tcp_client
-        from app.routes.live import _build_state_cached
-        state     = _build_state_cached()
-        tcp_lb    = ace_tcp_client.get_leaderboard()
+        from app.services.live_state import build_state_cached
+        sid       = _current_server_id()
+        state     = build_state_cached(sid)
+        tcp_lb    = ace_tcp_client.get_leaderboard(sid)
         log_sids  = [d.get('steam_id') for d in state.get('drivers', [])]
         tcp_sids  = [e.get('steam_id') for e in tcp_lb]
         return jsonify({
-            "tcp_connected":  ace_tcp_client.is_connected(),
+            "tcp_connected":  ace_tcp_client.is_connected(sid),
             "log_steam_ids":  log_sids,
             "tcp_steam_ids":  tcp_sids,
             "tcp_leaderboard": tcp_lb,

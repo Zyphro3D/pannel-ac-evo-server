@@ -430,15 +430,16 @@ def send_event_reminder(driver, event, registration):
 
 def _preview_dummies():
     from types import SimpleNamespace
-    from datetime import timedelta
+    from datetime import timedelta, timezone
+    _now = datetime.now(timezone.utc).replace(tzinfo=None)
     driver = SimpleNamespace(
         ingame_name="Zyphro",
         email="zyphro@exemple.fr",
-        created_at=datetime.utcnow(),
+        created_at=_now,
     )
     event = SimpleNamespace(
         title="Course du vendredi soir",
-        date=datetime.utcnow() + timedelta(days=3),
+        date=_now + timedelta(days=3),
         circuit_display="Spa-Francorchamps",
         circuit="circuit_de_spa_francorchamps",
         mode_display="Course",

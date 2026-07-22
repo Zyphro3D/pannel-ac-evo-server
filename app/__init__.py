@@ -529,7 +529,8 @@ def _start_services(app):
     if Config.SUPERADMIN_PASSWORD == "superadmin":
         _sec.warning("SUPERADMIN_PASSWORD utilise la valeur par défaut 'superadmin' — changez-la dans .env")
     if not Config.RESULTS_INGEST_SECRET:
-        _sec.warning("RESULTS_INGEST_SECRET non défini — /api/results/ingest accepte seulement les réseaux privés/locaux")
+        _sec.warning("RESULTS_INGEST_SECRET non défini — /api/results/ingest REJETTE tous les résultats "
+                     "tant que ce secret n'est pas configuré dans les Paramètres.")
 
     from app.services.process_manager import init_watchdog, _DOCKER_CONTAINER_NAME, _ACESERVER_HOST
     with app.app_context():

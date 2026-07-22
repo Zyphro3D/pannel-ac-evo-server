@@ -1,6 +1,27 @@
 # Changelog
 
-### v1.9.6 — non publiée
+### v1.9.6 — 22/07/2026
+
+**Sécurité — le mot de passe admin du serveur de jeu n'apparaît plus dans l'historique de chat public ni dans les logs**
+
+- La commande d'élévation `\admin <mot de passe>` (envoyée par le bot à chaque reconnexion, ~toutes les 60 s) transitait par `send_chat`, qui la journalisait en clair et l'ajoutait au tampon de chat exposé publiquement via `/api/live/chat-history` — lisible par tout visiteur anonyme de la page classement.
+- Corrigé : les commandes serveur (préfixe « \ ») ne sont plus jamais ajoutées à l'historique public, et `\admin` est rédigé en « \admin \*\*\* » dans les logs. Les messages légitimes (bienvenue, réactions spectateurs) restent affichés.
+
+**Correction — `/api/results/ingest` vérifie la signature HMAC avant toute lecture d'état**
+
+- Une requête non signée déclenchait auparavant des lectures (fichier d'état, appel Docker `is_running`, comptage HTTP des joueurs) avant le rejet. La signature est désormais vérifiée en tout premier.
+
+**Correction — l'endpoint de diagnostic `/api/live/tcp_debug` était cassé et ignorait le serveur courant**
+
+- Import invalide (`_build_state_cached` inexistant) provoquant une erreur 500, et `server_id` non propagé. Réparé : bon import et diagnostic sur le serveur réellement sélectionné.
+
+**Correction — réutilisation du client Docker partagé pour l'état et le redémarrage du container**
+
+- `container_info` (sollicité en polling) et `container_restart` rouvraient une connexion Docker à chaque appel au lieu de réutiliser le client partagé.
+
+**Correction — migration vers l'API SQLAlchemy 2.x et `datetime` timezone-aware sur les chemins restants**
+
+- `Model.query.get()` → `db.session.get` / `db.get_or_404` ; `datetime.utcnow()` (déprécié) → `datetime.now(timezone.utc)`.
 
 **Ajout — compte à rebours avant le prochain changement de config par inactivité**
 

@@ -43,8 +43,8 @@ def _container_name() -> str:
 
 def _get_container_status() -> dict:
     try:
-        import docker as _docker
-        client = _docker.from_env()
+        from app.services.process_manager import _get_docker_client
+        client = _get_docker_client()
         c = client.containers.get(_container_name())
         started = c.attrs["State"].get("StartedAt", "")
         started_dt = None
@@ -107,8 +107,8 @@ def container_info():
 @admin_required
 def container_restart():
     try:
-        import docker as _docker
-        client = _docker.from_env()
+        from app.services.process_manager import _get_docker_client
+        client = _get_docker_client()
         c = client.containers.get(_container_name())
         c.restart(timeout=15)
         return jsonify({"ok": True})

@@ -92,7 +92,8 @@ def container_name(server_id: int) -> str:
         return _CONTAINER
     try:
         from app.models import Server
-        srv = Server.query.get(server_id)
+        from app.services.database import db
+        srv = db.session.get(Server, server_id)
         if srv and srv.container_name:
             return srv.container_name
     except Exception as _e:
