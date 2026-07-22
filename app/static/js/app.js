@@ -764,17 +764,23 @@ async function startRotationCycle() {
   }
 }
 
-async function saveRotation() {
+async function saveRotation(showFeedback) {
   const enabled = document.getElementById('rot-enabled')?.checked || false;
   const cycle   = document.getElementById('rot-cycle')?.checked   || false;
   const idle_timeout_minutes = Math.max(0, parseInt(document.getElementById('rot-idle-timeout')?.value, 10) || 0);
   try {
-    await fetch('/api/rotation', {
+    const r = await fetch('/api/rotation', {
       method: 'POST',
       headers: _csrfHeaders(),
       body: JSON.stringify({ enabled, cycle, configs: _rotConfigs, idle_timeout_minutes }),
     });
-  } catch (_) {}
+    if (showFeedback) {
+      if (r.ok) showToast(I18N.rotationSaved || 'Roulement enregistré', 'success');
+      else showToast(I18N.error || 'Erreur', 'error');
+    }
+  } catch (_) {
+    if (showFeedback) showToast(I18N.networkError || 'Erreur réseau', 'error');
+  }
 }
 
 async function stopRotationCycle() {

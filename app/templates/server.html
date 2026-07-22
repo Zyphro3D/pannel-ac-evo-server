@@ -565,8 +565,11 @@
 
       <div class="form-group">
         <label for="rot-idle-timeout">{{ _('Passer à la configuration suivante après (minutes sans joueur)') }}</label>
-        <input type="number" id="rot-idle-timeout" class="form-control" min="0" step="1"
-               placeholder="0" onchange="saveRotation()">
+        <div class="flex gap-2 items-center">
+          <input type="number" id="rot-idle-timeout" class="form-control" min="0" step="1"
+                 placeholder="0" style="max-width: 8rem" onchange="saveRotation(true)">
+          <button type="button" class="btn btn-secondary" onclick="saveRotation(true)">{{ _('Valider') }}</button>
+        </div>
         <p class="form-hint">{{ _('0 = désactivé. Avance automatiquement dans le roulement si aucun joueur n\'est connecté pendant ce délai, indépendamment de toute session jouée.') }}</p>
       </div>
     </div>
