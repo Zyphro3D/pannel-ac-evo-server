@@ -800,6 +800,13 @@ def settings():
         for _sec_id, _sec_label, keys in _ENV_SECTIONS:
             for k in keys:
                 if k in _CHECKBOXES:
+                    # Une checkbox décochée n'est jamais envoyée par le navigateur — sans le
+                    # garde-fou de section ci-dessous, sauvegarder N'IMPORTE QUEL autre onglet
+                    # remettait silencieusement à "false" les checkboxes des sections non
+                    # soumises (ex: SESSION_COOKIE_SECURE, dans l'onglet Panel, réinitialisée
+                    # à chaque sauvegarde de l'onglet Serveur ou Notifications).
+                    if _sec_id != tab:
+                        continue
                     new_vals[k] = "true" if "true" in request.form.getlist(k) else "false"
                 else:
                     val = request.form.get(k)

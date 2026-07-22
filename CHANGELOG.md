@@ -2,6 +2,13 @@
 
 ### v1.9.6 — non publiée
 
+**Correction — sauvegarder n'importe quel onglet Paramètres réinitialisait les cases à cocher des autres onglets**
+
+- Signalé par un utilisateur : `SESSION_COOKIE_SECURE` (onglet Panel) repassait à `false` "de temps en temps", sans action directe dessus.
+- Cause : la sauvegarde d'un onglet Paramètres traitait les cases à cocher de **toutes** les sections (`_ENV_SECTIONS`), pas seulement celles de l'onglet réellement soumis. Une case décochée n'étant jamais envoyée par le navigateur, toute case absente du formulaire soumis (car appartenant à un autre onglet) était silencieusement remise à `"false"` — y compris `SESSION_COOKIE_SECURE`, `ACE_BOT_IS_ADMIN`, `MAIL_USE_TLS`, `REQUIRE_EMAIL_CONFIRMATION`. Sauvegarder l'onglet Serveur ou Notifications suffisait à casser silencieusement les réglages de l'onglet Panel.
+- C'est aussi ce qui rendait le bandeau "Réglages .env ignorés" (ci-dessous) trompeur : le corriger via Paramètres puis sauvegarder n'importe quel autre onglet le recassait aussitôt.
+- Corrigé : chaque case à cocher n'est désormais mise à jour que si elle appartient à l'onglet réellement soumis. Vérifié en conditions réelles (session de test authentifiée) : sauvegarder l'onglet Serveur ne touche plus `SESSION_COOKIE_SECURE`.
+
 **Correction — le bandeau "Réglages .env ignorés" restait affiché après correction**
 
 - Signalé par un utilisateur : `.env` et Paramètres avaient bien la même valeur pour `SESSION_COOKIE_SECURE`, mais le bandeau d'avertissement (ajouté en v1.9.5) continuait de s'afficher.
