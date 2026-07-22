@@ -108,6 +108,12 @@
             <span class="h-server-label">{{ _('En ligne depuis') }}</span>
             <div class="h-srv-uptime" data-started-at="{{ st.started_at or '' }}">—</div>
           </div>
+          {% if st.rotation_countdown is not none %}
+          <div class="h-server-stat">
+            <span class="h-server-label">{{ _('Prochaine config dans') }}</span>
+            <div class="h-srv-rotation-countdown" data-rotation-deadline="{{ (now_ts + st.rotation_countdown) }}">—</div>
+          </div>
+          {% endif %}
         </div>
         {% if st.running %}
         <a href="{{ url_for('live.timing_page') }}" class="btn btn-timing btn-full">{{ _('Timing en direct') }} ›</a>
@@ -323,5 +329,21 @@ function _tickUptimes() {
 }
 _tickUptimes();
 setInterval(_tickUptimes, 1000);
+
+/* ── Compte à rebours avant le prochain changement de config (roulement) ── */
+function _fmtCountdown(s) {
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return String(m).padStart(2,'0') + ':' + String(sec).padStart(2,'0');
+}
+function _tickRotationCountdowns() {
+  document.querySelectorAll('.h-srv-rotation-countdown[data-rotation-deadline]').forEach(function(el) {
+    const deadline = parseFloat(el.dataset.rotationDeadline);
+    if (!deadline) return;
+    el.textContent = _fmtCountdown(Math.max(0, Math.floor(deadline - Date.now()/1000)));
+  });
+}
+_tickRotationCountdowns();
+setInterval(_tickRotationCountdowns, 1000);
 </script>
 {% endblock %}

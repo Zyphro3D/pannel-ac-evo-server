@@ -252,7 +252,7 @@ async function toggleAutoRestart(enabled) {
   }
 }
 
-function updateStatusUI(running, runningConfig, autoRestart, players) {
+function updateStatusUI(running, runningConfig, autoRestart, players, rotationCountdown) {
   const wasRunning = _serverRunning;
   _serverRunning = !!running;
 
@@ -261,6 +261,14 @@ function updateStatusUI(running, runningConfig, autoRestart, players) {
   if (banner && (!running || (!wasRunning && running))) {
     banner.style.display = 'none';
   }
+
+  // Compte à rebours avant le prochain changement de config par inactivité :
+  // ancré sur une échéance absolue (recalée à chaque poll) plutôt que sur le
+  // countdown brut, pour un tick fluide à la seconde entre deux polls de 5s.
+  _rotCountdownDeadline = (rotationCountdown === null || rotationCountdown === undefined)
+    ? null
+    : (Date.now() / 1000 + rotationCountdown);
+  _tickRotCountdown();
 
   _rotIsRunning  = !!running;
   _rotRunningCfg = runningConfig || '';
@@ -336,7 +344,7 @@ async function fetchStatus() {
   try {
     const r = await fetch('/api/status');
     const d = await r.json();
-    updateStatusUI(d.running, d.config, d.auto_restart, d.players);
+    updateStatusUI(d.running, d.config, d.auto_restart, d.players, d.rotation_countdown);
     if (typeof window._onPublicStatusUpdate === 'function') window._onPublicStatusUpdate(d);
   } catch (_) {}
 }
@@ -639,6 +647,26 @@ let _serverRunning = false;
 let _rotConfigs    = [];
 let _rotIsRunning  = false;
 let _rotRunningCfg = '';
+let _rotCountdownDeadline = null;  // epoch (secondes) — null si non applicable
+
+function _fmtRotCountdown(s) {
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return String(m).padStart(2, '0') + ':' + String(sec).padStart(2, '0');
+}
+
+function _tickRotCountdown() {
+  const el = document.getElementById('rot-idle-countdown');
+  if (!el) return;
+  if (_rotCountdownDeadline === null) {
+    el.style.display = 'none';
+    return;
+  }
+  el.style.display = '';
+  const remaining = Math.max(0, Math.floor(_rotCountdownDeadline - Date.now() / 1000));
+  el.textContent = (I18N.rotNextConfigIn || 'Prochaine config dans') + ' ' + _fmtRotCountdown(remaining);
+}
+setInterval(_tickRotCountdown, 1000);
 
 function updateRotationStatus() {
   const enabled     = document.getElementById('rot-enabled')?.checked || false;

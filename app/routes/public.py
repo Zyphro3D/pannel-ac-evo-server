@@ -2,6 +2,7 @@ import hashlib
 import os
 import re
 import secrets
+import time
 import json as _json
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -179,7 +180,8 @@ def index():
                            ongoing=ongoing,
                            upcoming=upcoming,
                            my_regs=my_regs,
-                           recent_sessions=recent_sessions)
+                           recent_sessions=recent_sessions,
+                           now_ts=time.time())
 
 
 @public_bp.route("/register", methods=["GET", "POST"])

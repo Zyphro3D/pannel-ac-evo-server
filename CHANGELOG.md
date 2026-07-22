@@ -2,6 +2,12 @@
 
 ### v1.9.6 — non publiée
 
+**Ajout — compte à rebours avant le prochain changement de config par inactivité**
+
+- Sur la page Programmation et sur l'accueil (étiquette du serveur), affichage d'un compte à rebours "Prochaine config dans MM:SS" quand le roulement par inactivité est actif et qu'aucun joueur n'est connecté.
+- N'apparaît que si applicable : masqué si le roulement/seuil est désactivé, ou si des joueurs sont actuellement connectés (le minuteur ne redémarre qu'une fois tout le monde reparti).
+- Vérifié en isolation (délai écoulé simulé, avec/sans joueurs) : calcul correct dans les deux cas.
+
 **Ajout — bouton "Ignorer" sur le bandeau "Réglages .env ignorés"**
 
 - Signalé par un utilisateur : le bandeau reste affiché en continu pour une divergence volontaire/déjà connue (ex. `PANEL_TITLE` différent entre `.env` et Paramètres), sans moyen de le faire taire.

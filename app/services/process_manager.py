@@ -1034,10 +1034,32 @@ def get_server_logs(lines: int = 100, server_id: int = 1) -> str:
         return ""
 
 
+def _rotation_countdown_seconds(server_id: int, players: int | None) -> int | None:
+    """Secondes avant le prochain changement de config par inactivité, ou None si
+    non applicable (roulement/seuil désactivé, ou joueur(s) actuellement connecté(s)
+    — le minuteur ne redémarre qu'une fois tout le monde reparti)."""
+    if players != 0:
+        return None
+    try:
+        from app.services.rotation_manager import get_rotation
+        rot = get_rotation()
+    except Exception:
+        return None
+    idle_minutes = rot.get("idle_timeout_minutes", 0)
+    if not rot.get("enabled") or not idle_minutes:
+        return None
+    last_active = _get_server(server_id)["last_active_ts"]
+    if last_active is None:
+        return None
+    elapsed = time.monotonic() - last_active
+    return max(0, int(idle_minutes * 60 - elapsed))
+
+
 def get_status(server_id: int = 1) -> dict:
     running = is_running(server_id)
     state   = _read_state(server_id)
     players = get_player_count(server_id) if running else None
+    rotation_countdown = _rotation_countdown_seconds(server_id, players) if running else None
     return {
         "running":            running,
         "pid":                state.get("pid")               if running else None,
@@ -1048,4 +1070,5 @@ def get_status(server_id: int = 1) -> dict:
         "started_at":         state.get("started_at")        if running else None,
         "session_changed_at": state.get("session_changed_at") if running else None,
         "last_session_type":  state.get("last_session_type") if running else None,
+        "rotation_countdown": rotation_countdown,
     }

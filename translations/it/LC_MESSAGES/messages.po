@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-07-22 04:29+0000\n"
+"POT-Creation-Date: 2026-07-22 04:42+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -503,7 +503,7 @@ msgstr "Impossibile: deve rimanere almeno un superadmin."
 msgid "Compte supprimé."
 msgstr "Account eliminato."
 
-#: app/routes/admin.py:1085 app/routes/public.py:212
+#: app/routes/admin.py:1085 app/routes/public.py:214
 msgid "Cet email est déjà utilisé."
 msgstr "Questa email è già in uso."
 
@@ -607,7 +607,7 @@ msgstr "È stata inviata un'email di ripristino se l'account esiste."
 msgid "Ce lien est invalide ou a expiré."
 msgstr "Questo link non è valido o è scaduto."
 
-#: app/routes/auth.py:177 app/routes/public.py:206
+#: app/routes/auth.py:177 app/routes/public.py:208
 msgid "Les mots de passe ne correspondent pas."
 msgstr "Le password non corrispondono."
 
@@ -716,75 +716,75 @@ msgstr "%(name)s approvato."
 msgid "%(name)s supprimé."
 msgstr "%(name)s eliminato."
 
-#: app/routes/public.py:199
+#: app/routes/public.py:201
 msgid "Le nom in-game est requis."
 msgstr "Il nome in gioco è obbligatorio."
 
-#: app/routes/public.py:201
+#: app/routes/public.py:203
 msgid "Nom in-game invalide (2–30 caractères)."
 msgstr "Nome in gioco non valido (2–30 caratteri)."
 
-#: app/routes/public.py:203
+#: app/routes/public.py:205
 msgid "Adresse email invalide."
 msgstr "Indirizzo email non valido."
 
-#: app/routes/public.py:210
+#: app/routes/public.py:212
 msgid "Ce nom in-game est déjà utilisé."
 msgstr "Questo nome in gioco è già in uso."
 
-#: app/routes/public.py:225
+#: app/routes/public.py:227
 msgid "Inscription reçue ! Votre compte sera activé par un administrateur."
 msgstr ""
 "Registrazione ricevuta! Il tuo account verrà attivato da un "
 "amministratore."
 
-#: app/routes/public.py:240
+#: app/routes/public.py:242
 msgid "Ce lien de confirmation est invalide ou a expiré."
 msgstr "Questo link di conferma non è valido o è scaduto."
 
-#: app/routes/public.py:247
+#: app/routes/public.py:249
 msgid "Email confirmé avec succès."
 msgstr "Email confermata con successo."
 
-#: app/routes/public.py:259
+#: app/routes/public.py:261
 msgid "Email de confirmation renvoyé."
 msgstr "Email di conferma reinviata."
 
 # ── v1.9.4 : historique de tours en direct (ajouté manuellement, hors
 # extraction globale) ──
-#: app/routes/public.py:316
+#: app/routes/public.py:318
 msgid "Liez votre compte Steam pour accéder à votre historique de tours."
 msgstr "Collega il tuo account Steam per accedere alla cronologia dei tuoi giri."
 
-#: app/routes/public.py:354
+#: app/routes/public.py:356
 msgid "Votre compte doit être validé avant de vous inscrire."
 msgstr "Il tuo account deve essere convalidato prima di poterti iscrivere."
 
-#: app/routes/public.py:358
+#: app/routes/public.py:360
 msgid "Confirmez votre email avant de vous inscrire à un événement."
 msgstr "Conferma la tua email prima di iscriverti a un evento."
 
-#: app/routes/public.py:363
+#: app/routes/public.py:365
 msgid "Cet événement n'est pas disponible."
 msgstr "Questo evento non è disponibile."
 
-#: app/routes/public.py:367
+#: app/routes/public.py:369
 msgid "Vous êtes déjà inscrit à cet événement."
 msgstr "Sei già iscritto a questo evento."
 
-#: app/routes/public.py:371
+#: app/routes/public.py:373
 msgid "Cet événement est complet."
 msgstr "Questo evento è al completo."
 
-#: app/routes/public.py:376
+#: app/routes/public.py:378
 msgid "Inscription envoyée !"
 msgstr "Iscrizione inviata!"
 
-#: app/routes/public.py:437
+#: app/routes/public.py:439
 msgid "Désinscription effectuée."
 msgstr "Disiscrizione effettuata."
 
-#: app/routes/public.py:439
+#: app/routes/public.py:441
 msgid "Impossible de se désinscrire (inscription confirmée)."
 msgstr "Impossibile disiscriversi (iscrizione confermata)."
 
@@ -860,12 +860,12 @@ msgstr "Piloti"
 
 #: app/templates/base.html:154 app/templates/base.html:267
 #: app/templates/events_admin.html:2 app/templates/events_admin.html:8
-#: app/templates/server.html:581
+#: app/templates/server.html:582
 msgid "Événements"
 msgstr "Eventi"
 
 #: app/templates/base.html:155 app/templates/base.html:268
-#: app/templates/server.html:326 app/templates/server.html:605
+#: app/templates/server.html:326 app/templates/server.html:606
 #: app/templates/vehicles.html:2 app/templates/vehicles.html:8
 msgid "Véhicules"
 msgstr "Veicoli"
@@ -963,8 +963,7 @@ msgstr "Correggi in Impostazioni"
 msgid ""
 "Ne plus signaler ces valeurs tant qu'elles ne changent pas à nouveau dans"
 " .env"
-msgstr ""
-"Non segnalare più questi valori finché non cambiano di nuovo nel .env"
+msgstr "Non segnalare più questi valori finché non cambiano di nuovo nel .env"
 
 #: app/templates/base.html:330
 msgid "Ignorer"
@@ -1021,7 +1020,7 @@ msgid "En ligne"
 msgstr "Online"
 
 #: app/templates/base.html:423 app/templates/public.html:50
-#: app/templates/public.html:115 app/templates/settings.html:81
+#: app/templates/public.html:121 app/templates/settings.html:81
 msgid "Hors ligne"
 msgstr "Offline"
 
@@ -1057,111 +1056,115 @@ msgstr "Ciclo arrestato"
 msgid "Roulement enregistré"
 msgstr "Rotazione salvata"
 
-#: app/templates/base.html:432 app/templates/settings.html:509
+#: app/templates/base.html:432 app/templates/public.html:113
+msgid "Prochaine config dans"
+msgstr "Prossima config tra"
+
+#: app/templates/base.html:433 app/templates/settings.html:509
 msgid "Serveur redémarré"
 msgstr "Server riavviato"
 
-#: app/templates/base.html:433
+#: app/templates/base.html:434
 msgid "Démarrage…"
 msgstr "Avvio…"
 
-#: app/templates/base.html:434
+#: app/templates/base.html:435
 msgid "Arrêt…"
 msgstr "Arresto…"
 
-#: app/templates/base.html:435 app/templates/settings.html:504
+#: app/templates/base.html:436 app/templates/settings.html:504
 msgid "Redémarrage…"
 msgstr "Riavvio…"
 
-#: app/templates/base.html:436
+#: app/templates/base.html:437
 msgid "Arrêter le serveur ? Les joueurs connectés seront déconnectés."
 msgstr "Fermare il server? I giocatori connessi verranno disconnessi."
 
-#: app/templates/base.html:437
+#: app/templates/base.html:438
 msgid "Redémarrer le serveur ? Les joueurs connectés seront déconnectés."
 msgstr "Riavviare il server? I giocatori connessi verranno disconnessi."
 
-#: app/templates/base.html:438
+#: app/templates/base.html:439
 msgid "Sessions sauvegardées"
 msgstr "Sessioni salvate"
 
-#: app/templates/base.html:439
+#: app/templates/base.html:440
 msgid "Véhicules sauvegardés"
 msgstr "Veicoli salvati"
 
-#: app/templates/base.html:440
+#: app/templates/base.html:441
 msgid "Nom requis"
 msgstr "Nome richiesto"
 
-#: app/templates/base.html:441
+#: app/templates/base.html:442
 msgid "Dupliquer la configuration"
 msgstr "Duplica configurazione"
 
-#: app/templates/base.html:442 app/templates/server.html:26
+#: app/templates/base.html:443 app/templates/server.html:26
 #: app/templates/server.html:300
 msgid "Nouvelle configuration"
 msgstr "Nuova configurazione"
 
-#: app/templates/base.html:443
+#: app/templates/base.html:444
 msgid "Config réparée"
 msgstr "Configurazione riparata"
 
-#: app/templates/base.html:444
+#: app/templates/base.html:445
 msgid "Auto-restart activé"
 msgstr "Auto-restart attivato"
 
-#: app/templates/base.html:445
+#: app/templates/base.html:446
 msgid "Auto-restart désactivé"
 msgstr "Auto-restart disattivato"
 
-#: app/templates/_partials/server_row.html:17 app/templates/base.html:446
+#: app/templates/_partials/server_row.html:17 app/templates/base.html:447
 #: app/templates/server.html:320
 msgid "joueur(s)"
 msgstr "giocatore/i"
 
-#: app/templates/base.html:447
+#: app/templates/base.html:448
 msgid "Aucun tour enregistré"
 msgstr "Nessun giro registrato"
 
-#: app/templates/base.html:448 app/templates/settings.html:499
+#: app/templates/base.html:449 app/templates/settings.html:499
 msgid "Erreur de chargement"
 msgstr "Errore di caricamento"
 
-#: app/templates/base.html:449 app/templates/server.html:701
+#: app/templates/base.html:450 app/templates/server.html:702
 msgid "véhicule(s) sélectionné(s)"
 msgstr "veicolo/i selezionato/i"
 
-#: app/templates/base.html:450
+#: app/templates/base.html:451
 msgid "Aucune configuration dans le roulement."
 msgstr "Nessuna configurazione nella rotazione."
 
-#: app/templates/base.html:451
+#: app/templates/base.html:452
 msgid "Le serveur tourne avec la configuration"
 msgstr "Il server è in esecuzione con la configurazione"
 
-#: app/templates/base.html:452
+#: app/templates/base.html:453
 msgid "Remplacer par"
 msgstr "Sostituire con"
 
-#: app/templates/_partials/event_row.html:15 app/templates/base.html:453
+#: app/templates/_partials/event_row.html:15 app/templates/base.html:454
 #: app/templates/events_admin.html:89 app/templates/events_admin.html:174
 msgid "Terminé"
 msgstr "Terminato"
 
-#: app/templates/base.html:454
+#: app/templates/base.html:455
 msgid "LEADER"
 msgstr "LEADER"
 
-#: app/templates/base.html:455 app/templates/result_detail.html:194
+#: app/templates/base.html:456 app/templates/result_detail.html:194
 msgid "Tour"
 msgstr "Giro"
 
-#: app/templates/base.html:456
+#: app/templates/base.html:457
 #, python-format
 msgid "Supprimer \"%%s\" ? Cette action est irréversible."
 msgstr "Eliminare \"%%s\"? Questa azione è irreversibile."
 
-#: app/templates/base.html:457
+#: app/templates/base.html:458
 msgid "(dernier)"
 msgstr "(ultimo)"
 
@@ -1196,7 +1199,7 @@ msgstr "Reimposta"
 
 #: app/templates/_partials/event_row.html:21 app/templates/event_detail.html:2
 #: app/templates/events_admin.html:69 app/templates/events_admin.html:96
-#: app/templates/public.html:177 app/templates/public.html:215
+#: app/templates/public.html:183 app/templates/public.html:221
 msgid "Inscrits"
 msgstr "Iscritti"
 
@@ -1315,7 +1318,7 @@ msgid "Pilotes max"
 msgstr "Piloti max"
 
 #: app/templates/event_form.html:75 app/templates/events_admin.html:67
-#: app/templates/public.html:185 app/templates/server.html:160
+#: app/templates/public.html:191 app/templates/server.html:160
 #: app/templates/server.html:231 app/templates/server.html:322
 #: app/templates/server.html:435
 msgid "Circuit"
@@ -1332,7 +1335,7 @@ msgstr "Modalità"
 msgid "Libre"
 msgstr "Libero"
 
-#: app/templates/event_form.html:99 app/templates/public.html:186
+#: app/templates/event_form.html:99 app/templates/public.html:192
 #: app/templates/server.html:324 app/templates/server.html:387
 msgid "Météo"
 msgstr "Meteo"
@@ -1385,19 +1388,19 @@ msgstr "Server avviato automaticamente per questo evento."
 msgid "Véhicules autorisés"
 msgstr "Veicoli consentiti"
 
-#: app/templates/event_form.html:229 app/templates/server.html:610
+#: app/templates/event_form.html:229 app/templates/server.html:611
 msgid "Rechercher..."
 msgstr "Cerca..."
 
-#: app/templates/event_form.html:232 app/templates/server.html:617
+#: app/templates/event_form.html:232 app/templates/server.html:618
 msgid "Véhicules officiels uniquement"
 msgstr "Solo veicoli ufficiali"
 
-#: app/templates/event_form.html:234 app/templates/server.html:619
+#: app/templates/event_form.html:234 app/templates/server.html:620
 msgid "Tout sélectionner"
 msgstr "Seleziona tutto"
 
-#: app/templates/event_form.html:235 app/templates/server.html:620
+#: app/templates/event_form.html:235 app/templates/server.html:621
 msgid "Tout désélectionner"
 msgstr "Deseleziona tutto"
 
@@ -1406,7 +1409,7 @@ msgid "Tous"
 msgstr "Tutti"
 
 #: app/templates/_partials/circuit_results_table.html:7
-#: app/templates/event_form.html:268 app/templates/server.html:650
+#: app/templates/event_form.html:268 app/templates/server.html:651
 msgid "Véhicule"
 msgstr "Veicolo"
 
@@ -1414,16 +1417,16 @@ msgstr "Veicolo"
 msgid "Catégories"
 msgstr "Categorie"
 
-#: app/templates/event_form.html:271 app/templates/server.html:653
+#: app/templates/event_form.html:271 app/templates/server.html:654
 #: app/templates/timing.html:131
 msgid "Ballast"
 msgstr "Zavorra"
 
-#: app/templates/event_form.html:272 app/templates/server.html:654
+#: app/templates/event_form.html:272 app/templates/server.html:655
 msgid "Restrictor"
 msgstr "Restrittore"
 
-#: app/templates/event_form.html:297 app/templates/server.html:680
+#: app/templates/event_form.html:297 app/templates/server.html:681
 msgid "MOD"
 msgstr "MOD"
 
@@ -1433,7 +1436,7 @@ msgid "Enregistrer"
 msgstr "Salva"
 
 #: app/templates/event_form.html:316 app/templates/events_admin.html:18
-#: app/templates/server.html:37 app/templates/server.html:582
+#: app/templates/server.html:37 app/templates/server.html:583
 #: app/templates/settings.html:1068
 msgid "Créer"
 msgstr "Crea"
@@ -1509,7 +1512,7 @@ msgstr "Pubblicato"
 
 #: app/templates/_partials/event_row.html:23 app/templates/events_admin.html:99
 #: app/templates/server.html:336 app/templates/server.html:350
-#: app/templates/server.html:593 app/templates/settings.html:990
+#: app/templates/server.html:594 app/templates/settings.html:990
 msgid "Modifier"
 msgstr "Modifica"
 
@@ -1911,64 +1914,64 @@ msgstr "Giocatori online"
 msgid "En ligne depuis"
 msgstr "Online da"
 
-#: app/templates/public.html:113
+#: app/templates/public.html:119
 msgid "Timing en direct"
 msgstr "Timing in diretta"
 
-#: app/templates/public.html:138
+#: app/templates/public.html:144
 msgid "Événements à venir"
 msgstr "Prossimi eventi"
 
-#: app/templates/public.html:140
+#: app/templates/public.html:146
 msgid "Gérer"
 msgstr "Gestisci"
 
-#: app/templates/public.html:148 app/templates/settings.html:480
+#: app/templates/public.html:154 app/templates/settings.html:480
 msgid "En cours"
 msgstr "In corso"
 
-#: app/templates/public.html:184 app/templates/server.html:651
+#: app/templates/public.html:190 app/templates/server.html:652
 msgid "Type"
 msgstr "Type"
 
-#: app/templates/public.html:187 app/templates/server.html:455
+#: app/templates/public.html:193 app/templates/server.html:455
 msgid "Durée"
 msgstr "Durata"
 
-#: app/templates/public.html:227
+#: app/templates/public.html:233
 msgid "Aucun événement à venir."
 msgstr "Nessun evento in arrivo."
 
-#: app/templates/public.html:235 app/templates/results.html:58
+#: app/templates/public.html:241 app/templates/results.html:58
 msgid "Derniers résultats"
 msgstr "Ultimi risultati"
 
-#: app/templates/public.html:236
+#: app/templates/public.html:242
 msgid "Voir tous"
 msgstr "Vedi tutti"
 
-#: app/templates/public.html:244
+#: app/templates/public.html:250
 msgid "Vainqueur"
 msgstr "Vincitore"
 
-#: app/templates/public.html:246
+#: app/templates/public.html:252
 msgid "Pole position"
 msgstr "Pole position"
 
-#: app/templates/public.html:248 app/templates/result_detail.html:65
+#: app/templates/public.html:254 app/templates/result_detail.html:65
 #: app/templates/timing.html:62
 msgid "Meilleur tour"
 msgstr "Giro migliore"
 
-#: app/templates/public.html:308
+#: app/templates/public.html:314
 msgid "j"
 msgstr "g"
 
-#: app/templates/public.html:308
+#: app/templates/public.html:314
 msgid "h"
 msgstr "h"
 
-#: app/templates/public.html:308
+#: app/templates/public.html:314
 msgid "min"
 msgstr "min"
 
@@ -2527,15 +2530,15 @@ msgstr "Max. giocatori in attesa"
 msgid "Roulement de configs"
 msgstr "Rotazione config"
 
-#: app/templates/server.html:534
+#: app/templates/server.html:535
 msgid "Lancer le cycle"
 msgstr "Avvia il ciclo"
 
-#: app/templates/server.html:537
+#: app/templates/server.html:538
 msgid "Arrêter le cycle"
 msgstr "Ferma il ciclo"
 
-#: app/templates/server.html:539
+#: app/templates/server.html:540
 msgid ""
 "Reprend automatiquement la config suivante au prochain arrêt du serveur "
 "(différent du cycle en cours, affiché ci-contre)."
@@ -2543,11 +2546,11 @@ msgstr ""
 "Riprende automaticamente la configurazione successiva al prossimo arresto"
 " del server (diverso dal ciclo in corso, mostrato accanto)."
 
-#: app/templates/server.html:541
+#: app/templates/server.html:542
 msgid "Reprise auto"
 msgstr "Ripresa automatica"
 
-#: app/templates/server.html:546
+#: app/templates/server.html:547
 msgid ""
 "Quand le serveur s'arrête, il démarre la configuration suivante de la "
 "liste automatiquement."
@@ -2555,23 +2558,23 @@ msgstr ""
 "Quando il server si ferma, avvia automaticamente la configurazione "
 "successiva nell'elenco."
 
-#: app/templates/server.html:556 app/templates/settings.html:960
+#: app/templates/server.html:557 app/templates/settings.html:960
 msgid "Ajouter"
 msgstr "Aggiungi"
 
-#: app/templates/server.html:562
+#: app/templates/server.html:563
 msgid "Cycle — recommencer depuis le début après le dernier"
 msgstr "Ciclo — ricomincia dall'inizio dopo l'ultimo"
 
-#: app/templates/server.html:567
+#: app/templates/server.html:568
 msgid "Passer à la configuration suivante après (minutes sans joueur)"
 msgstr "Passa alla configurazione successiva dopo (minuti senza giocatori)"
 
-#: app/templates/server.html:571
+#: app/templates/server.html:572
 msgid "Valider"
 msgstr "Conferma"
 
-#: app/templates/server.html:573
+#: app/templates/server.html:574
 msgid ""
 "0 = désactivé. Avance automatiquement dans le roulement si aucun joueur "
 "n'est connecté pendant ce délai, indépendamment de toute session jouée."
@@ -2580,19 +2583,19 @@ msgstr ""
 "giocatore è connesso per questo intervallo, indipendentemente da "
 "qualsiasi sessione giocata."
 
-#: app/templates/server.html:596
+#: app/templates/server.html:597
 msgid "Aucun événement programmé."
 msgstr "Nessun evento programmato."
 
-#: app/templates/server.html:613
+#: app/templates/server.html:614
 msgid "Sélectionnés seulement"
 msgstr "Solo selezionati"
 
-#: app/templates/server.html:652
+#: app/templates/server.html:653
 msgid "Trier par PI"
 msgstr "Ordina per PI"
 
-#: app/templates/server.html:711
+#: app/templates/server.html:712
 msgid "Sauvegarder tout"
 msgstr "Salva tutto"
 
