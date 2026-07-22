@@ -718,6 +718,35 @@ def dismiss_env_notice():
     return "", 200
 
 
+_DISMISSED_ENV_DRIFT_KEY = "__dismissed_env_drift"
+
+
+def _get_dismissed_env_drift() -> dict:
+    """Clés .env dont la dérive a déjà été vue et ignorée par l'admin, avec la
+    valeur .env exacte à laquelle correspond ce "vu" — si .env change encore
+    ensuite, c'est une nouvelle dérive et elle réapparaît normalement."""
+    if not _SETTINGS_PATH.exists():
+        return {}
+    try:
+        data = json.loads(_SETTINGS_PATH.read_text(encoding="utf-8"))
+        return data.get(_DISMISSED_ENV_DRIFT_KEY, {})
+    except Exception:
+        return {}
+
+
+def _set_dismissed_env_drift(dismissed: dict) -> None:
+    from app.services.process_manager import _atomic_write
+    data = {}
+    if _SETTINGS_PATH.exists():
+        try:
+            data = json.loads(_SETTINGS_PATH.read_text(encoding="utf-8"))
+        except Exception as e:
+            _log.warning("_set_dismissed_env_drift: settings.json illisible, on repart d'un dict vide : %s", e)
+    data[_DISMISSED_ENV_DRIFT_KEY] = dismissed
+    _SETTINGS_PATH.parent.mkdir(parents=True, exist_ok=True)
+    _atomic_write(_SETTINGS_PATH, json.dumps(data, indent=2, ensure_ascii=False))
+
+
 def get_env_settings_drift() -> list[tuple[str, str]]:
     """Variables dont la valeur .env actuelle diffère de settings.json — donc
     ignorée. Piège classique : éditer .env après la 1re installation n'a plus
@@ -726,19 +755,42 @@ def get_env_settings_drift() -> list[tuple[str, str]]:
     Recalculé à chaque appel (contrairement à _ENV_SETTINGS_DRIFT, un instantané
     pris une seule fois au démarrage) : sinon le bandeau reste affiché après
     correction du .env ou sauvegarde depuis Paramètres, tant que le panel n'a
-    pas été redémarré — source de confusion confirmée en usage réel."""
+    pas été redémarré — source de confusion confirmée en usage réel.
+
+    Exclut les dérives déjà ignorées explicitement par l'admin pour la valeur
+    .env exacte actuelle (cf. dismiss_env_drift) — utile pour un cas comme
+    PANEL_TITLE, volontairement différent entre .env et Paramètres."""
     from dotenv import dotenv_values, find_dotenv
     env_file_values = dotenv_values(find_dotenv())
     if not env_file_values:
         return []
-    current, _ = _read_env_file()
+    current   = _read_env_file()[0]
+    dismissed = _get_dismissed_env_drift()
     drift = []
     for k, env_val in env_file_values.items():
         if not env_val or k in _SETTINGS_SKIP_KEYS or k not in current:
             continue
-        if str(current[k]) != str(env_val):
-            drift.append((k, _ENV_DESCS.get(k, "")))
+        if str(current[k]) == str(env_val):
+            continue
+        if dismissed.get(k) == env_val:
+            continue
+        drift.append((k, _ENV_DESCS.get(k, "")))
     return drift
+
+
+@admin_bp.route("/settings/dismiss-env-drift", methods=["POST"])
+@_admin_required
+def dismiss_env_drift():
+    from dotenv import dotenv_values, find_dotenv
+    env_file_values = dotenv_values(find_dotenv())
+    dismissed = _get_dismissed_env_drift()
+    for k, _desc in get_env_settings_drift():
+        if k in env_file_values:
+            dismissed[k] = env_file_values[k]
+    _set_dismissed_env_drift(dismissed)
+    # 200 (pas 204) : htmx ne swap jamais le contenu sur un 204, or on veut bien
+    # que le hx-swap="outerHTML" fasse disparaître le bandeau.
+    return "", 200
 
 
 @admin_bp.route("/settings", methods=["GET", "POST"])

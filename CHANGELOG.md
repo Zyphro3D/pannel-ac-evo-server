@@ -2,6 +2,12 @@
 
 ### v1.9.6 — non publiée
 
+**Ajout — bouton "Ignorer" sur le bandeau "Réglages .env ignorés"**
+
+- Signalé par un utilisateur : le bandeau reste affiché en continu pour une divergence volontaire/déjà connue (ex. `PANEL_TITLE` différent entre `.env` et Paramètres), sans moyen de le faire taire.
+- Ajout d'un bouton "Ignorer" qui mémorise la valeur `.env` exacte actuellement signalée pour chaque clé. Si `.env` ne change plus, le bandeau ne réapparaît pas pour cette clé. S'il change à nouveau (nouvelle édition), c'est une divergence différente et elle réapparaît normalement.
+- Vérifié en conditions réelles : ignorer fait disparaître la divergence actuelle ; l'éditer à nouveau dans `.env` la fait réapparaître.
+
 **Ajout — passage automatique au circuit suivant du roulement après inactivité**
 
 - Le roulement de configs n'avançait jusqu'ici qu'à la fin d'une session réellement jouée (résultat posté par le serveur de jeu). Si personne ne se connecte, aucune session ne se termine jamais, donc le roulement restait bloqué indéfiniment sur la même config.

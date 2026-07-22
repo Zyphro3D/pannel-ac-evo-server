@@ -313,7 +313,7 @@
       </div>
     {% endif %}
     {% if env_settings_drift %}
-      <div class="flash flash-warning mx-4 mt-4">
+      <div class="flash flash-warning mx-4 mt-4" id="env-drift-banner">
         <strong>{{ _('Réglages .env ignorés') }}</strong>
         — {{ _('ces valeurs ont été modifiées dans votre fichier .env après la première installation, elles n\'ont donc aucun effet (seule la page Paramètres compte désormais) :') }}
         <ul class="mt-1 ml-4 list-disc">
@@ -321,8 +321,14 @@
             <li><code>{{ key }}</code>{% if desc %} — {{ desc }}{% endif %}</li>
           {% endfor %}
         </ul>
-        <div class="mt-2">
+        <div class="mt-2 flex gap-2">
           <a href="{{ url_for('admin.settings') }}" class="btn-secondary btn-sm">{{ _('Corriger dans Paramètres') }}</a>
+          <button type="button" class="btn-secondary btn-sm"
+                  hx-post="{{ url_for('admin.dismiss_env_drift') }}"
+                  hx-target="#env-drift-banner" hx-swap="outerHTML"
+                  title="{{ _('Ne plus signaler ces valeurs tant qu\'elles ne changent pas à nouveau dans .env') }}">
+            {{ _('Ignorer') }}
+          </button>
         </div>
       </div>
     {% endif %}
