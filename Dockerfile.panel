@@ -37,7 +37,7 @@ ENV DEPLOY_MODE=docker_split \
     CONFIGS_DIR=/aceserver/configs \
     DATABASE_URL=sqlite:////panel/data/ace_evo.db \
     ACESERVER_CONTAINER_NAME=ace-server \
-    ACESERVER_HOST=aceserver \
+    ACESERVER_HOST=ace-server \
     PYTHONUNBUFFERED=1
 
 ARG PANEL_PORT=4300

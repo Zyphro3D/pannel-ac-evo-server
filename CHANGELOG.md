@@ -8,6 +8,14 @@
 - N'apparaît que si applicable : masqué si le roulement/seuil est désactivé, ou si des joueurs sont actuellement connectés (le minuteur ne redémarre qu'une fois tout le monde reparti).
 - Vérifié en isolation (délai écoulé simulé, avec/sans joueurs) : calcul correct dans les deux cas.
 
+**Correction — le comptage de joueurs (et donc le compte à rebours ci-dessus) ne fonctionnait pas sur le serveur 1**
+
+- Signalé par un utilisateur : le minuteur de roulement par inactivité n'apparaissait jamais sur son serveur 1 réel.
+- Cause n°1 : le hostname par défaut utilisé pour interroger l'API HTTP du serveur de jeu (`ACESERVER_HOST`) était figé en dur à `aceserver` dans `Dockerfile.panel`, alors que le DNS interne Docker ne résout que `ace-server` (le `container_name` explicite du service). Ce défaut erroné faisait silencieusement échouer `get_player_count()` pour le serveur 1 (jamais pour les serveurs 2+, qui utilisent le nom de container en base de données).
+- Cause n°2 : le port HTTP interne écrit dans l'état du panel au démarrage (`start_server()`) était lu depuis la variable d'environnement globale `ACESERVER_HTTP_PORT` (`8080` chez cet utilisateur) au lieu du champ `http_port` propre à chaque serveur en base (`8081`, le port réellement utilisé pour lancer le jeu). Le panel interrogeait donc le mauvais port.
+- Les deux bugs sont indépendants de la fonctionnalité de compte à rebours elle-même — ils affectaient déjà silencieusement tout comptage de joueurs sur le serveur 1 avant cet ajout.
+- Corrigé : hostname par défaut aligné sur le nom de container réel ; `start_server()` accepte désormais un `http_port` explicite, transmis par les 3 points d'appel (démarrage manuel, démarrage de roulement, lancement programmé) et par l'avance de roulement elle-même. Vérifié en conditions réelles sur le serveur 1 : le comptage de joueurs et le compte à rebours fonctionnent maintenant correctement.
+
 **Ajout — bouton "Ignorer" sur le bandeau "Réglages .env ignorés"**
 
 - Signalé par un utilisateur : le bandeau reste affiché en continu pour une divergence volontaire/déjà connue (ex. `PANEL_TITLE` différent entre `.env` et Paramètres), sans moyen de le faire taire.

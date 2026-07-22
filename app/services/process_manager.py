@@ -34,8 +34,14 @@ def _db_context():
 
 # docker_split — nom du container aceserver (défini dans docker-compose container_name)
 _DOCKER_CONTAINER_NAME = os.environ.get("ACESERVER_CONTAINER_NAME", "ace-server")
-# Hostname du service aceserver dans le réseau Docker (pour l'API HTTP)
-_ACESERVER_HOST        = os.environ.get("ACESERVER_HOST", "aceserver")
+# Hostname du service aceserver dans le réseau Docker (pour l'API HTTP). Doit
+# matcher _DOCKER_CONTAINER_NAME : docker-compose n'enregistre le nom du
+# SERVICE ("aceserver") comme alias DNS que dans certaines configurations —
+# avec un container_name explicite (le cas ici), seul ce nom ("ace-server")
+# est résolu par le DNS interne de Docker. L'ancien défaut "aceserver" ne
+# résolvait jamais, empêchant silencieusement tout comptage de joueurs pour
+# le serveur 1 (get_player_count() -> None en permanence).
+_ACESERVER_HOST        = os.environ.get("ACESERVER_HOST", _DOCKER_CONTAINER_NAME)
 
 # Per-server runtime state (keyed by server_id)
 _servers: dict      = {}
@@ -478,7 +484,7 @@ def _watchdog_rotate_docker(container, next_cfg: str, auto_restart: bool,
             container.restart(timeout=10)
         else:
             container.start()
-        http_port = int(os.environ.get("ACESERVER_HTTP_PORT", "8081"))
+        http_port = (_srv.http_port if _srv else None) or int(os.environ.get("ACESERVER_HTTP_PORT", "8081"))
         _write_state(0, next_cfg, sc_b64, sd_b64, auto_restart, http_port,
                      run_id=new_run_id, server_id=server_id)
         log.info("Rotation: started %r (run=%s)", next_cfg, new_run_id)
@@ -912,7 +918,7 @@ def get_player_count(server_id: int = 1) -> int | None:
 
 def start_server(serverconfig_b64: str, seasondefinition_b64: str,
                  config_name: str, auto_restart: bool = False,
-                 server_id: int = 1) -> dict:
+                 server_id: int = 1, http_port: int | None = None) -> dict:
     with _rotation_lock(server_id):
         _is_running_cache.pop(server_id, None)  # invalidate cache before state change
         if is_running(server_id):
@@ -938,9 +944,9 @@ def start_server(serverconfig_b64: str, seasondefinition_b64: str,
                     container.restart(timeout=10)
                 else:
                     container.start()
-                http_port = int(os.environ.get("ACESERVER_HTTP_PORT", "8081"))
                 _write_state(0, config_name, serverconfig_b64, seasondefinition_b64,
-                             auto_restart, http_port, run_id=run_id, server_id=server_id)
+                             auto_restart, http_port or int(os.environ.get("ACESERVER_HTTP_PORT", "8081")),
+                             run_id=run_id, server_id=server_id)
                 return {"ok": True, "pid": 0, "config": config_name, "run_id": run_id}
             except Exception as e:
                 lcp.unlink(missing_ok=True)
@@ -948,7 +954,7 @@ def start_server(serverconfig_b64: str, seasondefinition_b64: str,
 
         # native / docker
         exe       = Path(current_app.config["ACESERVER_EXE_PATH"])
-        http_port = current_app.config.get("ACESERVER_HTTP_PORT", 8081)
+        http_port = http_port or current_app.config.get("ACESERVER_HTTP_PORT", 8081)
         proc = _launch(exe, serverconfig_b64, seasondefinition_b64, server_id)
         if not proc:
             return {"ok": False, "error": "launch_failed"}
