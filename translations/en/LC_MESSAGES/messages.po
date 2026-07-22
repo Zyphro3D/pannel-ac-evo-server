@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-07-16 05:15+0000\n"
+"POT-Creation-Date: 2026-07-22 03:34+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -407,142 +407,142 @@ msgstr ""
 "Steam session folder to mount if the panel is launched via systemd or "
 "sudo without -E (otherwise left empty and $HOME is used, as before)."
 
-#: app/routes/admin.py:749 app/routes/admin.py:1061
+#: app/routes/admin.py:764 app/routes/admin.py:1083
 msgid "Port invalide (1024–65535)."
 msgstr "Invalid port (1024–65535)."
 
-#: app/routes/admin.py:751
+#: app/routes/admin.py:766
 #, python-format
 msgid "Le port %(port)d est déjà utilisé par '%(name)s'."
 msgstr "Port %(port)d is already used by '%(name)s'."
 
-#: app/routes/admin.py:779 app/routes/admin.py:780
+#: app/routes/admin.py:794 app/routes/admin.py:795
 msgid "Paramètres du serveur sauvegardés."
 msgstr "Server settings saved."
 
-#: app/routes/admin.py:809 app/routes/admin.py:810
+#: app/routes/admin.py:831 app/routes/admin.py:832
 msgid "Paramètres sauvegardés"
 msgstr "Settings saved"
 
-#: app/routes/admin.py:858
+#: app/routes/admin.py:880
 msgid "Fichier trop volumineux (max 5 Mo)"
 msgstr "File too large (max 5 MB)"
 
-#: app/routes/admin.py:861
+#: app/routes/admin.py:883
 msgid "Aucun fichier fourni"
 msgstr "No file provided"
 
-#: app/routes/admin.py:864
+#: app/routes/admin.py:886
 msgid "Type non autorisé"
 msgstr "Unauthorized type"
 
-#: app/routes/admin.py:875
+#: app/routes/admin.py:897
 msgid "Signature de fichier invalide"
 msgstr "Invalid file signature"
 
-#: app/routes/admin.py:906
+#: app/routes/admin.py:928
 msgid "Identifiant et mot de passe requis."
 msgstr "Username and password are required."
 
-#: app/routes/admin.py:911 app/routes/admin.py:942
+#: app/routes/admin.py:933 app/routes/admin.py:964
 msgid "Cet identifiant est déjà utilisé."
 msgstr "This username is already taken."
 
-#: app/routes/admin.py:917
+#: app/routes/admin.py:939
 msgid "Compte créé avec succès."
 msgstr "Account created successfully."
 
-#: app/routes/admin.py:927 app/routes/admin.py:978
+#: app/routes/admin.py:949 app/routes/admin.py:1000
 msgid "Compte introuvable."
 msgstr "Account not found."
 
-#: app/routes/admin.py:938
+#: app/routes/admin.py:960
 msgid "Impossible : il doit rester au moins un superadmin actif."
 msgstr "Impossible: at least one active superadmin must remain."
 
-#: app/routes/admin.py:950
+#: app/routes/admin.py:972
 msgid "Compte mis à jour."
 msgstr "Account updated."
 
-#: app/routes/admin.py:960
+#: app/routes/admin.py:982
 msgid "Compte introuvable"
 msgstr "Account not found"
 
-#: app/routes/admin.py:964
+#: app/routes/admin.py:986
 msgid "Dernier superadmin actif — impossible de désactiver"
 msgstr "Last active superadmin — cannot deactivate"
 
-#: app/routes/admin.py:966
+#: app/routes/admin.py:988
 msgid "Impossible de vous désactiver vous-même"
 msgstr "You cannot deactivate yourself"
 
-#: app/routes/admin.py:981
+#: app/routes/admin.py:1003
 msgid "Impossible de supprimer votre propre compte."
 msgstr "You cannot delete your own account."
 
-#: app/routes/admin.py:986
+#: app/routes/admin.py:1008
 msgid "Impossible : il doit rester au moins un superadmin."
 msgstr "Impossible: at least one superadmin must remain."
 
-#: app/routes/admin.py:990
+#: app/routes/admin.py:1012
 msgid "Compte supprimé."
 msgstr "Account deleted."
 
-#: app/routes/admin.py:1011 app/routes/public.py:212
+#: app/routes/admin.py:1033 app/routes/public.py:212
 msgid "Cet email est déjà utilisé."
 msgstr "This email is already in use."
 
-#: app/routes/admin.py:1015
+#: app/routes/admin.py:1037
 msgid "Email mis à jour."
 msgstr "Email updated."
 
-#: app/routes/admin.py:1059
+#: app/routes/admin.py:1081
 msgid "Le nom est requis."
 msgstr "Name is required."
 
-#: app/routes/admin.py:1063
+#: app/routes/admin.py:1085
 #, python-format
 msgid "Le port %(port)d est déjà utilisé par un autre serveur."
 msgstr "Port %(port)d is already used by another server."
 
-#: app/routes/admin.py:1065
+#: app/routes/admin.py:1087
 #, python-format
 msgid "Un container Docker nommé '%(name)s' existe déjà."
 msgstr "A Docker container named '%(name)s' already exists."
 
-#: app/routes/admin.py:1088
+#: app/routes/admin.py:1110
 #, python-format
 msgid "Erreur lors de la création du container : %(err)s"
 msgstr "Error creating container: %(err)s"
 
-#: app/routes/admin.py:1112
+#: app/routes/admin.py:1134
 #, python-format
 msgid "Serveur '%(name)s' créé avec succès."
 msgstr "Server '%(name)s' created successfully."
 
-#: app/routes/admin.py:1121
+#: app/routes/admin.py:1143
 msgid "Le serveur principal ne peut pas être désactivé."
 msgstr "The main server cannot be disabled."
 
-#: app/routes/admin.py:1124 app/routes/admin.py:1147
+#: app/routes/admin.py:1146 app/routes/admin.py:1169
 msgid "Serveur introuvable."
 msgstr "Server not found."
 
-#: app/routes/admin.py:1127
+#: app/routes/admin.py:1149
 #, python-format
 msgid "Serveur '%(name)s' activé."
 msgstr "Server '%(name)s' enabled."
 
-#: app/routes/admin.py:1127
+#: app/routes/admin.py:1149
 #, python-format
 msgid "Serveur '%(name)s' désactivé."
 msgstr "Server '%(name)s' disabled."
 
-#: app/routes/admin.py:1144
+#: app/routes/admin.py:1166
 msgid "Le serveur principal ne peut pas être supprimé."
 msgstr "The main server cannot be deleted."
 
-#: app/routes/admin.py:1167 app/routes/admin.py:1168
+#: app/routes/admin.py:1189 app/routes/admin.py:1190
 #, python-format
 msgid "Serveur '%(name)s' supprimé."
 msgstr "Server '%(name)s' deleted."
@@ -843,12 +843,12 @@ msgstr "Drivers"
 
 #: app/templates/base.html:154 app/templates/base.html:267
 #: app/templates/events_admin.html:2 app/templates/events_admin.html:8
-#: app/templates/server.html:571
+#: app/templates/server.html:578
 msgid "Événements"
 msgstr "Events"
 
 #: app/templates/base.html:155 app/templates/base.html:268
-#: app/templates/server.html:326 app/templates/server.html:595
+#: app/templates/server.html:326 app/templates/server.html:602
 #: app/templates/vehicles.html:2 app/templates/vehicles.html:8
 msgid "Véhicules"
 msgstr "Vehicles"
@@ -1095,7 +1095,7 @@ msgstr "No lap recorded"
 msgid "Erreur de chargement"
 msgstr "Loading error"
 
-#: app/templates/base.html:442 app/templates/server.html:691
+#: app/templates/base.html:442 app/templates/server.html:698
 msgid "véhicule(s) sélectionné(s)"
 msgstr "vehicle(s) selected"
 
@@ -1353,19 +1353,19 @@ msgstr "Server launched automatically for this event."
 msgid "Véhicules autorisés"
 msgstr "Allowed vehicles"
 
-#: app/templates/event_form.html:229 app/templates/server.html:600
+#: app/templates/event_form.html:229 app/templates/server.html:607
 msgid "Rechercher..."
 msgstr "Search..."
 
-#: app/templates/event_form.html:232 app/templates/server.html:607
+#: app/templates/event_form.html:232 app/templates/server.html:614
 msgid "Véhicules officiels uniquement"
 msgstr "Official vehicles only"
 
-#: app/templates/event_form.html:234 app/templates/server.html:609
+#: app/templates/event_form.html:234 app/templates/server.html:616
 msgid "Tout sélectionner"
 msgstr "Select all"
 
-#: app/templates/event_form.html:235 app/templates/server.html:610
+#: app/templates/event_form.html:235 app/templates/server.html:617
 msgid "Tout désélectionner"
 msgstr "Deselect all"
 
@@ -1374,7 +1374,7 @@ msgid "Tous"
 msgstr "All"
 
 #: app/templates/_partials/circuit_results_table.html:7
-#: app/templates/event_form.html:268 app/templates/server.html:640
+#: app/templates/event_form.html:268 app/templates/server.html:647
 msgid "Véhicule"
 msgstr "Vehicle"
 
@@ -1382,16 +1382,16 @@ msgstr "Vehicle"
 msgid "Catégories"
 msgstr "Categories"
 
-#: app/templates/event_form.html:271 app/templates/server.html:643
+#: app/templates/event_form.html:271 app/templates/server.html:650
 #: app/templates/timing.html:131
 msgid "Ballast"
 msgstr "Ballast"
 
-#: app/templates/event_form.html:272 app/templates/server.html:644
+#: app/templates/event_form.html:272 app/templates/server.html:651
 msgid "Restrictor"
 msgstr "Restrictor"
 
-#: app/templates/event_form.html:297 app/templates/server.html:670
+#: app/templates/event_form.html:297 app/templates/server.html:677
 msgid "MOD"
 msgstr "MOD"
 
@@ -1401,7 +1401,7 @@ msgid "Enregistrer"
 msgstr "Save"
 
 #: app/templates/event_form.html:316 app/templates/events_admin.html:18
-#: app/templates/server.html:37 app/templates/server.html:572
+#: app/templates/server.html:37 app/templates/server.html:579
 #: app/templates/settings.html:1068
 msgid "Créer"
 msgstr "Create"
@@ -1477,7 +1477,7 @@ msgstr "Published"
 
 #: app/templates/_partials/event_row.html:23 app/templates/events_admin.html:99
 #: app/templates/server.html:336 app/templates/server.html:350
-#: app/templates/server.html:583 app/templates/settings.html:990
+#: app/templates/server.html:590 app/templates/settings.html:990
 msgid "Modifier"
 msgstr "Edit"
 
@@ -1890,7 +1890,7 @@ msgstr "Manage"
 msgid "En cours"
 msgstr "In progress"
 
-#: app/templates/public.html:184 app/templates/server.html:641
+#: app/templates/public.html:184 app/templates/server.html:648
 msgid "Type"
 msgstr "Type"
 
@@ -2524,19 +2524,31 @@ msgstr "Add"
 msgid "Cycle — recommencer depuis le début après le dernier"
 msgstr "Cycle — restart from the beginning after the last"
 
-#: app/templates/server.html:586
+#: app/templates/server.html:567
+msgid "Passer à la configuration suivante après (minutes sans joueur)"
+msgstr "Switch to the next configuration after (minutes with no player)"
+
+#: app/templates/server.html:570
+msgid ""
+"0 = désactivé. Avance automatiquement dans le roulement si aucun joueur "
+"n'est connecté pendant ce délai, indépendamment de toute session jouée."
+msgstr ""
+"0 = disabled. Automatically advances the rotation if no player has been "
+"connected for this long, regardless of any session being played."
+
+#: app/templates/server.html:593
 msgid "Aucun événement programmé."
 msgstr "No scheduled event."
 
-#: app/templates/server.html:603
+#: app/templates/server.html:610
 msgid "Sélectionnés seulement"
 msgstr "Selected only"
 
-#: app/templates/server.html:642
+#: app/templates/server.html:649
 msgid "Trier par PI"
 msgstr "Sort by PI"
 
-#: app/templates/server.html:701
+#: app/templates/server.html:708
 msgid "Sauvegarder tout"
 msgstr "Save all"
 

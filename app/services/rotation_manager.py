@@ -1,17 +1,21 @@
 """
 Config Rotation — séquence de fichiers de configuration à enchaîner
-automatiquement à chaque arrêt du serveur.
+automatiquement à chaque arrêt du serveur, ou après un délai d'inactivité
+(aucun joueur connecté) si idle_timeout_minutes est configuré.
 
 Format JSON (/aceserver/.rotation.json) :
   {
     "enabled": true,
     "cycle":   false,
-    "configs": ["practice.json", "race-weekend.json"]
+    "configs": ["practice.json", "race-weekend.json"],
+    "idle_timeout_minutes": 0
   }
 """
 import json
 import os
 from pathlib import Path
+
+_DEFAULT_ROTATION = {"enabled": False, "cycle": False, "configs": [], "idle_timeout_minutes": 0}
 
 
 def _rotation_path() -> Path:
@@ -23,10 +27,11 @@ def get_rotation() -> dict:
     p = _rotation_path()
     if p.exists():
         try:
-            return json.loads(p.read_text())
+            data = json.loads(p.read_text())
+            return {**_DEFAULT_ROTATION, **data}
         except Exception:
             pass
-    return {"enabled": False, "cycle": False, "configs": []}
+    return dict(_DEFAULT_ROTATION)
 
 
 def save_rotation(data: dict):
@@ -39,10 +44,15 @@ def save_rotation(data: dict):
             "save_rotation: nom(s) de config invalide(s) ignoré(s) : %s",
             set(configs) - set(valid_configs),
         )
+    try:
+        idle_timeout_minutes = max(0, int(data.get("idle_timeout_minutes", 0)))
+    except (ValueError, TypeError):
+        idle_timeout_minutes = 0
     _rotation_path().write_text(json.dumps({
         "enabled": bool(data.get("enabled", False)),
         "cycle":   bool(data.get("cycle",   False)),
         "configs": valid_configs,
+        "idle_timeout_minutes": idle_timeout_minutes,
     }))
 
 

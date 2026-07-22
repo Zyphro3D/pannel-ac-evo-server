@@ -562,6 +562,13 @@
           <span>{{ _('Cycle — recommencer depuis le début après le dernier') }}</span>
         </label>
       </div>
+
+      <div class="form-group">
+        <label for="rot-idle-timeout">{{ _('Passer à la configuration suivante après (minutes sans joueur)') }}</label>
+        <input type="number" id="rot-idle-timeout" class="form-control" min="0" step="1"
+               placeholder="0" onchange="saveRotation()">
+        <p class="form-hint">{{ _('0 = désactivé. Avance automatiquement dans le roulement si aucun joueur n\'est connecté pendant ce délai, indépendamment de toute session jouée.') }}</p>
+      </div>
     </div>
   </section>
   {% endif %}

@@ -601,6 +601,16 @@ function selectAllVisible(checked) {
   updateSelectedCount();
 }
 
+function deselectAll() {
+  // Contrairement à selectAllVisible(false), désélectionne aussi les véhicules
+  // masqués par le filtre/la recherche en cours — "tout désélectionner" doit
+  // vider toute la sélection, pas seulement ce qui est actuellement visible.
+  document.querySelectorAll('.car-check').forEach(cb => {
+    cb.checked = false;
+  });
+  updateSelectedCount();
+}
+
 function updateSelectedCount() {
   const total = document.querySelectorAll('.car-check:checked').length;
   const el = document.getElementById('cars-selected-count');
@@ -665,10 +675,12 @@ async function loadRotation() {
     const r = await fetch('/api/rotation');
     const d = await r.json();
     _rotConfigs = d.configs || [];
-    const chkEnabled = document.getElementById('rot-enabled');
-    const chkCycle   = document.getElementById('rot-cycle');
-    if (chkEnabled) chkEnabled.checked = !!d.enabled;
-    if (chkCycle)   chkCycle.checked   = !!d.cycle;
+    const chkEnabled  = document.getElementById('rot-enabled');
+    const chkCycle    = document.getElementById('rot-cycle');
+    const idleTimeout = document.getElementById('rot-idle-timeout');
+    if (chkEnabled)  chkEnabled.checked  = !!d.enabled;
+    if (chkCycle)    chkCycle.checked    = !!d.cycle;
+    if (idleTimeout) idleTimeout.value   = d.idle_timeout_minutes || 0;
     renderRotList();
     updateRotationStatus();
   } catch (_) {}
@@ -755,11 +767,12 @@ async function startRotationCycle() {
 async function saveRotation() {
   const enabled = document.getElementById('rot-enabled')?.checked || false;
   const cycle   = document.getElementById('rot-cycle')?.checked   || false;
+  const idle_timeout_minutes = Math.max(0, parseInt(document.getElementById('rot-idle-timeout')?.value, 10) || 0);
   try {
     await fetch('/api/rotation', {
       method: 'POST',
       headers: _csrfHeaders(),
-      body: JSON.stringify({ enabled, cycle, configs: _rotConfigs }),
+      body: JSON.stringify({ enabled, cycle, configs: _rotConfigs, idle_timeout_minutes }),
     });
   } catch (_) {}
 }
@@ -811,7 +824,7 @@ document.getElementById('btn-start-cycle')?.addEventListener('click', startRotat
 document.getElementById('btn-stop-cycle')?.addEventListener('click', stopRotationCycle);
 document.getElementById('rot-add-btn')?.addEventListener('click', rotAddConfig);
 document.getElementById('cars-select-all-btn')?.addEventListener('click', () => selectAllVisible(true));
-document.getElementById('cars-deselect-all-btn')?.addEventListener('click', () => selectAllVisible(false));
+document.getElementById('cars-deselect-all-btn')?.addEventListener('click', deselectAll);
 document.getElementById('pi-sort-th')?.addEventListener('click', function () { togglePiSort(this); });
 document.getElementById('save-all-btn')?.addEventListener('click', saveAll);
 document.getElementById('srv-cat-filters')?.addEventListener('click', (e) => {

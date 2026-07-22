@@ -94,6 +94,7 @@ def _get_server(server_id: int) -> dict:
                 "container_stats_hist": collections.deque(maxlen=20),  # for sparklines
                 "container_name":      "",    # populated by init_watchdog
                 "http_host":           "",    # hostname used for HTTP player-count API
+                "last_active_ts":      None,  # monotonic time last seen with players>0 (rotation idle timeout)
             }
         return _servers[server_id]
 
@@ -590,6 +591,60 @@ def try_rotation_advance(session_type: str, config_name: str, server_id: int = 1
                      name=f"rotation-webhook-{server_id}").start()
 
 
+def _check_idle_rotation(server_id: int):
+    """Avance le roulement si aucun joueur n'est connecté depuis idle_timeout_minutes.
+    Complète try_rotation_advance() (déclenché par la fin de session) pour le cas où
+    personne ne joue jamais : sans ça, le serveur reste bloqué sur la même config
+    indéfiniment puisqu'aucun résultat de session n'est jamais posté."""
+    from app.services.rotation_manager import get_rotation, get_next_config
+    rot = get_rotation()
+    idle_minutes = rot.get("idle_timeout_minutes", 0)
+    if not rot.get("enabled") or not idle_minutes:
+        return
+
+    srv   = _get_server(server_id)
+    count = get_player_count(server_id)
+    if count is None:
+        return  # API du serveur de jeu temporairement injoignable — on ignore ce tour
+
+    now = time.monotonic()
+    if count > 0 or srv["last_active_ts"] is None:
+        srv["last_active_ts"] = now
+        return
+    if now - srv["last_active_ts"] < idle_minutes * 60:
+        return
+
+    state       = _read_state(server_id)
+    config_name = state.get("config", "")
+    next_cfg    = get_next_config(config_name)
+    if next_cfg is None:
+        srv["last_active_ts"] = now  # évite de re-tester en boucle en fin de roulement sans cycle
+        return
+
+    lock = _rotation_lock(server_id)
+    if not lock.acquire(blocking=False):
+        return
+    try:
+        current = _read_state(server_id)
+        if current.get("config") != config_name:
+            return  # déjà avancé entre-temps (webhook ou une autre itération)
+        srv["last_active_ts"] = now
+        log.info("Rotation (inactivité): %r -> %r après %d min sans joueur (server=%d)",
+                 config_name, next_cfg, idle_minutes, server_id)
+        if _DEPLOY_MODE == "docker_split":
+            container = _get_aceserver_container(server_id)
+            if container:
+                _watchdog_rotate_docker(container, next_cfg, state.get("auto_restart", False),
+                                        from_cfg=config_name, server_id=server_id)
+        else:
+            exe_path = _get_server(server_id)["exe_path"]
+            if exe_path:
+                _watchdog_rotate_native(Path(exe_path), next_cfg, state.get("auto_restart", False),
+                                        from_cfg=config_name, server_id=server_id)
+    finally:
+        lock.release()
+
+
 # ── Watchdog ─────────────────────────────────────────────────────────────────
 
 def _watchdog_notify_crash(config_name: str, restarting: bool, server_id: int):
@@ -689,6 +744,7 @@ def _watchdog_loop(server_id: int):
         try:
             if is_running(server_id):
                 _sample_player_history(server_id)
+                _check_idle_rotation(server_id)
                 if _DEPLOY_MODE == "docker_split":
                     _sample_container_stats(server_id)
 

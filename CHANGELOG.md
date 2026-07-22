@@ -2,6 +2,12 @@
 
 ### v1.9.6 — non publiée
 
+**Ajout — passage automatique au circuit suivant du roulement après inactivité**
+
+- Le roulement de configs n'avançait jusqu'ici qu'à la fin d'une session réellement jouée (résultat posté par le serveur de jeu). Si personne ne se connecte, aucune session ne se termine jamais, donc le roulement restait bloqué indéfiniment sur la même config.
+- Ajout d'un réglage "Passer à la configuration suivante après (minutes sans joueur)" sur la page Programmation — 0 = désactivé. Le watchdog vérifie désormais aussi le nombre de joueurs connectés, indépendamment de toute session jouée.
+- Vérifié en isolation (compteur de joueurs et écoulement du temps simulés) : le déclenchement se comporte comme attendu sans affecter de serveur réel.
+
 **Correction — sauvegarder n'importe quel onglet Paramètres réinitialisait les cases à cocher des autres onglets**
 
 - Signalé par un utilisateur : `SESSION_COOKIE_SECURE` (onglet Panel) repassait à `false` "de temps en temps", sans action directe dessus.
