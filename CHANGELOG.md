@@ -1,5 +1,13 @@
 # Changelog
 
+### v1.9.7 — non publiée
+
+**Correction — une mise à jour Steam ne coupait que le serveur 1, laissant les autres serveurs actifs**
+
+- Signalé par un utilisateur multi-serveur : `container_update()` n'arrêtait que le container du serveur 1 (`_container_name()`, constante globale) avant de lancer SteamCMD, sans jamais consulter les autres serveurs configurés en base.
+- Tous les serveurs partagent pourtant le même dossier de jeu sur disque (`aceserver_dir`) — les serveurs 2+ restaient donc actifs pendant que SteamCMD écrasait leurs fichiers en cours d'utilisation, avec un risque de plantage ou de corruption, et rien n'empêchait de relancer une config dessus pendant ce temps.
+- Corrigé : avant de lancer SteamCMD, la route interroge désormais tous les serveurs activés (`Server.query.filter_by(is_enabled=True)`) et arrête ceux réellement en cours d'exécution ; `steam_updater.run_update()` accepte une liste de serveurs à arrêter/redémarrer au lieu d'un seul nom de container. Chaque serveur redémarré individuellement même si un autre échoue, pour ne pas en laisser arrêté inutilement.
+
 ### v1.9.6 — 22/07/2026
 
 **Sécurité — le mot de passe admin du serveur de jeu n'apparaît plus dans l'historique de chat public ni dans les logs**

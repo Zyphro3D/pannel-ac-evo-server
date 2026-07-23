@@ -181,13 +181,19 @@ def container_update():
     if not _updating.acquire(blocking=False):
         return jsonify({"error": _("Mise à jour déjà en cours")}), 409
 
+    from app.models import Server
     from app.services import steam_updater
+    from app.services.process_manager import is_running
+
+    # Tous les serveurs partagent le même dossier de jeu sur disque (aceserver_dir) — il faut
+    # arrêter TOUS ceux en cours d'exécution avant SteamCMD, pas seulement le serveur 1.
+    running_ids = [srv.id for srv in Server.query.filter_by(is_enabled=True).all() if is_running(srv.id)]
 
     def _gen():
         try:
             yield from steam_updater.run_update(
                 steamcmd, aceserver_dir, steam_user, steam_pass, steam_guard,
-                appid, _container_name(),
+                appid, running_ids,
             )
         finally:
             _updating.release()

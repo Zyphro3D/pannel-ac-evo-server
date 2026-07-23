@@ -246,23 +246,35 @@ def check_update(steamcmd: str, steam_user: str, steam_pass: str, steam_guard: s
 
 
 def run_update(steamcmd: str, aceserver_dir: str, steam_user: str, steam_pass: str,
-               steam_guard: str, appid: str, container_name: str):
-    """Générateur de messages SSE (format `data: {...}\\n\\n`) pour la mise à jour SteamCMD."""
-    import docker as _docker
+               steam_guard: str, appid: str, server_ids: list):
+    """Générateur de messages SSE (format `data: {...}\\n\\n`) pour la mise à jour SteamCMD.
+
+    `server_ids` : identifiants des serveurs actuellement en cours d'exécution (tous ceux qui
+    tournent, pas seulement le serveur 1). Tous les serveurs partagent le même dossier de jeu
+    (`aceserver_dir`) sur disque — en laisser un seul tourner pendant que SteamCMD écrase ses
+    fichiers risquerait un plantage ou une corruption pour ce serveur."""
+    from app.services.process_manager import _get_aceserver_container
 
     def _msg(text, done=False, error=False):
         return f"data: {json.dumps({'msg': text, 'done': done, 'error': error})}\n\n"
 
-    # 1 — Arrêt du conteneur
-    yield _msg("⏹ Arrêt du serveur de jeu...")
-    try:
-        client = _docker.from_env()
-        c = client.containers.get(container_name)
-        c.stop(timeout=20)
-        yield _msg("✓ Serveur arrêté")
-    except Exception as e:
-        yield _msg(f"✗ Impossible d'arrêter le serveur : {e}", error=True, done=True)
-        return
+    # 1 — Arrêt de tous les serveurs en cours (ils partagent les mêmes fichiers de jeu)
+    containers = []
+    if not server_ids:
+        yield _msg("ℹ Aucun serveur en cours — pas d'arrêt nécessaire")
+    for sid in server_ids:
+        c = _get_aceserver_container(sid)
+        if c is None:
+            yield _msg(f"✗ Container introuvable pour le serveur {sid}", error=True, done=True)
+            return
+        yield _msg(f"⏹ Arrêt du serveur {sid}...")
+        try:
+            c.stop(timeout=20)
+            containers.append((sid, c))
+            yield _msg(f"✓ Serveur {sid} arrêté")
+        except Exception as e:
+            yield _msg(f"✗ Impossible d'arrêter le serveur {sid} : {e}", error=True, done=True)
+            return
 
     # 2 — SteamCMD
     if not os.path.exists(steamcmd):
@@ -302,13 +314,20 @@ def run_update(steamcmd: str, aceserver_dir: str, steam_user: str, steam_pass: s
         except Exception as e:
             yield _msg(f"✗ Erreur SteamCMD : {e}", error=True)
 
-    # 3 — Redémarrage (toujours tenté, même si SteamCMD a échoué ou expiré — on ne laisse
-    # jamais le serveur de jeu arrêté suite à un problème SteamCMD)
-    yield _msg("🚀 Redémarrage du serveur...")
-    try:
-        c.start()
-    except Exception as e:
-        yield _msg(f"✗ Erreur redémarrage : {e}", error=True, done=True)
+    # 3 — Redémarrage de tous les serveurs arrêtés à l'étape 1 (toujours tenté, même si
+    # SteamCMD a échoué ou expiré — on ne laisse jamais un serveur de jeu arrêté suite à un
+    # problème SteamCMD). On tente chaque serveur même si l'un d'eux échoue, pour ne pas
+    # laisser les autres arrêtés inutilement.
+    restart_failed = False
+    for sid, c in containers:
+        yield _msg(f"🚀 Redémarrage du serveur {sid}...")
+        try:
+            c.start()
+        except Exception as e:
+            restart_failed = True
+            yield _msg(f"✗ Erreur redémarrage du serveur {sid} : {e}", error=True)
+    if restart_failed:
+        yield _msg("✗ Au moins un serveur n'a pas pu redémarrer", error=True, done=True)
         return
 
     # 4 — Attente de la régénération des données (cars.json, events). Le serveur de jeu
