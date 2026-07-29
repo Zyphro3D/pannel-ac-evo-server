@@ -50,7 +50,7 @@
     {% include "_partials/vehicle_grid.html" %}
   </div>
 
-  {% if current_user.is_superadmin %}
+  {% if current_user.is_admin %}
   {# ── Modal édition des tags d'un mod ── #}
   <div class="modal-overlay" id="veh-mod-tags-modal" style="display:none">
     <div class="modal-box">

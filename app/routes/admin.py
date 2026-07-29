@@ -1387,7 +1387,6 @@ def vehicles():
 
 @admin_bp.route("/vehicles/<slug>/upload-image", methods=["POST"])
 @_admin_required
-@_superadmin_required_json
 def vehicle_upload_image(slug):
     car = CarMeta.query.filter_by(slug=slug).first_or_404()
     f, err = _validate_image_upload()
@@ -1413,7 +1412,6 @@ def tracks():
 
 @admin_bp.route("/tracks/<int:track_id>/upload-image", methods=["POST"])
 @_admin_required
-@_superadmin_required_json
 def track_upload_image(track_id):
     track = db.get_or_404(TrackMeta, track_id)
     f, err = _validate_image_upload()
@@ -1476,7 +1474,6 @@ def mods_delete(filename):
 
 @admin_bp.route("/vehicles/mods/<path:filename>/tags", methods=["POST"])
 @_admin_required
-@_superadmin_required_json
 def mod_set_tags(filename):
     from app.services.mod_scanner import list_mods
     if not any(m["filename"] == filename for m in list_mods() if m.get("ok")):

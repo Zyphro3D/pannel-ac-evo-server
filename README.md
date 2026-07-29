@@ -68,7 +68,31 @@
 
 ## Fonctionnalités
 
-Organisées par niveau d'accès — chaque rôle hérite des fonctionnalités des rôles en dessous.
+Organisées par niveau d'accès — chaque rôle hérite des fonctionnalités des rôles en dessous :
+Public ⊂ Pilote ⊂ Admin ⊂ Superadmin.
+
+<details>
+<summary><strong>Voir la matrice complète des droits</strong> (cliquer pour déplier)</summary>
+
+| Fonctionnalité | Public | Pilote | Admin | Superadmin |
+|---|:---:|:---:|:---:|:---:|
+| Accueil, résultats, classements, timing en direct | ✓ | ✓ | ✓ | ✓ |
+| Inscription pilote, mot de passe oublié | ✓ | ✓ | ✓ | ✓ |
+| Tableau de bord, inscription/désinscription aux événements | — | ✓ | ✓ | ✓ |
+| Historique personnel des tours, liaison Steam | — | ✓ | ✓ | ✓ |
+| Consulter / télécharger un mod véhicule | — | ✓ | ✓ | ✓ |
+| Démarrer / arrêter / redémarrer le serveur, logs, métriques | — | — | ✓ | ✓ |
+| Éditeur de config (circuit, météo, sessions, voitures), roulement | — | — | ✓ | ✓ |
+| Créer / publier un événement, gérer les inscriptions | — | — | ✓ | ✓ |
+| Approuver / rejeter un compte pilote | — | — | ✓ | ✓ |
+| Uploader / supprimer un mod, poser ses tags (catégorie, PI) | — | — | ✓ | ✓ |
+| Uploader une image véhicule / circuit | — | — | ✓ | ✓ |
+| Modération in-game : chat, kick, mute, pénalités, lest | — | — | ✓ | ✓ |
+| Variables `.env`, mise à jour SteamCMD du serveur de jeu | — | — | — | ✓ |
+| Créer / supprimer un serveur additionnel (multi-serveurs) | — | — | — | ✓ |
+| Créer / supprimer un compte admin, changer un rôle | — | — | — | ✓ |
+
+</details>
 
 **🌍 Public — aucun compte requis**
 - Page d'accueil : serveurs en direct (joueurs connectés, circuit en cours), calendrier des prochains événements, derniers résultats
@@ -88,7 +112,7 @@ Organisées par niveau d'accès — chaque rôle hérite des fonctionnalités de
 **🛠️ Admin**
 - Démarrage / arrêt / restart du serveur, watchdog auto-restart, logs et métriques CPU/RAM en direct
 - Éditeur de config JSON complet : circuit, météo, sessions (Practice / Qualifying / Warmup / Race), voitures
-- Banque de véhicules (97 voitures, catégories Road/Race/Track, filtres, images) et banque de circuits (36 circuits, layout, longueur, images)
+- Banque de véhicules (97 voitures, catégories Road/Race/Track, filtres, images) et banque de circuits (36 circuits, layout, longueur, images), upload des images véhicules/circuits
 - **Gestion des mods véhicules** : upload multiple par glisser-déposer (`.kspkg`), tags manuels (catégorie, PI), image de couverture auto-détectée ou personnalisée, détection et signalement des conflits d'identifiant entre mods
 - Roulement de configs avec file d'attente, glisser-déposer, option cycle
 - Gestion complète des événements (création, publication, inscriptions, génération de l'`entry_list.json`) et des comptes pilotes (approbation/rejet)

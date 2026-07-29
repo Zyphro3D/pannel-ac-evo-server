@@ -1,6 +1,13 @@
 # Changelog
 
-### v2.0.0 — non publiée
+### v2.0.1 — 29/07/2026
+
+**Correction — l'upload d'image véhicule/circuit et la pose de tags sur un mod nécessitaient superadmin**
+
+- Ces trois actions (`vehicle_upload_image`, `track_upload_image`, `mod_set_tags`) avaient été mises derrière `@_superadmin_required_json` par excès de prudence lors de l'ajout de la gestion des mods (v2.0.0) — au même niveau que la gestion des comptes ou des serveurs, alors qu'elles relèvent de la gestion courante du catalogue véhicules/circuits/mods.
+- Corrigé : ces trois actions ne demandent plus que le rôle Admin (comme l'upload/suppression de mods, déjà au même niveau). Réservé aux superadmins : comptes, serveurs, variables `.env`, mise à jour SteamCMD.
+
+### v2.0.0 — 29/07/2026
 
 **Ajout — bibliothèque de mods partagée (upload, tags manuels, PI, image de couverture, détection de collision d'identifiant)**
 
