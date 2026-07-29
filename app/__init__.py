@@ -176,15 +176,29 @@ _PROP_3        = {0: "ICE", 1: "EV", 2: "Hybrid"}
 
 
 def _sync_car_meta(db):
-    """Synchronise CarMeta depuis cars.json au démarrage (upsert, 1 requête SELECT)."""
+    """Synchronise CarMeta depuis cars.json au démarrage (upsert, 1 requête SELECT).
+    Les mods NE sont PAS synchronisés ici : ils ont leur propre page (Mods) et leur
+    propre source de vérité (MODS_DIR) — les mélanger au catalogue officiel a causé
+    des voitures moddées taguées "Road"/"Race" au milieu des vraies (v1.9.6). Toute
+    entrée CarMeta qui n'est plus dans cars.json (résidu d'un ancien scan) est
+    supprimée — sauf les entrées is_mod=True : ce sont des tags manuels posés sur un
+    mod (slug = nom de fichier .kspkg), gérées par leurs propres routes (voir
+    admin.mod_set_tags / mods_delete), jamais par ce nettoyage générique."""
     from pathlib import Path as _Path
     log = _log.getLogger(__name__)
     try:
         from app.models import CarMeta
-        from app.services.server_config import load_cars
+        from app.services.server_config import load_official_cars
         _media_cars = _Path(__file__).parent.parent / "media" / "cars"
-        cars = load_cars()
+        cars = load_official_cars()
+        official_slugs = {c["name"] for c in cars}
         existing_map = {c.slug: c for c in CarMeta.query.all()}
+        stale = [c for slug, c in existing_map.items() if slug not in official_slugs and not c.is_mod]
+        for c in stale:
+            db.session.delete(c)
+        if stale:
+            log.info("CarMeta : %d entrée(s) obsolète(s)/mod supprimée(s) (%s)",
+                      len(stale), ", ".join(c.slug for c in stale[:10]))
         for car in cars:
             slug  = car["name"]
             dn    = car.get("display_name", "")
@@ -610,7 +624,7 @@ def create_app():
         from app.routes.admin import (
             _migrate_db, _migrate_indexes, _migrate_server_discord,
             _migrate_server_http_port, _migrate_event_server_id,
-            _migrate_car_meta_props, _migrate_result_hash,
+            _migrate_car_meta_props, _migrate_car_meta_is_mod, _migrate_result_hash,
             _migrate_driver_steam_id, _migrate_admin_account_extra,
             _migrate_driver_email_confirmation,
         )
@@ -620,6 +634,7 @@ def create_app():
         _migrate_server_http_port(db)
         _migrate_event_server_id(db)
         _migrate_car_meta_props(db)
+        _migrate_car_meta_is_mod(db)
         _migrate_result_hash(db)
         _migrate_driver_steam_id(db)
         _migrate_admin_account_extra(db)

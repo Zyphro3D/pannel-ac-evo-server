@@ -51,6 +51,9 @@ aceserver/_CommonRedist/
 aceserver/content/
 aceserver/serverConfig/
 aceserver/results/
+# Bibliothèque de mods (kspkg potentiellement volumineux, propre à chaque installation)
+aceserver/mods/
+aceserver/mods_disabled/
 # Configs serveur — éditées par l'utilisateur, non versionnées (le panel les génère au démarrage)
 aceserver/configs/*.json
 # Les templates .example sont versionnés pour guider la première installation

@@ -50,6 +50,11 @@ class Config:
         os.path.join(ACESERVER_DIR, "events_race_weekend.json"),
     )
 
+    # Bibliothèque de mods partagée entre le panel et tous les serveurs de jeu
+    # (montée dans chaque container ace-server-* sur le dossier Wine
+    # "Saved Games/ACE-Server/mods" que ServerLauncher.exe scanne nativement).
+    MODS_DIR = os.environ.get("MODS_DIR", os.path.join(ACESERVER_DIR, "mods"))
+
     ACESERVER_HTTP_PORT = int(os.environ.get("ACESERVER_HTTP_PORT") or 8081)
     ACESERVER_TCP_HOST  = os.environ.get("ACESERVER_TCP_HOST", "127.0.0.1")
     ACESERVER_TCP_PORT  = int(os.environ.get("ACESERVER_TCP_PORT")  or 9700)

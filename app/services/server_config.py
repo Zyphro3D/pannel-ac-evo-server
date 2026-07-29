@@ -128,6 +128,9 @@ def _events_path(mode: str = "practice") -> Path:
     key = "EVENTS_PRACTICE_JSON_PATH" if mode == "practice" else "EVENTS_RACE_JSON_PATH"
     return Path(current_app.config[key])
 
+def _mods_dir() -> Path:
+    return Path(current_app.config["MODS_DIR"])
+
 
 # ── Validation du nom de fichier de config ────────────────────────────────────
 
@@ -515,6 +518,34 @@ CAR_CATEGORY_ORDER: list[str] = [
     "Road", "Race", "Track", "Modern", "Vintage", "YT", "ICE", "EV", "Hybrid"
 ]
 
+
+def annotate_cars(cars: list) -> tuple[list, float, float]:
+    """Mute chaque dict voiture en place : is_mod, les labels property_X, et
+    collides_with (noms affichés des AUTRES voitures partageant le même
+    identifiant sélectionnable — voir load_cars() : deux mods du même
+    convertisseur générique peuvent légitimement partager un identifiant ; on
+    les affiche quand même tous les deux plutôt que d'en cacher un en
+    silence, à charge pour cette annotation de rendre le conflit visible).
+    Retourne (catégories présentes, pi_min, pi_max)."""
+    by_name: dict[str, list] = {}
+    for car in cars:
+        by_name.setdefault(car.get("name"), []).append(car)
+
+    present: set[str] = set()
+    for car in cars:
+        car["is_mod"] = bool(car.get("is_mod", False))
+        for key, mapping in CAR_PROP_MAPS.items():
+            val = car.get(key)
+            label = mapping.get(val, "") if val is not None else ""
+            car[f"{key}_label"] = label
+            if label:
+                present.add(label)
+        car["collides_with"] = [c["display_name"] for c in by_name[car.get("name")] if c is not car]
+
+    categories = [c for c in CAR_CATEGORY_ORDER if c in present]
+    pi_values  = [c["performance_indicator"] for c in cars if c.get("performance_indicator") is not None]
+    return categories, (min(pi_values) if pi_values else 0.0), (max(pi_values) if pi_values else 999.0)
+
 # Champs numériques avec leurs contraintes (min, max)
 _INT_FIELDS: dict[str, tuple[int, int]] = {
     "MaxPlayers": (1, 128),
@@ -619,13 +650,54 @@ def apply_server_patch(patch: dict, is_superadmin: bool = False) -> dict:
 
 # ── Données de référence ─────────────────────────────────────────────────────
 
-def load_cars() -> list:
+def load_mod_cars() -> list:
+    """Scanne la bibliothèque de mods partagée (MODS_DIR) : un mod = un .kspkg
+    accompagné d'un .json au même format que cars.json ({"cars": [...]}).
+    Reproduit exactement EventVM.LoadCars() côté ServerLauncher.exe (décompilé) :
+    n'importe quel *.json du dossier est lu, chaque entrée est forcée is_mod=True."""
+    mods_dir = _mods_dir()
+    if not mods_dir.is_dir():
+        return []
+    cars = []
+    for path in sorted(mods_dir.glob("*.json")):
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError) as e:
+            log.warning("load_mod_cars: %s ignoré (json invalide : %s)", path, e)
+            continue
+        for car in data.get("cars", []):
+            car = dict(car)
+            car["is_mod"] = True
+            cars.append(car)
+    return cars
+
+
+def load_official_cars() -> list:
+    """Cars.json seul, sans les mods — pour distinguer catalogue officiel et mods
+    (CarMeta ne doit synchroniser que les officielles, voir _sync_car_meta)."""
     try:
         with open(_cars_path(), "r", encoding="utf-8") as f:
             return json.load(f).get("cars", [])
     except FileNotFoundError:
         log.warning("load_cars: %s introuvable (ACE EVO pas encore installé ?)", _cars_path())
         return []
+
+
+def load_cars() -> list:
+    """Officielles + mods. Un mod ne peut jamais écraser une voiture officielle
+    du même nom, mais deux mods qui partagent le même identifiant (même
+    convertisseur générique, ex: Honda/Nissan via "ks_modded_car") apparaissent
+    tous les deux — intentionnel : les cacher silencieusement rendrait la
+    collision invisible au moment de construire un événement, alors qu'elle est
+    déjà signalée sur la page Mods. Voir mod_scanner.scan_kspkg / la page Mods
+    pour le détail de cette collision (un seul des deux sera réellement
+    sélectionnable en jeu, l'autre chargera le même contenu sous un autre nom)."""
+    cars = load_official_cars()
+    official_names = {c["name"] for c in cars}
+    for car in load_mod_cars():
+        if car.get("name") not in official_names:
+            cars.append(car)
+    return cars
 
 
 def load_events(mode: str = "practice") -> list:

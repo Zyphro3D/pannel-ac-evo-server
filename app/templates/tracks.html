@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{{ _('Tracks') }} — {{ panel_title }}{% endblock %}
 {% block content %}
-<div class="page-shell max-w-[1100px]">
+<div class="page-shell max-w-[1100px]" x-data="{ trackTab: 'official' }">
 
   <div class="page-header">
     <div>
@@ -10,6 +10,20 @@
     </div>
   </div>
 
+  <div class="flex gap-2 mb-6 border-b border-surface2">
+    <button type="button" class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
+            :class="trackTab === 'official' ? 'border-accent text-txt' : 'border-transparent text-dim hover:text-txt'"
+            @click="trackTab = 'official'">
+      {{ _('Tous') }}
+    </button>
+    <button type="button" class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
+            :class="trackTab === 'mods' ? 'border-accent text-txt' : 'border-transparent text-dim hover:text-txt'"
+            @click="trackTab = 'mods'">
+      {{ _('Mods') }}
+    </button>
+  </div>
+
+  <div x-show="trackTab === 'official'">
   {% if tracks %}
   <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
     {% for tr in tracks %}
@@ -62,6 +76,14 @@
     <p>{{ _('Aucun track trouvé.') }}</p>
   </div>
   {% endif %}
+  </div>
+
+  <div x-show="trackTab === 'mods'" style="display:none">
+    <div class="card flex flex-col items-center justify-center gap-3 py-16 text-center">
+      <p class="text-txt font-semibold">{{ _('Mods de circuits — en cours de développement') }}</p>
+      <p class="text-dim text-sm">{{ _('Le support des circuits moddés arrivera dans une prochaine mise à jour.') }}</p>
+    </div>
+  </div>
 
 </div>
 {% endblock %}

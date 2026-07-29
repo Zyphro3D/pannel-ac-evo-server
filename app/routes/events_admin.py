@@ -72,22 +72,7 @@ def events_list():
     return render_template("events_admin.html", events=events)
 
 
-from app.services.server_config import CAR_PROP_MAPS as _PROP_MAPS, CAR_CATEGORY_ORDER as _CATEGORY_ORDER
-
-
-def _cars_context(cars):
-    present = set()
-    for car in cars:
-        car["is_mod"] = bool(car.get("is_mod", False))
-        for key, mapping in _PROP_MAPS.items():
-            val = car.get(key)
-            label = mapping.get(val, "") if val is not None else ""
-            car[f"{key}_label"] = label
-            if label:
-                present.add(label)
-    categories = [c for c in _CATEGORY_ORDER if c in present]
-    pi_values  = [c["performance_indicator"] for c in cars if c.get("performance_indicator") is not None]
-    return categories, (min(pi_values) if pi_values else 0.0), (max(pi_values) if pi_values else 999.0)
+from app.services.server_config import annotate_cars as _cars_context
 
 
 @events_admin_bp.route("/events/create", methods=["GET", "POST"])

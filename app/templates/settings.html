@@ -945,29 +945,35 @@
         editId: null,
         editUsername: '',
         editDisplayName: '',
-        editRole: 'admin',
-        openEdit(id, u, dn, role) {
+        openEdit(id, u, dn) {
           this.editId = id; this.editUsername = u;
-          this.editDisplayName = dn; this.editRole = role;
+          this.editDisplayName = dn;
           this.showEdit = true;
+        },
+        openCreate() {
+          this.showCreate = true;
         }
       }">
 
-      <section class="settings-dashboard-grid">
-        <div class="settings-card settings-card-wide">
+      <section>
+        <div class="settings-card">
           <div class="settings-card-head">
-            <h2>{{ _('Comptes administrateurs') }}</h2>
-            <button class="btn btn-primary btn-sm" @click="showCreate = true">+ {{ _('Ajouter') }}</button>
+            <h2>{{ _('Comptes') }}</h2>
+            <div class="flex gap-2">
+              <a href="{{ url_for('events_admin.drivers_list') }}" class="btn btn-secondary btn-sm">{{ _('Gestion des pilotes') }}</a>
+              <button class="btn btn-primary btn-sm" @click="openCreate()">+ {{ _('Ajouter un admin') }}</button>
+            </div>
           </div>
           <table class="settings-table">
             <thead>
               <tr>
                 <th>{{ _('Identifiant') }}</th>
-                <th>{{ _('Nom affiché') }}</th>
+                <th>{{ _('Nom / Email') }}</th>
                 <th>{{ _('Rôle') }}</th>
+                <th>{{ _('Steam') }}</th>
                 <th>{{ _('Statut') }}</th>
-                <th>{{ _('Dernière connexion') }}</th>
-                <th></th>
+                <th>{{ _('Connexion / Inscription') }}</th>
+                <th class="w-px"></th>
               </tr>
             </thead>
             <tbody>
@@ -976,9 +982,20 @@
                 <td><strong>{{ acc.username }}</strong></td>
                 <td>{{ acc.display_name or '—' }}</td>
                 <td>
-                  <span class="badge {% if acc.is_superadmin %}badge-warning{% else %}badge-neutral{% endif %}">
-                    {{ _('Super Admin') if acc.is_superadmin else _('Admin') }}
-                  </span>
+                  <select class="form-control role-select min-w-[9rem]"
+                          data-kind="admin" data-id="{{ acc.id }}" data-previous="{{ acc.role }}"
+                          {% if acc.get_id() == current_user.get_id() %}disabled title="{{ _('Vous ne pouvez pas modifier votre propre rôle ici') }}"{% endif %}>
+                    <option value="pilote">{{ _('Pilote') }}</option>
+                    <option value="admin" {% if acc.role == 'admin' %}selected{% endif %}>{{ _('Admin') }}</option>
+                    <option value="superadmin" {% if acc.role == 'superadmin' %}selected{% endif %}>{{ _('Super Admin') }}</option>
+                  </select>
+                </td>
+                <td>
+                  {% if acc.steam_id %}
+                  <a href="https://steamcommunity.com/profiles/{{ acc.steam_id }}" target="_blank" rel="noopener" class="badge badge-success" title="{{ acc.steam_id }}">✓ {{ _('Confirmé') }}</a>
+                  {% else %}
+                  <span class="text-dim text-xs">—</span>
+                  {% endif %}
                 </td>
                 <td>
                   <span class="badge {% if acc.is_active %}badge-success{% else %}badge-error{% endif %}" id="acc-status-{{ acc.id }}">
@@ -986,53 +1003,49 @@
                   </span>
                 </td>
                 <td class="text-[0.82rem] text-dim">{{ acc.last_login.strftime('%d/%m/%Y %H:%M') if acc.last_login else '—' }}</td>
-                <td class="flex gap-1.5 justify-end">
-                  <button class="btn btn-secondary btn-sm" @click="openEdit({{ acc.id }}, {{ acc.username | tojson | forceescape }}, {{ (acc.display_name or '') | tojson | forceescape }}, {{ acc.role | tojson | forceescape }})">{{ _('Modifier') }}</button>
-                  {% if acc.get_id() != current_user.get_id() %}
-                  <button class="btn btn-ghost btn-sm acc-toggle-btn" id="acc-toggle-{{ acc.id }}"
-                          data-id="{{ acc.id }}" data-active="{{ 'true' if acc.is_active else 'false' }}">{{ _('Désactiver') if acc.is_active else _('Activer') }}</button>
-                  <form method="post" action="{{ url_for('admin.account_delete', account_id=acc.id) }}">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <button type="submit" class="btn btn-danger btn-sm" data-confirm="{{ _('Supprimer ce compte ?') }}">{{ _('Supprimer') }}</button>
-                  </form>
-                  {% endif %}
+                <td class="w-px">
+                  <div class="flex gap-1.5 justify-end whitespace-nowrap">
+                    <button class="btn btn-secondary btn-sm" @click="openEdit({{ acc.id }}, {{ acc.username | tojson | forceescape }}, {{ (acc.display_name or '') | tojson | forceescape }})">{{ _('Modifier') }}</button>
+                    {% if acc.get_id() != current_user.get_id() %}
+                    <button class="btn btn-ghost btn-sm acc-toggle-btn" id="acc-toggle-{{ acc.id }}"
+                            data-id="{{ acc.id }}" data-active="{{ 'true' if acc.is_active else 'false' }}">{{ _('Désactiver') if acc.is_active else _('Activer') }}</button>
+                    {% endif %}
+                  </div>
                 </td>
               </tr>
-              {% else %}
-              <tr><td colspan="6" class="text-center text-dim p-5">{{ _('Aucun compte administrateur.') }}</td></tr>
               {% endfor %}
+              {% for d in pilot_accounts %}
+              <tr id="pilot-row-{{ d.id }}">
+                <td><strong>{{ d.ingame_name }}</strong></td>
+                <td>{{ d.email }}</td>
+                <td>
+                  <select class="form-control role-select min-w-[9rem]"
+                          data-kind="pilot" data-id="{{ d.id }}" data-previous="pilote">
+                    <option value="pilote" selected>{{ _('Pilote') }}</option>
+                    <option value="admin">{{ _('Admin') }}</option>
+                    <option value="superadmin">{{ _('Super Admin') }}</option>
+                  </select>
+                </td>
+                <td>
+                  {% if d.steam_id %}
+                  <a href="https://steamcommunity.com/profiles/{{ d.steam_id }}" target="_blank" rel="noopener" class="badge badge-success" title="{{ d.steam_id }}">✓ {{ _('Confirmé') }}</a>
+                  {% else %}
+                  <span class="text-dim text-xs">—</span>
+                  {% endif %}
+                </td>
+                <td><span class="badge badge-success">{{ _('Actif') }}</span></td>
+                <td class="text-[0.82rem] text-dim">{{ d.created_at.strftime('%d/%m/%Y') if d.created_at else '—' }}</td>
+                <td></td>
+              </tr>
+              {% endfor %}
+              {% if not admin_accounts and not pilot_accounts %}
+              <tr><td colspan="7" class="text-center text-dim p-5">{{ _('Aucun compte.') }}</td></tr>
+              {% endif %}
             </tbody>
           </table>
         </div>
       </section>
 
-      {# Pilotes (si accès via ancienne URL) #}
-      {% if tab == 'users' %}
-      <section class="settings-dashboard-grid mt-6">
-        <div class="settings-card settings-card-wide">
-          <div class="settings-card-head">
-            <h2>{{ _('Gestion pilotes') }}</h2>
-            <a href="{{ url_for('events_admin.drivers_list') }}" class="btn btn-secondary btn-sm">{{ _('Ouvrir la gestion') }}</a>
-          </div>
-          {% if drivers_list %}
-          <table class="settings-table">
-            <thead><tr><th>{{ _('Pilote') }}</th><th>{{ _('Email') }}</th><th>{{ _('Statut') }}</th><th>{{ _('Inscription') }}</th></tr></thead>
-            <tbody>
-              {% for d in drivers_list %}
-              <tr>
-                <td>{{ d.ingame_name }}</td><td>{{ d.email }}</td>
-                <td><span class="badge badge-{{ d.status }}">{{ d.status }}</span></td>
-                <td>{{ d.created_at.strftime('%d/%m/%Y') if d.created_at else '—' }}</td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-          {% else %}
-          <p class="settings-empty">{{ _('Aucun pilote enregistré pour le moment.') }}</p>
-          {% endif %}
-        </div>
-      </section>
-      {% endif %}
 
       {# Modals comptes #}
       <div class="modal-overlay" x-show="showCreate" x-transition @click.self="showCreate = false" style="display:none">
@@ -1090,13 +1103,7 @@
                 <label class="form-label">{{ _('Nouveau mot de passe') }} <span class="text-xs text-dim">({{ _('laisser vide pour ne pas changer') }})</span></label>
                 <input class="form-control" type="password" name="password" autocomplete="new-password">
               </div>
-              <div>
-                <label class="form-label">{{ _('Rôle') }}</label>
-                <select class="form-control" name="role" x-model="editRole">
-                  <option value="admin">{{ _('Admin') }}</option>
-                  <option value="superadmin">{{ _('Super Admin') }}</option>
-                </select>
-              </div>
+              <p class="text-xs text-dim">{{ _('Pour changer le rôle, utilise le menu déroulant dans le tableau.') }}</p>
             </div>
             <div class="modal-foot">
               <button type="button" class="btn-secondary btn-sm" @click="showEdit = false">{{ _('Annuler') }}</button>
@@ -1134,6 +1141,28 @@ async function toggleAccount(id, isActive) {
 }
 document.querySelectorAll('.acc-toggle-btn').forEach((btn) => {
   btn.addEventListener('click', () => toggleAccount(btn.dataset.id, btn.dataset.active === 'true'));
+});
+
+function onRoleSelectChange(sel) {
+  const kind = sel.dataset.kind, id = sel.dataset.id, prev = sel.dataset.previous, newRole = sel.value;
+  if (newRole === prev) return;
+  submitRoleChange(sel, kind, id, newRole, prev);
+}
+
+async function submitRoleChange(sel, kind, id, newRole, prev) {
+  const csrf = document.querySelector('meta[name=csrf-token]')?.content || '';
+  const form = new FormData();
+  form.append('kind', kind); form.append('id', id); form.append('new_role', newRole);
+  const res = await fetch('{{ url_for("admin.account_role_change") }}', {
+    method: 'POST', headers: { 'X-CSRFToken': csrf }, body: form,
+  });
+  const data = await res.json();
+  if (!data.ok) { alert(data.error); if (sel) sel.value = prev; return; }
+  location.reload();
+}
+
+document.querySelectorAll('.role-select').forEach((sel) => {
+  sel.addEventListener('change', () => onRoleSelectChange(sel));
 });
 </script>
 {% endif %}

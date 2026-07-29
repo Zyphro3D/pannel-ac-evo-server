@@ -8,12 +8,12 @@ from pathlib import Path
 
 _env_write_lock = threading.Lock()  # protects concurrent os.environ writes in settings POST
 
-from flask import Blueprint, current_app, render_template, redirect, url_for, request, flash, jsonify, session
+from flask import Blueprint, current_app, render_template, redirect, url_for, request, flash, jsonify, session, send_from_directory, abort
 from flask_babel import _, lazy_gettext as _l
-from flask_login import current_user
+from flask_login import current_user, login_required
 
 
-from app.models import AdminAccount, Driver, Event, Server, CarMeta, TrackMeta
+from app.models import AdminAccount, Driver, DriverStatus, Event, Server, CarMeta, TrackMeta
 from app.services.database import db
 from app.services.server_config import (
     load_config, load_cars, load_events,
@@ -35,7 +35,7 @@ from app.utils import (
 
 admin_bp = Blueprint("admin", __name__)
 
-from app.services.server_config import CAR_PROP_MAPS as _PROP_MAPS, CAR_CATEGORY_ORDER as _CATEGORY_ORDER
+from app.services.server_config import CAR_PROP_MAPS as _PROP_MAPS, CAR_CATEGORY_ORDER as _CATEGORY_ORDER, annotate_cars
 
 _log = logging.getLogger(__name__)
 
@@ -275,6 +275,20 @@ def _migrate_car_meta_props(db):
                 pass  # colonne déjà présente
 
 
+def _migrate_car_meta_is_mod(db):
+    """Ajoute is_mod à car_meta : tags manuels d'un mod (slug = nom de fichier
+    .kspkg), pour que le nettoyage des entrées obsolètes (_sync_car_meta) ne les
+    supprime pas comme n'importe quel résidu hors cars.json (v1.9.7+)."""
+    import sqlalchemy as sa
+    with db.engine.connect() as conn:
+        try:
+            conn.execute(sa.text("ALTER TABLE car_meta ADD COLUMN is_mod BOOLEAN DEFAULT 0"))
+            conn.commit()
+            _log.info("Migration car_meta.is_mod : colonne ajoutée")
+        except Exception:
+            pass  # colonne déjà présente
+
+
 
 @admin_bp.route("/settings/mail-preview")
 @_admin_required
@@ -416,20 +430,7 @@ def server():
     events_race     = load_events("race")
     status          = get_status(sid)
 
-    present: set[str] = set()
-    for car in cars:
-        car["is_mod"] = bool(car.get("is_mod", False))
-        for key, mapping in _PROP_MAPS.items():
-            val   = car.get(key)
-            label = mapping.get(val, "") if val is not None else ""
-            car[f"{key}_label"] = label
-            if label:
-                present.add(label)
-
-    car_categories = [c for c in _CATEGORY_ORDER if c in present]
-    pi_values      = [c["performance_indicator"] for c in cars if c.get("performance_indicator") is not None]
-    pi_min         = min(pi_values) if pi_values else 0.0
-    pi_max         = max(pi_values) if pi_values else 999.0
+    car_categories, pi_min, pi_max = annotate_cars(cars)
     media_circuits = Path(__file__).parent.parent.parent / "media" / "circuits"
     circuit_files  = {p.stem: p.name for p in media_circuits.glob("*.webp")} if media_circuits.exists() else {}
 
@@ -892,6 +893,13 @@ def settings():
                          if f.suffix.lower() in {".jpg", ".jpeg", ".png", ".gif", ".webp"}]
     drivers_list   = Driver.query.order_by(Driver.created_at.desc()).limit(8).all() if tab == "users" else []
     admin_accounts = AdminAccount.query.order_by(AdminAccount.role.desc(), AdminAccount.username).all()
+    if tab in ("accounts", "users", "events", "live"):
+        _promoted_usernames = {a.username for a in admin_accounts}
+        pilot_accounts = (Driver.query.filter_by(status=DriverStatus.APPROVED)
+                          .filter(~Driver.ingame_name.in_(_promoted_usernames))
+                          .order_by(Driver.ingame_name).all())
+    else:
+        pilot_accounts = []
     try:
         bot_cars = sorted(load_cars(), key=lambda c: c["display_name"])
     except Exception:
@@ -914,6 +922,7 @@ def settings():
                            media_banners=media_banners,
                            drivers_list=drivers_list,
                            admin_accounts=admin_accounts,
+                           pilot_accounts=pilot_accounts,
                            bot_cars=bot_cars,
                            bot_admin_password_set=bot_admin_password_set,
                            current_srv=current_srv,
@@ -922,17 +931,24 @@ def settings():
                            mail_preview_types=mailer.PREVIEW_TYPES)
 
 
-def _validate_image_upload(allowed_exts=None):
-    """Valide un upload image : Content-Length, extension, signature magic bytes.
+def _validate_image_upload(allowed_exts=None, field="file"):
+    """Valide un upload image : taille, extension, signature magic bytes.
     Retourne (file_object, ext) si valide, ou (None, response_json) si invalide.
     """
     if allowed_exts is None:
         allowed_exts = {".jpg", ".jpeg", ".png", ".webp"}
-    if request.content_length and request.content_length > 5 * 1024 * 1024:
-        return None, (jsonify({"ok": False, "error": _("Fichier trop volumineux (max 5 Mo)")}), 413)
-    f = request.files.get("file")
+    f = request.files.get(field)
     if not f or not f.filename:
         return None, (jsonify({"ok": False, "error": _("Aucun fichier fourni")}), 400)
+    # La taille du champ `field` seul, pas request.content_length : ce dernier est
+    # celui de TOUTE la requête, et vaut plusieurs centaines de Mo quand ce champ
+    # cohabite avec un gros fichier (ex: cover jointe à l'upload d'un .kspkg),
+    # ce qui déclenchait un faux 413 même pour une image de quelques Ko.
+    f.stream.seek(0, 2)
+    size = f.stream.tell()
+    f.stream.seek(0)
+    if size > 5 * 1024 * 1024:
+        return None, (jsonify({"ok": False, "error": _("Fichier trop volumineux (max 5 Mo)")}), 413)
     ext = Path(f.filename).suffix.lower()
     if ext not in allowed_exts:
         return None, (jsonify({"ok": False, "error": _("Type non autorisé")}), 400)
@@ -1063,6 +1079,67 @@ def account_delete(account_id):
     db.session.commit()
     flash(_("Compte supprimé."), "success")
     return redirect(url_for("admin.settings", tab="accounts"))
+
+
+@admin_bp.route("/accounts/role", methods=["POST"])
+@_admin_required
+@_superadmin_required_json
+def account_role_change():
+    """Un seul point d'entrée pour le sélecteur de rôle unifié (Pilote/Admin/
+    Super Admin) de l'onglet Comptes : rétrograder un admin vers pilote
+    (= supprimer son AdminAccount, son compte pilote existant n'est jamais
+    touché), changer admin <-> superadmin, ou promouvoir un pilote (nécessite
+    un mot de passe, car un AdminAccount doit en avoir un)."""
+    kind = request.form.get("kind")
+    new_role = request.form.get("new_role")
+    if new_role not in ("pilote", "admin", "superadmin"):
+        return jsonify({"ok": False, "error": _("Rôle invalide")}), 400
+
+    if kind == "admin":
+        account_id = request.form.get("id", type=int)
+        acc = db.session.get(AdminAccount, account_id)
+        if not acc:
+            return jsonify({"ok": False, "error": _("Compte introuvable")}), 404
+        if new_role == "pilote":
+            if str(current_user.get_id()) == acc.get_id():
+                return jsonify({"ok": False, "error": _("Impossible de supprimer votre propre compte.")}), 400
+            if acc.role == "superadmin":
+                remaining = AdminAccount.query.filter_by(role="superadmin", is_active=True).count()
+                if remaining <= 1:
+                    return jsonify({"ok": False, "error": _("Impossible : il doit rester au moins un superadmin.")}), 400
+            db.session.delete(acc)
+            db.session.commit()
+            return jsonify({"ok": True})
+        if acc.role == "superadmin" and new_role != "superadmin":
+            remaining = AdminAccount.query.filter_by(role="superadmin", is_active=True).count()
+            if remaining <= 1:
+                return jsonify({"ok": False, "error": _("Impossible : il doit rester au moins un superadmin actif.")}), 400
+        acc.role = new_role
+        db.session.commit()
+        return jsonify({"ok": True})
+
+    if kind == "pilot":
+        driver_id = request.form.get("id", type=int)
+        driver = db.session.get(Driver, driver_id)
+        if not driver:
+            return jsonify({"ok": False, "error": _("Pilote introuvable")}), 404
+        if new_role == "pilote":
+            return jsonify({"ok": True})
+        username = driver.ingame_name
+        if AdminAccount.query.filter_by(username=username).first():
+            return jsonify({"ok": False, "error": _("Cet identifiant est déjà utilisé par un compte admin — renomme le pilote ou l'admin existant.")}), 400
+        acc = AdminAccount(username=username, display_name=driver.ingame_name, role=new_role)
+        # Même format de hash (werkzeug) pour Driver et AdminAccount : on réutilise
+        # le mot de passe pilote existant, pas besoin d'en redemander un. Le Steam ID
+        # confirmé est aussi repris (deux champs distincts entre les deux tables).
+        acc._pw_hash = driver._pw_hash
+        acc.steam_id = driver.steam_id
+        acc.steam_id_confirmed_at = driver.steam_id_confirmed_at
+        db.session.add(acc)
+        db.session.commit()
+        return jsonify({"ok": True})
+
+    return jsonify({"ok": False, "error": _("Requête invalide")}), 400
 
 
 # ── Mon compte (self-service admin/superadmin : email + Steam) ───────────────
@@ -1250,21 +1327,62 @@ def server_delete(server_id):
 def vehicles():
     cat_filter = request.args.get("cat", "")
     search     = request.args.get("q", "").strip().lower()
-    q = CarMeta.query.order_by(CarMeta.category, CarMeta.display_name)
-    if cat_filter in _CATEGORY_ORDER:
-        q = q.filter_by(category=cat_filter)
-    cars = q.all()
+
+    from app.services.mod_scanner import list_mods
+    _mod_tags = {c.slug: c for c in CarMeta.query.filter_by(is_mod=True).all()}
+    mod_cars = []
+    for m in list_mods():
+        if not m.get("ok"):
+            continue
+        tags = _mod_tags.get(m["filename"])
+        mod_cars.append({
+            "slug": m["filename"],
+            "display_name": m["displayName"],
+            "category": (tags.category if tags and tags.category else "Mods"),
+            "property_2_label": tags.property_2_label if tags else "",
+            "property_3_label": tags.property_3_label if tags else "",
+            "pi_min": tags.pi_min if tags else None,
+            "is_mod": True,
+            "cover_url": url_for("admin.mods_cover_view", filename=m["filename"]) if m.get("coverImage") else None,
+        })
+    mods_count = len(mod_cars)
+
+    if cat_filter == "mods":
+        cars = mod_cars
+    else:
+        q = CarMeta.query.filter_by(is_mod=False).order_by(CarMeta.display_name)
+        if cat_filter in _PROP_MAPS["property_1"].values():
+            q = q.filter_by(category=cat_filter)
+            matching_mods = [m for m in mod_cars if m["category"] == cat_filter]
+        elif cat_filter in _PROP_MAPS["property_2"].values():
+            q = q.filter_by(property_2_label=cat_filter)
+            matching_mods = [m for m in mod_cars if m["property_2_label"] == cat_filter]
+        elif cat_filter in _PROP_MAPS["property_3"].values():
+            q = q.filter_by(property_3_label=cat_filter)
+            matching_mods = [m for m in mod_cars if m["property_3_label"] == cat_filter]
+        else:
+            matching_mods = mod_cars  # "Tous" : tous les mods, tagués ou non
+        cars = q.all()
+        if matching_mods:
+            cars = sorted(cars + matching_mods, key=lambda c: (c["display_name"] if isinstance(c, dict) else c.display_name).lower())
+
     if search:
-        cars = [c for c in cars if search in c.display_name.lower() or search in c.slug.lower()]
+        cars = [c for c in cars
+                if search in (c["display_name"] if isinstance(c, dict) else c.display_name).lower()
+                or search in (c["slug"] if isinstance(c, dict) else c.slug).lower()]
+
     from sqlalchemy import func as _func
-    _raw_counts = dict(
-        db.session.query(CarMeta.category, _func.count()).group_by(CarMeta.category).all()
-    )
+    _cat_counts = dict(db.session.query(CarMeta.category, _func.count()).group_by(CarMeta.category).all())
+    _p2_counts  = dict(db.session.query(CarMeta.property_2_label, _func.count()).group_by(CarMeta.property_2_label).all())
+    _p3_counts  = dict(db.session.query(CarMeta.property_3_label, _func.count()).group_by(CarMeta.property_3_label).all())
+    _raw_counts = {**_cat_counts, **_p2_counts, **_p3_counts}
     counts = {cat: _raw_counts.get(cat, 0) for cat in _CATEGORY_ORDER}
+    total_count = CarMeta.query.filter_by(is_mod=False).count() + mods_count
     if is_htmx():
         return render_template("_partials/vehicle_grid.html", cars=cars)
     return render_template("vehicles.html", cars=cars, cat_filter=cat_filter,
-                           search=search, counts=counts, categories=_CATEGORY_ORDER)
+                           search=search, counts=counts, categories=_CATEGORY_ORDER,
+                           mods_count=mods_count, total_count=total_count, prop_maps=_PROP_MAPS)
 
 
 @admin_bp.route("/vehicles/<slug>/upload-image", methods=["POST"])
@@ -1314,6 +1432,102 @@ def track_upload_image(track_id):
 # ── Mods ──────────────────────────────────────────────────────────────────────
 
 @admin_bp.route("/mods")
-@_admin_required
+@login_required
 def mods():
-    return render_template("mods.html")
+    from app.services.mod_scanner import list_mods
+    return render_template("mods.html", mods=list_mods())
+
+
+@admin_bp.route("/mods/upload", methods=["POST"])
+@_admin_required
+def mods_upload():
+    from app.services.mod_scanner import save_uploaded_mod
+    if request.content_length and request.content_length > 3 * 1024 * 1024 * 1024:
+        return jsonify({"ok": False, "error": _("Fichier trop volumineux (max 3 Go)")}), 413
+    f = request.files.get("file")
+    if not f or not f.filename:
+        return jsonify({"ok": False, "error": _("Aucun fichier fourni")}), 400
+
+    cover_f, cover_ext = None, None
+    if request.files.get("cover") and request.files["cover"].filename:
+        cover_f, err = _validate_image_upload(field="cover")
+        if cover_f is None:
+            return err
+        cover_ext = Path(cover_f.filename).suffix.lower()
+
+    result = save_uploaded_mod(f, cover_file_storage=cover_f, cover_ext=cover_ext)
+    if not result["ok"]:
+        return jsonify({"ok": False, "error": result["error"]}), 400
+    return jsonify(result)
+
+
+@admin_bp.route("/mods/<path:filename>/delete", methods=["POST"])
+@_admin_required
+def mods_delete(filename):
+    from app.services.mod_scanner import delete_mod
+    if not delete_mod(filename):
+        return jsonify({"ok": False, "error": _("Mod introuvable")}), 404
+    tags = CarMeta.query.filter_by(is_mod=True, slug=filename).first()
+    if tags:
+        db.session.delete(tags)
+        db.session.commit()
+    return jsonify({"ok": True})
+
+
+@admin_bp.route("/vehicles/mods/<path:filename>/tags", methods=["POST"])
+@_admin_required
+@_superadmin_required_json
+def mod_set_tags(filename):
+    from app.services.mod_scanner import list_mods
+    if not any(m["filename"] == filename for m in list_mods() if m.get("ok")):
+        return jsonify({"ok": False, "error": _("Mod introuvable")}), 404
+    category = request.form.get("category", "")
+    p2       = request.form.get("property_2_label", "")
+    p3       = request.form.get("property_3_label", "")
+    pi_raw   = request.form.get("pi", "").strip()
+    if category and category not in _PROP_MAPS["property_1"].values():
+        return jsonify({"ok": False, "error": _("Tag invalide")}), 400
+    if p2 and p2 not in _PROP_MAPS["property_2"].values():
+        return jsonify({"ok": False, "error": _("Tag invalide")}), 400
+    if p3 and p3 not in _PROP_MAPS["property_3"].values():
+        return jsonify({"ok": False, "error": _("Tag invalide")}), 400
+    pi = None
+    if pi_raw:
+        try:
+            pi = float(pi_raw)
+        except ValueError:
+            return jsonify({"ok": False, "error": _("PI invalide")}), 400
+    tags = CarMeta.query.filter_by(is_mod=True, slug=filename).first()
+    if not tags:
+        tags = CarMeta(slug=filename, is_mod=True)
+        db.session.add(tags)
+    tags.category         = category
+    tags.property_2_label = p2
+    tags.property_3_label = p3
+    tags.pi_min = tags.pi_max = pi
+    db.session.commit()
+    return jsonify({"ok": True, "category": category, "property_2_label": p2, "property_3_label": p3, "pi": pi})
+
+
+@admin_bp.route("/mods/<path:filename>/cover", methods=["POST"])
+@_admin_required
+def mods_cover_upload(filename):
+    from app.services.mod_scanner import save_mod_cover
+    f, err = _validate_image_upload()
+    if f is None:
+        return err
+    ext = Path(f.filename).suffix.lower()
+    result = save_mod_cover(filename, f, ext)
+    if not result["ok"]:
+        return jsonify({"ok": False, "error": result["error"]}), 404
+    return jsonify(result)
+
+
+@admin_bp.route("/mods/<path:filename>/cover", methods=["GET"])
+@login_required
+def mods_cover_view(filename):
+    from app.services.mod_scanner import get_cover_path
+    cover = get_cover_path(filename)
+    if cover is None:
+        abort(404)
+    return send_from_directory(cover.parent, cover.name)

@@ -89,6 +89,9 @@ services:
       - ./aceserver:/aceserver
       # Prefix Wine persistant entre les redémarrages
       - wine_prefix:/root/.wine
+      # Bibliothèque de mods partagée (même dossier que /aceserver/mods, vu par le panel)
+      # posée sur le dossier Wine que ServerLauncher.exe scanne nativement
+      - ./aceserver/mods:/root/.wine/drive_c/users/root/Saved Games/ACE-Server/mods
     env_file:
       - .env
     security_opt:

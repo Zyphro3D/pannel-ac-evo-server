@@ -325,6 +325,7 @@ class CarMeta(db.Model):
     pi_max           = db.Column(db.Float,       nullable=True)
     image_path       = db.Column(db.String(255), default="")               # relatif à media/cars/
     is_active        = db.Column(db.Boolean, default=True)
+    is_mod           = db.Column(db.Boolean, default=False)  # tags manuels d'un mod (slug = nom de fichier .kspkg)
 
 
 # ── TrackMeta (métadonnées enrichies des circuits) ────────────────────────────

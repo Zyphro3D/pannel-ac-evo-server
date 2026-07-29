@@ -83,11 +83,13 @@ Organisées par niveau d'accès — chaque rôle hérite des fonctionnalités de
 - Tableau de bord : inscriptions à venir/passées, événements privés disponibles, désinscription tant que l'inscription est en attente
 - **Historique personnel des tours** : chaque tour roulé est enregistré en direct (temps, voiture, circuit), sans attendre la fin d'une session — au-delà d'une rétention configurable, l'historique est condensé en résumés mensuels plutôt que supprimé
 - Liaison de compte Steam (identité vérifiée, requise pour l'historique des tours)
+- Consultation de la bibliothèque de mods véhicules (upload réservé aux admins)
 
 **🛠️ Admin**
 - Démarrage / arrêt / restart du serveur, watchdog auto-restart, logs et métriques CPU/RAM en direct
 - Éditeur de config JSON complet : circuit, météo, sessions (Practice / Qualifying / Warmup / Race), voitures
 - Banque de véhicules (97 voitures, catégories Road/Race/Track, filtres, images) et banque de circuits (36 circuits, layout, longueur, images)
+- **Gestion des mods véhicules** : upload multiple par glisser-déposer (`.kspkg`), tags manuels (catégorie, PI), image de couverture auto-détectée ou personnalisée, détection et signalement des conflits d'identifiant entre mods
 - Roulement de configs avec file d'attente, glisser-déposer, option cycle
 - Gestion complète des événements (création, publication, inscriptions, génération de l'`entry_list.json`) et des comptes pilotes (approbation/rejet)
 - Emails transactionnels (approbation, rejet, rappel)

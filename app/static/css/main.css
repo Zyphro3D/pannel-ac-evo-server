@@ -2430,6 +2430,23 @@ body::before {
 .car-tag-vintage { background: rgba(180,140,80,.12);  color: #c9a85c; }
 .car-tag-yt      { background: rgba(148,163,184,.1);  color: #94a3b8; }
 .car-tag-mod     { background: rgba(237,28,36,.13);   color: #f08a8a; }
+.car-tag-collision {
+  background: rgba(245,158,11,.15); color: #f59e0b; cursor: help;
+}
+.hover-tip {
+  position: fixed;
+  z-index: 9999;
+  max-width: 320px;
+  padding: 8px 12px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 0.8rem;
+  line-height: 1.4;
+  box-shadow: 0 4px 16px rgba(0,0,0,.35);
+  pointer-events: none;
+}
 .car-ballast, .car-restrictor {
   width: 60px; background: var(--surface2); border: 1px solid var(--border);
   border-radius: var(--radius-sm); color: var(--text); padding: 2px 6px;
@@ -3982,6 +3999,10 @@ body::before {
   flex-direction: column;
   transition: opacity .2s;
 }
+.veh-card-mod {
+  border-color: rgba(236,72,153,.55);
+  box-shadow: 0 0 0 1px rgba(236,72,153,.25);
+}
 .veh-img-wrap {
   position: relative;
   aspect-ratio: 16/9;
@@ -4034,6 +4055,7 @@ body::before {
 .veh-badge-ev      { background: rgba(16,185,129,.12);  color: #34d399; }
 .veh-badge-hybrid  { background: rgba(20,184,166,.15);  color: #2dd4bf; }
 .veh-badge-pi      { background: var(--surface); color: var(--dim); border: 1px solid var(--border); }
+.veh-badge-mods    { background: rgba(236,72,153,.15);  color: #f472b6; }
 
 
 /* ─── Page Circuits ───────────────────────────────────────────── */

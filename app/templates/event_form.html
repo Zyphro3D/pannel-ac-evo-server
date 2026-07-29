@@ -228,8 +228,14 @@
           <div class="cars-filters-top">
             <input type="text" id="ef-car-search" class="form-control" placeholder="{{ _('Rechercher...') }}" oninput="efApplyFilters()">
             <label class="toggle-label">
-              <input type="checkbox" id="ef-official-only" class="switch" onchange="efApplyFilters(true)">
+              <input type="checkbox" id="ef-official-only" class="switch"
+                     onchange="if (this.checked) document.getElementById('ef-mods-only').checked = false; efApplyFilters(true)">
               <span>{{ _('Véhicules officiels uniquement') }}</span>
+            </label>
+            <label class="toggle-label">
+              <input type="checkbox" id="ef-mods-only" class="switch"
+                     onchange="if (this.checked) document.getElementById('ef-official-only').checked = false; efApplyFilters(true)">
+              <span>{{ _('Mods uniquement') }}</span>
             </label>
             <button type="button" id="ef-select-all-btn" class="btn-secondary btn-sm">{{ _('Tout sélectionner') }}</button>
             <button type="button" id="ef-deselect-all-btn" class="btn-secondary btn-sm">{{ _('Tout désélectionner') }}</button>
@@ -238,15 +244,15 @@
             <span class="pi-filter-label">PI</span>
             <div class="pi-slider-wrapper">
               <div class="pi-slider-track" id="ef-pi-track"></div>
-              <input type="range" id="ef-pi-min" min="{{ pi_min|int }}" max="{{ pi_max|int }}"
-                     value="{{ pi_min|int }}" step="1" oninput="efSyncPi('min')">
-              <input type="range" id="ef-pi-max" min="{{ pi_min|int }}" max="{{ pi_max|int }}"
-                     value="{{ pi_max|int }}" step="1" oninput="efSyncPi('max')">
+              <input type="range" id="ef-pi-min" min="{{ pi_min }}" max="{{ pi_max }}"
+                     value="{{ pi_min }}" step="any" oninput="efSyncPi('min')">
+              <input type="range" id="ef-pi-max" min="{{ pi_min }}" max="{{ pi_max }}"
+                     value="{{ pi_max }}" step="any" oninput="efSyncPi('max')">
             </div>
             <span class="pi-range-label">
-              <span id="ef-pi-min-val">{{ pi_min|int }}</span>
+              <span id="ef-pi-min-val">{{ "%.1f"|format(pi_min) }}</span>
               <span class="text-dim"> — </span>
-              <span id="ef-pi-max-val">{{ pi_max|int }}</span>
+              <span id="ef-pi-max-val">{{ "%.1f"|format(pi_max) }}</span>
             </span>
           </div>
           {% if car_categories %}
@@ -296,6 +302,12 @@
                   {% if car.is_mod %}
                     <span class="car-tag car-tag-mod">{{ _('MOD') }}</span>
                   {% endif %}
+                  {% if car.collides_with %}
+                    <span class="car-tag car-tag-collision"
+                          data-hover-tip="{{ _('Conflit avec') }} {{ car.collides_with | join(', ') }} — {{ _('un autre mod utilise le même identifiant, un seul des deux sera réellement sélectionnable en jeu.') }}">
+                      ⚠
+                    </span>
+                  {% endif %}
                 </td>
                 <td class="car-pi">{{ "%.0f"|format(car.performance_indicator) }}</td>
                 <td class="text-xs text-dim">{{ cats | join(' · ') }}</td>
@@ -336,8 +348,8 @@ function onModeChange(val) {
   document.getElementById('dur-race-block').querySelectorAll('input').forEach(i => { i.disabled = !isRW; });
 }
 
-const PI_MIN = {{ pi_min|int }};
-const PI_MAX = {{ pi_max|int }};
+const PI_MIN = {{ pi_min }};
+const PI_MAX = {{ pi_max }};
 let _piMin = PI_MIN, _piMax = PI_MAX;
 
 function efUpdatePiTrack() {
@@ -354,14 +366,14 @@ function efUpdatePiTrack() {
 function efSyncPi(which) {
   const slMin = document.getElementById('ef-pi-min');
   const slMax = document.getElementById('ef-pi-max');
-  _piMin = parseInt(slMin.value);
-  _piMax = parseInt(slMax.value);
+  _piMin = parseFloat(slMin.value);
+  _piMax = parseFloat(slMax.value);
   if (_piMin > _piMax) {
     if (which === 'min') { _piMax = _piMin; slMax.value = _piMin; }
     else                  { _piMin = _piMax; slMin.value = _piMax; }
   }
-  document.getElementById('ef-pi-min-val').textContent = _piMin;
-  document.getElementById('ef-pi-max-val').textContent = _piMax;
+  document.getElementById('ef-pi-min-val').textContent = _piMin.toFixed(1);
+  document.getElementById('ef-pi-max-val').textContent = _piMax.toFixed(1);
   efUpdatePiTrack();
   efApplyFilters(true);
 }
@@ -381,6 +393,7 @@ document.getElementById('ef-cat-filter-row')?.addEventListener('click', (e) => {
 function efApplyFilters(autoSelect = false) {
   const q = (document.getElementById('ef-car-search')?.value || '').toLowerCase();
   const officialOnly = document.getElementById('ef-official-only')?.checked || false;
+  const modsOnly     = document.getElementById('ef-mods-only')?.checked || false;
   document.querySelectorAll('#ef-cars-table .car-row').forEach(row => {
     const name    = row.dataset.name || '';
     const pi      = parseFloat(row.dataset.pi || 0);
@@ -388,11 +401,12 @@ function efApplyFilters(autoSelect = false) {
     const matchPi       = pi >= _piMin && pi <= _piMax;
     const matchCat      = _activeCat === 'all' || cats.includes(_activeCat.toLowerCase());
     const matchOfficial = !officialOnly || row.dataset.ismod !== '1';
-    const show    = name.includes(q) && matchPi && matchCat && matchOfficial;
+    const matchMods     = !modsOnly || row.dataset.ismod === '1';
+    const show    = name.includes(q) && matchPi && matchCat && matchOfficial && matchMods;
     row.classList.toggle('hidden', !show);
     if (autoSelect) {
       const cb = row.querySelector('.ef-car-check');
-      if (cb) cb.checked = matchPi && matchCat && matchOfficial;
+      if (cb) cb.checked = matchPi && matchCat && matchOfficial && matchMods;
     }
   });
   efUpdateCount();

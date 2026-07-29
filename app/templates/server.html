@@ -614,8 +614,14 @@
             <span>{{ _('Sélectionnés seulement') }}</span>
           </label>
           <label class="toggle-label">
-            <input type="checkbox" id="show-official-only" class="switch" onchange="filterCars()">
+            <input type="checkbox" id="show-official-only" class="switch"
+                   onchange="if (this.checked) document.getElementById('show-mods-only').checked = false; filterCars()">
             <span>{{ _('Véhicules officiels uniquement') }}</span>
+          </label>
+          <label class="toggle-label">
+            <input type="checkbox" id="show-mods-only" class="switch"
+                   onchange="if (this.checked) document.getElementById('show-official-only').checked = false; filterCars()">
+            <span>{{ _('Mods uniquement') }}</span>
           </label>
           <button class="btn btn-secondary" id="cars-select-all-btn">{{ _('Tout sélectionner') }}</button>
           <button class="btn btn-secondary" id="cars-deselect-all-btn">{{ _('Tout désélectionner') }}</button>
@@ -626,10 +632,10 @@
           <div class="pi-slider-wrapper">
             <div class="pi-slider-track" id="pi-slider-track"></div>
             <input type="range" id="pi-range-min"
-                   min="{{ pi_min }}" max="{{ pi_max }}" value="{{ pi_min }}" step="0.1"
+                   min="{{ pi_min }}" max="{{ pi_max }}" value="{{ pi_min }}" step="any"
                    oninput="updatePiSlider()">
             <input type="range" id="pi-range-max"
-                   min="{{ pi_min }}" max="{{ pi_max }}" value="{{ pi_max }}" step="0.1"
+                   min="{{ pi_min }}" max="{{ pi_max }}" value="{{ pi_max }}" step="any"
                    oninput="updatePiSlider()">
           </div>
         </div>
@@ -679,6 +685,12 @@
                 {% endif %}
                 {% if car.is_mod %}
                   <span class="car-tag car-tag-mod">{{ _('MOD') }}</span>
+                {% endif %}
+                {% if car.collides_with %}
+                  <span class="car-tag car-tag-collision"
+                        data-hover-tip="{{ _('Conflit avec') }} {{ car.collides_with | join(', ') }} — {{ _('un autre mod utilise le même identifiant, un seul des deux sera réellement sélectionnable en jeu.') }}">
+                    ⚠
+                  </span>
                 {% endif %}
               </td>
               <td class="car-type">

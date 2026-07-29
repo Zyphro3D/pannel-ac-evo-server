@@ -57,4 +57,8 @@ if __name__ == "__main__":
         ])
     else:
         from waitress import serve
-        serve(app, host=host, port=port, threads=8)
+        # Le défaut Waitress (1 Go) est sous le plafond de 3 Go que la route
+        # d'upload de mods vérifie elle-même (admin.py:mods_upload) — sans ça,
+        # tout mod entre 1 et 3 Go se fait rejeter par Waitress avant même
+        # d'atteindre ce contrôle applicatif.
+        serve(app, host=host, port=port, threads=8, max_request_body_size=3_200_000_000)

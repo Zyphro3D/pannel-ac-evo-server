@@ -1,27 +1,327 @@
 {% extends "base.html" %}
 {% block title %}{{ _('Mods') }} — {{ panel_title }}{% endblock %}
 {% block content %}
-<div class="page-shell">
+<div class="page-shell max-w-[1200px]" x-data="{ modTab: 'cars' }">
 
   <div class="page-header">
     <div>
       <h1 class="page-title">{{ _('Mods') }}</h1>
-      <p class="page-subtitle">{{ _('Véhicules et circuits téléchargeables') }}</p>
+      <p class="page-subtitle">{{ mods|length }} {{ _('mod(s) installé(s)') }}</p>
     </div>
   </div>
 
-  <div class="card flex flex-col items-center justify-center gap-4 py-20 text-center">
-    <div class="text-muted/40">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-           class="w-14 h-14" aria-hidden="true">
-        <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
-      </svg>
-    </div>
-    <h2 class="text-xl font-semibold text-txt">{{ _('Bientôt disponible') }}</h2>
-    <p class="text-dim max-w-md">
-      {{ _('La gestion des mods arrivera ici : banque de véhicules, circuits téléchargeables, installation directe depuis le panel.') }}
+  <div class="flex gap-2 mb-6 border-b border-surface2">
+    <button type="button" class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
+            :class="modTab === 'cars' ? 'border-accent text-txt' : 'border-transparent text-dim hover:text-txt'"
+            @click="modTab = 'cars'">
+      {{ _('Voitures') }}
+    </button>
+    <button type="button" class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
+            :class="modTab === 'tracks' ? 'border-accent text-txt' : 'border-transparent text-dim hover:text-txt'"
+            @click="modTab = 'tracks'">
+      {{ _('Circuits') }}
+    </button>
+  </div>
+
+  <div x-show="modTab === 'cars'">
+
+  {% if current_user.is_admin %}
+  <div class="card mb-6 p-6">
+    <h2 class="text-lg font-semibold text-txt mb-1">{{ _('Ajouter des mods') }}</h2>
+    <p class="text-dim text-sm mb-4">
+      {{ _('Dépose un ou plusieurs fichiers .kspkg — aucun fichier de configuration à fournir, tout est détecté automatiquement. Tu peux ajouter une image de couverture à chacun avant l\'envoi.') }}
     </p>
+    <label class="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-surface2 rounded-xl py-10 cursor-pointer hover:border-accent transition-colors"
+           id="mod-drop-zone">
+      <span class="text-dim" id="mod-upload-label">{{ _('Cliquer ou déposer un ou plusieurs fichiers .kspkg ici') }}</span>
+      <input type="file" accept=".kspkg" id="mod-file-input" class="hidden" multiple>
+    </label>
+
+    <div id="mod-staging-list" class="mt-4 space-y-2"></div>
+
+    <div class="flex justify-end mt-4" id="mod-staging-actions" style="display:none">
+      <button type="button" class="btn btn-primary btn-sm" id="mod-upload-all-btn">
+        {{ _('Envoyer') }} (<span id="mod-staging-count">0</span>)
+      </button>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if mods %}
+  <div class="card p-0 overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="text-left text-dim border-b border-surface2">
+            <th class="px-5 py-3 font-medium">{{ _('Image') }}</th>
+            <th class="px-5 py-3 font-medium">{{ _('Fichier') }}</th>
+            <th class="px-5 py-3 font-medium">{{ _('Voiture détectée') }}</th>
+            <th class="px-5 py-3 font-medium">{{ _('Identifiant(s)') }}</th>
+            <th class="px-5 py-3 font-medium">{{ _('Taille') }}</th>
+            <th class="px-5 py-3 font-medium text-right">{{ _('Actions') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for mod in mods %}
+          <tr class="border-b border-surface2 last:border-0" id="mod-row-{{ loop.index0 }}">
+            <td class="px-5 py-3">
+              <div class="relative w-12 h-12 group">
+                {% if mod.coverImage %}
+                <img src="{{ url_for('admin.mods_cover_view', filename=mod.filename) }}"
+                     class="w-12 h-12 object-cover rounded-lg" alt="">
+                {% else %}
+                <div class="w-12 h-12 rounded-lg bg-surface2 flex items-center justify-center text-dim text-xs">—</div>
+                {% endif %}
+                {% if current_user.is_admin %}
+                <input type="file" accept=".jpg,.jpeg,.png,.webp" class="hidden mod-cover-input" data-filename="{{ mod.filename }}">
+                <button type="button"
+                        class="mod-cover-btn absolute inset-0 flex items-center justify-center rounded-lg bg-black/60 text-white text-[0.65rem] opacity-0 group-hover:opacity-100 transition-opacity"
+                        data-filename="{{ mod.filename }}">
+                  {{ _('Changer') if mod.coverImage else _('Ajouter') }}
+                </button>
+                {% endif %}
+              </div>
+            </td>
+            <td class="px-5 py-3 font-mono text-xs text-txt">{{ mod.filename }}</td>
+            {% if mod.ok %}
+            <td class="px-5 py-3 text-txt">{{ mod.displayName }}</td>
+            <td class="px-5 py-3">
+              {% for name in mod.carNames %}
+              <span class="inline-block px-2 py-0.5 rounded bg-surface2 text-xs font-mono text-dim mr-1 mb-1">{{ name }}</span>
+              {% endfor %}
+              {% if mod.collisions %}
+              <div class="text-xs text-red-400 mt-1" title="{{ _('Un autre mod utilise le même identifiant — un seul des deux sera réellement sélectionnable en jeu.') }}">
+                ⚠ {{ _('Conflit avec') }} {{ mod.collisions.values()|sum(start=[])|unique|join(', ') }}
+              </div>
+              {% endif %}
+            </td>
+            <td class="px-5 py-3 text-dim">{{ (mod.sizeBytes / 1048576)|round(1) }} Mo</td>
+            <td class="px-5 py-3 text-right whitespace-nowrap">
+              <a href="{{ url_for('public.mods_download', filename=mod.filename) }}"
+                 class="btn btn-secondary btn-sm">{{ _('Télécharger') }}</a>
+              {% if current_user.is_admin %}
+              <button class="btn btn-secondary btn-sm text-red-400 mod-delete-btn"
+                      data-filename="{{ mod.filename }}" data-row="mod-row-{{ loop.index0 }}">
+                {{ _('Supprimer') }}
+              </button>
+              {% endif %}
+            </td>
+            {% else %}
+            <td class="px-5 py-3 text-red-400" colspan="3">{{ _('Non reconnu') }} — {{ mod.error }}</td>
+            <td class="px-5 py-3 text-right">
+              {% if current_user.is_admin %}
+              <button class="btn btn-secondary btn-sm text-red-400 mod-delete-btn"
+                      data-filename="{{ mod.filename }}" data-row="mod-row-{{ loop.index0 }}">
+                {{ _('Supprimer') }}
+              </button>
+              {% endif %}
+            </td>
+            {% endif %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% else %}
+  <div class="card flex flex-col items-center justify-center gap-3 py-16 text-center">
+    <p class="text-dim">{{ _("Aucun mod installé pour l'instant.") }}</p>
+  </div>
+  {% endif %}
+
+  </div>
+
+  <div x-show="modTab === 'tracks'" style="display:none">
+    <div class="card flex flex-col items-center justify-center gap-3 py-16 text-center">
+      <p class="text-txt font-semibold">{{ _('Mods de circuits — en cours de développement') }}</p>
+      <p class="text-dim text-sm">{{ _('Le support des circuits moddés arrivera dans une prochaine mise à jour.') }}</p>
+    </div>
   </div>
 
 </div>
+{% endblock %}
+
+{% block scripts %}
+{% if current_user.is_admin %}
+<script nonce="{{ csp_nonce }}">
+const _csrf = '{{ csrf_token() }}';
+
+function _modToast(type, msg) {
+  const zone = document.getElementById('toast-zone');
+  if (!zone) return;
+  const div = document.createElement('div');
+  div.innerHTML = `<div x-data="{ show: true }"
+    x-show="show" x-init="setTimeout(() => show = false, 5000)" x-transition
+    class="toast toast-${type}" role="alert">
+    <span>${msg}</span>
+    <button @click="show = false" class="toast-close">✕</button>
+  </div>`;
+  zone.prepend(div.firstElementChild);
+  if (window.Alpine) Alpine.initTree(zone.firstElementChild);
+}
+
+const _modInput = document.getElementById('mod-file-input');
+const _modZone  = document.getElementById('mod-drop-zone');
+
+let _stagedMods = [];
+let _stageIdCounter = 0;
+
+function _renderStagingList() {
+  const list = document.getElementById('mod-staging-list');
+  const actions = document.getElementById('mod-staging-actions');
+  list.innerHTML = '';
+  _stagedMods.forEach(item => {
+    const row = document.createElement('div');
+    row.className = 'flex items-center gap-3 p-3 bg-surface2 rounded-lg';
+    row.dataset.id = item.id;
+    row.innerHTML = `
+      <div class="w-10 h-10 shrink-0 rounded-lg overflow-hidden bg-surface flex items-center justify-center text-dim text-xs stage-thumb">—</div>
+      <div class="flex-1 min-w-0">
+        <div class="text-sm text-txt truncate">${item.file.name}</div>
+        <div class="text-xs text-dim stage-status">${item.status || {{ _("En attente") | tojson }} }</div>
+      </div>
+      <button type="button" class="btn btn-secondary btn-sm stage-cover-btn">${ {{ _("+ Image") | tojson }} }</button>
+      <input type="file" accept=".jpg,.jpeg,.png,.webp" class="hidden stage-cover-input">
+      <button type="button" class="btn btn-ghost btn-sm stage-remove-btn">✕</button>
+    `;
+    if (item.coverDataUrl) {
+      row.querySelector('.stage-thumb').innerHTML =
+        `<img src="${item.coverDataUrl}" class="w-10 h-10 object-cover">`;
+    }
+    const coverInput = row.querySelector('.stage-cover-input');
+    row.querySelector('.stage-cover-btn').addEventListener('click', () => coverInput.click());
+    coverInput.addEventListener('change', () => {
+      if (!coverInput.files[0]) return;
+      item.coverFile = coverInput.files[0];
+      const reader = new FileReader();
+      reader.onload = () => {
+        item.coverDataUrl = reader.result;
+        _renderStagingList();
+      };
+      reader.readAsDataURL(item.coverFile);
+    });
+    row.querySelector('.stage-remove-btn').addEventListener('click', () => {
+      _stagedMods = _stagedMods.filter(m => m.id !== item.id);
+      _renderStagingList();
+    });
+    list.appendChild(row);
+  });
+  actions.style.display = _stagedMods.length ? 'flex' : 'none';
+  document.getElementById('mod-staging-count').textContent = _stagedMods.length;
+}
+
+function _addFilesToStaging(fileList) {
+  Array.from(fileList).forEach(file => {
+    if (!file.name.toLowerCase().endsWith('.kspkg')) return;
+    _stagedMods.push({ id: ++_stageIdCounter, file, coverFile: null, status: null });
+  });
+  _renderStagingList();
+}
+
+_modInput.addEventListener('change', () => {
+  _addFilesToStaging(_modInput.files);
+  _modInput.value = '';
+});
+_modZone.addEventListener('dragover', (e) => { e.preventDefault(); _modZone.classList.add('border-accent'); });
+_modZone.addEventListener('dragleave', () => _modZone.classList.remove('border-accent'));
+_modZone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  _modZone.classList.remove('border-accent');
+  _addFilesToStaging(e.dataTransfer.files);
+});
+
+document.getElementById('mod-upload-all-btn').addEventListener('click', async () => {
+  const btn = document.getElementById('mod-upload-all-btn');
+  btn.disabled = true;
+  const remaining = [];
+  for (const item of _stagedMods) {
+    const row = document.querySelector(`#mod-staging-list [data-id="${item.id}"]`);
+    const statusEl = row?.querySelector('.stage-status');
+    item.status = {{ _("Envoi et analyse en cours…") | tojson }};
+    if (statusEl) statusEl.textContent = item.status;
+    const form = new FormData();
+    form.append('file', item.file);
+    if (item.coverFile) form.append('cover', item.coverFile);
+    try {
+      const res = await fetch('{{ url_for("admin.mods_upload") }}', {
+        method: 'POST', headers: { 'X-CSRFToken': _csrf }, body: form,
+      });
+      const data = await res.json();
+      if (!data.ok) {
+        item.status = data.error || {{ _("Erreur upload") | tojson }};
+        if (statusEl) statusEl.textContent = item.status;
+        remaining.push(item);
+        continue;
+      }
+      if (data.collisions && Object.keys(data.collisions).length) {
+        item.status = {{ _("Ajouté — conflit d'identifiant") | tojson }};
+      } else {
+        item.status = {{ _("Ajouté ✓") | tojson }};
+      }
+      if (statusEl) statusEl.textContent = item.status;
+    } catch (e) {
+      item.status = {{ _("Erreur réseau") | tojson }};
+      if (statusEl) statusEl.textContent = item.status;
+      remaining.push(item);
+    }
+  }
+  _stagedMods = remaining;
+  btn.disabled = false;
+  if (remaining.length === 0) {
+    _modToast('success', {{ _("Tous les mods ont été ajoutés") | tojson }});
+    setTimeout(() => location.reload(), 900);
+  } else {
+    _renderStagingList();
+    _modToast('error', {{ _("Certains mods n'ont pas pu être ajoutés") | tojson }});
+  }
+});
+
+document.querySelectorAll('.mod-cover-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const row = btn.closest('td').querySelector('.mod-cover-input');
+    row.click();
+  });
+});
+
+document.querySelectorAll('.mod-cover-input').forEach(input => {
+  input.addEventListener('change', async () => {
+    const file = input.files[0];
+    if (!file) return;
+    const form = new FormData();
+    form.append('file', file);
+    try {
+      const res = await fetch('{{ url_for("admin.mods_cover_upload", filename="__FILENAME__") }}'.replace('__FILENAME__', encodeURIComponent(input.dataset.filename)), {
+        method: 'POST', headers: { 'X-CSRFToken': _csrf }, body: form,
+      });
+      const data = await res.json();
+      if (!data.ok) {
+        _modToast('error', data.error || {{ _("Erreur upload") | tojson }});
+        return;
+      }
+      _modToast('success', {{ _("Image mise à jour") | tojson }});
+      setTimeout(() => location.reload(), 800);
+    } catch (e) {
+      _modToast('error', {{ _("Erreur réseau pendant l'upload") | tojson }});
+    }
+  });
+});
+
+document.querySelectorAll('.mod-delete-btn').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    if (!confirm({{ _("Supprimer ce mod définitivement ?") | tojson }})) return;
+    const res = await fetch('{{ url_for("admin.mods_delete", filename="__FILENAME__") }}'.replace('__FILENAME__', encodeURIComponent(btn.dataset.filename)), {
+      method: 'POST', headers: { 'X-CSRFToken': _csrf },
+    });
+    const data = await res.json();
+    if (!data.ok) {
+      _modToast('error', data.error || {{ _("Erreur suppression") | tojson }});
+      return;
+    }
+    document.getElementById(btn.dataset.row)?.remove();
+    _modToast('success', {{ _("Mod supprimé") | tojson }});
+    setTimeout(() => location.reload(), 800);
+  });
+});
+</script>
+{% endif %}
 {% endblock %}

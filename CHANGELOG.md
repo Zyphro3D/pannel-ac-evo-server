@@ -1,12 +1,26 @@
 # Changelog
 
-### v1.9.7 — non publiée
+### v2.0.0 — non publiée
 
-**Correction — une mise à jour Steam ne coupait que le serveur 1, laissant les autres serveurs actifs**
+**Ajout — bibliothèque de mods partagée (upload, tags manuels, PI, image de couverture, détection de collision d'identifiant)**
 
-- Signalé par un utilisateur multi-serveur : `container_update()` n'arrêtait que le container du serveur 1 (`_container_name()`, constante globale) avant de lancer SteamCMD, sans jamais consulter les autres serveurs configurés en base.
-- Tous les serveurs partagent pourtant le même dossier de jeu sur disque (`aceserver_dir`) — les serveurs 2+ restaient donc actifs pendant que SteamCMD écrasait leurs fichiers en cours d'utilisation, avec un risque de plantage ou de corruption, et rien n'empêchait de relancer une config dessus pendant ce temps.
-- Corrigé : avant de lancer SteamCMD, la route interroge désormais tous les serveurs activés (`Server.query.filter_by(is_enabled=True)`) et arrête ceux réellement en cours d'exécution ; `steam_updater.run_update()` accepte une liste de serveurs à arrêter/redémarrer au lieu d'un seul nom de container. Chaque serveur redémarré individuellement même si un autre échoue, pour ne pas en laisser arrêté inutilement.
+- Nouvelle page Mods (onglet navbar, lecture ouverte à tous les connectés — upload/suppression réservés admin) : les fichiers `.kspkg` sont scannés directement (table de fichiers de l'archive, format reverse-engineered), sans sidecar à écrire à la main.
+- Upload multiple avec préchargement : plusieurs mods glissés/déposés d'un coup, image de couverture attachable par mod avant l'envoi effectif.
+- Repli automatique sur le logo de marque intégré au `.kspkg` (badge) quand aucune image n'est fournie à la main (mods issus du convertisseur générique `ks_modded_car` — Honda/Nissan confirmés).
+- Tags manuels (catégorie, YT/ICE/EV/Hybrid, PI) posables sur un mod depuis la page Véhicules, stockés dans `CarMeta` (nouvelle colonne `is_mod`) sans jamais toucher au catalogue officiel.
+- Filtre "MODS" sur les pages Véhicules et création d'événement, tri alphanumérique cohérent avec le catalogue officiel, comptage des tags corrigé (les mods comptaient triplé dans le total "Tous").
+- **Détection de collision d'identifiant** : deux mods issus du même convertisseur générique peuvent partager le même identifiant mécanique/visuel sélectionnable en jeu — confirmé en conditions réelles (un des deux mods rejoint avec "content unavailable"). Les deux mods restent affichés (les cacher rendrait la collision invisible) et un badge ⚠ apparaît sur chacun, au survol de la ligne, dans la sélection de véhicules d'un événement et sur la page Programmation.
+
+**Correction — changer le rôle d'un pilote (admin/super admin) dupliquait le compte au lieu de le convertir**
+
+- Signalé par un utilisateur : promouvoir un pilote ajoutait une ligne dans Comptes au lieu de faire évoluer l'existant, et redemandait un mot de passe alors que le pilote en a déjà un.
+- Page Comptes unifiée (un seul menu déroulant de rôle Pilote/Admin/Super Admin par ligne, pilotes et admins dans le même tableau) et nouvelle route `POST /accounts/role` : la promotion réutilise le hash de mot de passe existant du pilote (même format Werkzeug entre `Driver` et `AdminAccount`) au lieu d'en redemander un, et reprend son Steam ID confirmé.
+- Corrigé au passage : le badge SteamID validé disparaissait après une promotion (Steam ID non recopié vers le nouveau compte admin).
+
+**Correction — faux "Fichier trop volumineux" lors de l'upload d'un mod avec image de couverture**
+
+- La validation vérifiait `request.content_length` (toute la requête HTTP) au lieu de la taille du seul champ image — dès qu'une image de quelques Ko accompagnait un `.kspkg` volumineux, le total dépassait 5 Mo et l'upload échouait à tort.
+- Corrigé : la taille est mesurée sur le flux du champ concerné uniquement.
 
 ### v1.9.6 — 22/07/2026
 

@@ -9,7 +9,7 @@ from pathlib import Path
 
 _MEDIA_ROOT = Path(__file__).parent.parent.parent / "media"
 
-from flask import Blueprint, render_template, redirect, url_for, request, flash, current_app
+from flask import Blueprint, render_template, redirect, url_for, request, flash, current_app, send_from_directory, abort
 from flask_babel import _, get_locale
 from sqlalchemy.orm import selectinload as _pub_selectinload
 from flask_login import current_user, login_required
@@ -424,6 +424,15 @@ def result_detail(result_id):
     r = db.get_or_404(SessionResult, result_id)
     parsed = get_parsed(r)
     return render_template("result_detail.html", result=r, parsed=parsed)
+
+
+@public_bp.route("/mods/<path:filename>/download")
+@login_required
+def mods_download(filename):
+    from app.services.mod_scanner import list_mods
+    if not any(m["filename"] == filename for m in list_mods() if m.get("ok")):
+        abort(404)
+    return send_from_directory(current_app.config["MODS_DIR"], filename, as_attachment=True)
 
 
 @public_bp.route("/pilot/events/<int:event_id>/unregister", methods=["POST"])

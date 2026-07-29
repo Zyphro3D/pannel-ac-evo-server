@@ -97,6 +97,9 @@
       {{ navlink('public.index',   _('Accueil')) }}
       {{ navlink('public.results', _('Résultats'), ['public.result_detail', 'leaderboard.leaderboard']) }}
       {{ navlink('live.timing_page', _('Live')) }}
+      {% if current_user.is_authenticated %}
+        {{ navlink('admin.mods', _('Mods')) }}
+      {% endif %}
       {% if current_user.is_authenticated and current_user.steam_id %}
         {{ navlink('public.pilot_history', _('Mes temps')) }}
       {% endif %}
@@ -154,7 +157,6 @@
           {{ adminitem('events_admin.events_list', _('Événements')) }}
           {{ adminitem('admin.vehicles', _('Véhicules'), ['admin.vehicle_upload_image']) }}
           {{ adminitem('admin.tracks',   _('Tracks'),   ['admin.track_upload_image']) }}
-          {{ adminitem('admin.mods',     _('Mods')) }}
           {% if current_user.is_superadmin %}
           <div class="nav-dropdown-divider"></div>
           {{ adminitem('admin.servers_list', _('Serveurs'), ['admin.server_create','admin.server_toggle','admin.server_delete']) }}
@@ -249,6 +251,7 @@
     <a href="{{ url_for('leaderboard.leaderboard') }}" class="nav-dropdown-item rounded-lg py-3 text-base">{{ _('Classement') }}</a>
     <a href="{{ url_for('live.timing_page') }}" class="nav-dropdown-item rounded-lg py-3 text-base">{{ _('Live') }}</a>
     {% if current_user.is_authenticated %}
+      <a href="{{ url_for('admin.mods') }}" class="nav-dropdown-item rounded-lg py-3 text-base">{{ _('Mods') }}</a>
       {% if current_user.steam_id %}
         <a href="{{ url_for('public.pilot_history') }}" class="nav-dropdown-item rounded-lg py-3 text-base">{{ _('Mes temps') }}</a>
       {% endif %}
@@ -267,7 +270,6 @@
       <a href="{{ url_for('events_admin.events_list') }}" class="nav-dropdown-item rounded-lg pl-5 py-3 text-base">{{ _('Événements') }}</a>
       <a href="{{ url_for('admin.vehicles') }}" class="nav-dropdown-item rounded-lg pl-5 py-3 text-base">{{ _('Véhicules') }}</a>
       <a href="{{ url_for('admin.tracks') }}" class="nav-dropdown-item rounded-lg pl-5 py-3 text-base">{{ _('Tracks') }}</a>
-      <a href="{{ url_for('admin.mods') }}" class="nav-dropdown-item rounded-lg pl-5 py-3 text-base">{{ _('Mods') }}</a>
       {% if current_user.is_superadmin %}
         <a href="{{ url_for('admin.servers_list') }}" class="nav-dropdown-item rounded-lg pl-5 py-3 text-base">{{ _('Serveurs') }}</a>
         <a href="{{ url_for('admin.settings') }}" class="nav-dropdown-item rounded-lg pl-5 py-3 text-base">{{ _('Paramètres') }}</a>

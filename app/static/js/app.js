@@ -571,6 +571,7 @@ function filterCars(autoSelect = false) {
   const search = (document.getElementById('car-search')?.value || '').toLowerCase();
   const showSelected = document.getElementById('show-selected-only')?.checked || false;
   const officialOnly = document.getElementById('show-official-only')?.checked || false;
+  const modsOnly     = document.getElementById('show-mods-only')?.checked || false;
   const minR = document.getElementById('pi-range-min');
   const maxR = document.getElementById('pi-range-max');
   const piMin = minR ? parseFloat(minR.value) : 0;
@@ -591,11 +592,12 @@ function filterCars(autoSelect = false) {
     const matchSearch   = name.includes(search);
     const matchSelected = !showSelected || row.querySelector('.car-check')?.checked;
     const matchOfficial = !officialOnly || row.dataset.ismod !== '1';
-    const visible = matchCat && matchPi && matchSearch && matchSelected && matchOfficial;
+    const matchMods     = !modsOnly || row.dataset.ismod === '1';
+    const visible = matchCat && matchPi && matchSearch && matchSelected && matchOfficial && matchMods;
     row.classList.toggle('hidden', !visible);
     if (autoSelect) {
       const cb = row.querySelector('.car-check');
-      if (cb) cb.checked = matchCat && matchPi && matchOfficial; // sélection basée sur catégorie+PI+officiel (pas la recherche)
+      if (cb) cb.checked = matchCat && matchPi && matchOfficial && matchMods; // sélection basée sur catégorie+PI+officiel/mods (pas la recherche)
     }
   });
   updateSelectedCount();
@@ -630,15 +632,38 @@ document.querySelectorAll('.car-check').forEach(cb => {
 });
 updateSelectedCount();
 
-// Init du slider PI : restaure depuis localStorage sans toucher aux sélections sauvegardées
+// Init du slider PI : restaure depuis localStorage sans toucher aux sélections sauvegardées.
+// Un filtre PI sauvegardé peut devenir plus étroit que la plage réelle avec le temps (nouveau
+// mod ajouté avec un PI plus haut/bas que tout ce qui existait au moment de la sauvegarde) —
+// on élargit alors la plage restaurée pour ne jamais masquer une voiture déjà sélectionnée
+// dans la config, sans quoi elle deviendrait invisible et impossible à désélectionner/vérifier.
 (function () {
   const minR = document.getElementById('pi-range-min');
   const maxR = document.getElementById('pi-range-max');
   if (!minR || !maxR) return;
+  const lo = parseFloat(minR.min), hi = parseFloat(minR.max);
   const savedMin = localStorage.getItem('sv_pi_min');
   const savedMax = localStorage.getItem('sv_pi_max');
-  if (savedMin !== null) minR.value = savedMin;
-  if (savedMax !== null) maxR.value = savedMax;
+  let minVal = savedMin !== null ? parseFloat(savedMin) : lo;
+  let maxVal = savedMax !== null ? parseFloat(savedMax) : hi;
+  // Clamp dans la plage actuelle (des voitures ont pu disparaître depuis la sauvegarde)
+  minVal = Math.max(lo, Math.min(minVal, hi));
+  maxVal = Math.max(lo, Math.min(maxVal, hi));
+  // L'affichage arrondit à 1 décimale (pi-display) — si la valeur restaurée arrondit déjà
+  // au même chiffre que la vraie borne, on "snap" dessus. Sans ça l'utilisateur peut voir
+  // "82.0" affiché alors que la valeur réelle est 81.994 et rester bloqué en dessous du PI
+  // exact d'un mod récemment ajouté, sans aucun moyen visuel de s'en rendre compte.
+  if (Math.round((minVal - lo) * 10) === 0) minVal = lo;
+  if (Math.round((hi - maxVal) * 10) === 0) maxVal = hi;
+  document.querySelectorAll('.car-check:checked').forEach(cb => {
+    const pi = parseFloat(cb.closest('.car-row')?.dataset.pi);
+    if (!isNaN(pi)) {
+      if (pi < minVal) minVal = pi;
+      if (pi > maxVal) maxVal = pi;
+    }
+  });
+  minR.value = minVal;
+  maxR.value = maxVal;
   updatePiSlider(false);
 })();
 
@@ -878,4 +903,40 @@ document.querySelector('.srv-config-grid')?.addEventListener('click', (e) => {
     case 'duplicate': serverSelectConfig(name); openCreateModal(true); break;
     case 'delete':    serverSelectConfig(name); confirmDeleteConfig(); break;
   }
+});
+
+/* ── Petit modal flottant au survol (ex: alerte de collision d'ID de mod) ──
+   Attribut data-hover-tip="texte" sur l'élément survolé. Apparaît au survol,
+   disparaît dès que la souris quitte l'élément — pas l'infobulle native du
+   navigateur (title=), un vrai petit modal positionné et stylé. */
+let _hoverTipEl = null;
+
+function _showHoverTip(target) {
+  _hideHoverTip();
+  const tip = document.createElement('div');
+  tip.className = 'hover-tip';
+  tip.textContent = target.dataset.hoverTip;
+  document.body.appendChild(tip);
+  const rect = target.getBoundingClientRect();
+  const tipRect = tip.getBoundingClientRect();
+  let left = rect.left + rect.width / 2 - tipRect.width / 2;
+  left = Math.max(8, Math.min(left, window.innerWidth - tipRect.width - 8));
+  let top = rect.bottom + 6;
+  if (top + tipRect.height > window.innerHeight - 8) top = rect.top - tipRect.height - 6;
+  tip.style.left = `${left}px`;
+  tip.style.top = `${top}px`;
+  _hoverTipEl = tip;
+}
+
+function _hideHoverTip() {
+  if (_hoverTipEl) { _hoverTipEl.remove(); _hoverTipEl = null; }
+}
+
+document.addEventListener('pointerover', (e) => {
+  const target = e.target.closest('[data-hover-tip]');
+  if (target) _showHoverTip(target);
+});
+document.addEventListener('pointerout', (e) => {
+  const target = e.target.closest('[data-hover-tip]');
+  if (target && !target.contains(e.relatedTarget)) _hideHoverTip();
 });
