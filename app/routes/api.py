@@ -1,3 +1,4 @@
+import ipaddress
 import json
 import logging
 import hmac
@@ -35,22 +36,34 @@ api_bp = Blueprint("api", __name__)
 
 def _verify_ingest_signature(raw_body: bytes) -> bool:
     secret = (current_app.config.get("RESULTS_INGEST_SECRET") or "").encode()
-    if not secret:
-        log.warning(
-            "Ingest rejeté : RESULTS_INGEST_SECRET non configuré — définir dans les paramètres (%s)",
-            request.remote_addr,
-        )
-        return False
-    provided = (
-        request.headers.get("X-ACE-Signature")
-        or request.headers.get("X-Webhook-Signature")
-        or request.headers.get("X-Hub-Signature-256")
-        or ""
-    ).strip()
-    if provided.startswith("sha256="):
-        provided = provided.split("=", 1)[1]
-    expected = hmac.new(secret, raw_body, hashlib.sha256).hexdigest()
-    return hmac.compare_digest(provided, expected)
+    if secret:
+        provided = (
+            request.headers.get("X-ACE-Signature")
+            or request.headers.get("X-Webhook-Signature")
+            or request.headers.get("X-Hub-Signature-256")
+            or ""
+        ).strip()
+        if provided.startswith("sha256="):
+            provided = provided.split("=", 1)[1]
+        expected = hmac.new(secret, raw_body, hashlib.sha256).hexdigest()
+        if hmac.compare_digest(provided, expected):
+            return True
+
+    # AssettoCorsaEVOServer.exe (binaire Kunos fermé) poste directement sur
+    # ResultsPostUrl sans pouvoir signer la requête — aucun champ pour ça dans
+    # sa config. Un secret configuré ne le rendra donc jamais capable de passer
+    # la vérif HMAC ci-dessus : sans ce fallback, l'ingestion des résultats est
+    # cassée en permanence dès qu'un secret est renseigné. On retombe sur la
+    # confiance réseau documentée dans README.md : IP privée = même hôte Docker.
+    remote = request.remote_addr or ""
+    try:
+        if ipaddress.ip_address(remote).is_private:
+            return True
+    except ValueError:
+        pass
+
+    log.warning("Ingest rejeté : signature invalide et IP non privée (%s)", remote)
+    return False
 
 
 # ── Serveur ──────────────────────────────────────────────────────────────────
