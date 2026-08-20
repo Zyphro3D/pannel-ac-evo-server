@@ -787,7 +787,7 @@ def _process_log_line(line: str, seen: set, server_id: int):
         _on_session_reset(c, seen)
 
 
-def _welcome_loop_native(server_id: int):
+def _log_tail_native(server_id: int):
     c    = _get_client(server_id)
     seen: set[str] = set()
     while c["running"]:
@@ -801,11 +801,11 @@ def _welcome_loop_native(server_id: int):
                     else:
                         time.sleep(0.3)
         except Exception as e:
-            log.debug("welcome_loop_native error: %s", e)
+            log.debug("log_tail_native error: %s", e)
             time.sleep(5)
 
 
-def _welcome_loop_docker(server_id: int):
+def _log_tail_docker(server_id: int):
     c    = _get_client(server_id)
     seen: set[str] = set()
     import docker as _docker
@@ -825,7 +825,7 @@ def _welcome_loop_docker(server_id: int):
                     _process_log_line(line, seen, server_id)
         except Exception as e:
             _client_cache = None
-            log.debug("welcome_loop_docker error: %s", e)
+            log.debug("log_tail_docker error: %s", e)
             if c["running"]:
                 time.sleep(5)
 
@@ -845,7 +845,7 @@ def start(host: str, port: int, steam_id: str,
           on_event=None,
           server_id: int      = 1,
           server_name: str    = ""):
-    """Démarre le client TCP (+ moniteur de bienvenue) en arrière-plan."""
+    """Démarre le client TCP (+ tail de logs : tours, chat, connexions, bienvenue) en arrière-plan."""
     c = _get_client(server_id)
     c["host"]            = host
     c["port"]            = port
@@ -866,14 +866,16 @@ def start(host: str, port: int, steam_id: str,
     threading.Thread(target=_connect_loop, args=(server_id,),
                      daemon=True, name=f"ace-tcp-client-{server_id}").start()
 
-    has_welcome = msg_welcome or (discord_url and msg_discord) or (site_url and msg_site)
-    if has_welcome:
-        if deploy_mode == "docker_split":
-            threading.Thread(target=_welcome_loop_docker, args=(server_id,),
-                             daemon=True, name=f"ace-welcome-bot-{server_id}").start()
-        elif log_file:
-            threading.Thread(target=_welcome_loop_native, args=(server_id,),
-                             daemon=True, name=f"ace-welcome-bot-{server_id}").start()
+    # Ce thread lit en continu les logs du serveur de jeu : tours (LapRecord), chat,
+    # connexions/déconnexions, et messages de bienvenue s'ils sont configurés. Il doit
+    # tourner même sans message de bienvenue actif, sinon aucune de ces données n'est
+    # jamais capturée (le chat et l'historique de tours restent vides indéfiniment).
+    if deploy_mode == "docker_split":
+        threading.Thread(target=_log_tail_docker, args=(server_id,),
+                         daemon=True, name=f"ace-log-tail-{server_id}").start()
+    elif log_file:
+        threading.Thread(target=_log_tail_native, args=(server_id,),
+                         daemon=True, name=f"ace-log-tail-{server_id}").start()
 
     log.info("ace_tcp_client: démarrage vers %s:%d (server=%d)", host, port, server_id)
 

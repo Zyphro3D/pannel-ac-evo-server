@@ -1442,6 +1442,10 @@ button.htmx-request,
   white-space: nowrap;
 }
 
+/* Variante "Mes temps" : record personnel en violet plutôt qu'en rouge (--accent) */
+.circuit-top1-box-mine { border-color: rgba(192,132,252,0.55); }
+.circuit-top1-box-mine .circuit-top1-label { color: #c084fc; }
+
 /* ─── Scrollbar ──────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
@@ -3686,6 +3690,12 @@ body::before {
    ═══════════════════════════════════════════════════════════════ */
 .lb-row-gold  { background: rgba(251,191,36,0.06); }
 .lb-time-gold { color: #fbbf24; font-weight: 700; }
+
+/* ═══════════════════════════════════════════════════════════════
+   MES TEMPS — variante violette (record personnel)
+   ═══════════════════════════════════════════════════════════════ */
+.lb-row-purple  { background: rgba(192,132,252,0.07); }
+.lb-time-purple { color: #c084fc; font-weight: 700; }
 
 @media (max-width: 1180px) {
   .settings-layout {

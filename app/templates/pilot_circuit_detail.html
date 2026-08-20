@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}{{ track.track_name }} — {{ panel_title }}{% endblock %}
+{% block content %}
+<div class="page-shell max-w-[1100px]">
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">{{ track.track_name }}</h1>
+      <p class="page-subtitle">
+        {{ track.layout }}
+        {% if track.length_m %} · {{ "%.2f"|format(track.length_m / 1000) }} km{% endif %}
+      </p>
+    </div>
+    <a href="{{ url_for('public.pilot_history') }}" class="btn-secondary btn-sm">{{ _('Retour') }}</a>
+  </div>
+
+  {# ── En-tête circuit : image + mon meilleur temps ── #}
+  <div class="card p-0 overflow-hidden mb-6">
+    <div class="relative aspect-[21/9] bg-surface">
+      {% if track.image_path %}
+      <img src="{{ url_for('serve_media', filename=track.image_path) }}"
+           alt="{{ track.track_name }}" class="w-full h-full object-cover">
+      {% else %}
+      <div class="w-full h-full flex items-center justify-center text-muted/40 font-bold text-2xl">
+        {{ track.track_name[:3].upper() }}
+      </div>
+      {% endif %}
+      {% if entries %}
+      <div class="absolute bottom-0 left-0 right-0 p-4"
+           style="background: linear-gradient(to top, rgba(6,9,20,0.85), transparent);">
+        <span class="text-xs uppercase tracking-wide text-dim">{{ _('Mon meilleur temps') }}</span>
+        <div class="flex items-baseline gap-3 flex-wrap">
+          <span class="text-2xl font-bold font-mono lb-time-purple">{{ entries[0].time }}</span>
+          <span class="text-sm text-dim">{{ entries[0].car }}</span>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  {# ── Filtre catégorie ── #}
+  <form class="flex flex-wrap items-center gap-2 mb-5"
+        hx-get="{{ url_for('public.pilot_history_circuit', track_id=track.id) }}"
+        hx-trigger="change"
+        hx-target="#circuit-results"
+        hx-swap="innerHTML">
+    <div class="w-44">
+      <select name="cat" class="form-control">
+        <option value="">{{ _('Toutes catégories') }}</option>
+        {% for cat in filter_options.categories %}
+        <option value="{{ cat }}" {% if category == cat %}selected{% endif %}>{{ _(cat) }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    {% if category %}
+    <a href="{{ url_for('public.pilot_history_circuit', track_id=track.id) }}" class="btn-secondary btn-sm">{{ _('Réinitialiser') }}</a>
+    {% endif %}
+  </form>
+
+  {# ── Mes temps ── #}
+  <div class="card">
+    <div id="circuit-results">
+      {% include "_partials/pilot_circuit_results_table.html" %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

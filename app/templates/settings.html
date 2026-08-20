@@ -1158,6 +1158,9 @@ async function submitRoleChange(sel, kind, id, newRole, prev) {
   });
   const data = await res.json();
   if (!data.ok) { alert(data.error); if (sel) sel.value = prev; return; }
+  if (kind === 'pilot' && newRole !== 'pilote') {
+    alert('{{ _("Compte promu. Le pilote doit se déconnecter puis se reconnecter pour obtenir ses nouveaux droits.") }}');
+  }
   location.reload();
 }
 

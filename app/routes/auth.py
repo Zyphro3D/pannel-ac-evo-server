@@ -90,7 +90,8 @@ def login():
         identifier = request.form.get("username", "").strip()
         password   = request.form.get("password", "")
 
-        account = AdminAccount.query.filter_by(username=identifier, is_active=True).first()
+        account = (AdminAccount.query.filter_by(username=identifier, is_active=True).first()
+                   or AdminAccount.query.filter_by(email=identifier.lower(), is_active=True).first())
         if account and account.check_password(password):
             _bf_ok(ip)
             account.last_login = datetime.now(timezone.utc).replace(tzinfo=None)

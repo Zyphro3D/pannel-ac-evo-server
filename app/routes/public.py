@@ -15,12 +15,12 @@ from sqlalchemy.orm import selectinload as _pub_selectinload
 from flask_login import current_user, login_required
 from app import limiter
 
-from app.models import Driver, Event, EventRegistration, Server, SessionResult, EventStatus, RegStatus, LapRecord, LapArchive
+from app.models import Driver, Event, EventRegistration, Server, SessionResult, EventStatus, RegStatus, LapRecord, LapArchive, TrackMeta
 from app.routes.auth import _validate_password
 from app.services.database import db
 from app.services.process_manager import get_status, get_player_history
 from app.services.results_parser import get_parsed, group_sessions as _group_sessions
-from app.services.server_config import get_running_server_info
+from app.services.server_config import get_running_server_info, CAR_CATEGORY_ORDER as _CAT_ORDER
 
 public_bp = Blueprint("public", __name__)
 
@@ -302,10 +302,78 @@ def _fmt_lap_ms(ms: int) -> str:
     return f"{minutes}:{seconds:02d}.{millis:03d}"
 
 
-def _track_label(track_value: str) -> str:
-    """Reprend la même convention d'affichage que get_running_server_info (server_config.py)."""
-    parts = track_value.split("|") if track_value else []
-    return f"{parts[0]} — {parts[1]}" if len(parts) >= 2 else (parts[0] if parts else "—")
+def build_pilot_circuit_overview(steam_id: str) -> list:
+    """Un élément par circuit actif où le pilote a au moins un temps enregistré
+    (LapRecord récents + LapArchive compactés), même forme que
+    leaderboard.build_circuit_overview() pour réutiliser le même gabarit de carte."""
+    best_by_track: dict[str, dict] = {}
+    count_by_track: dict[str, int] = {}
+
+    for lap in LapRecord.query.filter_by(steam_id=steam_id).all():
+        tv = lap.track_value
+        count_by_track[tv] = count_by_track.get(tv, 0) + 1
+        if tv not in best_by_track or lap.lap_time_ms < best_by_track[tv]["time_ms"]:
+            best_by_track[tv] = {"time_ms": lap.lap_time_ms, "time": _fmt_lap_ms(lap.lap_time_ms)}
+
+    for arc in LapArchive.query.filter_by(steam_id=steam_id).all():
+        tv = arc.track_value
+        count_by_track[tv] = count_by_track.get(tv, 0) + arc.lap_count
+        if tv not in best_by_track or arc.best_lap_ms < best_by_track[tv]["time_ms"]:
+            best_by_track[tv] = {"time_ms": arc.best_lap_ms, "time": _fmt_lap_ms(arc.best_lap_ms)}
+
+    overview = []
+    for tm in TrackMeta.query.filter_by(is_active=True).order_by(TrackMeta.track_name).all():
+        overview.append({
+            "track_meta": tm,
+            "best": best_by_track.get(tm.track_value),
+            "total": count_by_track.get(tm.track_value, 0),
+        })
+    overview.sort(key=lambda c: (c["best"] is None, c["track_meta"].track_name))
+    return overview
+
+
+def get_pilot_circuit_entries(track_meta, steam_id: str, category: str | None = None):
+    """Tous les temps du pilote sur ce circuit (LapRecord + tours dépliés des
+    LapArchive), + options de filtre catégorie. Même contrat de retour que
+    leaderboard.get_circuit_entries() (entries triées, filter_options).
+
+    LapRecord.car est le slug brut du modèle de voiture (ex: "ks_ferrari_296_gt3"),
+    pas un slug CarMeta (qui ne référence que les presets configurés côté serveur,
+    ex: "preset_695b_mech_1" — deux espaces de nommage disjoints). On passe donc
+    par le nom d'affichage (get_car_name, déjà utilisé pour l'historique) pour
+    retrouver la catégorie/PI via le même lookup que leaderboard.py."""
+    from app.services.kspkg_reader import get_car_name
+    from app.routes.leaderboard import build_car_lookup
+
+    car_lookup = build_car_lookup()
+
+    def _entry(car_slug, time_ms, date_display):
+        display = get_car_name(car_slug)
+        info = car_lookup.get(display, {})
+        return {
+            "time_ms": time_ms,
+            "time": _fmt_lap_ms(time_ms),
+            "car": display,
+            "p1": info.get("p1", ""),
+            "pi": info.get("pi", 0),
+            "date_display": date_display,
+        }
+
+    entries = [
+        _entry(lap.car, lap.lap_time_ms, lap.recorded_at.strftime("%d/%m/%Y"))
+        for lap in LapRecord.query.filter_by(steam_id=steam_id, track_value=track_meta.track_value).all()
+    ]
+    for arc in LapArchive.query.filter_by(steam_id=steam_id, track_value=track_meta.track_value).all():
+        for lap in _json.loads(arc.laps_json):
+            entries.append(_entry(lap.get("car", ""), lap.get("t", 0), arc.period))
+
+    entries.sort(key=lambda e: e["time_ms"])
+
+    cats_available = [c for c in _CAT_ORDER if any(e["p1"] == c for e in entries)]
+    filter_options = {"categories": cats_available}
+
+    filtered = [e for e in entries if e["p1"] == category] if category else entries
+    return filtered, filter_options
 
 
 @public_bp.route("/pilot/history")
@@ -318,32 +386,29 @@ def pilot_history():
         flash(_("Liez votre compte Steam pour accéder à votre historique de tours."), "warning")
         return redirect(home)
 
-    from app.services.kspkg_reader import get_car_name
+    circuits = build_pilot_circuit_overview(current_user.steam_id)
+    return render_template("pilot_history.html", circuits=circuits)
 
-    recent = (LapRecord.query
-              .filter_by(steam_id=current_user.steam_id)
-              .order_by(LapRecord.recorded_at.desc())
-              .limit(500)
-              .all())
-    archived = (LapArchive.query
-                .filter_by(steam_id=current_user.steam_id)
-                .order_by(LapArchive.period.desc())
-                .all())
 
-    for lap in recent:
-        lap.car_display   = get_car_name(lap.car)
-        lap.track_display = _track_label(lap.track_value)
-        lap.time_display  = _fmt_lap_ms(lap.lap_time_ms)
-    for arc in archived:
-        arc.track_display     = _track_label(arc.track_value)
-        arc.best_lap_display  = _fmt_lap_ms(arc.best_lap_ms)
-        arc.avg_lap_display   = _fmt_lap_ms(arc.avg_lap_ms)
-        arc.laps = _json.loads(arc.laps_json)
-        for entry in arc.laps:
-            entry["car_display"]  = get_car_name(entry.get("car", ""))
-            entry["time_display"] = _fmt_lap_ms(entry.get("t", 0))
+@public_bp.route("/pilot/history/circuit/<int:track_id>")
+@login_required
+def pilot_history_circuit(track_id):
+    home = url_for("public.pilot_dashboard") if current_user.is_pilot else url_for("admin.my_account")
+    if not current_user.is_pilot and not current_user.is_admin:
+        return redirect(url_for("admin.server"))
+    if not current_user.steam_id:
+        flash(_("Liez votre compte Steam pour accéder à votre historique de tours."), "warning")
+        return redirect(home)
 
-    return render_template("pilot_history.html", recent=recent, archived=archived)
+    tm = db.get_or_404(TrackMeta, track_id)
+    category = request.args.get("cat") or None
+    entries, filter_options = get_pilot_circuit_entries(tm, current_user.steam_id, category)
+
+    if request.headers.get("HX-Request"):
+        return render_template("_partials/pilot_circuit_results_table.html", entries=entries)
+
+    return render_template("pilot_circuit_detail.html", track=tm, entries=entries,
+                           filter_options=filter_options, category=category)
 
 
 @public_bp.route("/pilot/events/<int:event_id>/register", methods=["POST"])

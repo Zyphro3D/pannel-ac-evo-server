@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{{ _('Mes temps') }} — {{ panel_title }}{% endblock %}
 {% block content %}
-<div class="page-shell max-w-3xl">
+<div class="page-shell max-w-[1100px]">
 
   <div class="page-header">
     <div>
@@ -15,60 +15,43 @@
     {{ _("Chaque tour roulé est enregistré en direct, sans attendre la fin d'une session. Au-delà du délai de rétention configuré par l'organisateur, l'historique détaillé est condensé en résumé mensuel.") }}
   </p>
 
-  {# ── Historique récent ── #}
-  <section class="card mb-6">
-    <div class="card-head">
-      <h2 class="card-title">{{ _('Tours récents') }}</h2>
-      <span class="badge badge-neutral">{{ recent|length }}</span>
-    </div>
-    {% if recent %}
-    <div class="divide-y divide-muted/10">
-      {% for lap in recent %}
-      <div class="flex items-center justify-between gap-4 py-2.5 first:pt-0 last:pb-0 text-sm">
-        <div class="flex-1 min-w-0">
-          <span class="font-mono text-txt">{{ lap.time_display }}</span>
-          <span class="text-dim"> — {{ lap.track_display }} · {{ lap.car_display }} · {{ lap.session_type or '—' }}</span>
+  {% if not circuits %}
+  <div class="card p-7 text-center text-dim">
+    {{ _('Aucun tour enregistré pour le moment. Roulez sur un serveur du panel pour voir vos temps apparaître ici.') }}
+  </div>
+  {% else %}
+  <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-7 xl:grid-cols-8 gap-3">
+    {% for c in circuits %}
+    <a href="{{ url_for('public.pilot_history_circuit', track_id=c.track_meta.id) }}"
+       class="card p-0 overflow-hidden group block">
+      <div class="relative aspect-[4/3] bg-surface">
+        {% if c.track_meta.image_path %}
+        <img src="{{ url_for('serve_media', filename=c.track_meta.image_path) }}"
+             alt="{{ c.track_meta.track_name }}" class="w-full h-full object-cover" loading="lazy">
+        {% else %}
+        <div class="w-full h-full flex items-center justify-center text-muted/40 font-bold text-sm">
+          {{ c.track_meta.track_name[:3].upper() }}
         </div>
-        <div class="text-dim shrink-0">{{ lap.recorded_at | local_dt_short }}</div>
+        {% endif %}
+        {% if c.best %}
+        <div class="circuit-top1-box circuit-top1-box-mine">
+          <span class="circuit-top1-label">{{ _('Mon record') }}</span>
+          <span class="circuit-top1-time">{{ c.best.time }}</span>
+        </div>
+        {% else %}
+        <div class="absolute bottom-0 left-0 right-0 p-1.5"
+             style="background: linear-gradient(to top, rgba(6,9,20,0.88), transparent);">
+          <span class="circuit-best-badge circuit-best-badge-empty circuit-best-badge-sm">{{ _('Aucun temps') }}</span>
+        </div>
+        {% endif %}
       </div>
-      {% endfor %}
-    </div>
-    {% else %}
-    <p class="text-sm text-dim m-0">{{ _('Aucun tour enregistré pour le moment. Roulez sur un serveur du panel pour voir vos temps apparaître ici.') }}</p>
-    {% endif %}
-  </section>
-
-  {# ── Archives compactées ── #}
-  {% if archived %}
-  <section class="card mb-6">
-    <div class="card-head">
-      <h2 class="card-title">{{ _('Archives') }}</h2>
-      <span class="badge badge-neutral">{{ archived|length }}</span>
-    </div>
-    <p class="text-xs text-dim mt-0 mb-4">{{ _("Résumés mensuels — l'horodatage précis de chaque tour n'est plus conservé au-delà du délai de rétention, mais le détail temps/voiture reste disponible ci-dessous.") }}</p>
-    <div class="divide-y divide-muted/10">
-      {% for arc in archived %}
-      <details class="py-3 first:pt-0 last:pb-0">
-        <summary class="flex items-center justify-between gap-4 text-sm cursor-pointer">
-          <div class="flex-1 min-w-0">
-            <span class="font-medium text-txt">{{ arc.period }}</span>
-            <span class="text-dim"> — {{ arc.track_display }} · {{ arc.session_type or '—' }}</span>
-          </div>
-          <div class="text-dim shrink-0">
-            {{ _('Meilleur') }} <span class="font-mono text-txt">{{ arc.best_lap_display }}</span>
-            · {{ _('Moyenne') }} <span class="font-mono">{{ arc.avg_lap_display }}</span>
-            · {{ arc.lap_count }} {{ _('tours') }}
-          </div>
-        </summary>
-        <div class="mt-2 pl-2 border-l border-muted/20 space-y-1">
-          {% for entry in arc.laps %}
-          <div class="text-xs text-dim font-mono">{{ entry.time_display }} — {{ entry.car_display }}</div>
-          {% endfor %}
-        </div>
-      </details>
-      {% endfor %}
-    </div>
-  </section>
+      <div class="p-2">
+        <div class="text-xs font-medium text-txt truncate">{{ c.track_meta.track_name }}</div>
+        <div class="text-[0.68rem] text-dim truncate">{{ c.track_meta.layout }}</div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
   {% endif %}
 
 </div>

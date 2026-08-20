@@ -307,7 +307,7 @@ function _renderChat(msgs) {
     log.innerHTML = `<div class="timing-chat-empty">${T.noChat}</div>`;
     return;
   }
-  log.innerHTML = msgs.slice().reverse().map(m => {
+  log.innerHTML = msgs.map(m => {
     const isPanel = m.source === 'panel';
     return `<div class="timing-chat-row ${isPanel ? 'timing-chat-panel' : ''}">
       <span class="timing-chat-ts">${m.ts || ''}</span>
@@ -315,6 +315,7 @@ function _renderChat(msgs) {
       <span class="timing-chat-text">${_esc(m.text)}</span>
     </div>`;
   }).join('');
+  log.scrollTop = log.scrollHeight;
 }
 
 // ── Polling ───────────────────────────────────────────────────────────────────
@@ -448,7 +449,8 @@ async function sendAdminChat() {
   const row = document.createElement('div');
   row.className = 'timing-admin-row sending';
   row.textContent = `[${new Date().toLocaleTimeString()}] ${text}`;
-  log.insertBefore(row, log.firstChild);
+  log.appendChild(row);
+  log.scrollTop = log.scrollHeight;
 
   try {
     const r = await fetch(`/api/live/chat?server=${SERVER_ID}`, {
@@ -463,7 +465,7 @@ async function sendAdminChat() {
     row.className = 'timing-admin-row error';
     row.textContent += ` ✗ ${I18N_ADMIN.errNetwork}`;
   }
-  while (log.children.length > 20) log.lastChild.remove();
+  while (log.children.length > 20) log.firstChild.remove();
 }
 
 let _pendingCmd = '';

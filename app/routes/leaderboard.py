@@ -20,7 +20,7 @@ def invalidate_circuits_cache():
     _circuits_cache_at = 0.0
 
 
-def _build_car_lookup() -> dict:
+def build_car_lookup() -> dict:
     try:
         cars = load_cars()
     except Exception:
@@ -44,7 +44,7 @@ def _collect_best_by_track() -> dict:
 
     from app.services.results_parser import get_parsed
 
-    car_lookup = _build_car_lookup()
+    car_lookup = build_car_lookup()
     best: dict[tuple, dict] = {}
 
     rows = SessionResult.query.order_by(SessionResult.received_at.asc()).limit(2000).all()

@@ -1133,6 +1133,7 @@ def account_role_change():
         # le mot de passe pilote existant, pas besoin d'en redemander un. Le Steam ID
         # confirmé est aussi repris (deux champs distincts entre les deux tables).
         acc._pw_hash = driver._pw_hash
+        acc.email = driver.email
         acc.steam_id = driver.steam_id
         acc.steam_id_confirmed_at = driver.steam_id_confirmed_at
         db.session.add(acc)
