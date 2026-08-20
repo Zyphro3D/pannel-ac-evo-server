@@ -1,0 +1,11 @@
+"""Personnalisations locales optionnelles — jamais versionnées (voir .gitignore).
+
+Copier ce fichier vers local_settings.py à la racine du projet et adapter.
+Absent par défaut : le panel fonctionne normalement sans ce fichier.
+"""
+
+# Domaines supplémentaires à autoriser dans la Content-Security-Policy du panel
+# (script-src / connect-src), par exemple pour un script tiers auto-hébergé ou
+# un service d'analytics chargé depuis app/templates/_partials/local_head.html.
+CSP_EXTRA_SCRIPT_SRC = ""
+CSP_EXTRA_CONNECT_SRC = ""

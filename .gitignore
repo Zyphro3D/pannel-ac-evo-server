@@ -4,6 +4,10 @@
 !.env.example
 !.env.example.*
 
+# Personnalisations locales (jamais versionnées, voir .example à côté)
+local_settings.py
+app/templates/_partials/local_head.html
+
 # Babel — fichier source régénéré automatiquement
 messages.pot
 

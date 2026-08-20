@@ -10,6 +10,11 @@ from flask_wtf.csrf import CSRFProtect
 from werkzeug.middleware.proxy_fix import ProxyFix
 from config import Config
 
+try:
+    import local_settings  # fichier optionnel, non versionné — voir local_settings.py.example
+except ImportError:
+    local_settings = None
+
 _TRANSLATIONS_DIR = str(Path(__file__).parent.parent / "translations")
 _VERSION_FILE     = Path(__file__).parent.parent / "VERSION"
 _APP_VERSION      = _VERSION_FILE.read_text().strip() if _VERSION_FILE.exists() else "?"
@@ -474,18 +479,21 @@ def _register_request_hooks(app):
     def _security_headers(response):
         from flask import g as _g
         nonce = getattr(_g, "csp_nonce", "")
+        # Surcharges CSP locales optionnelles (non versionnées) — voir local_settings.py.example
+        extra_script  = f" {local_settings.CSP_EXTRA_SCRIPT_SRC}"  if local_settings and getattr(local_settings, "CSP_EXTRA_SCRIPT_SRC", "")  else ""
+        extra_connect = f" {local_settings.CSP_EXTRA_CONNECT_SRC}" if local_settings and getattr(local_settings, "CSP_EXTRA_CONNECT_SRC", "") else ""
         response.headers["X-Frame-Options"]        = "DENY"
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-XSS-Protection"]       = "1; mode=block"
         response.headers["Referrer-Policy"]        = "strict-origin-when-cross-origin"
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; "
-            f"script-src 'self' 'nonce-{nonce}' 'unsafe-inline' https://cdn.jsdelivr.net 'unsafe-eval'; "
+            f"script-src 'self' 'nonce-{nonce}' 'unsafe-inline' https://cdn.jsdelivr.net 'unsafe-eval'{extra_script}; "
             "script-src-attr 'unsafe-inline'; "
             "style-src 'self' 'unsafe-inline'; "
             "img-src 'self' data: https://cdn.jsdelivr.net; "
             "font-src 'self'; "
-            "connect-src 'self'"
+            f"connect-src 'self'{extra_connect}"
         )
         if Config.SESSION_COOKIE_SECURE:
             response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"

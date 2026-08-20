@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css', v=static_version) }}">
   <script src="{{ url_for('static', filename='js/htmx.min.js', v=static_version) }}"></script>
   <script defer src="{{ url_for('static', filename='js/alpine.min.js', v=static_version) }}"></script>
+  {% include "_partials/local_head.html" ignore missing %}
   {% block head %}{% endblock %}
 </head>
 <body class="bg-bg text-txt antialiased" hx-headers='{"X-CSRFToken": "{{ csrf_token() }}"}'>

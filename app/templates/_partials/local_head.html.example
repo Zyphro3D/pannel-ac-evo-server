@@ -1,0 +1,3 @@
+{# Copier ce fichier vers local_head.html (même dossier) pour injecter du HTML
+   personnalisé dans le <head> de toutes les pages — scripts, styles, etc.
+   Jamais versionné (voir .gitignore). Absent par défaut, sans effet. #}
