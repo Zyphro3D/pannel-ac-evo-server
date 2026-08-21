@@ -6,6 +6,9 @@
       <th>{{ _('Véhicule') }}</th>
       <th>{{ _('Catégorie') }}</th>
       <th>PI</th>
+      <th>{{ _('Secteur 1') }}</th>
+      <th>{{ _('Secteur 2') }}</th>
+      <th>{{ _('Secteur 3') }}</th>
       <th>{{ _('Temps') }}</th>
       <th>{{ _('Date') }}</th>
     </tr>
@@ -17,6 +20,9 @@
       <td class="lb-car-name">{{ entry.car }}</td>
       <td>{% if entry.p1 %}<span class="veh-badge veh-badge-{{ entry.p1 | lower }}">{{ _(entry.p1) }}</span>{% endif %}</td>
       <td class="lb-pos">{{ entry.pi or '—' }}</td>
+      <td class="lb-splits">{{ entry.s1 or '—' }}</td>
+      <td class="lb-splits">{{ entry.s2 or '—' }}</td>
+      <td class="lb-splits">{{ entry.s3 or '—' }}</td>
       <td class="lb-time {{ 'lb-time-purple' if loop.first }}">{{ entry.time }}</td>
       <td class="text-dim">{{ entry.date_display }}</td>
     </tr>

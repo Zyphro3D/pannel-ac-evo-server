@@ -634,7 +634,7 @@ def create_app():
             _migrate_server_http_port, _migrate_event_server_id,
             _migrate_car_meta_props, _migrate_car_meta_is_mod, _migrate_result_hash,
             _migrate_driver_steam_id, _migrate_admin_account_extra,
-            _migrate_driver_email_confirmation,
+            _migrate_driver_email_confirmation, _migrate_lap_record_sectors,
         )
         _migrate_db(db)
         _migrate_indexes(db)
@@ -647,6 +647,7 @@ def create_app():
         _migrate_driver_steam_id(db)
         _migrate_admin_account_extra(db)
         _migrate_driver_email_confirmation(db)
+        _migrate_lap_record_sectors(db)
         _seed_admin_accounts(db, app.config)
         _seed_servers(db)
         _sync_car_meta(db)

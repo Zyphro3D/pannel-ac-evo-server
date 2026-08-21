@@ -140,6 +140,25 @@ def _migrate_server_discord(db):
                     _log.warning("Migration server.%s ignorée : %s", col, e)
 
 
+def _migrate_lap_record_sectors(db):
+    """Ajoute sector1_ms/2/3 à la table lap_record, facultatifs (v2.1.0+)."""
+    import sqlalchemy as sa
+    cols = [
+        ("sector1_ms", "INTEGER"),
+        ("sector2_ms", "INTEGER"),
+        ("sector3_ms", "INTEGER"),
+    ]
+    with db.engine.connect() as conn:
+        existing = [r[1] for r in conn.execute(sa.text("PRAGMA table_info(lap_record)"))]
+        for col, col_def in cols:
+            if col not in existing:
+                try:
+                    conn.execute(sa.text(f"ALTER TABLE lap_record ADD COLUMN {col} {col_def}"))
+                    conn.commit()
+                except Exception as e:
+                    _log.warning("Migration lap_record.%s ignorée : %s", col, e)
+
+
 def _migrate_driver_steam_id(db):
     """Ajoute steam_id/steam_id_confirmed_at à la table driver (v1.9.0+)."""
     import sqlalchemy as sa

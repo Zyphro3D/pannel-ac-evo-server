@@ -264,6 +264,9 @@ class LapRecord(db.Model):
     track_value  = db.Column(db.String(300), default="")   # convention TrackMeta.track_value
     session_type = db.Column(db.String(60),  default="")   # "Practice" / "Race Weekend"
     lap_time_ms  = db.Column(db.Integer, nullable=False)
+    sector1_ms   = db.Column(db.Integer, nullable=True)
+    sector2_ms   = db.Column(db.Integer, nullable=True)
+    sector3_ms   = db.Column(db.Integer, nullable=True)
     recorded_at  = db.Column(db.DateTime, default=_utcnow, index=True)
 
 

@@ -59,6 +59,7 @@ def _get_client(server_id: int) -> dict:
                 "car_id_to_sid":         {},
                 "num_to_sid":            {},
                 "sid_car_raw":           {},
+                "car_splits":            {},
                 "recently_disconnected": {},
                 "race_state":            {"server_best_ms": None},
                 "chat_buffer":           collections.deque(maxlen=50),
@@ -462,6 +463,7 @@ _RE_CONNECT_LOG = re.compile(
 )
 _RE_DISCONN_LOG = re.compile(r'\[gameplay\] \[info\] (\d+) disconnected')
 _RE_NEWLAP_LOG  = re.compile(r'\[gameplay\] \[info\] New lap carId ([0-9a-f-]+): (\d+:\d+\.\d+)')
+_RE_SECTOR_LOG  = re.compile(r'\[gameplay\] \[info\] Split completed for car ([0-9a-f-]+): \((\d+) ms, splitindex (\d+)\)')
 _RE_LAP_INVALID = re.compile(r'\[gameplay\] \[error\] Couldn\'t create lap from opensplits \(carId ([0-9a-f-]+)\)')
 _RE_PLAYERS_LOG = re.compile(r'\[server\] \[info\] Server updated: (\d+) players')
 _RE_CHAT_LOG    = re.compile(r'\[server\] \[info\] Chat from (.+?) \[(\d+)\]: (.+)')
@@ -667,6 +669,23 @@ def _on_disconn_log(m, c, seen, server_id):
         pass
 
 
+def _on_sector_log(m, c):
+    car_id, split_ms, idx = m.group(1), int(m.group(2)), int(m.group(3))
+    with c["lb_lock"]:
+        c["car_splits"].setdefault(car_id, []).append({"idx": idx, "ms": split_ms})
+
+
+def _pop_car_sectors(c, car_id: str, lap_ms: int) -> tuple[int | None, int | None, int | None]:
+    """Calcule s1/s2/s3 depuis les splits accumulés pour ce car_id depuis le
+    dernier tour, puis vide la liste (même formule que live_state._car_laps)."""
+    with c["lb_lock"]:
+        splits = c["car_splits"].pop(car_id, [])
+    s1 = next((s["ms"] for s in splits if s["idx"] == 0), None)
+    s2 = next((s["ms"] for s in splits if s["idx"] == 1), None)
+    s3 = (lap_ms - s1 - s2) if (s1 is not None and s2 is not None) else None
+    return s1, s2, s3
+
+
 def _on_newlap_log(m, c, server_id):
     car_id, lap_str = m.group(1), m.group(2)
     lap_ms = _parse_lap_ms(lap_str)
@@ -681,6 +700,7 @@ def _on_newlap_log(m, c, server_id):
         if best is None or lap_ms < best:
             c["race_state"]["server_best_ms"] = lap_ms
             notify = True
+    s1, s2, s3 = _pop_car_sectors(c, car_id, lap_ms)
     if notify:
         try:
             from app.services import discord_notifier
@@ -691,10 +711,10 @@ def _on_newlap_log(m, c, server_id):
         except Exception:
             pass
     if sid:
-        _record_lap(c, server_id, sid, name, car_raw, lap_ms)
+        _record_lap(c, server_id, sid, name, car_raw, lap_ms, s1, s2, s3)
 
 
-def _record_lap(c, server_id, sid, name, car_raw, lap_ms):
+def _record_lap(c, server_id, sid, name, car_raw, lap_ms, s1_ms=None, s2_ms=None, s3_ms=None):
     """Persiste un tour en DB, indépendamment de toute fin de session (v1.9.4)."""
     if _flask_app is None:
         return
@@ -717,6 +737,7 @@ def _record_lap(c, server_id, sid, name, car_raw, lap_ms):
                 server_id=server_id, steam_id=sid, nickname=name, car=car_raw,
                 track_value=cache["track_value"], session_type=cache["session_type"],
                 lap_time_ms=lap_ms,
+                sector1_ms=s1_ms, sector2_ms=s2_ms, sector3_ms=s3_ms,
             ))
             db.session.commit()
     except Exception:
@@ -745,6 +766,7 @@ def _on_session_reset(c, seen):
         c["sid_car_raw"].clear()
         c["join_times"].clear()
         c["recently_disconnected"].clear()
+        c["car_splits"].clear()
         c["race_state"]["server_best_ms"] = None
     seen.clear()
 
@@ -765,6 +787,11 @@ def _process_log_line(line: str, seen: set, server_id: int):
     m = _RE_DISCONN_LOG.search(line)
     if m:
         _on_disconn_log(m, c, seen, server_id)
+        return
+
+    m = _RE_SECTOR_LOG.search(line)
+    if m:
+        _on_sector_log(m, c)
         return
 
     m = _RE_NEWLAP_LOG.search(line)

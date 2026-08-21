@@ -347,7 +347,7 @@ def get_pilot_circuit_entries(track_meta, steam_id: str, category: str | None = 
 
     car_lookup = build_car_lookup()
 
-    def _entry(car_slug, time_ms, date_display):
+    def _entry(car_slug, time_ms, date_display, s1_ms=None, s2_ms=None, s3_ms=None):
         display = get_car_name(car_slug)
         info = car_lookup.get(display, {})
         return {
@@ -357,17 +357,28 @@ def get_pilot_circuit_entries(track_meta, steam_id: str, category: str | None = 
             "p1": info.get("p1", ""),
             "pi": info.get("pi", 0),
             "date_display": date_display,
+            "s1": _fmt_lap_ms(s1_ms) if s1_ms else None,
+            "s2": _fmt_lap_ms(s2_ms) if s2_ms else None,
+            "s3": _fmt_lap_ms(s3_ms) if s3_ms else None,
         }
 
     entries = [
-        _entry(lap.car, lap.lap_time_ms, lap.recorded_at.strftime("%d/%m/%Y"))
+        _entry(lap.car, lap.lap_time_ms, lap.recorded_at.strftime("%d/%m/%Y"),
+               lap.sector1_ms, lap.sector2_ms, lap.sector3_ms)
         for lap in LapRecord.query.filter_by(steam_id=steam_id, track_value=track_meta.track_value).all()
     ]
     for arc in LapArchive.query.filter_by(steam_id=steam_id, track_value=track_meta.track_value).all():
         for lap in _json.loads(arc.laps_json):
-            entries.append(_entry(lap.get("car", ""), lap.get("t", 0), arc.period))
+            entries.append(_entry(lap.get("car", ""), lap.get("t", 0), arc.period,
+                                   lap.get("s1"), lap.get("s2"), lap.get("s3")))
 
-    entries.sort(key=lambda e: e["time_ms"])
+    # Un seul temps par voiture (le meilleur) : évite d'afficher tous les tours
+    # moins bons du même véhicule, non pertinent pour une vue "records perso".
+    best_by_car: dict[str, dict] = {}
+    for e in entries:
+        if e["car"] not in best_by_car or e["time_ms"] < best_by_car[e["car"]]["time_ms"]:
+            best_by_car[e["car"]] = e
+    entries = sorted(best_by_car.values(), key=lambda e: e["time_ms"])
 
     cats_available = [c for c in _CAT_ORDER if any(e["p1"] == c for e in entries)]
     filter_options = {"categories": cats_available}

@@ -61,7 +61,11 @@ def archive_old_laps(app):
         groups[key].append(lap)
 
     for (server_id, steam_id, track_value, session_type, period), laps in groups.items():
-        new_entries = [{"t": l.lap_time_ms, "car": l.car} for l in laps]
+        new_entries = [
+            {"t": l.lap_time_ms, "car": l.car,
+             "s1": l.sector1_ms, "s2": l.sector2_ms, "s3": l.sector3_ms}
+            for l in laps
+        ]
         nickname = laps[-1].nickname or laps[0].nickname
 
         archive = LapArchive.query.filter_by(
