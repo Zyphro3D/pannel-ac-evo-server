@@ -1,5 +1,24 @@
 # Changelog
 
+### v2.0.2 — 24/08/2026
+
+**Ajout — page "Mes temps" refaite en grille de cartes par circuit, avec secteurs par tour**
+
+- Reprend la mise en page de l'onglet Classement de Résultats (une carte par circuit, meilleur temps perso mis en avant — en violet plutôt qu'en rouge pour bien la distinguer d'un classement collectif). Un clic ouvre le détail : tableau trié par temps, filtrable par catégorie de véhicule, un seul temps affiché par voiture (le meilleur) plutôt que tous les tours moins bons du même véhicule.
+- Nouvelles colonnes Secteur 1/2/3 dans ce tableau détaillé, calculées depuis les lignes de log `Split completed` du serveur de jeu et rattachées au tour au moment où il se termine (même formule que le timing live). Nouvelle table `lap_record.sector1_ms/2/3` (migration additive, colonnes nullable) — les tours enregistrés avant cette version n'ont pas de secteurs (affiché en tiret), rien à récupérer rétroactivement. Repris aussi dans l'archivage mensuel (`LapArchive`) pour ne pas perdre le détail après compactage au-delà du délai de rétention.
+
+**Ajout — hooks de personnalisation locale (CSP additionnelle, HTML custom dans le `<head>`)**
+
+- `local_settings.py` et `app/templates/_partials/local_head.html` (voir les `.example` correspondants), tous deux facultatifs et non versionnés : permettent d'ajouter des domaines à la CSP (`script-src`/`connect-src`, pour un script tiers auto-hébergé ou un outil d'analytics) et d'injecter du HTML dans le `<head>` de toutes les pages, sans forker le panel. Sans effet si absents.
+
+**Correction — promouvoir un pilote en admin ne donnait pas les vrais droits à la reconnexion**
+
+- La promotion créait un nouveau compte admin sans copier l'email du pilote, et la connexion ne cherchait un compte admin que par identifiant (pseudo en jeu) — jamais par email. Un pilote promu qui se reconnectait avec son email (le cas courant) retombait silencieusement sur son ancien compte pilote, sans droit admin, sans aucune erreur affichée. Les deux sont corrigés ; un message invite désormais à se reconnecter après une promotion.
+
+**Correction — le tchat live ne récupérait pas les messages écrits en l'absence de l'utilisateur, et affichait les messages dans le mauvais sens**
+
+- Le thread qui lit les logs du serveur de jeu (tchat, tours, connexions) n'était démarré que si un message de bienvenue était configuré : sans ce réglage, le tchat restait vide indéfiniment, et l'historique de tours ("Mes temps") n'était jamais alimenté non plus. Démarrage désormais inconditionnel. Ordre du tchat public et du flux d'activité admin inversés (nouveau message en bas, comme dans le jeu) + défilement automatique.
+
 ### v2.0.1 — 29/07/2026
 
 **Correction — l'upload d'image véhicule/circuit et la pose de tags sur un mod nécessitaient superadmin**
