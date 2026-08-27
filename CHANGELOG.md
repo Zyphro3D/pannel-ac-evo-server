@@ -1,5 +1,12 @@
 # Changelog
 
+### v2.0.3 — 27/08/2026
+
+**Correction — un serveur additionnel (2e, 3e...) ne redémarrait plus si le dépôt n'était pas cloné dans un dossier nommé exactement `pannel-ac-evo-server`**
+
+- Le fichier `docker-compose.override.yml` généré par le panel pour gérer les serveurs additionnels référençait une image Docker codée en dur (`pannel-ac-evo-server-aceserver`), qui ne correspond qu'au nom de projet Compose du dépôt de développement. Sur toute installation clonée dans un dossier au nom différent (ex. `~/docker/EV04` → image réelle `ev04-aceserver`), `docker-compose up` tentait de *pull* une image inexistante publiquement et échouait (`pull access denied`) — laissant le serveur additionnel bloqué sur son ancien contenu, avec un mismatch de version côté joueurs à la moindre mise à jour du jeu.
+- Corrigé : le nom d'image est désormais toujours détecté dynamiquement depuis le container `ace-server` de référence (mécanisme déjà utilisé par la création directe de container, maintenant partagé par la génération du fichier compose), quel que soit le nom du dossier d'installation.
+
 ### v2.0.2 — 24/08/2026
 
 **Ajout — page "Mes temps" refaite en grille de cartes par circuit, avec secteurs par tour**
