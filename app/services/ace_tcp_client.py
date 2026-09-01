@@ -434,6 +434,15 @@ def is_connected(server_id: int = 1) -> bool:
         return c["connected"]
 
 
+def update_server_name(server_id: int, name: str) -> None:
+    """Met à jour le nom affiché dans les notifications Discord d'un serveur déjà
+    en cours d'exécution, sans attendre son prochain redémarrage (c["server_name"]
+    n'est sinon fixé qu'une fois, au lancement — voir start())."""
+    c = _get_client(server_id)
+    with c["lb_lock"]:
+        c["server_name"] = name
+
+
 def get_leaderboard(server_id: int = 1) -> list[dict]:
     c = _get_client(server_id)
     with c["lb_lock"]:
@@ -612,6 +621,24 @@ def _on_driver_log(m, c, seen, server_id):
             for k in stale:
                 c["recently_disconnected"].pop(k, None)
 
+    # Repli : la ligne "Car [...] for driver" (ce handler) arrive en pratique
+    # AVANT la ligne "connected (...) on car X" qui remplit sid_car_raw — pas
+    # seulement après un redémarrage, mais à chaque arrivée. Sans ce repli, le
+    # message Discord "arrivée d'un pilote" affiche quasi toujours "?" comme
+    # voiture. Même mécanisme que le repli déjà en place dans _on_newlap_log.
+    if sid and not car_raw and _flask_app is not None:
+        try:
+            with _flask_app.app_context():
+                from app.services.live_state import build_state_cached
+                state = build_state_cached(server_id)
+            car_raw = next((d.get("car_raw", "") for d in state.get("drivers", [])
+                            if d.get("steam_id") == sid), "")
+            if car_raw:
+                with c["lb_lock"]:
+                    c["sid_car_raw"][sid] = car_raw
+        except Exception:
+            log.debug("driver: repli car_raw via live_state impossible (server=%s, sid=%s)", server_id, sid)
+
     vehicle_changed = (
         recent is not None
         and recent["car_raw"]
@@ -700,6 +727,26 @@ def _on_newlap_log(m, c, server_id):
         if best is None or lap_ms < best:
             c["race_state"]["server_best_ms"] = lap_ms
             notify = True
+
+    # Repli : sid_car_raw n'est rempli qu'à la ligne "connected", vue une seule
+    # fois par connexion TCP. Un pilote déjà connecté avant un (re)démarrage du
+    # panel/thread de tail n'a jamais cette ligne relue — sa voiture reste vide
+    # (affichée "?" sur Discord) tant qu'il ne se reconnecte pas. On la reconstruit
+    # alors depuis live_state, qui rescane une fenêtre de logs plus large que le
+    # tail incrémental et retrouve donc la voiture même dans ce cas.
+    if sid and not car_raw and _flask_app is not None:
+        try:
+            with _flask_app.app_context():
+                from app.services.live_state import build_state_cached
+                state = build_state_cached(server_id)
+            car_raw = next((d.get("car_raw", "") for d in state.get("drivers", [])
+                            if d.get("steam_id") == sid), "")
+            if car_raw:
+                with c["lb_lock"]:
+                    c["sid_car_raw"][sid] = car_raw
+        except Exception:
+            log.debug("newlap: repli car_raw via live_state impossible (server=%s, sid=%s)", server_id, sid)
+
     s1, s2, s3 = _pop_car_sectors(c, car_id, lap_ms)
     if notify:
         try:

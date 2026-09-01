@@ -1,10 +1,23 @@
 <tr id="srv-row-{{ srv.id }}" class="{% if not srv.is_enabled %}opacity-40{% endif %}">
   <td class="text-dim">#{{ srv.id }}</td>
-  <td>
-    <span class="font-medium">{{ srv.name }}</span>
-    {% if not srv.is_enabled %}
-    <span class="badge badge-neutral ml-2">{{ _('désactivé') }}</span>
-    {% endif %}
+  <td x-data="{ renaming: false }">
+    <div x-show="!renaming" class="flex items-center gap-2">
+      <span class="font-medium">{{ srv.name }}</span>
+      {% if not srv.is_enabled %}
+      <span class="badge badge-neutral">{{ _('désactivé') }}</span>
+      {% endif %}
+      <button type="button" class="btn-secondary btn-xs" @click="renaming = true" title="{{ _('Renommer') }}">✎</button>
+    </div>
+    <form x-show="renaming"
+          hx-post="{{ url_for('admin.server_rename', server_id=srv.id) }}"
+          hx-target="#srv-row-{{ srv.id }}" hx-swap="outerHTML"
+          class="flex items-center gap-1.5">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="text" name="name" value="{{ srv.name }}" required
+             class="form-control" style="width: 15rem;">
+      <button type="submit" class="btn-primary btn-xs">{{ _('Valider') }}</button>
+      <button type="button" class="btn-secondary btn-xs" @click="renaming = false">{{ _('Annuler') }}</button>
+    </form>
   </td>
   <td><code class="text-xs text-dim">{{ srv.container_name }}</code></td>
   <td class="whitespace-nowrap text-xs text-dim">TCP {{ srv.tcp_port }} / HTTP {{ srv.http_port }}</td>

@@ -1307,6 +1307,39 @@ def server_toggle(server_id):
     return redirect(url_for("admin.servers_list"))
 
 
+@admin_bp.route("/servers/<int:server_id>/rename", methods=["POST"])
+@_admin_required
+@_superadmin_required
+def server_rename(server_id):
+    srv = db.session.get(Server, server_id)
+    if not srv:
+        return flash_or_toast("error", _("Serveur introuvable."), "admin.servers_list")
+    name = (request.form.get("name") or "").strip()
+    if not name:
+        return flash_or_toast("error", _("Le nom est requis."), "admin.servers_list")
+
+    srv.name = name
+    db.session.commit()
+
+    # Répercute immédiatement le nom dans les notifications Discord si le serveur
+    # tourne déjà — sinon il ne serait mis à jour qu'au prochain démarrage (voir
+    # ace_tcp_client.start()).
+    from app.services import ace_tcp_client
+    ace_tcp_client.update_server_name(server_id, name)
+
+    msg = _("Serveur renommé en '%(name)s'. Le nom affiché dans le navigateur de "
+             "serveurs du jeu ne sera mis à jour qu'au prochain redémarrage.", name=name)
+    if is_htmx():
+        try:
+            st = get_status(srv.id)
+        except Exception:
+            st = {"running": False}
+        return render_template("_partials/server_row.html", srv=srv, st=st,
+                               toast_msg=msg, toast_type="success")
+    flash(msg, "success")
+    return redirect(url_for("admin.servers_list"))
+
+
 @admin_bp.route("/servers/<int:server_id>/delete", methods=["POST"])
 @_admin_required
 @_superadmin_required

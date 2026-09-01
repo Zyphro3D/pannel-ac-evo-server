@@ -1,5 +1,21 @@
 # Changelog
 
+### v2.0.4 — 01/09/2026
+
+**Correction — la voiture affichait "?" dans les notifications Discord d'arrivée et de meilleur tour**
+
+- Signalé par un utilisateur, confirmé en conditions réelles sur un cas d'arrivée. Cause trouvée dans les vrais logs du serveur de jeu : la ligne `Car [...] for driver ...` (qui déclenche la notification d'arrivée) arrive systématiquement **avant** la ligne `connected (...) on car X` qui renseigne la voiture du pilote — pas un cas rare, l'ordre normal à chaque connexion. Le même trou touchait aussi le meilleur tour lorsqu'un pilote déjà connecté avant un (re)démarrage du panel (ou une simple coupure du flux de logs Docker) n'avait jamais sa ligne `connected` relue.
+- Corrigé aux deux points d'entrée (arrivée/changement de véhicule, meilleur tour) : quand la voiture manque pour un pilote identifié, elle est désormais retrouvée via `live_state` (le même mécanisme qui reconstruit déjà le timing live en rescannant une fenêtre de logs plus large), puis mise en cache pour les événements suivants du même pilote.
+
+**Correction — page Créer/Modifier un événement en erreur 500 systématique dès qu'une voiture avait une catégorie**
+
+- Signalé via une issue GitHub. Cause : `{% set _ = liste.append(...) %}` (astuce Jinja habituelle pour appeler une méthode sans afficher son retour) écrasait la fonction de traduction `_()` du template avec `None` — le retour de `.append()` — pour tout le reste de la page, dès la première voiture ayant une catégorie renseignée (donc quasi toujours). Isolé à `event_form.html`, aucune autre occurrence ailleurs.
+- Corrigé en renommant la variable jetable pour ne plus entrer en collision avec `_()`.
+
+**Ajout — renommer un serveur depuis le panel**
+
+- Bouton ✎ à côté du nom sur la page Serveurs, pour tous les serveurs y compris le principal. Répercute immédiatement le nouveau nom dans les notifications Discord d'un serveur déjà en cours d'exécution (au lieu d'attendre son prochain démarrage) ; le nom affiché dans le navigateur de serveurs du jeu, lui, reste figé dans les arguments de lancement et ne change qu'au redémarrage — précisé dans le message de confirmation.
+
 ### v2.0.3 — 27/08/2026
 
 **Correction — un serveur additionnel (2e, 3e...) ne redémarrait plus si le dépôt n'était pas cloné dans un dossier nommé exactement `pannel-ac-evo-server`**

@@ -283,9 +283,9 @@
               {% set cars_cfg = event.cars_config | from_json if event and event.cars_config else {} %}
               {% for car in cars %}
               {% set cats = [] %}
-              {% if car.property_1_label %}{% set _ = cats.append(car.property_1_label) %}{% endif %}
-              {% if car.property_2_label %}{% set _ = cats.append(car.property_2_label) %}{% endif %}
-              {% if car.property_3_label %}{% set _ = cats.append(car.property_3_label) %}{% endif %}
+              {% if car.property_1_label %}{% set _discard = cats.append(car.property_1_label) %}{% endif %}
+              {% if car.property_2_label %}{% set _discard = cats.append(car.property_2_label) %}{% endif %}
+              {% if car.property_3_label %}{% set _discard = cats.append(car.property_3_label) %}{% endif %}
               {% set car_cfg = cars_cfg.get(car.name, {}) if cars_cfg is mapping else {} %}
               <tr class="car-row"
                   data-name="{{ car.display_name | lower }}"
