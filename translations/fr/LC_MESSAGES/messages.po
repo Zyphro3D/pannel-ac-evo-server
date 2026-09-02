@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-28 07:29+0000\n"
+"POT-Creation-Date: 2026-09-02 10:21+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -367,8 +367,8 @@ msgstr ""
 
 #: app/routes/admin.py:618
 #, python-brace-format
-msgid "Titre embed — Meilleur tour serveur. Variables : {name}, {lap}, {car}"
-msgstr "Titre embed — Meilleur tour serveur. Variables : {name}, {lap}, {car}"
+msgid "Titre embed — Meilleur tour serveur. Variables : {name}, {lap}, {car}, {circuit}"
+msgstr "Titre embed — Meilleur tour serveur. Variables : {name}, {lap}, {car}, {circuit}"
 
 #: app/routes/admin.py:619
 #, python-brace-format
@@ -570,8 +570,12 @@ msgstr "Serveur '%(name)s' désactivé."
 
 #: app/routes/admin.py:1330
 #, python-format
-msgid "Serveur renommé en '%(name)s'. Le nom affiché dans le navigateur de serveurs du jeu ne sera mis à jour qu'au prochain redémarrage."
-msgstr "Serveur renommé en '%(name)s'. Le nom affiché dans le navigateur de serveurs du jeu ne sera mis à jour qu'au prochain redémarrage."
+msgid ""
+"Serveur renommé en '%(name)s'. Le nom affiché dans le navigateur de "
+"serveurs du jeu ne sera mis à jour qu'au prochain redémarrage."
+msgstr ""
+"Serveur renommé en '%(name)s'. Le nom affiché dans le navigateur de "
+"serveurs du jeu ne sera mis à jour qu'au prochain redémarrage."
 
 #: app/routes/admin.py:1348
 msgid "Le serveur principal ne peut pas être supprimé."

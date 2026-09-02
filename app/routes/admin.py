@@ -615,7 +615,7 @@ _ENV_DESCS = {
     "DISCORD_MSG_PLAYER_JOIN":    _l("Titre embed — Connexion joueur. Variables : {name}, {num}, {car}, {steam_id}"),
     "DISCORD_MSG_PLAYER_DISCONNECT": _l("Titre embed — Déconnexion joueur. Variables : {name}, {duration}, {steam_id}"),
     "DISCORD_MSG_VEHICLE_CHANGE": _l("Titre embed — Changement de véhicule. Variables : {name}, {num}, {old_car}, {new_car}"),
-    "DISCORD_MSG_BEST_LAP":       _l("Titre embed — Meilleur tour serveur. Variables : {name}, {lap}, {car}"),
+    "DISCORD_MSG_BEST_LAP":       _l("Titre embed — Meilleur tour serveur. Variables : {name}, {lap}, {car}, {circuit}"),
     "DISCORD_MSG_ADMIN_ACTION":   _l("Titre embed — Action admin. Variables : {action}, {target}, {admin}, {detail}"),
     "MAIL_SERVER":      _l("Serveur SMTP (laisser vide pour désactiver les emails)"),
     "MAIL_PORT":        _l("Port SMTP (ex: 587 ou 465)"),

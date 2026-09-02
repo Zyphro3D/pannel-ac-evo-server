@@ -413,18 +413,21 @@ def notify_vehicle_change(name: str, num: str, old_car_raw: str, new_car_raw: st
     }]), server_id=server_id)
 
 
-def notify_best_lap(name: str, lap_str: str, car_raw: str, server_id: int | None = None, server_name: str = ""):
+def notify_best_lap(name: str, lap_str: str, car_raw: str, circuit: str = "", server_id: int | None = None, server_name: str = ""):
     car   = _car_label(car_raw)
     title = _srv(_tmpl("DISCORD_MSG_BEST_LAP", "⏱ Meilleur tour du serveur",
-                       name=name, lap=lap_str, car=car), server_name)
+                       name=name, lap=lap_str, car=car, circuit=circuit), server_name)
+    fields = [
+        {"name": "Pilote",   "value": name, "inline": True},
+        {"name": "Véhicule", "value": car,  "inline": True},
+    ]
+    if circuit:
+        fields.append({"name": "Circuit", "value": circuit, "inline": True})
     _send_race(_with_mention("DISCORD_MENTION_RACE", [{
         "title":       title,
         "color":       0x9B59B6,
         "description": f"**{lap_str}**",
-        "fields": [
-            {"name": "Pilote",   "value": name, "inline": True},
-            {"name": "Véhicule", "value": car,  "inline": True},
-        ],
+        "fields":      fields,
         "footer": _footer(server_name),
     }]), server_id=server_id)
 

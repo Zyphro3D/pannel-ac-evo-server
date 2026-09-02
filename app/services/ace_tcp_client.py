@@ -71,7 +71,7 @@ def _get_client(server_id: int) -> dict:
                 "msg_welcome":           DEFAULT_BOT_MSG_WELCOME,
                 "msg_discord":           DEFAULT_BOT_MSG_DISCORD,
                 "msg_site":              DEFAULT_BOT_MSG_SITE,
-                "track_cache":           {"track_value": "", "session_type": "", "fetched_at": 0.0},
+                "track_cache":           {"track_value": "", "session_type": "", "circuit": "", "fetched_at": 0.0},
                 "manual_admin":          False,
             }
         return _clients[server_id]
@@ -746,31 +746,40 @@ def _on_newlap_log(m, c, server_id):
             c["race_state"]["server_best_ms"] = lap_ms
             notify = True
 
-    # Repli : sid_car_raw n'est rempli qu'à la ligne "connected", vue une seule
-    # fois par connexion TCP. Un pilote déjà connecté avant un (re)démarrage du
-    # panel/thread de tail n'a jamais cette ligne relue — sa voiture reste vide
-    # (affichée "?" sur Discord) tant qu'il ne se reconnecte pas. On la reconstruit
-    # alors depuis live_state, qui rescane une fenêtre de logs plus large que le
-    # tail incrémental et retrouve donc la voiture même dans ce cas.
-    if sid and not car_raw and _flask_app is not None:
+    # Repli : car_id_to_sid/sid_car_raw ne sont remplis qu'aux lignes "connected"/
+    # "for driver", vues une seule fois par connexion TCP. Un pilote déjà connecté
+    # avant un (re)démarrage du panel n'émet plus jamais ces lignes tant qu'il ne
+    # se reconnecte pas — sid ET voiture peuvent alors manquer (pas seulement la
+    # voiture). On reconstruit tout depuis live_state, qui rescane une fenêtre de
+    # logs plus large que le suivi incrémental et retrouve donc pilote + voiture
+    # même dans ce cas, via le car_id (stable, présent dans les deux mécanismes).
+    if (not sid or not car_raw) and _flask_app is not None:
         try:
             with _flask_app.app_context():
                 from app.services.live_state import build_state_cached
                 state = build_state_cached(server_id)
-            car_raw = next((d.get("car_raw", "") for d in state.get("drivers", [])
-                            if d.get("steam_id") == sid), "")
-            if car_raw:
-                with c["lb_lock"]:
-                    c["sid_car_raw"][sid] = car_raw
+            found = next((d for d in state.get("drivers", []) if d.get("car_id") == car_id), None)
+            if found:
+                if not sid:
+                    sid  = found.get("steam_id", "")
+                    name = found.get("name") or "?"
+                if not car_raw:
+                    car_raw = found.get("car_raw", "")
+                if sid:
+                    with c["lb_lock"]:
+                        c["car_id_to_sid"][car_id] = sid
+                        c["sid_car_raw"][sid] = car_raw
+                        c["leaderboard"].setdefault(sid, {"steam_id": sid}).setdefault("name", name)
         except Exception:
-            log.debug("newlap: repli car_raw via live_state impossible (server=%s, sid=%s)", server_id, sid)
+            log.debug("newlap: repli sid/car_raw via live_state impossible (server=%s, car_id=%s)", server_id, car_id)
 
     s1, s2, s3 = _pop_car_sectors(c, car_id, lap_ms)
     if notify:
+        circuit = _refresh_track_cache(c, server_id).get("circuit", "")
         try:
             from app.services import discord_notifier
             discord_notifier.safe_notify(
-                discord_notifier.notify_best_lap, name, lap_str, car_raw,
+                discord_notifier.notify_best_lap, name, lap_str, car_raw, circuit,
                 server_id=server_id, server_name=c.get("server_name", ""),
             )
         except Exception:
@@ -779,21 +788,33 @@ def _on_newlap_log(m, c, server_id):
         _record_lap(c, server_id, sid, name, car_raw, lap_ms, s1, s2, s3)
 
 
-def _record_lap(c, server_id, sid, name, car_raw, lap_ms, s1_ms=None, s2_ms=None, s3_ms=None):
-    """Persiste un tour en DB, indépendamment de toute fin de session (v1.9.4)."""
+def _refresh_track_cache(c, server_id):
+    """Rafraîchit (au plus une fois par minute) le circuit/session courants —
+    partagé entre _record_lap (persistance) et la notification Discord de
+    meilleur tour (nom du circuit)."""
     if _flask_app is None:
-        return
+        return c["track_cache"]
     cache = c["track_cache"]
     now = time.time()
     if now - cache["fetched_at"] > 60:
         try:
-            from app.services.server_config import get_running_server_info
-            info = get_running_server_info(server_id) or {}
+            with _flask_app.app_context():
+                from app.services.server_config import get_running_server_info
+                info = get_running_server_info(server_id) or {}
             cache["track_value"]   = info.get("track_value", "")
             cache["session_type"]  = info.get("current_session_label", "")
+            cache["circuit"]       = info.get("circuit", "")
             cache["fetched_at"]    = now
         except Exception:
             log.exception("Échec rafraîchissement track_cache (server_id=%s)", server_id)
+    return cache
+
+
+def _record_lap(c, server_id, sid, name, car_raw, lap_ms, s1_ms=None, s2_ms=None, s3_ms=None):
+    """Persiste un tour en DB, indépendamment de toute fin de session (v1.9.4)."""
+    if _flask_app is None:
+        return
+    cache = _refresh_track_cache(c, server_id)
     try:
         with _flask_app.app_context():
             from app.services.database import db

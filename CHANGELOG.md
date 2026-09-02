@@ -21,6 +21,14 @@
 
 - Investigation approfondie (logs texte, flux TCP du bot, tests avec un bot de diagnostic isolé sur plusieurs types de connexion) : plus aucune trace du tchat des joueurs nulle part où le panel peut l'observer, ni en log ni via le protocole TCP existant. Piste la plus probable : le bot se connecte en mode "pilote" (nécessaire pour l'élévation admin), et les diffusions temps réel semblent désormais réservées à un mode de connexion différent ("spectateur") que le panel n'utilise pas — non confirmé, une reconstruction du mode de connexion du bot serait nécessaire pour vérifier, avec un risque sur l'élévation admin à ne pas prendre à la légère. Le reste (temps, secteurs, arrivées/départs, "Mes temps") repose sur la lecture des logs et n'est pas affecté.
 
+**Correction — le meilleur tour du serveur pouvait encore afficher "?" pour le pilote ET la voiture**
+
+- Cas distinct des précédents : cette fois le pilote lui-même n'était pas identifiable (`car_id_to_sid` vide), pas seulement sa voiture — typiquement quand le panel redémarre en pleine session d'un pilote déjà connecté (état en mémoire réinitialisé, aucune nouvelle ligne "connected"/"for driver" tant qu'il ne se reconnecte pas). Le repli existant ne couvrait que "voiture manquante avec pilote connu". Étendu pour reconstruire pilote et voiture ensemble via `live_state` dans tous les cas. Vérifié en conditions réelles.
+
+**Ajout — le circuit apparaît désormais dans l'embed "meilleur tour"**
+
+- Nouveau champ "Circuit" (ex. "Imola — GP"), à partir des infos déjà calculées pour l'enregistrement du tour en base. Corrige au passage un rafraîchissement du cache circuit/session qui pouvait échouer silencieusement (appel sans contexte applicatif Flask).
+
 ### v2.0.4 — 01/09/2026
 
 **Correction — la voiture affichait "?" dans les notifications Discord d'arrivée et de meilleur tour**
