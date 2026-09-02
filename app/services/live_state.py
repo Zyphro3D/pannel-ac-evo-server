@@ -27,11 +27,15 @@ _RE_CONNECT = re.compile(
 # Capture car_id depuis Car [<uuid>] pour fallback si connect ne matche pas
 _RE_DRIVER  = re.compile(r'\[server\] \[info\] Car \[([0-9a-f-]+)\] #(\d+) for driver (.+?) \[(\d+)\]')
 _RE_PLAYERS = re.compile(r'\[server\] \[info\] Server updated: (\d+) players')
-_RE_DISCONN = re.compile(r'\[gameplay\] \[info\] (\d+) disconnected')
+_RE_DISCONN = re.compile(r'\[gameplay\] \[info\] (\d+) [Dd]isconnected')
+# Format apparu en 0.9.0 : "Disconnected carId X", sans steam_id — résolu via car_to_steam.
+_RE_DISCONN_CAR = re.compile(r'\[gameplay\] \[info\] Disconnected carId ([0-9a-f-]+)')
 _RE_SPLIT   = re.compile(r'\[gameplay\] \[info\] Outplap split')
 _RE_NEWLAP  = re.compile(r'\[gameplay\] \[info\] New lap carId ([0-9a-f-]+): (\d+:\d+\.\d+)')
+# Le préfixe "[TimelineMessage] " est apparu avec la mise à jour 0.9.0 du serveur
+# (build 0.8.1 -> 0.9.0) — optionnel pour rester compatible avec les deux formats.
 _RE_SECTORC = re.compile(
-    r'\[gameplay\] \[info\] Split completed for car ([0-9a-f-]+): \((\d+) ms, splitindex (\d+)\)'
+    r'\[gameplay\] \[info\] (?:\[TimelineMessage\] )?Split completed for car ([0-9a-f-]+): \((\d+) ms, splitindex (\d+)\)'
 )
 
 
@@ -185,6 +189,14 @@ def build_state(server_id: int = 1) -> dict:
                 car_timeline.setdefault(m.group(1), []).append(
                     {"type": "sector", "idx": int(m.group(3)), "ms": int(m.group(2))}
                 )
+                continue
+
+            if m := _RE_DISCONN_CAR.search(line):
+                sid = car_to_steam.get(m.group(1))
+                if sid:
+                    driver = drivers.pop(sid, {})
+                    events.append({"type": "disconnect", "ts": "",
+                                    "name": driver.get("name", sid)})
                 continue
 
             ev = parse_line(line)

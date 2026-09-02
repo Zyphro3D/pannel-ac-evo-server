@@ -179,8 +179,12 @@ def _build_connection_request(c: dict, cfg: dict | None = None) -> bytes:
     payload = (
         _field_varint(1, 1) +
         _field_varint(5, 8) +   # protocol version — inchangé depuis le build 23658359
-        _field_varint(6, 6) +   # server version — bump 5→6 avec le build ACE EVO Server 24104623,
-                                 # sinon rejet "ConnectToServerResult_ClientOutdated"
+        _field_varint(6, 6) +   # server version — toujours 6 avec le build ACE EVO Server
+                                 # 24991735 (0.9.0) : testé en le passant à 7, le serveur a
+                                 # explicitement rejeté avec "Current: (Server:6, Protocol:8)",
+                                 # confirmant que 6 reste la bonne valeur. Pas la cause de
+                                 # l'absence de BroadcastStateMessage/chat sur ce build — voir
+                                 # ailleurs (peut-être un flag de connexion "spectateur").
         _field_str(7, c["steam_id"]) +
         _field_str(9, _get_car_model(c, cfg))
     )
@@ -290,6 +294,12 @@ def _handle_message(name: str, payload: bytes, server_id: int):
         _parse_broadcast(payload, server_id)
     elif name == 'SplitFromRemoteMessage':
         _parse_split(payload, server_id)
+    else:
+        # Diagnostic : utile pour repérer un futur type de message non géré (ex. si
+        # le tchat repasse un jour par ce canal — voir CHANGELOG, plus aucune trace
+        # de tchat ni en log texte ni en TCP depuis la mise à jour 0.9.0 du serveur).
+        log.debug("ace_tcp_client: message TCP non géré reçu : %r (server=%d, %d octets)",
+                  name, server_id, len(payload))
 
 
 # ── Boucle de réception ───────────────────────────────────────────────────────
@@ -470,9 +480,12 @@ _RE_CONNECT_LOG = re.compile(
     r'\[gameplay\] \[info\] (\d+) connected \([^)]+\) on car ([^,\s]+)'
     r'(?:, with new carId ([0-9a-f-]+))?'
 )
-_RE_DISCONN_LOG = re.compile(r'\[gameplay\] \[info\] (\d+) disconnected')
+_RE_DISCONN_LOG = re.compile(r'\[gameplay\] \[info\] (\d+) [Dd]isconnected')
+_RE_DISCONN_CAR_LOG = re.compile(r'\[gameplay\] \[info\] Disconnected carId ([0-9a-f-]+)')
 _RE_NEWLAP_LOG  = re.compile(r'\[gameplay\] \[info\] New lap carId ([0-9a-f-]+): (\d+:\d+\.\d+)')
-_RE_SECTOR_LOG  = re.compile(r'\[gameplay\] \[info\] Split completed for car ([0-9a-f-]+): \((\d+) ms, splitindex (\d+)\)')
+# Le préfixe "[TimelineMessage] " est apparu avec la mise à jour 0.9.0 du serveur
+# (build 0.8.1 -> 0.9.0) — optionnel pour rester compatible avec les deux formats.
+_RE_SECTOR_LOG  = re.compile(r'\[gameplay\] \[info\] (?:\[TimelineMessage\] )?Split completed for car ([0-9a-f-]+): \((\d+) ms, splitindex (\d+)\)')
 _RE_LAP_INVALID = re.compile(r'\[gameplay\] \[error\] Couldn\'t create lap from opensplits \(carId ([0-9a-f-]+)\)')
 _RE_PLAYERS_LOG = re.compile(r'\[server\] \[info\] Server updated: (\d+) players')
 _RE_CHAT_LOG    = re.compile(r'\[server\] \[info\] Chat from (.+?) \[(\d+)\]: (.+)')
@@ -586,27 +599,24 @@ def get_driver_by_num(num: str, server_id: int = 1) -> dict:
         }
 
 
-def _on_connect_log(m, c, seen):
+def _on_connect_log(m, c, seen, server_id):
+    """Seule ligne qui porte réellement la voiture (groupe 2) — c'est ici, pas
+    dans _on_driver_log, que doivent partir les notifications Discord
+    "arrivée"/"changement de véhicule" : la ligne "Car [...] for driver" arrive
+    en pratique 10-20s AVANT cette ligne (constaté sur des logs réels), donc à
+    ce moment-là la voiture n'existe encore nulle part, même pas dans un
+    rescan large des logs — aucun repli ne peut trouver une donnée qui n'a pas
+    encore été écrite."""
     sid, car_raw, car_id = m.group(1), m.group(2), m.group(3) or ""
+    now = time.time()
     with c["lb_lock"]:
-        c["join_times"][sid]  = time.time()
+        c["join_times"][sid]  = now
         c["sid_car_raw"][sid] = car_raw
         if car_id:
             c["car_id_to_sid"][car_id] = sid
-
-
-def _on_driver_log(m, c, seen, server_id):
-    num, name, sid = m.group(1), m.group(2), m.group(3)
-    now = time.time()
-    with c["lb_lock"]:
-        c["num_to_sid"][num] = sid
-        # Alimente le leaderboard avec le nom/numéro du pilote — sans ça, les notifications
-        # Discord (meilleur tour, etc.) ne retrouvent pas le nom et affichent "?".
-        entry = c["leaderboard"].setdefault(sid, {"steam_id": sid})
-        entry["name"] = name
-        entry["num"]  = num
-        car_raw = c["sid_car_raw"].get(sid, "")
-        recent  = c["recently_disconnected"].pop(sid, None)
+        name = c["leaderboard"].get(sid, {}).get("name", sid)
+        num  = c["leaderboard"].get(sid, {}).get("num", "")
+        recent = c["recently_disconnected"].pop(sid, None)
         # Fallback par nom : couvre les serveurs qui tournent les steam_ids à chaque connexion
         if recent is None:
             stale_sid = next(
@@ -620,24 +630,6 @@ def _on_driver_log(m, c, seen, server_id):
         if stale:
             for k in stale:
                 c["recently_disconnected"].pop(k, None)
-
-    # Repli : la ligne "Car [...] for driver" (ce handler) arrive en pratique
-    # AVANT la ligne "connected (...) on car X" qui remplit sid_car_raw — pas
-    # seulement après un redémarrage, mais à chaque arrivée. Sans ce repli, le
-    # message Discord "arrivée d'un pilote" affiche quasi toujours "?" comme
-    # voiture. Même mécanisme que le repli déjà en place dans _on_newlap_log.
-    if sid and not car_raw and _flask_app is not None:
-        try:
-            with _flask_app.app_context():
-                from app.services.live_state import build_state_cached
-                state = build_state_cached(server_id)
-            car_raw = next((d.get("car_raw", "") for d in state.get("drivers", [])
-                            if d.get("steam_id") == sid), "")
-            if car_raw:
-                with c["lb_lock"]:
-                    c["sid_car_raw"][sid] = car_raw
-        except Exception:
-            log.debug("driver: repli car_raw via live_state impossible (server=%s, sid=%s)", server_id, sid)
 
     vehicle_changed = (
         recent is not None
@@ -673,8 +665,19 @@ def _on_driver_log(m, c, seen, server_id):
             pass
 
 
-def _on_disconn_log(m, c, seen, server_id):
-    sid = m.group(1)
+def _on_driver_log(m, c, seen, server_id):
+    """Alimente uniquement le nom/numéro du pilote (leaderboard, num_to_sid) —
+    les notifications Discord se décident dans _on_connect_log, seul endroit
+    qui a la voiture de façon fiable (voir sa docstring)."""
+    num, name, sid = m.group(1), m.group(2), m.group(3)
+    with c["lb_lock"]:
+        c["num_to_sid"][num] = sid
+        entry = c["leaderboard"].setdefault(sid, {"steam_id": sid})
+        entry["name"] = name
+        entry["num"]  = num
+
+
+def _disconnect_sid(sid, c, seen, server_id):
     seen.discard(sid)
     with c["lb_lock"]:
         joined  = c["join_times"].pop(sid, None)
@@ -694,6 +697,21 @@ def _on_disconn_log(m, c, seen, server_id):
         )
     except Exception:
         pass
+
+
+def _on_disconn_log(m, c, seen, server_id):
+    """Ancien format : '<steamid> disconnected'."""
+    _disconnect_sid(m.group(1), c, seen, server_id)
+
+
+def _on_disconn_car_log(m, c, seen, server_id):
+    """Format apparu en 0.9.0 : 'Disconnected carId <carId>', sans le steamid — on le
+    retrouve via car_id_to_sid (rempli à la connexion, voir _on_connect_log)."""
+    car_id = m.group(1)
+    with c["lb_lock"]:
+        sid = c["car_id_to_sid"].get(car_id, "")
+    if sid:
+        _disconnect_sid(sid, c, seen, server_id)
 
 
 def _on_sector_log(m, c):
@@ -823,7 +841,7 @@ def _process_log_line(line: str, seen: set, server_id: int):
 
     m = _RE_CONNECT_LOG.search(line)
     if m:
-        _on_connect_log(m, c, seen)
+        _on_connect_log(m, c, seen, server_id)
         return
 
     m = _RE_DRIVER_LOG.search(line)
@@ -834,6 +852,11 @@ def _process_log_line(line: str, seen: set, server_id: int):
     m = _RE_DISCONN_LOG.search(line)
     if m:
         _on_disconn_log(m, c, seen, server_id)
+        return
+
+    m = _RE_DISCONN_CAR_LOG.search(line)
+    if m:
+        _on_disconn_car_log(m, c, seen, server_id)
         return
 
     m = _RE_SECTOR_LOG.search(line)

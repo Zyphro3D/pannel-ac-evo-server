@@ -1,5 +1,26 @@
 # Changelog
 
+### v2.0.5 — 02/09/2026
+
+> Mise à jour du serveur de jeu ACE EVO Server 0.8.1 → **0.9.0** (build 24991735) : aucune nouvelle voiture/circuit, mais plusieurs formats de log ont changé. Corrections ci-dessous, vérifiées en conditions réelles avec un beta testeur.
+
+**Correction — la voiture affichait encore "?" à l'arrivée d'un pilote, malgré le correctif de la v2.0.4**
+
+- Le correctif précédent cherchait la voiture manquante dans un rescan des logs, mais la ligne qui déclenche la notification d'arrivée (`Car [...] for driver ...`) arrive systématiquement 10-20s **avant** la ligne qui contient la voiture (`connected (...) on car X`) — donc à ce moment-là, la voiture n'existe encore nulle part à trouver, dans aucune fenêtre de recherche.
+- Corrigé en déplaçant le déclenchement de la notification (arrivée + changement de véhicule) sur la ligne qui porte réellement la voiture, au lieu de celle qui arrive en premier. Vérifié en conditions réelles avec un beta testeur : la bonne voiture s'affiche désormais sur Discord dès l'arrivée.
+
+**Correction — la déconnexion d'un pilote n'était plus détectée depuis la mise à jour 0.9.0 du serveur de jeu**
+
+- Le format est passé de `"<steamid> disconnected"` à `"Disconnected carId <carId>"` (mot en majuscule, et carId à la place du steamid) — sans ce format, un pilote restait indéfiniment "fantôme" côté panel (jamais retiré du suivi, jamais de notification Discord de départ). Corrigé en acceptant les deux formats, avec résolution du steamid depuis le carId pour le nouveau format. Vérifié avec une vraie ligne capturée en direct.
+
+**Correction — les secteurs (S1/S2/S3) n'étaient plus capturés depuis la mise à jour 0.9.0 du serveur de jeu**
+
+- Un préfixe `[TimelineMessage] ` est apparu devant "Split completed for car...". Corrigé en acceptant le préfixe, optionnel (compatible avec les deux formats).
+
+**Limitation connue — le tchat en jeu n'est plus capturable par le panel depuis la mise à jour 0.9.0**
+
+- Investigation approfondie (logs texte, flux TCP du bot, tests avec un bot de diagnostic isolé sur plusieurs types de connexion) : plus aucune trace du tchat des joueurs nulle part où le panel peut l'observer, ni en log ni via le protocole TCP existant. Piste la plus probable : le bot se connecte en mode "pilote" (nécessaire pour l'élévation admin), et les diffusions temps réel semblent désormais réservées à un mode de connexion différent ("spectateur") que le panel n'utilise pas — non confirmé, une reconstruction du mode de connexion du bot serait nécessaire pour vérifier, avec un risque sur l'élévation admin à ne pas prendre à la légère. Le reste (temps, secteurs, arrivées/départs, "Mes temps") repose sur la lecture des logs et n'est pas affecté.
+
 ### v2.0.4 — 01/09/2026
 
 **Correction — la voiture affichait "?" dans les notifications Discord d'arrivée et de meilleur tour**
