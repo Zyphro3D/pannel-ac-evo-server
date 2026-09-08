@@ -472,6 +472,8 @@ def server():
 
     config_dirty = False
     if running_status.get("running") and running_config:
+        if running_config != active_config:
+            config_dirty = True
         try:
             cfg_path   = Path(current_app.config["CONFIGS_DIR"]) / running_config
             started_at = running_status.get("started_at") or 0

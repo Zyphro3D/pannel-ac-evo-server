@@ -1,5 +1,15 @@
 # Changelog
 
+### v2.0.6 — 08/09/2026
+
+**Ajout — message clair si l'exécutable du serveur de jeu est manquant au lancement**
+
+- Signalé par un beta testeur : après avoir supprimé par erreur des fichiers dans `./aceserver`, le conteneur échouait avec le message Wine cryptique `ShellExecuteEx failed: File not found`, sans indication de la cause réelle. Le script de démarrage (`entrypoint.aceserver.sh`) vérifie désormais la présence de `AssettoCorsaEVOServer.exe` avant de lancer Wine, et affiche un message expliquant la cause (fichiers jamais versionnés, installés via SteamCMD) et comment réinstaller (bouton SteamCMD dans Paramètres, superadmin, ou commandes manuelles du README), en patientant/réessayant tout seul plutôt que de planter.
+
+**Correction — la bannière "configuration modifiée, redémarrez le serveur" ne s'affichait jamais en pratique**
+
+- Deux causes distinctes trouvées en creusant un signalement où le nom du serveur affiché sur Discord ne correspondait pas au circuit actuellement configuré dans le panel : (1) côté backend, la bannière ne se déclenchait que si le fichier de config actif avait été modifié après le démarrage, mais pas si une config **différente** avait été sélectionnée sans redémarrer — c'est ce deuxième cas qui causait la confusion. (2) côté JS, un bug indépendant masquait systématiquement la bannière dans les premières secondes suivant le chargement de la page (la logique confondait "premier statut reçu au chargement" avec "le serveur vient de redémarrer") — présent depuis l'introduction de la fonctionnalité, donc jamais réellement visible même pour son cas d'usage d'origine. Les deux corrigés : la bannière se déclenche maintenant aussi sur un changement de config non appliqué, et reste visible/se réaffiche correctement en direct au fil des rafraîchissements de statut.
+
 ### v2.0.5 — 02/09/2026
 
 > Mise à jour du serveur de jeu ACE EVO Server 0.8.1 → **0.9.0** (build 24991735) : aucune nouvelle voiture/circuit, mais plusieurs formats de log ont changé. Corrections ci-dessous, vérifiées en conditions réelles avec un beta testeur.

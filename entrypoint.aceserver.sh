@@ -10,6 +10,33 @@ SUFFIX=""
 if [ "$SERVER_ID" != "1" ]; then SUFFIX="_${SERVER_ID}"; fi
 LAUNCH_CONFIG=/aceserver/.launch_config${SUFFIX}.json
 
+# Sanity check: the game server binary is installed via SteamCMD into the
+# bind-mounted /aceserver directory — it is never part of the git repo or the
+# Docker image, and nothing here reinstalls it automatically. If it's missing
+# (fresh setup not finished yet, or files were deleted by mistake), fail with a
+# clear, actionable message instead of Wine's cryptic "ShellExecuteEx failed:
+# File not found" further down.
+EXE=/aceserver/AssettoCorsaEVOServer.exe
+if [ ! -f "$EXE" ]; then
+    echo "[aceserver] ============================================================"
+    echo "[aceserver] ERROR: $EXE not found."
+    echo "[aceserver] The ACE EVO Server game files are not installed in ./aceserver."
+    echo "[aceserver] This is expected on first setup, and can also happen if the"
+    echo "[aceserver] folder content was deleted by mistake — SteamCMD never"
+    echo "[aceserver] reinstalls it automatically."
+    echo "[aceserver] How to fix:"
+    echo "[aceserver]   1) In the panel: Settings > SteamCMD update button (superadmin only)."
+    echo "[aceserver]   2) Or manually, see the README section on installing the ACE EVO"
+    echo "[aceserver]      Server via SteamCMD."
+    echo "[aceserver] This container will idle and retry every 30s until the file appears —"
+    echo "[aceserver] no need to restart it manually once the install is done."
+    echo "[aceserver] ============================================================"
+    while [ ! -f "$EXE" ]; do
+        sleep 30
+    done
+    echo "[aceserver] $EXE found — continuing startup."
+fi
+
 # Virtual display — Wine needs it even for headless server executables
 # Nettoyer un éventuel lock file laissé par un arrêt brutal
 rm -f /tmp/.X99-lock /tmp/.X-unix/X99

@@ -256,10 +256,18 @@ function updateStatusUI(running, runningConfig, autoRestart, players, rotationCo
   const wasRunning = _serverRunning;
   _serverRunning = !!running;
 
-  // Dirty banner : cacher quand le serveur s'arrête ou vient de (re)démarrer
+  // Dirty banner : cacher quand le serveur s'arrête ou vient réellement de (re)démarrer
+  // (wasRunning === false, pas null — sinon le tout premier poll après chargement de
+  // page la cachait systématiquement, même quand elle devait rester visible), et
+  // l'afficher dès qu'on détecte en direct que la config qui tourne diffère de celle
+  // sélectionnée dans le panel.
   const banner = document.getElementById('config-dirty-banner');
-  if (banner && (!running || (!wasRunning && running))) {
-    banner.style.display = 'none';
+  if (banner) {
+    if (!running || (wasRunning === false && running)) {
+      banner.style.display = 'none';
+    } else if (running && runningConfig && runningConfig !== _activeConfig) {
+      banner.style.display = '';
+    }
   }
 
   // Compte à rebours avant le prochain changement de config par inactivité :
@@ -668,7 +676,7 @@ updateSelectedCount();
 })();
 
 /* ── Roulement de configurations ── */
-let _serverRunning = false;
+let _serverRunning = null; // null = pas encore observé (premier poll après chargement de page)
 let _rotConfigs    = [];
 let _rotIsRunning  = false;
 let _rotRunningCfg = '';
