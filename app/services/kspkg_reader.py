@@ -11,6 +11,7 @@ import os
 import re
 import struct
 import threading
+import time
 from typing import Optional
 
 logger = logging.getLogger(__name__)
@@ -24,6 +25,15 @@ _car_names: dict[str, str] = {}      # car_slug → display name
 _preset_names: dict[str, str] = {}   # preset_slug → car display name
 _preset_classes: dict[str, str] = {} # preset_slug → class label
 _loaded = False
+
+# cars.json (voitures officielles + mods) : source principale des noms d'affichage.
+# Le paquet content.kspkg du serveur actuel ne permet plus de retrouver les voitures
+# par lecture de sa table (table éparpillée) : cars.json donne, pour chaque preset,
+# « Nom de la voiture - Classe » (ex. « BMW M4 GT3 - Standard »).
+_cars_json: dict[str, tuple[str, str]] = {}   # preset_slug → (nom voiture, classe)
+_cars_json_loaded_at = 0.0   # horodatage du dernier chargement réussi ; rechargé toutes les 5 min (mods ajoutés)
+_CARS_JSON_TTL = 300.0
+_cars_json_warned = False
 
 # Acronymes toujours en majuscules dans le fallback slug→nom
 _ACRONYMS = {
@@ -230,13 +240,50 @@ def slug_to_name(slug: str) -> str:
     )
 
 
+def _split_display_name(display: str) -> tuple[str, str]:
+    """« BMW M4 GT3 - Standard » → ('BMW M4 GT3', 'Standard'). Sans séparateur : (nom, '')."""
+    if ' - ' in display:
+        name, cls = display.rsplit(' - ', 1)
+        return name.strip(), cls.strip()
+    return display.strip(), ''
+
+
+def _ensure_cars_json() -> None:
+    global _cars_json, _cars_json_loaded_at, _cars_json_warned
+    now = time.monotonic()
+    if _cars_json and now - _cars_json_loaded_at < _CARS_JSON_TTL:
+        return
+    with _lock:
+        if _cars_json and now - _cars_json_loaded_at < _CARS_JSON_TTL:
+            return
+        table: dict[str, tuple[str, str]] = {}
+        try:
+            # Import local : server_config importe déjà une partie de l'application.
+            from app.services.server_config import load_cars
+            for car in load_cars():
+                slug = car.get('name', '')
+                display = car.get('display_name', '')
+                if slug and display:
+                    table[slug] = _split_display_name(display)
+        except Exception as exc:  # cars.json absent ou illisible : on retombe sur le paquet
+            if not _cars_json_warned:   # un seul avertissement (get_car_name est appelé en boucle)
+                logger.warning('kspkg_reader: cars.json illisible (%s), repli sur content.kspkg', exc)
+                _cars_json_warned = True
+        if table:                       # table vide = cars.json absent : on réessaiera au prochain appel
+            _cars_json = table
+            _cars_json_loaded_at = now
+
+
 def get_car_name(slug: str) -> str:
     """
     Retourne le nom d'affichage pour un slug voiture ou preset.
 
-    Essaie d'abord la table des presets (preset_slug), puis la table
-    des voitures (car_slug), puis le fallback slug→nom.
+    Essaie d'abord cars.json (preset_slug), puis la table des presets lue dans
+    content.kspkg, puis celle des voitures (car_slug), puis le fallback slug→nom.
     """
+    _ensure_cars_json()
+    if slug in _cars_json:
+        return _cars_json[slug][0]
     _ensure_loaded()
     return (
         _preset_names.get(slug)
@@ -251,5 +298,8 @@ def get_preset_class(slug: str) -> str:
 
     Exemples : 'Standard', 'GT3', 'BOP Carrera Cup', ''
     """
+    _ensure_cars_json()
+    if slug in _cars_json and _cars_json[slug][1]:
+        return _cars_json[slug][1]
     _ensure_loaded()
     return _preset_classes.get(slug, '')
