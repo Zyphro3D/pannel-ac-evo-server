@@ -1,91 +1,64 @@
 # Changelog
 
-### v2.5.0 — 14/10/2026
-
-**Ajout — page « Accès » : liste blanche des pilotes, bannissements, lest et restricteur par joueur (option, désactivée par défaut)**
-
-- Nouvelle page **Admin → Accès**. Trois outils, tous écrits dans le fichier d'engagés que le serveur de jeu lit à son démarrage :
-  - **Réserver le serveur aux pilotes approuvés** : seuls les pilotes approuvés ayant lié leur compte Steam, le bot du panel et les joueurs ayant une règle peuvent se connecter ; les autres reçoivent « User not allowed ».
-  - **Bannissement par SteamID** (même pour un joueur qui n'a jamais eu de compte sur le panel). La liste noire l'emporte sur tout, y compris sur un pilote approuvé.
-  - **Handicap par joueur** : lest (0–100 kg) et restricteur (0–0,2), bornes imposées par le serveur de jeu.
-- Activation par un interrupteur réservé au super-admin ; **désactivé par défaut** : le serveur de jeu ne reçoit alors aucun fichier d'engagés, comme avant. Prise en compte au prochain démarrage du serveur de jeu. Un chemin d'engagés défini à la main (`SERVER_ENTRY_LIST_PATH`) reste prioritaire.
-- Comportements vérifiés sur un vrai serveur de jeu : pilote approuvé accepté, inconnu refusé, banni refusé, bot du panel accepté, handicap appliqué. Piège évité : **le serveur ne filtre personne quand la liste blanche est vide, le fichier absent ou invalide** — le panel écrit donc un joueur « sentinelle » inexistant quand aucun pilote n'est approuvé, pour que « réservé aux pilotes approuvés » n'ouvre pas le serveur à tous par erreur.
-
-**Correction — la fonction « Entry list » des événements n'avait aucun effet**
-
-- Le fichier généré depuis la page d'inscriptions d'un événement était écrit dans un format d'un autre jeu (`entries` / `driverName` / `carModel`) que le serveur ACE EVO ignore sans erreur. Il est maintenant au format du serveur : liste blanche = pilotes confirmés de l'événement (avec SteamID) + bot du panel, plus les règles de la page Accès. Pour qu'il soit lu, renseigner `SERVER_ENTRY_LIST_PATH` avec le chemin de ce fichier.
-
-**Divers**
-
-- Le bandeau « nouvelles variables .env » mentionne désormais aussi `DISCORD_NOTIFY_SESSION_SUMMARY` (v2.3.0, oubliée) et les réglages d'accès.
-- Texte manquant traduit : « Chocs enregistrés par le serveur… » (page de résultat) et quelques libellés restés sans traduction.
-- 45 tests unitaires (`pytest tests/unit`).
-
-### v2.4.0 — 14/10/2026
-
-**Ajout — options de course (page Serveur → configuration → Sessions → Course)**
-
-Trois réglages que le serveur de jeu sait appliquer mais que le panel n'exposait pas, regroupés dans une section repliable « Options de course ». **Toutes désactivées par défaut** : une config existante produit exactement les mêmes arguments qu'avant. Chacune a été vérifiée sur un vrai serveur de jeu en lisant la session qu'il construit avec les arguments générés par le panel.
-
-- **Course au nombre de tours** : le panel forçait jusqu'ici une course au temps. Activée, la course dure N tours (le serveur calcule la durée maximale).
-- **Arrêt aux stands obligatoire** : changement de pneus et/ou ravitaillement exigés, dans une fenêtre dont vous réglez la largeur (secondes), centrée au milieu de la course. Réservé aux courses au temps : en course au tour le serveur de jeu calcule la fenêtre à partir du nombre de tours lu comme des secondes (de −146 s à +154 s pour 8 tours), donc fausse dès le départ — le panel n'envoie alors pas l'arrêt obligatoire.
-- **Sanctions personnalisées** : nombre de roues dehors pour une coupure, avertissements avant sanction, durée de la sanction. S'appliquent à toutes les sessions de la config ; désactivé = règles d'usine du jeu (3 roues, 3 avertissements, 5 s).
-- Les valeurs sont bornées côté serveur du panel (tours 1–999, fenêtre 10–7200 s, roues 1–4, avertissements 1–20, sanction 1–120 s) ; les champs inconnus sont ignorés. Prises en compte au prochain démarrage du serveur de jeu.
-
-**Tests**
-
-- 37 tests unitaires (`pytest tests/unit`), dont les arguments construits pour chaque option et l'absence de changement pour une config sans les nouveaux champs.
-
-### v2.3.0 — 14/10/2026
-
-**Ajout — récapitulatif Discord de fin de session (option, désactivée par défaut)**
-
-- Nouvel interrupteur **« Récapitulatif de fin de session »** dans Paramètres → Notifications → Discord. Activé, le panel publie sur le webhook course (ou le webhook principal s'il est vide) un message à la fin de chaque session : **podium** (temps ou écart en course, meilleur tour sinon), **meilleur tour** de la session, **incidents** (contacts entre voitures, chocs mur/objet) et **sanctions** regroupées par pilote, les plus lourdes en premier avec leur cause (drive-through, stop-and-go, disqualification).
-- Titre personnalisable comme les autres messages (`DISCORD_MSG_SESSION_SUMMARY`, variables `{session}` et `{circuit}`). Aucune annonce pour une session sans pilote.
-- Garde-fous : jamais pour un fichier de résultats de plus de 15 minutes (le panel réimporte les résultats manquants à chaque démarrage : activer l'option ne déclenche pas de rafale de messages sur l'historique), et une erreur d'envoi ne fait jamais échouer l'import des résultats.
-- Les libellés des messages Discord sont en français, comme les autres notifications Discord du panel.
-
-**Tests**
-
-- 30 tests unitaires (`pytest tests/unit`), dont la construction du message (podium, regroupement et troncature des sanctions, sessions vides).
-
-### v2.2.0 — 14/10/2026
-
-**Ajout — session en cours et temps restant sur la page « Classement en direct »**
-
-- Un indicateur apparaît en haut de la page : **nom de la session** (Practice, Qualifications, Warmup, Course), **phase** (en attente de départ, en cours, dernier tour, terminée) et **temps restant** avec compte à rebours à la seconde, qui passe en rouge pendant le dernier tour.
-- Ces informations sont déduites des logs du serveur de jeu, que le panel lit déjà : création de chaque session (« TimeAttackRemote Practice created », « InstantRaceRemote Race created »), « WAIT_LAST_LAP », « END_SESSION », changement de mode de jeu. Le temps restant est une **estimation** (début effectif = création + « Attente min. des joueurs » de la config, fin = début + durée de la session) ; il n'est pas affiché pour une session sans limite de temps. Vérifié en rejouant plusieurs jours de logs réels. Le décalage horaire des logs est détecté automatiquement.
-- Pourquoi pas la connexion TCP du bot : le serveur de jeu n'envoie l'état de session qu'aux clients qui ont une voiture, le bot du panel n'en reçoit aucun (vérifié, y compris en mode spectateur).
-
-**Ajout — onglet « Fair-play » sur la page Résultats**
-
-- Classement des pilotes à la conduite la plus propre : **incidents par tour** (contacts avec une autre voiture, murs, objets), choc maximal et nombre de sanctions (dont les sanctions lourdes : drive-through, stop-and-go, disqualification), cumulés sur tous les résultats. Un pilote est classé à partir de 20 tours ; en dessous il reste listé, sans rang.
-- Seules les sessions qui enregistrent les incidents comptent : les anciennes versions du serveur de jeu n'écrivaient ni collisions ni sanctions, leurs tours ne rendent donc pas un pilote « propre » à tort.
-
-**Tests**
-
-- 26 tests unitaires (`pytest tests/unit`) : suivi de session depuis les logs, cumul fair-play, incidents, noms de voitures, commandes admin.
-
 ### v2.1.0 — 14/10/2026
+
+> Cette version regroupe plusieurs chantiers menés à partir de l'analyse du serveur de jeu. Toutes les nouvelles options sont **désactivées par défaut** : une configuration existante produit exactement les mêmes arguments qu'avant.
 
 **Ajout — incidents et sanctions sur la page de détail d'un résultat**
 
-- Le serveur de jeu écrit depuis toujours, dans chaque fichier de résultats, les **collisions** (voiture, mur ou objet, vitesse d'impact, dégâts) et les **sanctions** infligées (avertissement, secondes, drive-through, disqualification…, avec leur cause, le tour et le moment) — le panel ne les lisait pas. Deux nouvelles sections apparaissent maintenant sous le classement quand la session en contient :
-  - **Sanctions** : pilote, sanction (avec la pénalité de temps), cause (coupure de piste, excès de vitesse aux stands, mauvaise position au départ…), tour, moment, statut (en cours / levée).
-  - **Incidents** : par pilote, nombre de contacts avec une autre voiture, de murs, d'objets, de chocs avec dégâts, choc maximal et **incidents par tour** (indicateur de conduite propre) ; détail des contacts entre voitures (un frottement qui produit plusieurs enregistrements n'est compté qu'une fois) et des gros chocs contre un mur ou un objet.
-- Aucune migration de base de données : tout est relu depuis les résultats déjà importés, y compris l'historique. Vérifié sur 200 résultats réels (juin–octobre 2026). Textes traduits en 5 langues.
+- Le serveur de jeu écrit depuis toujours, dans chaque fichier de résultats, les **collisions** (voiture, mur ou objet, vitesse d'impact, dégâts) et les **sanctions** infligées (avertissement, secondes, drive-through, disqualification…, avec leur cause, le tour et le moment) — le panel ne les lisait pas. Deux sections apparaissent sous le classement quand la session en contient :
+  - **Sanctions** : pilote, sanction (avec la pénalité de temps), cause, tour, moment, statut (en cours / levée).
+  - **Incidents** : par pilote, contacts avec une autre voiture, murs, objets, chocs avec dégâts, choc maximal et **incidents par tour** ; détail des contacts entre voitures (un frottement qui produit plusieurs enregistrements n'est compté qu'une fois) et des gros chocs.
+- Aucune migration : tout est relu depuis les résultats déjà importés, y compris l'historique. Vérifié sur 200 résultats réels (juin–octobre 2026).
+
+**Ajout — onglet « Fair-play » sur la page Résultats**
+
+- Classement des pilotes à la conduite la plus propre : **incidents par tour**, choc maximal et sanctions (dont les lourdes : drive-through, stop-and-go, disqualification), cumulés sur tous les résultats. Classé à partir de 20 tours ; en dessous le pilote reste listé, sans rang.
+- Seules les sessions qui enregistrent les incidents comptent : les anciennes versions du serveur de jeu n'écrivaient ni collisions ni sanctions, leurs tours ne rendent donc pas un pilote « propre » à tort.
+
+**Ajout — session en cours et temps restant sur « Classement en direct »**
+
+- Un indicateur affiche le **nom de la session** (Practice, Qualifications, Warmup, Course), sa **phase** (en attente de départ, en cours, dernier tour, terminée) et un **temps restant** avec compte à rebours, qui passe en rouge au dernier tour.
+- Déduit des logs du serveur de jeu : création de chaque session, « WAIT_LAST_LAP », « END_SESSION », changement de mode. Le temps restant est une **estimation** (début effectif = création + « Attente min. des joueurs », fin = début + durée) ; non affiché pour une session sans limite de temps ou sans création visible dans les dernières 24 h. Le décalage horaire des logs est détecté automatiquement. (Le bot TCP du panel ne reçoit aucun état de session du serveur : seuls les clients ayant une voiture le reçoivent.)
+
+**Ajout — récapitulatif Discord de fin de session (option)**
+
+- Interrupteur **« Récapitulatif de fin de session »** (Paramètres → Notifications → Discord) : à la fin de chaque session, un message sur le webhook course avec le **podium**, le **meilleur tour**, les **incidents** et les **sanctions** regroupées par pilote (les plus lourdes en premier avec leur cause). Titre personnalisable (`DISCORD_MSG_SESSION_SUMMARY`).
+- Jamais pour un fichier de résultats de plus de 15 minutes (le panel réimporte les résultats manquants à chaque démarrage : pas de rafale de messages sur l'historique), jamais pour une session vide, et une erreur d'envoi ne fait jamais échouer l'import. Messages en français, comme les autres notifications Discord.
+
+**Ajout — options de course (Serveur → configuration → Sessions → Course)**
+
+Section repliable « Options de course », chaque réglage vérifié sur un vrai serveur de jeu avec les arguments générés par le panel :
+- **Course au nombre de tours** (le panel forçait jusqu'ici une course au temps).
+- **Arrêt aux stands obligatoire** : changement de pneus et/ou ravitaillement exigés, dans une fenêtre dont vous réglez la largeur (secondes), centrée au milieu de la course. Réservé aux courses au temps : en course au tour, le serveur de jeu calcule la fenêtre à partir du nombre de tours lu comme des secondes (de −146 s à +154 s pour 8 tours) ; le panel n'envoie alors pas l'arrêt obligatoire.
+- **Sanctions personnalisées** : roues dehors pour une coupure, avertissements avant sanction, durée de la sanction (s'appliquent à toutes les sessions de la config ; désactivé = règles d'usine du jeu).
+- Valeurs bornées côté panel, champs inconnus ignorés. Prises en compte au prochain démarrage du serveur de jeu.
+
+**Ajout — page « Accès » : liste blanche des pilotes, bannissements, lest et restricteur par joueur (option)**
+
+- Nouvelle page **Admin → Accès**, qui écrit le fichier d'engagés lu par le serveur de jeu à son démarrage :
+  - **Réserver le serveur aux pilotes approuvés** : seuls les pilotes approuvés ayant lié leur compte Steam, le bot du panel et les joueurs ayant une règle peuvent se connecter ; les autres reçoivent « User not allowed ».
+  - **Bannissement par SteamID** (même sans compte sur le panel). La liste noire l'emporte sur tout, y compris sur un pilote approuvé.
+  - **Handicap par joueur** : lest (0–100 kg) et restricteur (0–0,2), bornes du serveur de jeu.
+- Interrupteur réservé au super-admin, désactivé par défaut (le serveur de jeu ne reçoit alors aucun fichier d'engagés, comme avant) ; un chemin d'engagés défini à la main (`SERVER_ENTRY_LIST_PATH`) reste prioritaire. Vérifié sur un vrai serveur : approuvé accepté, inconnu refusé, banni refusé, bot du panel accepté, handicap appliqué. Piège évité : le serveur de jeu ne filtre personne quand la liste blanche est vide, le fichier absent ou invalide — le panel écrit donc un joueur « sentinelle » inexistant quand aucun pilote n'est approuvé, pour ne pas ouvrir le serveur à tous par erreur.
 
 **Correction — noms de voitures : « Preset M4gt3 Mech 1 » au lieu de « BMW M4 GT3 »**
 
-- La lecture du paquet `content.kspkg` du serveur de jeu ne retrouvait plus aucune voiture (sa table est éparpillée dans le fichier) : les pages live et publiques affichaient des noms déduits de l'identifiant. Les noms et classes viennent maintenant de `cars.json` (voitures officielles et mods, relu toutes les 5 minutes), avec l'ancienne méthode en secours.
+- La lecture du paquet `content.kspkg` ne retrouvait plus aucune voiture : les pages live et publiques affichaient des noms déduits de l'identifiant. Les noms et classes viennent maintenant de `cars.json` (officielles et mods, relu toutes les 5 minutes), l'ancienne méthode restant en secours.
 
 **Correction — les commandes admin de la page Live (kick, pénalités, lest, restricteur, passer la session…) étaient refusées en silence**
 
-- Le bot du panel renvoie toutes les 20 s une requête de connexion pour éviter la coupure du serveur (seul message qui réinitialise le délai d'inactivité ; vérifié : ni le tchat ni les mises à jour de voiture ne suffisent). Mais chaque requête de connexion **efface le statut admin** de la connexion : une commande envoyée plus de ~20 s après la connexion recevait « You do not have permissions to execute this command ». Le bot se ré-élève maintenant juste avant chaque commande admin. Reproduit puis corrigé sur un vrai serveur de jeu.
+- Le bot renvoie toutes les 20 s une requête de connexion pour éviter la coupure du serveur (seul message qui réinitialise son délai d'inactivité) ; or chaque requête de connexion **efface le statut admin** : une commande envoyée plus de ~20 s après la connexion recevait « You do not have permissions to execute this command ». Le bot se ré-élève maintenant juste avant chaque commande admin. Reproduit puis corrigé sur un vrai serveur de jeu.
 
-**Tests**
+**Correction — la fonction « Entry list » des événements n'avait aucun effet**
 
-- Premiers tests unitaires (`pytest tests/unit`, données entièrement synthétiques) : noms de voitures, extraction des incidents et sanctions, commandes admin.
+- Le fichier généré depuis les inscriptions d'un événement était écrit dans un format d'un autre jeu (`entries` / `driverName` / `carModel`) que le serveur ACE EVO ignore sans erreur. Il est maintenant au format du serveur : liste blanche = pilotes confirmés de l'événement (avec SteamID) + bot du panel, plus les règles de la page Accès. Pour qu'il soit lu, renseigner `SERVER_ENTRY_LIST_PATH` avec son chemin.
+
+**Divers**
+
+- Le bandeau « nouvelles variables .env » mentionne les nouveaux interrupteurs (récapitulatif Discord, contrôle d'accès).
+- Textes manquants traduits en 5 langues.
+- 45 tests unitaires (`pytest tests/unit`, données entièrement synthétiques).
 
 ### v2.0.6 — 08/09/2026
 
