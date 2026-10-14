@@ -19,6 +19,20 @@ def _tod(sess: dict) -> dict:
     }
 
 
+# Types de session pour lesquels le serveur de jeu attend la configuration complète (practice +
+# qualification + warmup + course), comme pour un week-end de course. Vérifié sur banc d'essai
+# (serveur 0.9.x) : course instantanée, tour lancé, rallye, A vers B et test drive. Seule la course
+# instantanée utilise ces durées/heures ; les quatre autres ont une durée et une heure fixées par le
+# jeu (1 h, 1 tour/3 min 15, 10 min, 10 min) qu'aucun réglage ne modifie.
+SINGLE_SESSION_MODES = {
+    "GameModeType_INSTANT_RACE", "GameModeType_HOTLAP", "GameModeType_RALLY",
+    "GameModeType_A_TO_B", "GameModeType_TEST_DRIVE",
+}
+FULL_CONFIG_TYPES = {"GameModeType_RACE_WEEKEND"} | SINGLE_SESSION_MODES
+# Types contenant une session « course » (seule à recevoir tours, arrêt obligatoire et sanctions perso)
+RACE_TYPES = {"GameModeType_RACE_WEEKEND", "GameModeType_INSTANT_RACE"}
+
+
 def _clamp(value, lo: int, hi: int, default: int) -> int:
     try:
         return max(lo, min(hi, int(value)))
@@ -129,7 +143,7 @@ def build_launch_args(config: dict,
 
     game_type = event.get("SelectedSessionTypeValue", "GameModeType_PRACTICE")
 
-    if game_type == "GameModeType_RACE_WEEKEND":
+    if game_type in FULL_CONFIG_TYPES:
         practice = sessions.get("PracticeSession", {})
         qualify  = sessions.get("QualifyingSession", {})
         warmup   = sessions.get("WarmupSession", {})
@@ -155,8 +169,11 @@ def build_launch_args(config: dict,
             "min_waiting_for_players":                race.get("MinWaitingForPlayers", 10),
             "max_waiting_for_players":                race.get("MaxWaitingForPlayers", 30),
         }
-        game_config.update(race_rules(race))
-        game_config.update(custom_penalties(race))
+        if game_type in RACE_TYPES:
+            # Ces options ne concernent que la session « course » (vérifié : qualification, libre,
+            # warmup et les modes à durée fixe gardent les règles d'usine du jeu)
+            game_config.update(race_rules(race))
+            game_config.update(custom_penalties(race))
     else:
         # Practice ou Qualify : session unique
         _prefix_map = {
@@ -171,8 +188,6 @@ def build_launch_args(config: dict,
             f"{prefix}_overtime_waiting_next_session": sess.get("OvertimeWaitingNextSession", 10),
             f"{prefix}_max_wait_to_box":              sess.get("MaxWaitToBox", 10),
         }
-        # Les sanctions personnalisées s'appliquent aussi à une session unique (réglées dans « Course »)
-        game_config.update(custom_penalties(sessions.get("RaceSession", {})))
 
     season_dict = {
         "game_type":        game_type,

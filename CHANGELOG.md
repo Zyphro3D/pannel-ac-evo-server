@@ -31,7 +31,7 @@
 Section repliable « Options de course », chaque réglage vérifié sur un vrai serveur de jeu avec les arguments générés par le panel :
 - **Course au nombre de tours** (le panel forçait jusqu'ici une course au temps).
 - **Arrêt aux stands obligatoire** : changement de pneus et/ou ravitaillement exigés, dans une fenêtre dont vous réglez la largeur (secondes), centrée au milieu de la course. Réservé aux courses au temps : en course au tour, le serveur de jeu calcule la fenêtre à partir du nombre de tours lu comme des secondes (de −146 s à +154 s pour 8 tours) ; le panel n'envoie alors pas l'arrêt obligatoire.
-- **Sanctions personnalisées** : roues dehors pour une coupure, avertissements avant sanction, durée de la sanction (s'appliquent à toutes les sessions de la config ; désactivé = règles d'usine du jeu).
+- **Sanctions personnalisées** : roues dehors pour une coupure, avertissements avant sanction, durée de la sanction (s'appliquent à la course uniquement, week-end ou course instantanée ; désactivé = règles d'usine du jeu).
 - Valeurs bornées côté panel, champs inconnus ignorés. Prises en compte au prochain démarrage du serveur de jeu.
 
 **Ajout — page « Accès » : liste blanche des pilotes, bannissements, lest et restricteur par joueur (option)**
@@ -41,6 +41,20 @@ Section repliable « Options de course », chaque réglage vérifié sur un vrai
   - **Bannissement par SteamID** (même sans compte sur le panel). La liste noire l'emporte sur tout, y compris sur un pilote approuvé.
   - **Handicap par joueur** : lest (0–100 kg) et restricteur (0–0,2), bornes du serveur de jeu.
 - Interrupteur réservé au super-admin, désactivé par défaut (le serveur de jeu ne reçoit alors aucun fichier d'engagés, comme avant) ; un chemin d'engagés défini à la main (`SERVER_ENTRY_LIST_PATH`) reste prioritaire. Vérifié sur un vrai serveur : approuvé accepté, inconnu refusé, banni refusé, bot du panel accepté, handicap appliqué. Piège évité : le serveur de jeu ne filtre personne quand la liste blanche est vide, le fichier absent ou invalide — le panel écrit donc un joueur « sentinelle » inexistant quand aucun pilote n'est approuvé, pour ne pas ouvrir le serveur à tous par erreur.
+
+**Ajout — modes de jeu supplémentaires**
+
+- Le sélecteur de mode propose, en plus de Practice / Qualifications / Course / Week-end : **Course instantanée**, **Tour lancé**, **Rallye**, **A vers B** et **Test drive** (groupe « Autres modes »). Chaque mode a été lancé sur un vrai serveur de jeu.
+- Course instantanée : durée, nombre de tours, arrêt obligatoire et sanctions s'appliquent comme pour une course. Tour lancé, Rallye, A vers B et Test drive : durée et heure imposées par le jeu (une note l'indique, les champs inutiles sont masqués).
+- Les modes qui plantent ou ne démarrent pas (Hotstint, SRO, Superpole, Drift, Freeroam) ne sont volontairement pas proposés.
+
+**Ajout — avertissement de capacité du circuit**
+
+- Si le nombre maximum de joueurs dépasse le nombre de stands du circuit choisi, un avertissement s'affiche dans la configuration (les pilotes en trop ne pourraient pas être placés).
+
+**Ajout — bannissement en direct (`\ban`)**
+
+- Le tchat de la page Live accepte les commandes `\...`, dont `\ban <n° de voiture>` : le pilote est banni immédiatement par le serveur de jeu, **inscrit dans la page Accès** (liste noire par SteamID, donc conservé après redémarrage si le contrôle d'accès est activé) et signalé sur Discord (le bannissement manuel depuis la page Accès aussi). Sans contrôle d'accès activé, un avertissement rappelle que le bannissement ne survit pas à un redémarrage du serveur.
 
 **Correction — noms de voitures : « Preset M4gt3 Mech 1 » au lieu de « BMW M4 GT3 »**
 
@@ -58,7 +72,7 @@ Section repliable « Options de course », chaque réglage vérifié sur un vrai
 
 - Le bandeau « nouvelles variables .env » mentionne les nouveaux interrupteurs (récapitulatif Discord, contrôle d'accès).
 - Textes manquants traduits en 5 langues.
-- 45 tests unitaires (`pytest tests/unit`, données entièrement synthétiques).
+- 55 tests unitaires (`pytest tests/unit`, données entièrement synthétiques).
 
 ### v2.0.6 — 08/09/2026
 

@@ -17,6 +17,14 @@
   </div>
   {% endif %}
 
+  {% if rules and not enabled %}
+  <div class="card mb-5" style="border-color: var(--yellow, #f0a500)">
+    <p class="text-sm">
+      {{ _('Le contrôle d\'accès est désactivé : les règles ci-dessous (bannissements, handicaps) ne sont pas appliquées au serveur de jeu. Un bannissement fait en direct avec la commande \\ban ne dure que jusqu\'au redémarrage du serveur : activez le contrôle d\'accès pour qu\'il soit conservé.') }}
+    </p>
+  </div>
+  {% endif %}
+
   {# ── Réglages ── #}
   <div class="card mb-5">
     <h2 class="text-lg font-bold text-txt mb-3">{{ _('Réglages') }}</h2>

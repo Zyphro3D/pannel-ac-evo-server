@@ -145,6 +145,10 @@ def _session_timing(server_id: int = 1) -> dict:
             )
         elif mode == "GameModeType_QUALIFY":
             length_s = ses.get("QualifyingSession", {}).get("Length", 0)
+        elif mode == "GameModeType_INSTANT_RACE":
+            length_s = ses.get("RaceSession", {}).get("Length", 0)
+        elif mode in ("GameModeType_HOTLAP", "GameModeType_RALLY", "GameModeType_A_TO_B", "GameModeType_TEST_DRIVE"):
+            length_s = 0        # durée imposée par le jeu
         else:
             length_s = ses.get("PracticeSession", {}).get("Length", 0)
         return {"started_at": started_at, "session_length_s": length_s}

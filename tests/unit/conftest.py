@@ -2,6 +2,7 @@
 import json
 import os
 import sys
+import tempfile
 from pathlib import Path
 
 import pytest
@@ -10,9 +11,13 @@ from flask import Flask
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 # config.py exige ces variables à l'import : valeurs factices, uniquement pour les tests.
+_TMP = tempfile.mkdtemp(prefix="panel-tests-")
 for _k, _v in (("SECRET_KEY", "test-secret-key"), ("ADMIN_PASSWORD", "test-admin"),
-               ("SUPERADMIN_PASSWORD", "test-superadmin")):
+               ("SUPERADMIN_PASSWORD", "test-superadmin"), ("SUPERADMIN_USERNAME", "superadmin"),
+               ("DATABASE_URL", "sqlite:///" + _TMP + "/test.db"), ("ACESERVER_DIR", _TMP),
+               ("CONFIGS_DIR", _TMP + "/configs")):
     os.environ.setdefault(_k, _v)
+os.makedirs(_TMP + "/configs", exist_ok=True)
 
 
 @pytest.fixture
@@ -29,3 +34,23 @@ def cars_app(tmp_path):
     app.config["CARS_JSON_PATH"] = str(cars_path)
     app.config["MODS_DIR"] = str(tmp_path / "mods")
     return app
+
+
+@pytest.fixture(scope="module")
+def admin_client():
+    """Application complète (base SQLite temporaire) avec un super-admin connecté."""
+    import app as app_pkg
+    import app.routes.admin as admin_routes
+    # settings.json vit à côté du code (data/) : on le détourne vers un dossier temporaire pour que les
+    # tests n'écrivent ni ne lisent jamais les vrais réglages
+    tmp_settings = Path(_TMP) / "settings.json"
+    app_pkg._SETTINGS_PATH = tmp_settings
+    admin_routes._SETTINGS_PATH = tmp_settings
+    from app import create_app, limiter
+    app = create_app()
+    app.config["WTF_CSRF_ENABLED"] = False
+    limiter.enabled = False
+    client = app.test_client()
+    client.post("/login", data={"username": "superadmin", "password": os.environ["SUPERADMIN_PASSWORD"]})
+    client.app = app
+    return client

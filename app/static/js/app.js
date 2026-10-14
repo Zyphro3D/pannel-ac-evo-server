@@ -527,18 +527,51 @@ function calcDur(key, widget) {
 }
 
 /* ── Session type toggle ── */
+// Modes dont la durée et l'heure sont imposées par le jeu (vérifié : aucun réglage ne les modifie)
+const FIXED_MODES = ['GameModeType_HOTLAP', 'GameModeType_RALLY', 'GameModeType_A_TO_B', 'GameModeType_TEST_DRIVE'];
+
 function onSessionTypeChange(val) {
-  const isRaceWeekend = val === 'GameModeType_RACE_WEEKEND';
-  document.querySelectorAll('.sess-race-only').forEach(el => {
-    el.style.display = isRaceWeekend ? '' : 'none';
-    el.classList.toggle('enabled', isRaceWeekend);
+  const weekend = val === 'GameModeType_RACE_WEEKEND';
+  const instant = val === 'GameModeType_INSTANT_RACE';
+  const fixed   = FIXED_MODES.includes(val);
+  // Blocs de session visibles selon le mode : week-end = les quatre ; course instantanée = la course ;
+  // modes à durée fixe = aucun ; libre / autre = la session libre.
+  const visible = {
+    practicesession:   !(instant || fixed),
+    qualifyingsession: weekend,
+    warmupsession:     weekend,
+    racesession:       weekend || instant,
+  };
+  Object.entries(visible).forEach(([key, show]) => {
+    const el = document.getElementById('sess-' + key);
+    if (!el) return;
+    el.style.display = show ? '' : 'none';
+    el.classList.toggle('enabled', show);
   });
+  const note = document.getElementById('mode-fixed-note');
+  if (note) note.style.display = fixed ? '' : 'none';
+}
+
+/* ── Avertissement : moins de stands que de joueurs ── */
+function updatePitWarning() {
+  const sel = document.getElementById('track-select');
+  const warn = document.getElementById('pit-warning');
+  if (!sel || !warn) return;
+  const pits = parseInt((sel.selectedOptions[0] || {}).dataset?.pits || '0', 10);
+  const max = parseInt(sel.dataset.maxPlayers || '0', 10);
+  if (pits > 0 && max > pits) {
+    warn.textContent = (warn.dataset.msg || '').replace('{pits}', pits).replace('{max}', max);
+    warn.style.display = '';
+  } else {
+    warn.style.display = 'none';
+  }
 }
 
 // Init au chargement
 (function() {
   const sel = document.getElementById('session-type-select');
   if (sel) onSessionTypeChange(sel.value);
+  updatePitWarning();
 })();
 
 /* ── Cars ── */

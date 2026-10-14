@@ -379,7 +379,15 @@
           <select name="SelectedSessionTypeValue" id="session-type-select" onchange="onSessionTypeChange(this.value)">
             <option value="GameModeType_PRACTICE"     {% if config.Event.SelectedSessionTypeValue == 'GameModeType_PRACTICE'     %}selected{% endif %}>{{ _('Libre') }}</option>
             <option value="GameModeType_RACE_WEEKEND" {% if config.Event.SelectedSessionTypeValue == 'GameModeType_RACE_WEEKEND' %}selected{% endif %}>{{ _('Race Weekend') }}</option>
+            <optgroup label="{{ _('Autres modes') }}">
+              <option value="GameModeType_INSTANT_RACE" {% if config.Event.SelectedSessionTypeValue == 'GameModeType_INSTANT_RACE' %}selected{% endif %}>{{ _('Course instantanée') }}</option>
+              <option value="GameModeType_HOTLAP"       {% if config.Event.SelectedSessionTypeValue == 'GameModeType_HOTLAP'       %}selected{% endif %}>{{ _('Tour lancé') }}</option>
+              <option value="GameModeType_RALLY"        {% if config.Event.SelectedSessionTypeValue == 'GameModeType_RALLY'        %}selected{% endif %}>{{ _('Rallye') }}</option>
+              <option value="GameModeType_A_TO_B"       {% if config.Event.SelectedSessionTypeValue == 'GameModeType_A_TO_B'       %}selected{% endif %}>{{ _('A vers B') }}</option>
+              <option value="GameModeType_TEST_DRIVE"   {% if config.Event.SelectedSessionTypeValue == 'GameModeType_TEST_DRIVE'   %}selected{% endif %}>{{ _('Test drive') }}</option>
+            </optgroup>
           </select>
+          <span class="form-hint" id="mode-fixed-note" style="display:none">{{ _('Durée et heure de session imposées par le jeu pour ce mode : elles ne se règlent pas.') }}</span>
         </div>
 
         <div class="form-row">
@@ -433,14 +441,16 @@
 
         <div class="form-group">
           <label>{{ _('Circuit') }}</label>
-          <select name="SelectedTrackValue">
+          <select name="SelectedTrackValue" id="track-select" data-max-players="{{ max_players }}" onchange="updatePitWarning()">
             {% for ev in events_practice %}
             {% set tv = ev.track + '|' + ev.layout + '|' + ev.event_name + '|' + ev.track_length|string %}
-            <option value="{{ tv }}" {% if config.Event.SelectedTrackValue == tv %}selected{% endif %}>
+            <option value="{{ tv }}" data-pits="{{ ev.max_pit_slot or 0 }}" {% if config.Event.SelectedTrackValue == tv %}selected{% endif %}>
               {{ ev.track }} — {{ ev.layout }} ({{ "%.2f"|format(ev.track_length / 1000) }} km)
             </option>
             {% endfor %}
           </select>
+          <span class="form-hint" id="pit-warning" style="display:none; color:var(--yellow,#f0a500)"
+                data-msg="{{ _('Ce circuit n\'a que {pits} stands pour {max} joueurs maximum : les pilotes en trop ne pourront pas être placés.') }}"></span>
         </div>
 
       </form>
@@ -508,7 +518,7 @@
             </div>
             <details class="race-options" {% if s.get('RaceByLaps') or s.get('MandatoryPitStop') or s.get('CustomPenalties') %}open{% endif %}>
               <summary>{{ _('Options de course') }}</summary>
-              <p class="hint">{{ _('Toutes désactivées par défaut. Prises en compte au prochain démarrage du serveur.') }}</p>
+              <p class="hint">{{ _('Toutes désactivées par défaut. Prises en compte au prochain démarrage du serveur. Valables pour une course (week-end ou course instantanée).') }}</p>
 
               <div class="form-group">
                 <label class="toggle-label">
@@ -553,7 +563,7 @@
                   <input type="checkbox" class="switch" name="{{ key }}[CustomPenalties]" {% if s.get('CustomPenalties') %}checked{% endif %}>
                   {{ _('Sanctions personnalisées') }}
                 </label>
-                <span class="hint">{{ _('S\'applique à toutes les sessions de la config. Désactivé : règles d\'usine du jeu.') }}</span>
+                <span class="hint">{{ _('S\'applique à la course uniquement (week-end ou course instantanée). Désactivé : règles d\'usine du jeu.') }}</span>
               </div>
               <div class="form-row">
                 <div class="form-group">

@@ -322,6 +322,7 @@ def access_rule_save():
     banned = "true" in request.form.getlist("banned")
     label = request.form.get("label", "").strip()[:100]
     rule = AccessRule.query.filter_by(steam_id=steam_id).first()
+    was_banned = bool(rule and rule.banned)
     if rule is None:
         rule = AccessRule(steam_id=steam_id)
         db.session.add(rule)
@@ -330,6 +331,12 @@ def access_rule_save():
         label = driver.ingame_name if driver else (rule.label or "")
     rule.label, rule.banned, rule.ballast, rule.restrictor = label, banned, ballast, restrictor
     db.session.commit()
+    if banned != was_banned:     # annonce Discord d'un bannissement / d'une levée (webhook course)
+        from flask_login import current_user
+        from app.services import discord_notifier
+        discord_notifier.safe_notify(discord_notifier.notify_access_ban, label or steam_id[-6:],
+                                     getattr(current_user, "username", "") or getattr(current_user, "ingame_name", ""),
+                                     banned)
     flash(_("Règle enregistrée. Elle s'applique au prochain démarrage du serveur de jeu."), "success")
     return redirect(url_for("events_admin.access_page"))
 

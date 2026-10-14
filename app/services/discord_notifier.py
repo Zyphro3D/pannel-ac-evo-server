@@ -31,6 +31,11 @@ _MODE_LABELS = {
     "GameModeType_PRACTICE":     "Practice",
     "GameModeType_QUALIFY":      "Qualifying",
     "GameModeType_RACE_WEEKEND": "Race Weekend",
+    "GameModeType_INSTANT_RACE": "Course instantanée",
+    "GameModeType_HOTLAP":       "Tour lancé",
+    "GameModeType_RALLY":        "Rallye",
+    "GameModeType_A_TO_B":       "A vers B",
+    "GameModeType_TEST_DRIVE":   "Test drive",
 }
 
 _COLOR_GREEN  = 0x2ECC71
@@ -434,6 +439,7 @@ def notify_best_lap(name: str, lap_str: str, car_raw: str, circuit: str = "", se
 
 _CMD_LABELS: dict[str, tuple[str, int]] = {
     "kick":        ("Expulsion",          _COLOR_RED),
+    "ban":         ("Bannissement",       _COLOR_RED),
     "to_pit":      ("Envoi aux stands",   _COLOR_ORANGE),
     "mute":        ("Mise en sourdine",   _COLOR_ORANGE),
     "unmute":      ("Retrait sourdine",   0x95A5A6),
@@ -552,6 +558,18 @@ def notify_session_summary(parsed: dict, server_id: int | None = None, server_na
     if embed.get("description") is None:
         embed.pop("description")
     _send_race(_with_mention("DISCORD_MENTION_RACE", [embed]), server_id=server_id)
+
+
+def notify_access_ban(name: str, by_admin: str, banned: bool = True, server_id: int | None = None):
+    """Annonce un bannissement (ou une levée) décidé dans la page Accès du panel."""
+    title = "🚫 Joueur banni" if banned else "✅ Bannissement levé"
+    _send_race(_with_mention("DISCORD_MENTION_RACE", [{
+        "title":  title,
+        "color":  _COLOR_RED if banned else _COLOR_GREEN,
+        "fields": [{"name": "Joueur", "value": name or "—", "inline": True},
+                   {"name": "Par", "value": by_admin or "—", "inline": True}],
+        "footer": _footer(),
+    }]), server_id=server_id)
 
 
 def safe_notify(fn, *args, **kwargs):

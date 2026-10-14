@@ -56,15 +56,40 @@ def test_arret_obligatoire_ignore_en_course_au_tour():
     assert "mandatory_pit_stop" not in gc and "pit_window" not in gc
 
 
-def test_penalites_personnalisees_en_weekend_et_en_session_unique():
+def test_penalites_personnalisees_seulement_pour_la_course():
+    """Vérifié sur le serveur : qualification, libre et warmup gardent les règles d'usine."""
     expected = {"enable_custom_penalities": True, "car_cut_tyres_out": 2, "warning_trigger_countdown": 5,
                 "time_penalty_ms": 10000}
     opts = dict(CustomPenalties=True, CarCutTyresOut=2, WarningCountdown=5, TimePenaltySeconds=10)
-    gc = _game_config(_config(**opts))
-    assert {k: gc[k] for k in expected} == expected
-    gc = _game_config(_config("GameModeType_PRACTICE", **opts))
-    assert {k: gc[k] for k in expected} == expected
-    assert "practice_duration" in gc
+    for mode in ("GameModeType_RACE_WEEKEND", "GameModeType_INSTANT_RACE"):
+        gc = _game_config(_config(mode, **opts))
+        assert {k: gc[k] for k in expected} == expected, mode
+    for mode in ("GameModeType_PRACTICE", "GameModeType_QUALIFY", "GameModeType_HOTLAP", "GameModeType_RALLY",
+                 "GameModeType_A_TO_B", "GameModeType_TEST_DRIVE"):
+        gc = _game_config(_config(mode, **opts))
+        assert "enable_custom_penalities" not in gc, mode
+
+
+def test_course_instantanee_tours_et_arret_obligatoire():
+    gc = _game_config(_config("GameModeType_INSTANT_RACE", RaceByLaps=True, Laps=6))
+    assert gc["race_duration"] == 6 and gc["race_duration_type"] == "GameModeSelectionDuration_LAPS"
+    gc = _game_config(_config("GameModeType_INSTANT_RACE", MandatoryPitStop=True, PitWindow=300))
+    assert gc["pit_window"] == 300 and gc["race_duration"] == 1800
+
+
+def test_modes_a_duree_fixe_recoivent_la_configuration_complete():
+    """Vérifié sur banc d'essai : ces modes démarrent avec le même game_config qu'un week-end."""
+    for mode in ("GameModeType_HOTLAP", "GameModeType_RALLY", "GameModeType_A_TO_B", "GameModeType_TEST_DRIVE",
+                 "GameModeType_INSTANT_RACE"):
+        gc = _game_config(_config(mode))
+        assert "practice_duration" in gc and "race_duration" in gc and "qualify_duration" in gc, mode
+        decoded = decode_config(cb.build_launch_args(_config(mode))[1])
+        assert decoded["game_type"] == mode
+
+
+def test_practice_et_qualification_restent_a_session_unique():
+    gc = _game_config(_config("GameModeType_PRACTICE"))
+    assert "practice_duration" in gc and "race_duration" not in gc
 
 
 def test_valeurs_hors_bornes_ramenees_aux_bornes():

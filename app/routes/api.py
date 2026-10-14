@@ -554,6 +554,15 @@ def live_chat():
     try:
         from app.services import ace_tcp_client
         sid  = max(1, int(request.args.get("server") or session.get("current_server_id") or 1))
+        parts = text[1:].split() if text.startswith("\\") else []
+        cmd = parts[0].lower() if parts else ""
+        if cmd and cmd != "admin":
+            # Commande admin saisie sur la page Live : le bot est ré-élevé juste avant (le battement
+            # de connexion efface son statut admin), puis ban/Discord comme pour /live/admin_cmd.
+            sent, err = ace_tcp_client.send_admin_command(text, sid)
+            if sent:
+                _after_admin_command(cmd, parts[1] if len(parts) > 1 else "", " ".join(parts[2:]), sid)
+            return jsonify({"ok": sent, "error": None if sent else (err or "not_connected")})
         sent = ace_tcp_client.send_chat(text, sid)
         return jsonify({"ok": sent, "error": None if sent else "not_connected"})
     except Exception as e:
@@ -575,6 +584,50 @@ def live_tcp_status():
         return jsonify({"connected": False, "leaderboard": [], "error": str(e)})
 
 
+def _after_admin_command(cmd: str, car_num: str, extra: str, sid: int) -> bool:
+    """Suites d'une commande admin envoyée : enregistre un bannissement dans la page Accès et
+    prévient Discord. Retourne True si une règle de bannissement a été écrite."""
+    from app.services import ace_tcp_client
+    recorded = False
+    driver = ace_tcp_client.get_driver_by_num(car_num, sid) if car_num else {}
+    if cmd == "ban" and car_num:
+        try:
+            recorded = _record_ban(driver)
+        except Exception as _e:
+            log.warning("bannissement non enregistré dans la page Accès : %s", _e)
+    try:
+        from app.services import discord_notifier
+        from app.models import Server as _Server
+        if cmd not in discord_notifier._CMD_LABELS:
+            return recorded          # commande inconnue ou sans libellé : pas de message Discord
+        srv = db.session.get(_Server, sid)
+        discord_notifier.safe_notify(
+            discord_notifier.notify_admin_action, cmd, driver.get("name", "?"), car_num, extra,
+            current_user.username, server_id=sid, server_name=srv.name if srv else "",
+        )
+    except Exception as _e:
+        log.debug("Discord admin_action notification skipped : %s", _e)
+    return recorded
+
+
+def _record_ban(driver: dict) -> bool:
+    """Enregistre dans la page Accès le joueur banni en direct (\\ban), pour que le bannissement
+    survive aux redémarrages quand le contrôle d'accès est activé. True si une règle a été écrite."""
+    from app.models import AccessRule
+    from app.services import access_control
+    steam_id = (driver or {}).get("steam_id", "")
+    if not access_control.valid_steam_id(steam_id):
+        return False
+    rule = AccessRule.query.filter_by(steam_id=steam_id).first()
+    if rule is None:
+        rule = AccessRule(steam_id=steam_id)
+        db.session.add(rule)
+    rule.banned = True
+    rule.label = rule.label or (driver.get("name") or "")[:100]
+    db.session.commit()
+    return True
+
+
 @api_bp.route("/live/admin_cmd", methods=["POST"])
 @_admin_required_json
 def live_admin_cmd():
@@ -584,7 +637,7 @@ def live_admin_cmd():
     car_num = str(data.get("car_num", "")).strip()
     extra   = str(data.get("extra", "")).strip()
 
-    VALID = {"kick", "to_pit", "mute", "unmute", "add_time",
+    VALID = {"kick", "ban", "to_pit", "mute", "unmute", "add_time",
              "add_penalty", "del_penalty", "ballast", "restrictor", "skip"}
     if cmd not in VALID:
         return jsonify({"ok": False, "error": "invalid_cmd"}), 400
@@ -601,25 +654,8 @@ def live_admin_cmd():
         _cmd_sid = _current_server_id()
         sent, _err = ace_tcp_client.send_admin_command(msg, _cmd_sid)
         log.info("admin_cmd: %r → sent=%s", msg, sent)
-        if sent:
-            try:
-                from app.services import discord_notifier
-                from app.models import Server as _Server
-                _cmd_srv  = db.session.get(_Server, _cmd_sid)
-                driver = ace_tcp_client.get_driver_by_num(car_num, _cmd_sid) if car_num else {}
-                discord_notifier.safe_notify(
-                    discord_notifier.notify_admin_action,
-                    cmd,
-                    driver.get("name", "?"),
-                    car_num,
-                    extra,
-                    current_user.username,
-                    server_id=_cmd_sid,
-                    server_name=_cmd_srv.name if _cmd_srv else "",
-                )
-            except Exception as _e:
-                log.debug("Discord admin_action notification skipped : %s", _e)
-        return jsonify({"ok": sent, "cmd": msg,
+        recorded = _after_admin_command(cmd, car_num, extra, _cmd_sid) if sent else False
+        return jsonify({"ok": sent, "cmd": msg, "ban_recorded": recorded,
                         "error": None if sent else "not_connected"})
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500

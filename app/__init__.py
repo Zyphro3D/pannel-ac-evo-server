@@ -432,6 +432,11 @@ def _register_jinja(app):
             "qualifying": _gt("Qualifying"),
             "warmup":     _gt("Warmup"),
             "race":       _gt("Race"),
+            # sessions des autres modes (noms vus dans le serveur de jeu)
+            "hotlap":        _gt("Tour lancé"),
+            "atob":          _gt("A vers B"),
+            "atobchallenge": _gt("Rallye"),
+            "testdrive":     _gt("Test drive"),
         }
         return labels.get(value.strip().lower(), value)
 

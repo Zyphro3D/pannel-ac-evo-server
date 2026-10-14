@@ -329,7 +329,14 @@ def load_config_by_name(name: str) -> dict | None:
 _MODE_LABELS = {
     "GameModeType_PRACTICE":     "Practice",
     "GameModeType_RACE_WEEKEND": "Race Weekend",
+    "GameModeType_INSTANT_RACE": "Course instantanée",
+    "GameModeType_HOTLAP":       "Tour lancé",
+    "GameModeType_RALLY":        "Rallye",
+    "GameModeType_A_TO_B":       "A vers B",
+    "GameModeType_TEST_DRIVE":   "Test drive",
 }
+_FIXED_DURATION_MODES = {"GameModeType_HOTLAP", "GameModeType_RALLY", "GameModeType_A_TO_B",
+                         "GameModeType_TEST_DRIVE"}
 _WEATHER_LABELS = {
     "GameModeSelectionWeatherType_CLEAR":    "Dégagé",
     "GameModeSelectionWeatherType_OVERCAST": "Nuageux",
@@ -398,6 +405,11 @@ def get_running_server_info(server_id: int = 1) -> dict | None:
             cur_sess_key, cur_sess_label = None,                "Terminé"
         else:
             cur_sess_key, cur_sess_label = "QualifyingSession", "Qualifying"
+    elif ev.get("SelectedSessionTypeValue") == "GameModeType_INSTANT_RACE":
+        cur_sess_key, cur_sess_label = "RaceSession", "Race"
+    elif ev.get("SelectedSessionTypeValue") in _FIXED_DURATION_MODES:
+        # durée imposée par le jeu : aucune durée de la config ne s'applique
+        cur_sess_key, cur_sess_label = None, _MODE_LABELS[ev["SelectedSessionTypeValue"]]
     else:
         cur_sess_key, cur_sess_label = "PracticeSession", "Practice"
 

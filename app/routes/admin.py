@@ -465,6 +465,11 @@ def server():
     mode_labels = {
         "GameModeType_PRACTICE": _("Practice"),
         "GameModeType_RACE_WEEKEND": _("Race Weekend"),
+        "GameModeType_INSTANT_RACE": _("Course instantanée"),
+        "GameModeType_HOTLAP": _("Tour lancé"),
+        "GameModeType_RALLY": _("Rallye"),
+        "GameModeType_A_TO_B": _("A vers B"),
+        "GameModeType_TEST_DRIVE": _("Test drive"),
     }
 
     running_status = status  # reuse the get_status() result from above — avoid double call
@@ -515,9 +520,15 @@ def server():
     current_track = _get_track_meta(config, circuit_files)
     current_event = config.get("Event", {})
 
+    try:
+        max_players = int(os.environ.get("SERVER_MAX_PLAYERS") or config.get("Server", {}).get("MaxPlayers") or 0)
+    except (TypeError, ValueError):
+        max_players = 0
+
     return render_template(
         "server.html",
         config=config,
+        max_players=max_players,
         cars=cars,
         events_practice=events_practice,
         events_race=events_race,
