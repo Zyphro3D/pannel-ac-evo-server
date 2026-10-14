@@ -4452,6 +4452,45 @@ msgstr ""
 "Si applica solo alla gara (weekend o gara istantanea). Disattivato: "
 "regole di fabbrica del gioco."
 
+msgid "Contacts en direct"
+msgstr "Contatti in diretta"
+
+msgid "Derniers contacts"
+msgstr "Ultimi contatti"
+
+#, python-brace-format
+msgid "{driver} a touché {other}"
+msgstr "{driver} ha toccato {other}"
+
+#, python-brace-format
+msgid "{driver} a touché un mur"
+msgstr "{driver} ha toccato un muro"
+
+#, python-brace-format
+msgid "{driver} a touché un objet"
+msgstr "{driver} ha toccato un oggetto"
+
+msgid "dégâts"
+msgstr "danni"
+
+msgid ""
+"Affiche les derniers contacts (voiture, mur, objet) sur « Classement en "
+"direct ». Lance le serveur de jeu avec -log_debug gameplay (une douzaine "
+"de lignes de log par session) ; pris en compte au prochain démarrage du "
+"serveur de jeu (true/false, désactivé par défaut)."
+msgstr ""
+"Mostra gli ultimi contatti (auto, muro, oggetto) nella classifica in "
+"diretta. Avvia il server di gioco con -log_debug gameplay (circa una "
+"dozzina di righe di log per sessione); applicato al prossimo avvio del "
+"server di gioco (true/false, disattivato di default)."
+
+msgid ""
+"Contacts en direct sur « Classement en direct » : interrupteur dans "
+"Paramètres → Notifications, désactivé par défaut."
+msgstr ""
+"Contatti in diretta nella classifica in diretta: interruttore in "
+"Impostazioni → Notifiche, disattivato di default."
+
 #~ msgid "Administration serveur"
 #~ msgstr "Amministrazione del server"
 

@@ -4464,6 +4464,45 @@ msgstr ""
 "Se aplica solo a la carrera (fin de semana o carrera instantánea). "
 "Desactivado: reglas de fábrica del juego."
 
+msgid "Contacts en direct"
+msgstr "Contactos en directo"
+
+msgid "Derniers contacts"
+msgstr "Últimos contactos"
+
+#, python-brace-format
+msgid "{driver} a touché {other}"
+msgstr "{driver} ha tocado a {other}"
+
+#, python-brace-format
+msgid "{driver} a touché un mur"
+msgstr "{driver} ha tocado un muro"
+
+#, python-brace-format
+msgid "{driver} a touché un objet"
+msgstr "{driver} ha tocado un objeto"
+
+msgid "dégâts"
+msgstr "daños"
+
+msgid ""
+"Affiche les derniers contacts (voiture, mur, objet) sur « Classement en "
+"direct ». Lance le serveur de jeu avec -log_debug gameplay (une douzaine "
+"de lignes de log par session) ; pris en compte au prochain démarrage du "
+"serveur de jeu (true/false, désactivé par défaut)."
+msgstr ""
+"Muestra los últimos contactos (coche, muro, objeto) en la clasificación "
+"en directo. Arranca el servidor de juego con -log_debug gameplay (una "
+"docena de líneas de log por sesión); se aplica en el próximo arranque del"
+" servidor de juego (true/false, desactivado por defecto)."
+
+msgid ""
+"Contacts en direct sur « Classement en direct » : interrupteur dans "
+"Paramètres → Notifications, désactivé par défaut."
+msgstr ""
+"Contactos en directo en la clasificación en directo: interruptor en "
+"Ajustes → Notificaciones, desactivado por defecto."
+
 #~ msgid "Administration serveur"
 #~ msgstr "Administración del servidor"
 

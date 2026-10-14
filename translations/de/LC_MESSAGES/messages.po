@@ -4444,6 +4444,45 @@ msgstr ""
 "Gilt nur für das Rennen (Wochenende oder schnelles Rennen). Aus: "
 "Werkseinstellungen des Spiels."
 
+msgid "Contacts en direct"
+msgstr "Kontakte live"
+
+msgid "Derniers contacts"
+msgstr "Letzte Kontakte"
+
+#, python-brace-format
+msgid "{driver} a touché {other}"
+msgstr "{driver} hat {other} berührt"
+
+#, python-brace-format
+msgid "{driver} a touché un mur"
+msgstr "{driver} hat eine Wand berührt"
+
+#, python-brace-format
+msgid "{driver} a touché un objet"
+msgstr "{driver} hat ein Objekt berührt"
+
+msgid "dégâts"
+msgstr "Schaden"
+
+msgid ""
+"Affiche les derniers contacts (voiture, mur, objet) sur « Classement en "
+"direct ». Lance le serveur de jeu avec -log_debug gameplay (une douzaine "
+"de lignes de log par session) ; pris en compte au prochain démarrage du "
+"serveur de jeu (true/false, désactivé par défaut)."
+msgstr ""
+"Zeigt die letzten Kontakte (Auto, Wand, Objekt) auf der Live-Zeitenseite."
+" Startet den Spielserver mit -log_debug gameplay (etwa ein Dutzend "
+"Logzeilen pro Sitzung); wirksam beim nächsten Start des Spielservers "
+"(true/false, standardmäßig aus)."
+
+msgid ""
+"Contacts en direct sur « Classement en direct » : interrupteur dans "
+"Paramètres → Notifications, désactivé par défaut."
+msgstr ""
+"Kontakte live auf der Live-Zeitenseite: Schalter unter Einstellungen → "
+"Benachrichtigungen, standardmäßig aus."
+
 #~ msgid "Administration serveur"
 #~ msgstr "Serververwaltung"
 

@@ -1,5 +1,14 @@
 # Changelog
 
+### v2.2.0 — 14/10/2026
+
+**Ajout — contacts en direct sur « Classement en direct » (option)**
+
+- Nouvel interrupteur **« Contacts en direct »** (Paramètres → Notifications, `LIVE_COLLISIONS`, désactivé par défaut) : le panel lance alors le serveur de jeu avec `-log_debug gameplay`, ce qui lui fait écrire chaque collision dans ses logs (une douzaine de lignes par session, rien d'autre ne change). Une carte **« Derniers contacts »** affiche, du plus récent au plus ancien : qui a touché qui, un mur ou un objet, s'il y a eu des dégâts, et depuis combien de temps.
+- Découvert dans le binaire du serveur : la ligne « Collision between … » existe depuis toujours mais n'est émise qu'au niveau de log « debug » du journal `gameplay`. Vérifié sur un vrai serveur avec les trois types de contact (voiture, mur, objet).
+- Chaque voiture impliquée rapporte le même contact : les doublons à moins de 2 s sont fusionnés. La vitesse d'impact et la position ne sont pas journalisées en direct ; elles restent visibles après coup dans la page de détail d'un résultat.
+- Prise en compte au prochain démarrage du serveur de jeu. En déploiement Docker séparé, l'image `aceserver` doit être reconstruite une fois (`docker compose build aceserver`) pour que le script de démarrage lise l'argument.
+
 ### v2.1.0 — 14/10/2026
 
 > Cette version regroupe plusieurs chantiers menés à partir de l'analyse du serveur de jeu. Toutes les nouvelles options sont **désactivées par défaut** : une configuration existante produit exactement les mêmes arguments qu'avant.

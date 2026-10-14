@@ -367,16 +367,24 @@ def _wait_for_wineboot(timeout: int = 90):
     log.warning("wineboot didn't finish within %ds, launching anyway", timeout)
 
 
+def _extra_server_flags() -> list[str]:
+    """Options facultatives du serveur de jeu. LIVE_COLLISIONS : journal ``gameplay`` en « debug »
+    (une douzaine de lignes par session), qui fait écrire chaque contact au serveur."""
+    if os.environ.get("LIVE_COLLISIONS", "false").lower() == "true":
+        return ["-log_debug", "gameplay"]
+    return []
+
+
 def _launch(exe: Path, sc_b64: str, sd_b64: str, server_id: int) -> "subprocess.Popen | None":
     try:
         log_f = open(_log_file(server_id), "a", encoding="utf-8", errors="replace")
         try:
             if _DEPLOY_MODE == "docker":
-                cmd = ["wine", str(exe), "-serverconfig", sc_b64, "-seasondefinition", sd_b64]
+                cmd = ["wine", str(exe), "-serverconfig", sc_b64, "-seasondefinition", sd_b64, *_extra_server_flags()]
                 return subprocess.Popen(cmd, cwd=str(exe.parent), stdout=log_f, stderr=subprocess.STDOUT)
             show_console   = _show_console()
             creation_flags = 0 if show_console else subprocess.CREATE_NO_WINDOW
-            cmd = [str(exe), "-serverconfig", sc_b64, "-seasondefinition", sd_b64]
+            cmd = [str(exe), "-serverconfig", sc_b64, "-seasondefinition", sd_b64, *_extra_server_flags()]
             return subprocess.Popen(
                 cmd, cwd=str(exe.parent),
                 stdout=None if show_console else log_f,
@@ -478,7 +486,8 @@ def _watchdog_rotate_docker(container, next_cfg: str, auto_restart: bool,
 
     lcp = _launch_config_path(server_id)
     try:
-        lcp.write_text(json.dumps({"serverconfig": sc_b64, "seasondefinition": sd_b64}))
+        lcp.write_text(json.dumps({"serverconfig": sc_b64, "seasondefinition": sd_b64,
+                                   "extra_args": _extra_server_flags()}))
         container.reload()
         if container.status == "running":
             container.restart(timeout=10)

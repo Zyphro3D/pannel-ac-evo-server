@@ -4413,6 +4413,45 @@ msgstr ""
 "Applies to the race only (weekend or instant race). Off: the game's "
 "factory rules."
 
+msgid "Contacts en direct"
+msgstr "Live contacts"
+
+msgid "Derniers contacts"
+msgstr "Latest contacts"
+
+#, python-brace-format
+msgid "{driver} a touché {other}"
+msgstr "{driver} hit {other}"
+
+#, python-brace-format
+msgid "{driver} a touché un mur"
+msgstr "{driver} hit a wall"
+
+#, python-brace-format
+msgid "{driver} a touché un objet"
+msgstr "{driver} hit an object"
+
+msgid "dégâts"
+msgstr "damage"
+
+msgid ""
+"Affiche les derniers contacts (voiture, mur, objet) sur « Classement en "
+"direct ». Lance le serveur de jeu avec -log_debug gameplay (une douzaine "
+"de lignes de log par session) ; pris en compte au prochain démarrage du "
+"serveur de jeu (true/false, désactivé par défaut)."
+msgstr ""
+"Shows the latest contacts (car, wall, object) on the live timing page. "
+"Starts the game server with -log_debug gameplay (about a dozen log lines "
+"per session); applied at the next game server start (true/false, off by "
+"default)."
+
+msgid ""
+"Contacts en direct sur « Classement en direct » : interrupteur dans "
+"Paramètres → Notifications, désactivé par défaut."
+msgstr ""
+"Live contacts on the live timing page: switch in Settings → "
+"Notifications, off by default."
+
 #~ msgid "Administration serveur"
 #~ msgstr "Server administration"
 

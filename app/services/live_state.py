@@ -40,6 +40,7 @@ _RE_SECTORC = re.compile(
 
 
 from app.services import session_tracker as _session_tracker
+from app.services import collisions as _collisions
 
 
 def _parse_lapstr(s: str) -> int:
@@ -218,6 +219,7 @@ def build_state(server_id: int = 1) -> dict:
         since_hours = _MAX_SCAN_HOURS
 
     session_state: dict | None = None
+    coll_state = _collisions.new_state()
     last_log_ts = ""
 
     for raw_line in iter_log_lines(since_hours=since_hours, server_id=server_id):
@@ -226,6 +228,11 @@ def build_state(server_id: int = 1) -> dict:
                 last_log_ts = ts_m.group(1)
                 if sev := _session_tracker.parse_event(line, last_log_ts):
                     session_state = _session_tracker.apply_event(session_state, sev)
+                    continue
+            if cev := _collisions.parse_line(line):
+                _collisions.apply_event(coll_state, cev, last_log_ts,
+                                        _session_tracker.log_epoch(last_log_ts))
+                if cev["type"] == "collision":
                     continue
             if m := _RE_NEWLAP.search(line):
                 car_id = m.group(1)
@@ -378,6 +385,7 @@ def build_state(server_id: int = 1) -> dict:
         "sess_s1_ms":   sess_s1,
         "sess_s2_ms":   sess_s2,
         "sess_s3_ms":   sess_s3,
+        "collisions_raw": coll_state,
         "session_raw":  session_state,     # voir session_tracker.describe()
-        "log_clock_offset_s": log_clock_offset(server_id) if session_state else 0.0,
+        "log_clock_offset_s": log_clock_offset(server_id) if (session_state or coll_state["events"]) else 0.0,
     }

@@ -78,6 +78,12 @@
       </table>
     </div>
 
+    <!-- Derniers contacts (option LIVE_COLLISIONS) -->
+    <div class="timing-contacts" id="t-contacts" hidden>
+      <h3>{{ _('Derniers contacts') }}</h3>
+      <ul id="t-contacts-list"></ul>
+    </div>
+
     <!-- Chat en direct (lecture seule) + réactions -->
     <div class="timing-chat-wrap">
       <div class="timing-chat-title">{{ _('Chat en direct') }}</div>
@@ -186,6 +192,34 @@ const PHASE_LABELS = {
   last_lap:  "{{ _('Dernier tour') }}",
   ended:     "{{ _('Terminée') }}",
 };
+const CONTACT_LABELS = {
+  Car:    "{{ _('{driver} a touché {other}') }}",
+  Wall:   "{{ _('{driver} a touché un mur') }}",
+  Object: "{{ _('{driver} a touché un objet') }}",
+};
+const CONTACT_DAMAGE = "{{ _('dégâts') }}";
+
+function _fmtAge(s) {
+  if (s === null || s === undefined) return '';
+  if (s < 60) return `${s} s`;
+  if (s < 3600) return `${Math.floor(s / 60)} min`;
+  return `${Math.floor(s / 3600)} h`;
+}
+
+function _renderContacts(list) {
+  const box = document.getElementById('t-contacts');
+  if (!box) return;
+  if (list === null || list === undefined) { box.hidden = true; return; }   // option désactivée
+  box.hidden = false;
+  document.getElementById('t-contacts-list').innerHTML = list.map(c => {
+    const tpl = CONTACT_LABELS[c.collider] || CONTACT_LABELS.Object;
+    const txt = _esc(tpl).replace('{driver}', '<strong>' + _esc(c.driver) + '</strong>')
+                         .replace('{other}', _esc(c.other || ''));
+    return `<li><span class="c-age">${_fmtAge(c.age_s)}</span><span>${txt}</span>`
+         + (c.damage ? `<span class="c-dmg">${CONTACT_DAMAGE}</span>` : '') + '</li>';
+  }).join('');
+}
+
 let _sessionEndAt = null;   // instant local (ms) où la phase se termine ; null = pas de limite
 
 function _fmtClock(ms) {
@@ -373,6 +407,7 @@ async function refresh() {
     })); } catch(e) {}
     _renderLeaderboard(d);
     _renderSession(d.session);
+    _renderContacts(d.contacts);
   } catch(e) {
     document.getElementById('t-dot').className    = 'dot offline';
     document.getElementById('t-label').textContent = I18N.error;

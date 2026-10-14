@@ -4455,6 +4455,45 @@ msgstr ""
 "S'applique à la course uniquement (week-end ou course instantanée). "
 "Désactivé : règles d'usine du jeu."
 
+msgid "Contacts en direct"
+msgstr "Contacts en direct"
+
+msgid "Derniers contacts"
+msgstr "Derniers contacts"
+
+#, python-brace-format
+msgid "{driver} a touché {other}"
+msgstr "{driver} a touché {other}"
+
+#, python-brace-format
+msgid "{driver} a touché un mur"
+msgstr "{driver} a touché un mur"
+
+#, python-brace-format
+msgid "{driver} a touché un objet"
+msgstr "{driver} a touché un objet"
+
+msgid "dégâts"
+msgstr "dégâts"
+
+msgid ""
+"Affiche les derniers contacts (voiture, mur, objet) sur « Classement en "
+"direct ». Lance le serveur de jeu avec -log_debug gameplay (une douzaine "
+"de lignes de log par session) ; pris en compte au prochain démarrage du "
+"serveur de jeu (true/false, désactivé par défaut)."
+msgstr ""
+"Affiche les derniers contacts (voiture, mur, objet) sur « Classement en "
+"direct ». Lance le serveur de jeu avec -log_debug gameplay (une douzaine "
+"de lignes de log par session) ; pris en compte au prochain démarrage du "
+"serveur de jeu (true/false, désactivé par défaut)."
+
+msgid ""
+"Contacts en direct sur « Classement en direct » : interrupteur dans "
+"Paramètres → Notifications, désactivé par défaut."
+msgstr ""
+"Contacts en direct sur « Classement en direct » : interrupteur dans "
+"Paramètres → Notifications, désactivé par défaut."
+
 #~ msgid "Administration serveur"
 #~ msgstr "Administration serveur"
 

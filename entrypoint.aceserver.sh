@@ -60,6 +60,9 @@ fi
 SC=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['serverconfig'])" "$LAUNCH_CONFIG")
 SD=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['seasondefinition'])" "$LAUNCH_CONFIG")
 
+# Arguments facultatifs (ex. -log_debug gameplay), un par ligne ; absents = lancement inchangé
+mapfile -t EXTRA < <(python3 -c "import json,sys; print('\n'.join(json.load(open(sys.argv[1])).get('extra_args', [])))" "$LAUNCH_CONFIG" | grep .)
+
 echo "[aceserver] Starting AssettoCorsaEVOServer.exe..."
 cd /aceserver
-exec wine AssettoCorsaEVOServer.exe -serverconfig "$SC" -seasondefinition "$SD"
+exec wine AssettoCorsaEVOServer.exe -serverconfig "$SC" -seasondefinition "$SD" ${EXTRA[@]+"${EXTRA[@]}"}

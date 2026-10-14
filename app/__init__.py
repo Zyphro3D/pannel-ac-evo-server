@@ -51,7 +51,7 @@ limiter       = Limiter(key_func=get_remote_address, default_limits=[])
 _SETTINGS_PATH      = Path(__file__).parent.parent / "data" / "settings.json"
 _SETTINGS_SKIP_KEYS = {"SECRET_KEY"}   # clés structurelles : restent dans .env uniquement
 _SETTINGS_BOOL_KEYS = {"SESSION_COOKIE_SECURE", "MAIL_USE_TLS", "ACE_BOT_IS_ADMIN", "REQUIRE_EMAIL_CONFIRMATION",
-                       "DISCORD_NOTIFY_SESSION_SUMMARY", "ACCESS_CONTROL_ENABLED", "ACCESS_APPROVED_ONLY"}
+                       "DISCORD_NOTIFY_SESSION_SUMMARY", "ACCESS_CONTROL_ENABLED", "ACCESS_APPROVED_ONLY", "LIVE_COLLISIONS"}
 # "SERVER_NAME" ici = nom d'affichage du serveur ACE EVO, mais c'est aussi une clé Flask
 # réservée qui pilote url_for(_external=True)/le subdomain matching. Ne jamais la répercuter
 # dans app.config, sous peine de casser toute génération d'URL externe (ex. callback Steam OpenID).

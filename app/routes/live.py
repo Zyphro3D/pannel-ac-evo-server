@@ -122,6 +122,16 @@ def _session_info(server_id: int, state: dict) -> dict | None:
         return None
 
 
+def _contacts(state: dict) -> list[dict] | None:
+    """Derniers contacts de la session (option LIVE_COLLISIONS) ; None si l'option est désactivée."""
+    import os, time
+    from app.services import collisions
+    if os.environ.get("LIVE_COLLISIONS", "false").lower() != "true":
+        return None
+    return collisions.public_events(state.get("collisions_raw") or collisions.new_state(), time.time(),
+                                    state.get("log_clock_offset_s", 0.0))
+
+
 def _session_timing(server_id: int = 1) -> dict:
     """Retourne started_at et session_length_s depuis le state + config."""
     try:
@@ -198,6 +208,7 @@ def timing_state():
         "track_svg_url":    track_svg_url,
         "track_label":      track_label,
         "session":          _session_info(sid, state),
+        "contacts":         _contacts(state),
     })
 
 
