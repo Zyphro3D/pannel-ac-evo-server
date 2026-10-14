@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-14 02:32+0200\n"
+"POT-Creation-Date: 2026-10-14 02:43+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -1079,12 +1079,12 @@ msgstr "Piloti"
 
 #: app/templates/base.html:158 app/templates/base.html:271
 #: app/templates/events_admin.html:2 app/templates/events_admin.html:8
-#: app/templates/server.html:582
+#: app/templates/server.html:646
 msgid "Événements"
 msgstr "Eventi"
 
 #: app/templates/base.html:159 app/templates/base.html:272
-#: app/templates/server.html:326 app/templates/server.html:606
+#: app/templates/server.html:326 app/templates/server.html:670
 #: app/templates/vehicles.html:2 app/templates/vehicles.html:8
 msgid "Véhicules"
 msgstr "Veicoli"
@@ -1345,7 +1345,7 @@ msgstr "Nessun giro registrato"
 msgid "Erreur de chargement"
 msgstr "Errore di caricamento"
 
-#: app/templates/base.html:453 app/templates/server.html:714
+#: app/templates/base.html:453 app/templates/server.html:778
 msgid "véhicule(s) sélectionné(s)"
 msgstr "veicolo/i selezionato/i"
 
@@ -1555,7 +1555,7 @@ msgstr "Modalità"
 
 #: app/templates/event_form.html:94 app/templates/event_form.html:115
 #: app/templates/event_form.html:131 app/templates/server.html:380
-#: app/templates/server.html:513
+#: app/templates/server.html:577
 msgid "Libre"
 msgstr "Libero"
 
@@ -1568,15 +1568,15 @@ msgstr "Meteo"
 msgid "Durées de session"
 msgstr "Durate delle sessioni"
 
-#: app/templates/event_form.html:142 app/templates/server.html:514
+#: app/templates/event_form.html:142 app/templates/server.html:578
 msgid "Qualification"
 msgstr "Qualifica"
 
-#: app/templates/event_form.html:155 app/templates/server.html:515
+#: app/templates/event_form.html:155 app/templates/server.html:579
 msgid "Chauffe"
 msgstr "Riscaldamento"
 
-#: app/templates/event_form.html:166 app/templates/server.html:516
+#: app/templates/event_form.html:166 app/templates/server.html:580
 msgid "Course"
 msgstr "Gara"
 
@@ -1612,23 +1612,23 @@ msgstr "Server avviato automaticamente per questo evento."
 msgid "Véhicules autorisés"
 msgstr "Veicoli consentiti"
 
-#: app/templates/event_form.html:229 app/templates/server.html:611
+#: app/templates/event_form.html:229 app/templates/server.html:675
 msgid "Rechercher..."
 msgstr "Cerca..."
 
-#: app/templates/event_form.html:233 app/templates/server.html:619
+#: app/templates/event_form.html:233 app/templates/server.html:683
 msgid "Véhicules officiels uniquement"
 msgstr "Solo veicoli ufficiali"
 
-#: app/templates/event_form.html:238 app/templates/server.html:624
+#: app/templates/event_form.html:238 app/templates/server.html:688
 msgid "Mods uniquement"
 msgstr "Solo mod"
 
-#: app/templates/event_form.html:240 app/templates/server.html:626
+#: app/templates/event_form.html:240 app/templates/server.html:690
 msgid "Tout sélectionner"
 msgstr "Seleziona tutto"
 
-#: app/templates/event_form.html:241 app/templates/server.html:627
+#: app/templates/event_form.html:241 app/templates/server.html:691
 msgid "Tout désélectionner"
 msgstr "Deseleziona tutto"
 
@@ -1639,7 +1639,7 @@ msgstr "Tutti"
 
 #: app/templates/_partials/circuit_results_table.html:7
 #: app/templates/_partials/pilot_circuit_results_table.html:6
-#: app/templates/event_form.html:274 app/templates/server.html:657
+#: app/templates/event_form.html:274 app/templates/server.html:721
 msgid "Véhicule"
 msgstr "Veicolo"
 
@@ -1647,25 +1647,25 @@ msgstr "Veicolo"
 msgid "Catégories"
 msgstr "Categorie"
 
-#: app/templates/event_form.html:277 app/templates/server.html:660
+#: app/templates/event_form.html:277 app/templates/server.html:724
 #: app/templates/timing.html:137
 msgid "Ballast"
 msgstr "Zavorra"
 
-#: app/templates/event_form.html:278 app/templates/server.html:661
+#: app/templates/event_form.html:278 app/templates/server.html:725
 msgid "Restrictor"
 msgstr "Restrittore"
 
-#: app/templates/event_form.html:303 app/templates/server.html:687
+#: app/templates/event_form.html:303 app/templates/server.html:751
 msgid "MOD"
 msgstr "MOD"
 
 #: app/templates/event_form.html:307 app/templates/mods.html:94
-#: app/templates/server.html:691
+#: app/templates/server.html:755
 msgid "Conflit avec"
 msgstr "Conflitto con"
 
-#: app/templates/event_form.html:307 app/templates/server.html:691
+#: app/templates/event_form.html:307 app/templates/server.html:755
 #, fuzzy
 msgid ""
 "un autre mod utilise le même identifiant, un seul des deux sera "
@@ -1680,7 +1680,7 @@ msgid "Enregistrer"
 msgstr "Salva"
 
 #: app/templates/event_form.html:328 app/templates/events_admin.html:18
-#: app/templates/server.html:37 app/templates/server.html:583
+#: app/templates/server.html:37 app/templates/server.html:647
 #: app/templates/settings.html:1088
 msgid "Créer"
 msgstr "Crea"
@@ -1756,7 +1756,7 @@ msgstr "Pubblicato"
 
 #: app/templates/_partials/event_row.html:23 app/templates/events_admin.html:99
 #: app/templates/server.html:336 app/templates/server.html:350
-#: app/templates/server.html:594 app/templates/settings.html:1015
+#: app/templates/server.html:658 app/templates/settings.html:1015
 msgid "Modifier"
 msgstr "Modifica"
 
@@ -2025,7 +2025,7 @@ msgstr "Dimensione"
 msgid "Changer"
 msgstr "Cambia"
 
-#: app/templates/mods.html:80 app/templates/server.html:557
+#: app/templates/mods.html:80 app/templates/server.html:621
 msgid "Ajouter"
 msgstr "Aggiungi"
 
@@ -2280,7 +2280,7 @@ msgstr "Gestisci"
 msgid "En cours"
 msgstr "In corso"
 
-#: app/templates/public.html:190 app/templates/server.html:658
+#: app/templates/public.html:190 app/templates/server.html:722
 msgid "Type"
 msgstr "Type"
 
@@ -2927,19 +2927,85 @@ msgstr "Min. giocatori in attesa"
 msgid "Max. joueurs en attente"
 msgstr "Max. giocatori in attesa"
 
-#: app/templates/server.html:527
+#: app/templates/server.html:510
+msgid "Options de course"
+msgstr "Opzioni di gara"
+
+#: app/templates/server.html:511
+msgid ""
+"Toutes désactivées par défaut. Prises en compte au prochain démarrage du "
+"serveur."
+msgstr "Tutte disattivate di default. Applicate al prossimo avvio del server."
+
+#: app/templates/server.html:516
+msgid "Course au nombre de tours"
+msgstr "Gara a numero di giri"
+
+#: app/templates/server.html:518
+msgid "Remplace la durée ci-dessus. Incompatible avec l'arrêt obligatoire."
+msgstr "Sostituisce la durata sopra. Non compatibile con la sosta obbligatoria."
+
+#: app/templates/server.html:521
+msgid "Nombre de tours"
+msgstr "Numero di giri"
+
+#: app/templates/server.html:528
+msgid "Arrêt aux stands obligatoire"
+msgstr "Sosta ai box obbligatoria"
+
+#: app/templates/server.html:530
+msgid "Course au temps uniquement : fenêtre centrée au milieu de la course."
+msgstr "Solo gare a tempo: finestra centrata a metà gara."
+
+#: app/templates/server.html:536
+msgid "Changement de pneus exigé"
+msgstr "Cambio gomme obbligatorio"
+
+#: app/templates/server.html:542
+msgid "Ravitaillement exigé"
+msgstr "Rifornimento obbligatorio"
+
+#: app/templates/server.html:547
+msgid "Largeur de la fenêtre d'arrêt (s)"
+msgstr "Ampiezza della finestra di sosta (s)"
+
+#: app/templates/server.html:554
+msgid "Sanctions personnalisées"
+msgstr "Penalità personalizzate"
+
+#: app/templates/server.html:556
+msgid ""
+"S'applique à toutes les sessions de la config. Désactivé : règles d'usine"
+" du jeu."
+msgstr ""
+"Si applica a tutte le sessioni della configurazione. Disattivato: regole "
+"di fabbrica del gioco."
+
+#: app/templates/server.html:560
+msgid "Roues dehors pour une coupure"
+msgstr "Ruote fuori per un taglio"
+
+#: app/templates/server.html:564
+msgid "Avertissements avant sanction"
+msgstr "Avvertimenti prima di una penalità"
+
+#: app/templates/server.html:568
+msgid "Durée de la sanction (s)"
+msgstr "Durata della penalità (s)"
+
+#: app/templates/server.html:591
 msgid "Roulement de configs"
 msgstr "Rotazione config"
 
-#: app/templates/server.html:535
+#: app/templates/server.html:599
 msgid "Lancer le cycle"
 msgstr "Avvia il ciclo"
 
-#: app/templates/server.html:538
+#: app/templates/server.html:602
 msgid "Arrêter le cycle"
 msgstr "Ferma il ciclo"
 
-#: app/templates/server.html:540
+#: app/templates/server.html:604
 msgid ""
 "Reprend automatiquement la config suivante au prochain arrêt du serveur "
 "(différent du cycle en cours, affiché ci-contre)."
@@ -2947,11 +3013,11 @@ msgstr ""
 "Riprende automaticamente la configurazione successiva al prossimo arresto"
 " del server (diverso dal ciclo in corso, mostrato accanto)."
 
-#: app/templates/server.html:542
+#: app/templates/server.html:606
 msgid "Reprise auto"
 msgstr "Ripresa automatica"
 
-#: app/templates/server.html:547
+#: app/templates/server.html:611
 msgid ""
 "Quand le serveur s'arrête, il démarre la configuration suivante de la "
 "liste automatiquement."
@@ -2959,19 +3025,19 @@ msgstr ""
 "Quando il server si ferma, avvia automaticamente la configurazione "
 "successiva nell'elenco."
 
-#: app/templates/server.html:563
+#: app/templates/server.html:627
 msgid "Cycle — recommencer depuis le début après le dernier"
 msgstr "Ciclo — ricomincia dall'inizio dopo l'ultimo"
 
-#: app/templates/server.html:568
+#: app/templates/server.html:632
 msgid "Passer à la configuration suivante après (minutes sans joueur)"
 msgstr "Passa alla configurazione successiva dopo (minuti senza giocatori)"
 
-#: app/templates/_partials/server_row.html:18 app/templates/server.html:572
+#: app/templates/_partials/server_row.html:18 app/templates/server.html:636
 msgid "Valider"
 msgstr "Conferma"
 
-#: app/templates/server.html:574
+#: app/templates/server.html:638
 msgid ""
 "0 = désactivé. Avance automatiquement dans le roulement si aucun joueur "
 "n'est connecté pendant ce délai, indépendamment de toute session jouée."
@@ -2980,19 +3046,19 @@ msgstr ""
 "giocatore è connesso per questo intervallo, indipendentemente da "
 "qualsiasi sessione giocata."
 
-#: app/templates/server.html:597
+#: app/templates/server.html:661
 msgid "Aucun événement programmé."
 msgstr "Nessun evento programmato."
 
-#: app/templates/server.html:614
+#: app/templates/server.html:678
 msgid "Sélectionnés seulement"
 msgstr "Solo selezionati"
 
-#: app/templates/server.html:659
+#: app/templates/server.html:723
 msgid "Trier par PI"
 msgstr "Ordina per PI"
 
-#: app/templates/server.html:724
+#: app/templates/server.html:788
 msgid "Sauvegarder tout"
 msgstr "Salva tutto"
 

@@ -4093,3 +4093,9 @@ body::before {
   width: calc(100% - 20px);
 }
 
+
+/* Options de course (page serveur) */
+.race-options { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+.race-options > summary { cursor: pointer; font-weight: 600; margin-bottom: 8px; }
+.race-options .hint { display: block; margin: 2px 0 8px; font-size: 0.85rem; color: var(--dim); font-weight: 400; }
+.race-options .form-group { margin-bottom: 12px; }

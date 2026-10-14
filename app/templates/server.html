@@ -506,6 +506,70 @@
                 <input type="number" name="{{ key }}[MaxWaitingForPlayers]" min="1" max="128" value="{{ s.MaxWaitingForPlayers }}">
               </div>
             </div>
+            <details class="race-options" {% if s.get('RaceByLaps') or s.get('MandatoryPitStop') or s.get('CustomPenalties') %}open{% endif %}>
+              <summary>{{ _('Options de course') }}</summary>
+              <p class="hint">{{ _('Toutes désactivées par défaut. Prises en compte au prochain démarrage du serveur.') }}</p>
+
+              <div class="form-group">
+                <label class="toggle-label">
+                  <input type="checkbox" class="switch" name="{{ key }}[RaceByLaps]" {% if s.get('RaceByLaps') %}checked{% endif %}>
+                  {{ _('Course au nombre de tours') }}
+                </label>
+                <span class="hint">{{ _('Remplace la durée ci-dessus. Incompatible avec l\'arrêt obligatoire.') }}</span>
+              </div>
+              <div class="form-group">
+                <label>{{ _('Nombre de tours') }}</label>
+                <input type="number" name="{{ key }}[Laps]" min="1" max="999" value="{{ s.get('Laps', 10) }}">
+              </div>
+
+              <div class="form-group">
+                <label class="toggle-label">
+                  <input type="checkbox" class="switch" name="{{ key }}[MandatoryPitStop]" {% if s.get('MandatoryPitStop') %}checked{% endif %}>
+                  {{ _('Arrêt aux stands obligatoire') }}
+                </label>
+                <span class="hint">{{ _('Course au temps uniquement : fenêtre centrée au milieu de la course.') }}</span>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="toggle-label">
+                    <input type="checkbox" class="switch" name="{{ key }}[PitStopTyreChange]" {% if s.get('PitStopTyreChange') %}checked{% endif %}>
+                    {{ _('Changement de pneus exigé') }}
+                  </label>
+                </div>
+                <div class="form-group">
+                  <label class="toggle-label">
+                    <input type="checkbox" class="switch" name="{{ key }}[PitStopRefuel]" {% if s.get('PitStopRefuel') %}checked{% endif %}>
+                    {{ _('Ravitaillement exigé') }}
+                  </label>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>{{ _('Largeur de la fenêtre d\'arrêt (s)') }}</label>
+                <input type="number" name="{{ key }}[PitWindow]" min="10" max="7200" value="{{ s.get('PitWindow', 600) }}">
+              </div>
+
+              <div class="form-group">
+                <label class="toggle-label">
+                  <input type="checkbox" class="switch" name="{{ key }}[CustomPenalties]" {% if s.get('CustomPenalties') %}checked{% endif %}>
+                  {{ _('Sanctions personnalisées') }}
+                </label>
+                <span class="hint">{{ _('S\'applique à toutes les sessions de la config. Désactivé : règles d\'usine du jeu.') }}</span>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>{{ _('Roues dehors pour une coupure') }}</label>
+                  <input type="number" name="{{ key }}[CarCutTyresOut]" min="1" max="4" value="{{ s.get('CarCutTyresOut', 3) }}">
+                </div>
+                <div class="form-group">
+                  <label>{{ _('Avertissements avant sanction') }}</label>
+                  <input type="number" name="{{ key }}[WarningCountdown]" min="1" max="20" value="{{ s.get('WarningCountdown', 3) }}">
+                </div>
+                <div class="form-group">
+                  <label>{{ _('Durée de la sanction (s)') }}</label>
+                  <input type="number" name="{{ key }}[TimePenaltySeconds]" min="1" max="120" value="{{ s.get('TimePenaltySeconds', 5) }}">
+                </div>
+              </div>
+            </details>
             {% endif %}
           </div>
           {% endmacro %}

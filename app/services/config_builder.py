@@ -15,6 +15,50 @@ def _tod(sess: dict) -> dict:
     }
 
 
+def _clamp(value, lo: int, hi: int, default: int) -> int:
+    try:
+        return max(lo, min(hi, int(value)))
+    except (TypeError, ValueError):
+        return default
+
+
+def race_rules(race: dict) -> dict:
+    """Réglages de course optionnels (tous désactivés par défaut), lus dans RaceSession.
+
+    Chacun a été vérifié sur un vrai serveur de jeu en lisant la session qu'il construit :
+      - course au nombre de tours : ``race_duration`` = tours + ``race_duration_type`` LAPS ;
+      - arrêt obligatoire : fenêtre de ``pit_window`` secondes centrée au milieu de la course ;
+      - pénalités personnalisées : roues dehors pour une coupure, avertissements avant sanction,
+        durée de la sanction.
+    Retourne les clés à ajouter à ``game_config`` (vide si rien n'est activé)."""
+    out: dict = {}
+    by_laps = bool(race.get("RaceByLaps")) and _clamp(race.get("Laps"), 0, 999, 0) > 0
+    if by_laps:
+        out["race_duration"] = _clamp(race.get("Laps"), 1, 999, 1)
+        out["race_duration_type"] = "GameModeSelectionDuration_LAPS"
+    # Arrêt obligatoire : réservé aux courses au temps. Vérifié : en course au tour le serveur
+    # calcule la fenêtre à partir du nombre de tours lu comme des secondes (ex. 8 tours : de
+    # −146 s à +154 s), donc une fenêtre fausse dès le départ.
+    if race.get("MandatoryPitStop") and not by_laps:
+        out["mandatory_pit_stop"] = True
+        out["requires_tyre_change"] = bool(race.get("PitStopTyreChange"))
+        out["requires_refuelling"] = bool(race.get("PitStopRefuel"))
+        out["pit_window"] = _clamp(race.get("PitWindow"), 10, 7200, 600)
+    return out
+
+
+def custom_penalties(race: dict) -> dict:
+    """Sanctions personnalisées (options de RaceSession, désactivées par défaut)."""
+    if not race.get("CustomPenalties"):
+        return {}
+    return {
+        "enable_custom_penalities": True,   # (sic) orthographe du serveur de jeu
+        "car_cut_tyres_out":        _clamp(race.get("CarCutTyresOut"), 1, 4, 3),
+        "warning_trigger_countdown": _clamp(race.get("WarningCountdown"), 1, 20, 3),
+        "time_penalty_ms":          _clamp(race.get("TimePenaltySeconds"), 1, 120, 5) * 1000,
+    }
+
+
 def build_launch_args(config: dict,
                       tcp_listener: int | None = None,
                       udp_listener: int | None = None,
@@ -97,6 +141,8 @@ def build_launch_args(config: dict,
             "min_waiting_for_players":                race.get("MinWaitingForPlayers", 10),
             "max_waiting_for_players":                race.get("MaxWaitingForPlayers", 30),
         }
+        game_config.update(race_rules(race))
+        game_config.update(custom_penalties(race))
     else:
         # Practice ou Qualify : session unique
         _prefix_map = {
@@ -111,6 +157,8 @@ def build_launch_args(config: dict,
             f"{prefix}_overtime_waiting_next_session": sess.get("OvertimeWaitingNextSession", 10),
             f"{prefix}_max_wait_to_box":              sess.get("MaxWaitToBox", 10),
         }
+        # Les sanctions personnalisées s'appliquent aussi à une session unique (réglées dans « Course »)
+        game_config.update(custom_penalties(sessions.get("RaceSession", {})))
 
     season_dict = {
         "game_type":        game_type,

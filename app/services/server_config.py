@@ -639,9 +639,23 @@ def apply_server_patch(patch: dict, is_superadmin: bool = False) -> dict:
                 "Length", "Hour", "Minute", "MaxWaitToBox", "OvertimeWaitingNextSession",
                 "MinWaitingForPlayers", "MaxWaitingForPlayers",
             }
+            # Options de course (RaceSession uniquement) : champ → (bornes, défaut) ou booléen
+            _race_bools = ("RaceByLaps", "MandatoryPitStop", "PitStopTyreChange", "PitStopRefuel", "CustomPenalties")
+            _race_ints = {"Laps": (1, 999, 10), "PitWindow": (10, 7200, 600), "CarCutTyresOut": (1, 4, 3),
+                          "WarningCountdown": (1, 20, 3), "TimePenaltySeconds": (1, 120, 5)}
             for sess_key, sess_val in value.items():
                 if sess_key in config["Sessions"] and isinstance(sess_val, dict):
                     filtered = {k: v for k, v in sess_val.items() if k in _session_fields}
+                    if sess_key == "RaceSession":
+                        for k in _race_bools:
+                            if k in sess_val:
+                                filtered[k] = bool(sess_val[k])
+                        for k, (lo, hi, dflt) in _race_ints.items():
+                            if k in sess_val:
+                                try:
+                                    filtered[k] = max(lo, min(hi, int(sess_val[k])))
+                                except (TypeError, ValueError):
+                                    filtered[k] = dflt
                     config["Sessions"][sess_key].update(filtered)
 
     save_config(config)
@@ -775,6 +789,10 @@ def _default_config() -> dict:
                 "Name": "Race", "Duration": 0, "Length": 300,
                 "Hour": 16, "Minute": 0, "MaxWaitToBox": 10,
                 "OvertimeWaitingNextSession": 10, "MinWaitingForPlayers": 10, "MaxWaitingForPlayers": 30,
+                # Options de course (v2.4.0), toutes désactivées : voir config_builder.race_rules
+                "RaceByLaps": False, "Laps": 10,
+                "MandatoryPitStop": False, "PitStopTyreChange": False, "PitStopRefuel": False, "PitWindow": 600,
+                "CustomPenalties": False, "CarCutTyresOut": 3, "WarningCountdown": 3, "TimePenaltySeconds": 5,
             },
         },
     }

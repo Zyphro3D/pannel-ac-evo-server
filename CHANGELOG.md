@@ -1,5 +1,20 @@
 # Changelog
 
+### v2.4.0 — 14/10/2026
+
+**Ajout — options de course (page Serveur → configuration → Sessions → Course)**
+
+Trois réglages que le serveur de jeu sait appliquer mais que le panel n'exposait pas, regroupés dans une section repliable « Options de course ». **Toutes désactivées par défaut** : une config existante produit exactement les mêmes arguments qu'avant. Chacune a été vérifiée sur un vrai serveur de jeu en lisant la session qu'il construit avec les arguments générés par le panel.
+
+- **Course au nombre de tours** : le panel forçait jusqu'ici une course au temps. Activée, la course dure N tours (le serveur calcule la durée maximale).
+- **Arrêt aux stands obligatoire** : changement de pneus et/ou ravitaillement exigés, dans une fenêtre dont vous réglez la largeur (secondes), centrée au milieu de la course. Réservé aux courses au temps : en course au tour le serveur de jeu calcule la fenêtre à partir du nombre de tours lu comme des secondes (de −146 s à +154 s pour 8 tours), donc fausse dès le départ — le panel n'envoie alors pas l'arrêt obligatoire.
+- **Sanctions personnalisées** : nombre de roues dehors pour une coupure, avertissements avant sanction, durée de la sanction. S'appliquent à toutes les sessions de la config ; désactivé = règles d'usine du jeu (3 roues, 3 avertissements, 5 s).
+- Les valeurs sont bornées côté serveur du panel (tours 1–999, fenêtre 10–7200 s, roues 1–4, avertissements 1–20, sanction 1–120 s) ; les champs inconnus sont ignorés. Prises en compte au prochain démarrage du serveur de jeu.
+
+**Tests**
+
+- 37 tests unitaires (`pytest tests/unit`), dont les arguments construits pour chaque option et l'absence de changement pour une config sans les nouveaux champs.
+
 ### v2.3.0 — 14/10/2026
 
 **Ajout — récapitulatif Discord de fin de session (option, désactivée par défaut)**
