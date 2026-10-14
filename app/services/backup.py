@@ -29,7 +29,8 @@ MAX_TOTAL_BYTES  = 1024 * 1024 * 1024
 MAX_MEDIA_FILE   = 50 * 1024 * 1024
 _MEDIA_EXT       = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg", ".ico"}
 _SAFE_NAME       = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,120}\.zip$")
-_CONFIG_NAME     = re.compile(r"^[A-Za-z0-9][A-Za-z0-9 ._()-]{0,100}\.json$")
+_CONFIG_NAME     = re.compile(r"^[^\x00-\x1f\\/:*?\"<>|.][^\x00-\x1f\\/:*?\"<>|]{0,100}\.json$")
+_MEDIA_PART      = re.compile(r"^[^\x00-\x1f\\/:*?\"<>|.][^\x00-\x1f\\/:*?\"<>|]{0,150}$")   # accents, virgules… autorisés ; ni « .. » ni « / »
 _REQUIRED_TABLES = {"admin_account", "session_result", "driver"}
 
 
@@ -108,12 +109,17 @@ def create_backup(kind: str = "manuelle", include_secrets: bool = True) -> Path:
                 z.write(p["settings"], "settings.json"); manifest["contents"].append("settings.json")
             if p["configs"].is_dir():
                 for f in sorted(p["configs"].glob("*.json")):
-                    if f.is_file() and _CONFIG_NAME.match(f.name):
+                    if f.is_file() and _member_ok(f"configs/{f.name}"):
                         z.write(f, f"configs/{f.name}"); manifest["contents"].append(f"configs/{f.name}")
+                    elif f.is_file():
+                        log.warning("sauvegarde : configuration ignorée (nom non pris en charge) : %s", f.name)
             if p["media"].is_dir():
                 for f in sorted(p["media"].rglob("*")):
                     if f.is_file() and f.suffix.lower() in _MEDIA_EXT and f.stat().st_size <= MAX_MEDIA_FILE:
                         arc = "media/" + f.relative_to(p["media"]).as_posix()
+                        if not _member_ok(arc):
+                            log.warning("sauvegarde : image ignorée (nom non pris en charge) : %s", arc)
+                            continue
                         z.write(f, arc); manifest["contents"].append(arc)
             z.writestr("manifest.json", json.dumps(manifest, indent=2, ensure_ascii=False))
         os.replace(part, out)
@@ -177,8 +183,7 @@ def _member_ok(name: str) -> bool:
     if parts[0] == "configs" and len(parts) == 2:
         return bool(_CONFIG_NAME.match(parts[1]))
     if parts[0] == "media" and len(parts) >= 2:
-        return all(re.match(r"^[A-Za-z0-9][A-Za-z0-9 ._()-]*$", x) for x in parts[1:]) \
-            and Path(parts[-1]).suffix.lower() in _MEDIA_EXT
+        return all(_MEDIA_PART.match(x) for x in parts[1:]) and Path(parts[-1]).suffix.lower() in _MEDIA_EXT
     return False
 
 

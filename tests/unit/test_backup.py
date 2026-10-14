@@ -77,3 +77,29 @@ def test_prune_keeps_only_recent_auto(app):
         assert sum(n.endswith("-auto.zip") for n in left) == 2 and manual.name in left
         for n in left:
             (d / n).unlink()
+
+
+def test_realistic_file_names_survive_roundtrip(app, tmp_path):
+    """Régression : une image « ChatGPT Image 3 juil. 2026, 07_12_03.png » (accents, virgule, points)
+    était incluse à la création mais refusée à la validation, rendant la sauvegarde inutilisable."""
+    from pathlib import Path
+    import app as app_pkg
+    media = Path(app_pkg.__file__).parent.parent / "media" / "mail"
+    media.mkdir(parents=True, exist_ok=True)
+    names = ["ChatGPT Image 3 juil. 2026, 07_12_03.png", "été (1).webp", "x-y_z.jpg"]
+    for n in names:
+        (media / n).write_bytes(b"\x89PNG fake")
+    try:
+        with app.app_context():
+            f = backup.create_backup("manuelle")
+            manifest = backup.validate(f)
+            for n in names:
+                assert f"media/mail/{n}" in manifest["contents"]
+            f.unlink()
+    finally:
+        for n in names:
+            (media / n).unlink(missing_ok=True)
+        try:
+            media.rmdir()
+        except OSError:
+            pass
