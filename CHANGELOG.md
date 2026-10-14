@@ -13,7 +13,7 @@
 
 **Performance — « Classement en direct » : 8 à 12 s de calcul à chaque rafraîchissement**
 
-- Le panel relisait 24 h de logs du serveur de jeu (plusieurs Mo) via l'API Docker à chaque rafraîchissement. Les lignes déjà lues sont désormais gardées en mémoire et seules les nouvelles sont demandées.
+- Le panel relisait 24 h de logs du serveur de jeu (plusieurs Mo) via l'API Docker à chaque rafraîchissement. Les lignes déjà lues sont désormais gardées en mémoire et seules les nouvelles sont demandées, en lecture depuis la fin du journal (`tail`) : Docker relit sinon tout le fichier pour filtrer par date. Mesuré sur un serveur à 50 000 lignes : 7,7 s → 0,2 s par rafraîchissement, résultat identique à l'ancienne méthode.
 
 **Correction — records par circuit figés au-delà de 2000 résultats**
 
