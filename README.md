@@ -311,6 +311,9 @@ Référence complète des variables `.env` (voir aussi `.env.example`) :
 | `PANEL_GITHUB_URL` | URL GitHub du projet (affichée dans le footer) | dépôt officiel |
 | `RESULTS_INGEST_SECRET` | Secret HMAC du webhook résultats (`/api/results/ingest`). Facultatif : le serveur de jeu s'authentifie déjà par le jeton `sig` de l'URL que le panel lui donne, ou par le réseau interne (Docker / localhost) ; toute requête passée par un reverse proxy est refusée | — |
 | `TRUSTED_PROXIES` | Reverse proxys autorisés à indiquer l'IP réelle du visiteur (adresses ou réseaux CIDR, séparés par des virgules). **Derrière Caddy/nginx/Cloudflare**, indiquer l'adresse du proxy vue par le panel : sans cela, limite de débit et anti-brute-force du login sont partagés par tous les visiteurs. Panel exposé directement : laisser vide | — |
+| `BACKUP_AUTO` / `BACKUP_KEEP` | Sauvegarde automatique quotidienne du panel (base, réglages, configurations, images) et nombre de sauvegardes automatiques conservées | `true` / `7` |
+| `AUDIT_RETENTION_DAYS` | Durée de conservation du journal d'audit, en jours | `365` |
+| `RATING_ENFORCE` / `RATING_MIN_TO_JOIN` / `RATING_MIN_RACES` | Refus des pilotes définitifs dont l'ELO est sous le seuil (liste noire du serveur de jeu, nécessite le contrôle d'accès) ; réglé depuis la page Accès | `false` / `0` / `5` |
 | `LAP_HISTORY_RETENTION_MONTHS` | Nombre de mois de conservation détaillée de l'historique des tours pilote, au-delà archivé en résumé mensuel | `6` |
 
 ### Serveur de jeu

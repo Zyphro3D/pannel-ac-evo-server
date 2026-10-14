@@ -47,6 +47,12 @@ class AdminAccount(UserMixin, db.Model):
     steam_id              = db.Column(db.String(32),  nullable=True)
     steam_id_confirmed_at = db.Column(db.DateTime,    nullable=True)
 
+    # Authentification à deux facteurs (v2.3.0) — voir services/totp.py
+    totp_secret    = db.Column(db.String(64), nullable=True)
+    totp_enabled   = db.Column(db.Boolean, default=False, nullable=False, server_default="0")
+    totp_recovery  = db.Column(db.Text, nullable=True)        # JSON : hachés des codes de secours restants
+    totp_last_step = db.Column(db.Integer, default=0)         # dernier pas accepté (anti-rejeu)
+
     def get_id(self) -> str:
         return f"aa_{self.id}"
 
@@ -393,3 +399,71 @@ class AccessRule(db.Model):
     ballast    = db.Column(db.Integer, default=0, nullable=False)       # kg, 0–100
     restrictor = db.Column(db.Float,   default=0.0, nullable=False)     # 0–0,2
     created_at = db.Column(db.DateTime, default=_utcnow)
+
+
+# ── Journal d'audit, état du panel, mesures de santé, championnats (v2.3.0) ───
+
+class PanelState(db.Model):
+    """Petites valeurs d'état modifiées à l'exécution (ex. date de remise à zéro du fair-play)."""
+    __tablename__ = "panel_state"
+
+    key        = db.Column(db.String(80), primary_key=True)
+    value      = db.Column(db.Text, default="")
+    updated_at = db.Column(db.DateTime, default=_utcnow, onupdate=_utcnow)
+
+
+class AuditLog(db.Model):
+    """Qui a fait quoi, quand et depuis où. Jamais de secret dans ``detail``."""
+    __tablename__ = "audit_log"
+
+    id         = db.Column(db.Integer, primary_key=True)
+    ts         = db.Column(db.DateTime, default=_utcnow, index=True, nullable=False)
+    actor      = db.Column(db.String(80), default="", index=True)     # nom d'utilisateur ("" = système / anonyme)
+    actor_role = db.Column(db.String(20), default="")
+    ip         = db.Column(db.String(64), default="")
+    action     = db.Column(db.String(60), default="", index=True)     # ex. "login.ok", "server.start"
+    target     = db.Column(db.String(200), default="")                # objet concerné (pilote, config, clé de réglage…)
+    detail     = db.Column(db.Text, default="")                       # JSON court
+    ok         = db.Column(db.Boolean, default=True, nullable=False)
+
+
+class HealthSample(db.Model):
+    """Mesure périodique des ressources (une par minute, conservée 7 jours)."""
+    __tablename__ = "health_sample"
+
+    id        = db.Column(db.Integer, primary_key=True)
+    ts        = db.Column(db.DateTime, default=_utcnow, index=True, nullable=False)
+    server_id = db.Column(db.Integer, nullable=False, default=1, index=True)
+    cpu       = db.Column(db.Float, default=0.0)        # % d'un cœur
+    mem_mb    = db.Column(db.Float, default=0.0)
+    players   = db.Column(db.Integer, default=0)
+    running   = db.Column(db.Boolean, default=False)
+
+
+class Championship(db.Model):
+    __tablename__ = "championship"
+
+    id           = db.Column(db.Integer, primary_key=True)
+    name         = db.Column(db.String(120), nullable=False)
+    slug         = db.Column(db.String(60), unique=True, nullable=False)
+    description  = db.Column(db.String(500), default="")
+    points       = db.Column(db.String(200), default="25,18,15,12,10,8,6,4,2,1")   # points par position
+    fastest_lap_bonus = db.Column(db.Integer, default=0)      # points pour le meilleur tour de la manche
+    pole_bonus   = db.Column(db.Integer, default=0)           # points pour la première place sur la grille
+    drop_worst   = db.Column(db.Integer, default=0)           # nombre de pires manches retirées
+    min_rounds_ratio = db.Column(db.Float, default=0.0)       # part des manches exigée pour être classé (0 = aucune)
+    is_public    = db.Column(db.Boolean, default=True, nullable=False)
+    created_at   = db.Column(db.DateTime, default=_utcnow)
+    rounds       = db.relationship("ChampionshipRound", backref="championship", cascade="all, delete-orphan",
+                                   order_by="ChampionshipRound.position")
+
+
+class ChampionshipRound(db.Model):
+    """Une manche : une course (SessionResult) comptée dans un championnat."""
+    __tablename__ = "championship_round"
+
+    id              = db.Column(db.Integer, primary_key=True)
+    championship_id = db.Column(db.Integer, db.ForeignKey("championship.id"), nullable=False, index=True)
+    result_id       = db.Column(db.Integer, db.ForeignKey("session_result.id"), nullable=False)
+    label           = db.Column(db.String(120), default="")
+    position        = db.Column(db.Integer, default=0)

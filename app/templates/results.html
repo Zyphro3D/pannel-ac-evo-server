@@ -38,6 +38,18 @@
         </svg>
         {{ _('Fair-play') }}
       </a>
+      <a class="race-sidebar-link" data-view="rating">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/>
+        </svg>
+        {{ _('ELO') }}
+      </a>
+      <a class="race-sidebar-link" href="{{ url_for('championships.championships_list') }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M5 21h14M9 21V9M15 21V4M3 21v-6"/>
+        </svg>
+        {{ _('Championnats') }}
+      </a>
     </nav>
     <div class="race-sidebar-brand">
       <div class="brand-logo">AC</div>
@@ -234,6 +246,19 @@
         <p>{{ _('Conduite propre : incidents par tour, tous résultats confondus') }}</p>
       </div>
 
+      {% if fairplay_since %}
+      <p class="text-xs text-dim mb-3">
+        {{ _('Compteur remis à zéro le %(d)s : seuls les incidents survenus depuis cette date comptent.', d=fairplay_since.strftime('%d/%m/%Y %H:%M')) }}
+      </p>
+      {% endif %}
+      {% if current_user.is_authenticated and current_user.is_superadmin %}
+      <form method="post" action="{{ url_for('tools.fairplay_reset') }}" class="mb-3"
+            onsubmit='return confirm({{ _("Remettre le compteur fair-play à zéro ? Les incidents passés ne compteront plus.")|tojson }})'>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-secondary btn-sm">{{ _('Remettre le compteur à zéro') }}</button>
+      </form>
+      {% endif %}
+
       {% if not fairplay %}
       <div class="card p-7 text-center text-dim">{{ _('Aucune donnée pour le moment.') }}</div>
       {% else %}
@@ -271,6 +296,55 @@
               <td class="mono">{{ "%.0f"|format(d.max_impact_kmh) }} km/h</td>
               <td class="mono">{{ d.penalties }}{% if d.severe_penalties %} <span class="text-dim">({{ d.severe_penalties }} {{ _('lourde(s)') }})</span>{% endif %}</td>
               <td class="mono">{{ "%.2f"|format(d.per_lap) }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% endif %}
+    </section>
+
+    {# ══════════════ ELO ══════════════ #}
+    <section class="view" id="view-rating">
+      <div class="col-head">
+        <h1>{{ _('Classement ELO') }}</h1>
+        <p>{{ _('Niveau des pilotes d\'après leurs courses : battre un pilote mieux classé rapporte plus. À titre informatif.') }}</p>
+      </div>
+      {% if not rating %}
+      <div class="card p-7 text-center text-dim">{{ _('Aucune course comptabilisée pour le moment (au moins deux pilotes et trois tours).') }}</div>
+      {% else %}
+      <p class="text-xs text-dim mb-3">
+        {{ _('Départ à 1500. Les %(n)s premières courses d\'un pilote sont provisoires. La variation dépend de la taille de la grille.', n=rating_provisional_races) }}
+      </p>
+      <div class="table-wrapper">
+        <table class="table-base">
+          <thead>
+            <tr>
+              <th class="col-pos">#</th>
+              <th>{{ _('Pilote') }}</th>
+              <th class="mono">ELO</th>
+              <th class="mono">{{ _('Dernière course') }}</th>
+              <th class="mono">{{ _('Courses') }}</th>
+              <th class="mono">{{ _('Victoires') }}</th>
+              <th class="mono">{{ _('Podiums') }}</th>
+              <th class="mono">{{ _('Meilleur') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% set rk = namespace(n=0) %}
+            {% for p in rating %}
+            {% if not p.provisional %}{% set rk.n = rk.n + 1 %}{% endif %}
+            <tr {% if p.provisional %}class="opacity-60"{% endif %}>
+              <td class="col-pos">
+                {% if not p.provisional %}<span class="pos-badge {% if rk.n == 1 %}pos-gold{% elif rk.n == 2 %}pos-silver{% elif rk.n == 3 %}pos-bronze{% endif %}">{{ rk.n }}</span>{% else %}—{% endif %}
+              </td>
+              <td><span class="rd-nickname">{{ p.nickname }}</span>{% if p.provisional %} <span class="text-dim text-xs">({{ _('provisoire') }})</span>{% endif %}</td>
+              <td class="mono"><strong>{{ p.rating }}</strong></td>
+              <td class="mono" style="color: {% if p.last_delta > 0 %}#2fbf71{% elif p.last_delta < 0 %}#e63946{% else %}inherit{% endif %}">{{ '%+.1f'|format(p.last_delta) }}</td>
+              <td class="mono">{{ p.races }}</td>
+              <td class="mono">{{ p.wins }}</td>
+              <td class="mono">{{ p.podiums }}</td>
+              <td class="mono">{{ p.peak }}</td>
             </tr>
             {% endfor %}
           </tbody>

@@ -4461,6 +4461,684 @@ msgstr ""
 "seen by the panel, to read the visitors' real IP (rate limiting, login "
 "brute-force protection). Empty if the panel is exposed directly."
 
+msgid "Code incorrect : vérifiez l'heure de votre téléphone et réessayez."
+msgstr "Wrong code: check your phone's clock and try again."
+
+msgid "Authentification à deux facteurs activée."
+msgstr "Two-factor authentication enabled."
+
+msgid "Mot de passe ou code incorrect."
+msgstr "Wrong password or code."
+
+msgid "Authentification à deux facteurs désactivée."
+msgstr "Two-factor authentication disabled."
+
+#, python-format
+msgid "Authentification à deux facteurs désactivée pour %(u)s."
+msgstr "Two-factor authentication disabled for %(u)s."
+
+msgid "Session de vérification expirée, reconnectez-vous."
+msgstr "Verification session expired, please sign in again."
+
+#, python-format
+msgid "Code de secours utilisé : il vous en reste %(n)s."
+msgstr "Recovery code used: %(n)s left."
+
+msgid "Trop d'essais. Reconnectez-vous."
+msgstr "Too many attempts. Please sign in again."
+
+msgid "Code incorrect."
+msgstr "Wrong code."
+
+msgid "Le nom est obligatoire."
+msgstr "The name is required."
+
+msgid ""
+"Barème invalide : des nombres entiers entre 0 et 1000 séparés par des "
+"virgules (ex. 25,18,15,12,10)."
+msgstr ""
+"Invalid points table: whole numbers between 0 and 1000 separated by "
+"commas (e.g. 25,18,15,12,10)."
+
+msgid "Championnat créé : ajoutez maintenant ses manches."
+msgstr "Championship created: now add its rounds."
+
+msgid "Championnat enregistré."
+msgstr "Championship saved."
+
+msgid "Choisissez une course."
+msgstr "Choose a race."
+
+msgid "Cette course est introuvable ou déjà comptée."
+msgstr "This race was not found or is already counted."
+
+#, python-format
+msgid "Manche %(n)s"
+msgstr "Round %(n)s"
+
+msgid "Championnat supprimé."
+msgstr "Championship deleted."
+
+msgid ""
+"Compteur fair-play remis à zéro : seuls les incidents à partir de "
+"maintenant comptent."
+msgstr "Fair-play counter reset: only incidents from now on count."
+
+msgid "Réglages de sauvegarde enregistrés."
+msgstr "Backup settings saved."
+
+#, python-format
+msgid "La sauvegarde a échoué : %(e)s"
+msgstr "The backup failed: %(e)s"
+
+#, python-format
+msgid "Sauvegarde créée : %(n)s"
+msgstr "Backup created: %(n)s"
+
+msgid "Sauvegarde supprimée."
+msgstr "Backup deleted."
+
+msgid "Tapez RESTAURER pour confirmer."
+msgstr "Type RESTAURER to confirm."
+
+#, python-format
+msgid "La restauration a échoué : %(e)s"
+msgstr "The restore failed: %(e)s"
+
+msgid "Nom de sauvegarde invalide."
+msgstr "Invalid backup name."
+
+msgid "Sauvegarde introuvable."
+msgstr "Backup not found."
+
+msgid "Ce fichier n'est pas une archive zip valide."
+msgstr "This file is not a valid zip archive."
+
+msgid "Archive trop volumineuse (trop de fichiers)."
+msgstr "Archive too large (too many files)."
+
+#, python-format
+msgid "Fichier non autorisé dans l'archive : %(f)s"
+msgstr "File not allowed in the archive: %(f)s"
+
+#, python-format
+msgid "Fichier trop gros dans l'archive : %(f)s"
+msgstr "File too large in the archive: %(f)s"
+
+msgid "Archive trop volumineuse une fois décompressée."
+msgstr "Archive too large once uncompressed."
+
+msgid "Archive incomplète : manifest ou base de données absents."
+msgstr "Incomplete archive: manifest or database missing."
+
+msgid "Manifest illisible."
+msgstr "Unreadable manifest."
+
+msgid "Format de sauvegarde inconnu."
+msgstr "Unknown backup format."
+
+msgid ""
+"Cette sauvegarde vient d'une version plus récente du panel : mettez le "
+"panel à jour d'abord."
+msgstr "This backup comes from a newer panel version: update the panel first."
+
+msgid "La base de données de la sauvegarde est corrompue."
+msgstr "The backup's database is corrupted."
+
+msgid "La base de données de la sauvegarde ne ressemble pas à celle du panel."
+msgstr "The backup's database does not look like the panel's."
+
+msgid "La base de données de la sauvegarde est illisible."
+msgstr "The backup's database is unreadable."
+
+msgid ""
+"Refuser les pilotes dont le niveau ELO est trop bas (préparé, désactivé "
+"par défaut)"
+msgstr "Refuse drivers whose ELO rating is too low (prepared, off by default)"
+
+msgid ""
+"Les pilotes sous le seuil sont ajoutés à la liste noire du serveur de jeu"
+" au prochain démarrage. Les pilotes provisoires (moins de courses que le "
+"minimum) ne sont jamais refusés. Nécessite le contrôle d'accès activé."
+msgstr ""
+"Drivers below the threshold are added to the game server's blacklist at "
+"its next start. Provisional drivers (fewer races than the minimum) are "
+"never refused. Requires access control to be enabled."
+
+msgid "ELO minimum"
+msgstr "Minimum ELO"
+
+msgid "Courses minimum avant refus"
+msgstr "Minimum races before refusal"
+
+#, python-format
+msgid "Actuellement sous le seuil : %(p)s"
+msgstr "Currently below the threshold: %(p)s"
+
+msgid "Aucun pilote définitif n'est actuellement sous le seuil."
+msgstr "No established driver is currently below the threshold."
+
+msgid "Journal d'audit"
+msgstr "Audit log"
+
+msgid "Exporter en CSV"
+msgstr "Export as CSV"
+
+#, python-format
+msgid ""
+"Qui a fait quoi, quand et depuis quelle adresse : connexions, actions sur"
+" le serveur, réglages, comptes, sauvegardes. Aucun mot de passe ni secret"
+" n'y est écrit. Conservation : %(n)s jours."
+msgstr ""
+"Who did what, when and from which address: sign-ins, server actions, "
+"settings, accounts, backups. No password or secret is written here. "
+"Retention: %(n)s days."
+
+msgid "Utilisateur"
+msgstr "User"
+
+msgid "Action commence par"
+msgstr "Action starts with"
+
+msgid "Période"
+msgstr "Period"
+
+msgid "24 h"
+msgstr "24 h"
+
+msgid "7 jours"
+msgstr "7 days"
+
+msgid "30 jours"
+msgstr "30 days"
+
+msgid "1 an"
+msgstr "1 year"
+
+msgid "Tout"
+msgstr "All"
+
+msgid "Échecs seulement"
+msgstr "Failures only"
+
+msgid "Filtrer"
+msgstr "Filter"
+
+msgid "Aucune entrée pour ces critères."
+msgstr "No entry for these criteria."
+
+msgid "Date (UTC)"
+msgstr "Date (UTC)"
+
+msgid "Adresse IP"
+msgstr "IP address"
+
+msgid "Cible"
+msgstr "Target"
+
+msgid "Détail"
+msgstr "Detail"
+
+msgid "échec"
+msgstr "failed"
+
+#, python-format
+msgid "Page %(p)s sur %(n)s"
+msgstr "Page %(p)s of %(n)s"
+
+#, python-format
+msgid "%(t)s entrées"
+msgstr "%(t)s entries"
+
+msgid "Sauvegarde et restauration"
+msgstr "Backup and restore"
+
+msgid ""
+"Une sauvegarde contient la base de données du panel (pilotes, résultats, "
+"événements, comptes), les réglages, les configurations serveur et les "
+"images. Les mods (plusieurs Go) et les fichiers du serveur de jeu n'y "
+"sont pas."
+msgstr ""
+"A backup contains the panel's database (drivers, results, events, "
+"accounts), settings, server configurations and images. Mods (several GB) "
+"and the game server's files are not included."
+
+msgid "Restauration effectuée."
+msgstr "Restore completed."
+
+#, python-format
+msgid ""
+"Redémarrez le panel pour qu'il utilise la base restaurée (docker compose "
+"restart panel). L'état précédent a été sauvegardé dans %(n)s."
+msgstr ""
+"Restart the panel so it uses the restored database (docker compose "
+"restart panel). The previous state was saved in %(n)s."
+
+msgid "Créer une sauvegarde"
+msgstr "Create a backup"
+
+msgid "Inclure les réglages (webhooks Discord, mots de passe)"
+msgstr "Include settings (Discord webhooks, passwords)"
+
+msgid "Sauvegarder maintenant"
+msgstr "Back up now"
+
+msgid ""
+"Le fichier avec réglages contient des secrets : gardez-le en lieu sûr. "
+"Les sauvegardes sont rangées sur le même disque que la base : "
+"téléchargez-en une régulièrement pour en avoir une copie ailleurs."
+msgstr ""
+"The file with settings contains secrets: keep it safe. Backups are stored"
+" on the same disk as the database: download one regularly to have a copy "
+"elsewhere."
+
+msgid "Sauvegarde automatique quotidienne"
+msgstr "Daily automatic backup"
+
+msgid "Sauvegardes automatiques conservées"
+msgstr "Automatic backups kept"
+
+msgid "Sauvegardes disponibles"
+msgstr "Available backups"
+
+msgid "Aucune sauvegarde pour le moment."
+msgstr "No backup yet."
+
+msgid "auto"
+msgstr "auto"
+
+msgid "avant restauration"
+msgstr "before restore"
+
+msgid "Remplacer l'état actuel du panel par cette sauvegarde ?"
+msgstr "Replace the panel's current state with this backup?"
+
+msgid "Restaurer"
+msgstr "Restore"
+
+msgid "Supprimer cette sauvegarde ?"
+msgstr "Delete this backup?"
+
+msgid "Restaurer depuis un fichier"
+msgstr "Restore from a file"
+
+msgid ""
+"Le fichier est vérifié avant tout changement (contenu autorisé, base "
+"intacte, version compatible), et l'état actuel est sauvegardé "
+"automatiquement avant de le remplacer."
+msgstr ""
+"The file is checked before any change (allowed content, intact database, "
+"compatible version), and the current state is automatically backed up "
+"before it is replaced."
+
+msgid "Remplacer l'état actuel du panel par ce fichier ?"
+msgstr "Replace the panel's current state with this file?"
+
+msgid "Fichier .zip"
+msgstr ".zip file"
+
+msgid "Tapez RESTAURER"
+msgstr "Type RESTAURER"
+
+msgid "Exports CSV"
+msgstr "CSV exports"
+
+msgid "Tous les résultats"
+msgstr "All results"
+
+msgid "Classement fair-play"
+msgstr "Fair-play ranking"
+
+msgid ""
+"Fichiers UTF-8 séparés par des points-virgules, ouvrables directement "
+"dans Excel ou LibreOffice. Le classement d'une session s'exporte depuis "
+"sa page de résultat."
+msgstr ""
+"UTF-8 files separated by semicolons, directly openable in Excel or "
+"LibreOffice. A session's classification is exported from its result page."
+
+msgid "Championnats"
+msgstr "Championships"
+
+msgid "Santé du serveur"
+msgstr "Server health"
+
+msgid "Sauvegarde"
+msgstr "Backup"
+
+msgid "Barème"
+msgstr "Points table"
+
+msgid "meilleur tour"
+msgstr "fastest lap"
+
+msgid "pole"
+msgstr "pole"
+
+#, python-format
+msgid "%(n)s pire(s) manche(s) retirée(s)"
+msgstr "%(n)s worst round(s) dropped"
+
+#, python-format
+msgid "classé à partir de %(p)s %% des manches"
+msgstr "ranked from %(p)s %% of rounds"
+
+msgid "Aucune manche pour le moment."
+msgstr "No round yet."
+
+msgid "Points"
+msgstr "Points"
+
+msgid "Victoires"
+msgstr "Wins"
+
+msgid "Non classé dans la manche"
+msgstr "Not classified in the round"
+
+msgid "Gérer les championnats"
+msgstr "Manage championships"
+
+msgid "Voir le classement"
+msgstr "View standings"
+
+msgid "Manches"
+msgstr "Rounds"
+
+msgid "Aucune manche : ajoutez une course ci-dessous."
+msgstr "No round: add a race below."
+
+msgid "introuvable"
+msgstr "not found"
+
+msgid "Retirer cette manche du championnat ?"
+msgstr "Remove this round from the championship?"
+
+msgid "Retirer"
+msgstr "Remove"
+
+msgid "Ajouter une course"
+msgstr "Add a race"
+
+msgid "— choisir —"
+msgstr "— choose —"
+
+#, python-format
+msgid "%(n)s pilote(s)"
+msgstr "%(n)s driver(s)"
+
+msgid "Nom de la manche (facultatif)"
+msgstr "Round name (optional)"
+
+msgid ""
+"Aucune course disponible : seules les courses récentes avec au moins un "
+"pilote identifié sont proposées."
+msgstr ""
+"No race available: only recent races with at least one identified driver "
+"are offered."
+
+msgid "Supprimer ce championnat ? Les courses ne sont pas supprimées."
+msgstr "Delete this championship? The races are not deleted."
+
+msgid "Supprimer le championnat"
+msgstr "Delete the championship"
+
+msgid ""
+"Points cumulés sur plusieurs courses. Cliquez sur un championnat pour "
+"voir le classement détaillé manche par manche."
+msgstr ""
+"Points accumulated over several races. Click a championship to see the "
+"standings round by round."
+
+msgid "Aucun championnat pour le moment."
+msgstr "No championship yet."
+
+#, python-format
+msgid "%(r)s manche(s)"
+msgstr "%(r)s round(s)"
+
+#, python-format
+msgid "%(d)s pilote(s)"
+msgstr "%(d)s driver(s)"
+
+msgid "En tête"
+msgstr "Leader"
+
+msgid "pts"
+msgstr "pts"
+
+msgid ""
+"Un championnat rassemble des courses déjà jouées (les « manches ») et "
+"additionne des points selon le barème choisi."
+msgstr ""
+"A championship gathers races already run (the “rounds”) and adds up "
+"points according to the chosen table."
+
+msgid "Nouveau championnat"
+msgstr "New championship"
+
+msgid "Championnats existants"
+msgstr "Existing championships"
+
+msgid "Aucun championnat."
+msgstr "No championship."
+
+msgid "Visibilité"
+msgstr "Visibility"
+
+msgid "Voir"
+msgstr "View"
+
+msgid ""
+"Ressources, disponibilité et stockage. Une mesure est prise chaque minute"
+" et conservée 7 jours."
+msgstr ""
+"Resources, availability and storage. A measurement is taken every minute "
+"and kept for 7 days."
+
+msgid "En marche"
+msgstr "Running"
+
+msgid "CPU"
+msgstr "CPU"
+
+msgid "Mémoire"
+msgstr "Memory"
+
+msgid "Disponibilité 24 h"
+msgstr "Availability 24 h"
+
+msgid "Redémarrages auto"
+msgstr "Auto restarts"
+
+msgid "CPU (24 h)"
+msgstr "CPU (24 h)"
+
+msgid "Mémoire (24 h)"
+msgstr "Memory (24 h)"
+
+msgid "Joueurs (24 h)"
+msgstr "Players (24 h)"
+
+msgid "Pas encore assez de mesures."
+msgstr "Not enough measurements yet."
+
+msgid "Panel et stockage"
+msgstr "Panel and storage"
+
+msgid "Version du panel"
+msgstr "Panel version"
+
+msgid "Panel en ligne depuis"
+msgstr "Panel online for"
+
+msgid "Mémoire du panel"
+msgstr "Panel memory"
+
+msgid "Base de données"
+msgstr "Database"
+
+msgid "Résultats importés"
+msgstr "Imported results"
+
+msgid "Dernier résultat reçu"
+msgstr "Last result received"
+
+msgid "Dernière sauvegarde"
+msgstr "Last backup"
+
+msgid "jamais"
+msgstr "never"
+
+msgid "Images / sauvegardes"
+msgstr "Images / backups"
+
+msgid "libres sur"
+msgstr "free of"
+
+msgid "Aucune sauvegarde du panel n'a encore été faite."
+msgstr "No panel backup has been made yet."
+
+msgid "Vérification en deux étapes"
+msgstr "Two-step verification"
+
+msgid ""
+"Saisissez le code à 6 chiffres de votre application d'authentification, "
+"ou un code de secours."
+msgstr "Enter the 6-digit code from your authenticator app, or a recovery code."
+
+msgid "Code"
+msgstr "Code"
+
+msgid "Authentification à deux facteurs (2FA)"
+msgstr "Two-factor authentication (2FA)"
+
+msgid "Codes de secours — notez-les maintenant, ils ne seront plus affichés."
+msgstr "Recovery codes — write them down now, they will not be shown again."
+
+msgid "Chacun ne sert qu'une fois, si vous perdez votre téléphone."
+msgstr "Each can be used only once, if you lose your phone."
+
+msgid "Activée"
+msgstr "Enabled"
+
+#, python-format
+msgid "%(n)s code(s) de secours restant(s)"
+msgstr "%(n)s recovery code(s) left"
+
+msgid "Code 2FA ou de secours"
+msgstr "2FA or recovery code"
+
+msgid "Désactiver la double authentification ?"
+msgstr "Disable two-factor authentication?"
+
+msgid "Nouveaux codes de secours"
+msgstr "New recovery codes"
+
+msgid ""
+"1. Scannez ce code avec votre application (Google Authenticator, Aegis, "
+"2FAS, Bitwarden…). 2. Saisissez le code à 6 chiffres qu'elle affiche."
+msgstr ""
+"1. Scan this code with your app (Google Authenticator, Aegis, 2FAS, "
+"Bitwarden…). 2. Enter the 6-digit code it displays."
+
+msgid "Ou saisissez la clé à la main :"
+msgstr "Or enter the key by hand:"
+
+msgid "Code à 6 chiffres"
+msgstr "6-digit code"
+
+msgid ""
+"Ajoute un code temporaire à votre mot de passe pour vous connecter. "
+"Fortement recommandé pour un compte administrateur."
+msgstr ""
+"Adds a temporary code to your password to sign in. Strongly recommended "
+"for an administrator account."
+
+msgid "Activer la double authentification"
+msgstr "Enable two-factor authentication"
+
+msgid "ELO"
+msgstr "ELO"
+
+#, python-format
+msgid ""
+"Compteur remis à zéro le %(d)s : seuls les incidents survenus depuis "
+"cette date comptent."
+msgstr "Counter reset on %(d)s: only incidents since that date count."
+
+msgid ""
+"Remettre le compteur fair-play à zéro ? Les incidents passés ne "
+"compteront plus."
+msgstr "Reset the fair-play counter? Past incidents will no longer count."
+
+msgid "Remettre le compteur à zéro"
+msgstr "Reset the counter"
+
+msgid "Classement ELO"
+msgstr "ELO ranking"
+
+msgid ""
+"Niveau des pilotes d'après leurs courses : battre un pilote mieux classé "
+"rapporte plus. À titre informatif."
+msgstr ""
+"Driver level based on their races: beating a higher-ranked driver earns "
+"more. For information only."
+
+msgid ""
+"Aucune course comptabilisée pour le moment (au moins deux pilotes et "
+"trois tours)."
+msgstr "No race counted yet (at least two drivers and three laps)."
+
+#, python-format
+msgid ""
+"Départ à 1500. Les %(n)s premières courses d'un pilote sont provisoires. "
+"La variation dépend de la taille de la grille."
+msgstr ""
+"Starts at 1500. A driver's first %(n)s races are provisional. The change "
+"depends on the size of the grid."
+
+msgid "Dernière course"
+msgstr "Last race"
+
+msgid "Courses"
+msgstr "Races"
+
+msgid "Podiums"
+msgstr "Podiums"
+
+msgid "Meilleur"
+msgstr "Peak"
+
+msgid "provisoire"
+msgstr "provisional"
+
+msgid "Appareil perdu : désactive la double authentification de ce compte"
+msgstr "Lost device: disables this account's two-factor authentication"
+
+msgid "Désactiver la double authentification de ce compte ?"
+msgstr "Disable this account's two-factor authentication?"
+
+msgid "Réinit. 2FA"
+msgstr "Reset 2FA"
+
+msgid ""
+"Sauvegarde automatique quotidienne du panel (base, réglages, "
+"configurations), activée par défaut ; nombre conservé : BACKUP_KEEP. Voir"
+" Admin → Sauvegarde."
+msgstr ""
+"Daily automatic panel backup (database, settings, configurations), on by "
+"default; number kept: BACKUP_KEEP. See Admin → Backup."
+
+msgid "Durée de conservation du journal d'audit, en jours (365 par défaut)."
+msgstr "Audit log retention, in days (365 by default)."
+
+msgid ""
+"Refus des pilotes dont le niveau ELO est sous RATING_MIN_TO_JOIN "
+"(désactivé par défaut) : se règle dans la page Accès."
+msgstr ""
+"Refuse drivers whose ELO is below RATING_MIN_TO_JOIN (off by default): "
+"set on the Access page."
+
 #~ msgid "Administration serveur"
 #~ msgstr "Server administration"
 

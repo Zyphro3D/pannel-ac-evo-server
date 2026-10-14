@@ -1,0 +1,25 @@
+{# Formulaire de championnat. Variable « c » : le championnat à modifier, ou none pour une création. #}
+<form method="post" action="{{ url_for('championships.championship_edit', cid=c.id) if c else url_for('championships.championship_create') }}"
+      class="grid gap-3" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr))">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div><label class="form-label">{{ _('Nom') }}</label>
+    <input class="form-control" name="name" required maxlength="120" value="{{ c.name if c else '' }}"></div>
+  <div style="grid-column: 1 / -1"><label class="form-label">{{ _('Description (facultatif)') }}</label>
+    <input class="form-control" name="description" maxlength="500" value="{{ c.description if c else '' }}"></div>
+  <div><label class="form-label">{{ _('Barème (points par place)') }}</label>
+    <input class="form-control mono" name="points" required value="{{ c.points if c else '25,18,15,12,10,8,6,4,2,1' }}">
+    <span class="text-xs text-dim">{{ _('De la 1re place à la dernière, séparés par des virgules.') }}</span></div>
+  <div><label class="form-label">{{ _('Bonus meilleur tour') }}</label>
+    <input class="form-control" type="number" min="0" max="100" name="fastest_lap_bonus" value="{{ c.fastest_lap_bonus if c else 0 }}"></div>
+  <div><label class="form-label">{{ _('Bonus pole') }}</label>
+    <input class="form-control" type="number" min="0" max="100" name="pole_bonus" value="{{ c.pole_bonus if c else 0 }}"></div>
+  <div><label class="form-label">{{ _('Pires manches retirées') }}</label>
+    <input class="form-control" type="number" min="0" max="20" name="drop_worst" value="{{ c.drop_worst if c else 0 }}"></div>
+  <div><label class="form-label">{{ _('Participation minimale (0 à 1)') }}</label>
+    <input class="form-control" type="number" min="0" max="1" step="0.05" name="min_rounds_ratio" value="{{ c.min_rounds_ratio if c else 0 }}">
+    <span class="text-xs text-dim">{{ _('Part des manches à avoir courues pour être classé (0 = aucune).') }}</span></div>
+  <div class="flex items-end"><label class="toggle-label text-sm">
+    <input type="hidden" name="is_public" value="false">
+    <input type="checkbox" class="switch" name="is_public" value="true" {% if not c or c.is_public %}checked{% endif %}> {{ _('Visible par tous') }}</label></div>
+  <div class="flex items-end"><button class="btn btn-primary" type="submit">{{ _('Enregistrer') if c else _('Créer') }}</button></div>
+</form>

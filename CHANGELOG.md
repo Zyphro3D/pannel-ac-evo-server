@@ -1,5 +1,50 @@
 # Changelog
 
+### v2.3.0 — 14/10/2026
+
+> Cette version ajoute les outils d'administration (journal d'audit, double authentification, sauvegarde, santé, exports) et la compétition (ELO, championnats). Rien ne change pour une installation existante tant que vous n'activez pas les nouvelles options. Les nouvelles tables se créent toutes seules au démarrage.
+
+**Ajout — journal d'audit (Admin → Journal d'audit, super-admin)**
+
+- Enregistre qui a fait quoi, quand et depuis quelle adresse : connexions réussies et échouées, double authentification, démarrage/arrêt du serveur, changements de configuration et de réglages (les **noms** des champs modifiés, jamais leurs valeurs), comptes, bannissements et commandes en direct, événements, accès, mods, sauvegardes, exports. Aucun mot de passe ni secret n'y est écrit (un mot de passe tapé par erreur dans le champ identifiant n'est pas journalisé).
+- Filtres (utilisateur, action, période, échecs seulement), pagination, export CSV, conservation configurable (`AUDIT_RETENTION_DAYS`, 365 jours par défaut).
+
+**Ajout — authentification à deux facteurs (Mon compte)**
+
+- Code à 6 chiffres (TOTP, compatible Google Authenticator, Aegis, 2FAS, Bitwarden…) avec QR code ; 10 codes de secours à usage unique ; un code ne peut pas être rejoué ; limitation des essais. Un super-admin peut réinitialiser le 2FA d'un compte (appareil perdu). Désactivation et nouveaux codes de secours exigent le mot de passe et un code. Comptes administrateurs uniquement.
+
+**Ajout — sauvegarde et restauration (Admin → Sauvegarde, super-admin)**
+
+- Un clic : zip de la base (copie cohérente), des réglages (option), des configurations serveur et des images ; téléchargement, suppression, **sauvegarde automatique quotidienne** (`BACKUP_AUTO`, `BACKUP_KEEP`).
+- Restauration depuis une sauvegarde rangée ou un fichier envoyé : l'archive est vérifiée avant tout changement (noms de fichiers autorisés, tailles, intégrité et structure de la base, version compatible), l'état actuel est sauvegardé automatiquement, confirmation en tapant `RESTAURER`. Redémarrage du panel nécessaire ensuite.
+
+**Ajout — page « Santé du serveur » (Admin)**
+
+- Pour chaque serveur : en marche ou non, durée de fonctionnement, joueurs, CPU, mémoire, redémarrages automatiques, disponibilité sur 24 h et courbes (mesure chaque minute, conservée 7 jours) ; pour le panel : version, mémoire, base, dernier résultat reçu, dernière sauvegarde, espace disque.
+
+**Ajout — exports CSV**
+
+- Classement d'une session (bouton sur la page de résultat), classement fair-play, championnats, et pour les admins : tous les résultats, pilotes, journal d'audit. Fichiers UTF-8 avec séparateur point-virgule, ouvrables dans Excel ; protection contre l'injection de formules.
+
+**Ajout — classement ELO (Résultats → ELO)**
+
+- Niveau des pilotes d'après leurs courses, dans l'esprit de Low Fuel Motorsport : départ à 1500, comparaison de chaque pilote avec tous les autres (battre un pilote mieux classé rapporte plus), pilotes non classés pénalisés, variation réduite sur les petites grilles, 5 premières courses provisoires. Calculé depuis tout l'historique, à titre informatif.
+- **Refus de participation préparé** (Admin → Accès, désactivé par défaut) : `RATING_ENFORCE` + `RATING_MIN_TO_JOIN` ajoutent à la liste noire du serveur de jeu les pilotes définitifs dont l'ELO est sous le seuil. Les pilotes provisoires ne sont jamais refusés.
+
+**Ajout — championnats (Résultats → Championnats ; Admin → Championnats)**
+
+- Un championnat regroupe des courses déjà jouées (les manches). Barème libre, bonus meilleur tour et pole, pires manches retirées, participation minimale pour être classé, départage par victoires puis places. Les IA sont ignorées, les places recalculées parmi les humains, un pilote qui n'a pas fait la moitié des tours est non classé dans la manche. Championnats publics ou privés, export CSV.
+
+**Changement — le compteur fair-play peut être remis à zéro (super-admin)**
+
+- Le suivi des incidents n'était pas actif avant la v2.1.0 : un bouton remet le compteur à zéro à la date du jour, sans rien supprimer, pour ne pas pénaliser les pilotes sur une période où ils ne pouvaient pas le savoir.
+
+**Divers**
+
+- Le menu Admin gagne « Accès » (absent du menu bureau), « Championnats », « Santé du serveur », « Journal d'audit » et « Sauvegarde ».
+- Le classement fair-play lit désormais tout l'historique (plafond de 2000 résultats retiré).
+- Les textes sont traduits en 5 langues. 102 tests unitaires.
+
 ### v2.2.1 — 14/10/2026
 
 **Correction de sécurité — l'ingestion des résultats était ouverte à Internet derrière un reverse proxy**

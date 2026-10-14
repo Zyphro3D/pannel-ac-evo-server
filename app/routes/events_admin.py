@@ -283,7 +283,14 @@ def access_page():
     names = {d.steam_id: d.ingame_name for d in Driver.query.filter(Driver.steam_id.isnot(None)).all()}
     approved_count = Driver.query.filter(Driver.status == DriverStatus.APPROVED,
                                          Driver.steam_id.isnot(None)).count()
+    from app.services import rating
+    from app.models import SessionResult
+    ranking = rating.build_rating(lambda: SessionResult.query.order_by(SessionResult.received_at.asc()).yield_per(100))
+    need = max(rating.min_races(), rating.PROVISIONAL_RACES)
+    below = [p for p in ranking if rating.min_to_join() > 0 and p["races"] >= need and p["rating"] < rating.min_to_join()]
     return render_template("access.html", rules=rules, names=names, approved_count=approved_count,
+                           rating_enforce=rating.enforce(), rating_min=rating.min_to_join(),
+                           rating_min_races=rating.min_races(), rating_below=below,
                            enabled=access_control.enabled(), approved_only=access_control.approved_only(),
                            path_overridden=bool(os.environ.get("SERVER_ENTRY_LIST_PATH", "").strip()),
                            max_ballast=access_control.MAX_BALLAST, max_restrictor=access_control.MAX_RESTRICTOR)
@@ -300,6 +307,15 @@ def access_settings():
         "ACCESS_CONTROL_ENABLED": "true" if "true" in request.form.getlist("ACCESS_CONTROL_ENABLED") else "false",
         "ACCESS_APPROVED_ONLY":   "true" if "true" in request.form.getlist("ACCESS_APPROVED_ONLY") else "false",
     }
+    if "RATING_MIN_TO_JOIN" in request.form:           # bloc ELO du formulaire (absent des anciens formulaires)
+        def _int(key, lo, hi, default):
+            try:
+                return str(max(lo, min(hi, int(request.form.get(key, default) or default))))
+            except ValueError:
+                return str(default)
+        new_vals["RATING_ENFORCE"] = "true" if "true" in request.form.getlist("RATING_ENFORCE") else "false"
+        new_vals["RATING_MIN_TO_JOIN"] = _int("RATING_MIN_TO_JOIN", 0, 5000, 0)
+        new_vals["RATING_MIN_RACES"] = _int("RATING_MIN_RACES", 5, 500, 5)
     with _env_write_lock:
         _write_env_file(new_vals)
         for k, v in new_vals.items():

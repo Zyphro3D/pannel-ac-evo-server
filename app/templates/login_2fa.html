@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Vérification en deux étapes') }} — {{ panel_title }}{% endblock %}
+{% block content %}
+<div class="flex items-center justify-center min-h-[calc(100vh-3.5rem)] px-4 py-12">
+  <div class="w-full max-w-sm">
+    <div class="flex flex-col items-center mb-8">
+      <h1 class="text-xl font-bold text-txt">{{ _('Vérification en deux étapes') }}</h1>
+      <p class="text-sm text-dim mt-2 text-center">
+        {{ _('Saisissez le code à 6 chiffres de votre application d\'authentification, ou un code de secours.') }}
+      </p>
+    </div>
+    <div class="card space-y-4">
+      <form method="post" class="space-y-4">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div>
+          <label for="code-input" class="form-label">{{ _('Code') }}</label>
+          <input class="form-control mono" type="text" name="code" id="code-input" autofocus required
+                 autocomplete="one-time-code" inputmode="text" maxlength="12" style="letter-spacing:.2em; font-size:1.2rem; text-align:center">
+        </div>
+        <button type="submit" class="btn-primary w-full justify-center">{{ _('Valider') }}</button>
+      </form>
+    </div>
+    <p class="text-center text-sm text-dim mt-5">
+      <a href="{{ url_for('auth.login') }}" class="text-accent">{{ _('Retour à la connexion') }}</a>
+    </p>
+  </div>
+</div>
+{% endblock %}

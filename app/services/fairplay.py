@@ -11,7 +11,7 @@ import time
 
 MIN_LAPS = 20          # en dessous : pilote listé mais non classé
 _TTL_S = 60.0          # même durée de cache que le classement par circuit
-_MAX_SESSIONS = 2000   # même borne que leaderboard._collect_best_by_track
+
 
 _lock = threading.Lock()
 _cache: dict | None = None
@@ -61,6 +61,27 @@ def rank(drivers: list[dict]) -> list[dict]:
                                           d["nickname"].lower()))
 
 
+STATE_KEY = "fairplay_since"
+
+
+def since():
+    """Date de remise à zéro du compteur (None = tout l'historique). Les incidents des sessions
+    reçues avant cette date ne comptent plus : le suivi n'était pas encore actif, il serait injuste
+    de pénaliser des pilotes pour une période où ils ne pouvaient pas le savoir."""
+    from app.services import panel_state
+    return panel_state.get_datetime(STATE_KEY)
+
+
+def reset(when=None) -> str:
+    """Remet le compteur à zéro (maintenant par défaut) ; retourne la date ISO enregistrée."""
+    from app.models import _utcnow
+    from app.services import panel_state
+    when = when or _utcnow()
+    panel_state.set(STATE_KEY, when.isoformat())
+    invalidate_cache()
+    return when.isoformat()
+
+
 def build_fairplay(load_rows) -> list[dict]:
     """Classement fair-play (cache de 60 s). ``load_rows`` : fonction qui retourne les
     enregistrements SessionResult, appelée seulement quand le cache est périmé."""
@@ -69,8 +90,11 @@ def build_fairplay(load_rows) -> list[dict]:
         if _cache is not None and time.monotonic() - _cache_at < _TTL_S:
             return _cache
     from app.services.results_parser import get_parsed
+    cutoff = since()
     parsed_all = []
     for r in load_rows():
+        if cutoff is not None and r.received_at is not None and r.received_at < cutoff:
+            continue
         try:
             parsed_all.append(get_parsed(r))
         except Exception:

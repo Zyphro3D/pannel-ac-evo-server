@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Sauvegarde et restauration') }} — {{ panel_title }}{% endblock %}
+
+{% block content %}
+<div class="page-shell max-w-[1000px]">
+
+  <h1 class="text-2xl font-bold text-txt mb-1">{{ _('Sauvegarde et restauration') }}</h1>
+  <p class="text-sm text-dim mb-5">
+    {{ _('Une sauvegarde contient la base de données du panel (pilotes, résultats, événements, comptes), les réglages, les configurations serveur et les images. Les mods (plusieurs Go) et les fichiers du serveur de jeu n\'y sont pas.') }}
+  </p>
+
+  {% if restored %}
+  <div class="card mb-5" style="border-color: var(--yellow, #f0a500)">
+    <p class="text-sm">
+      <strong>{{ _('Restauration effectuée.') }}</strong>
+      {{ _('Redémarrez le panel pour qu\'il utilise la base restaurée (docker compose restart panel). L\'état précédent a été sauvegardé dans %(n)s.', n=restored) }}
+    </p>
+  </div>
+  {% endif %}
+
+  <div class="card mb-5">
+    <h2 class="text-lg font-bold text-txt mb-3">{{ _('Créer une sauvegarde') }}</h2>
+    <form method="post" action="{{ url_for('tools.backup_create') }}" class="flex items-center gap-4 flex-wrap">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label class="toggle-label text-sm">
+        <input type="hidden" name="include_secrets" value="false">
+        <input type="checkbox" class="switch" name="include_secrets" value="true" checked>
+        {{ _('Inclure les réglages (webhooks Discord, mots de passe)') }}
+      </label>
+      <button class="btn btn-primary" type="submit">{{ _('Sauvegarder maintenant') }}</button>
+    </form>
+    <p class="text-xs text-dim mt-3">
+      {{ _('Le fichier avec réglages contient des secrets : gardez-le en lieu sûr. Les sauvegardes sont rangées sur le même disque que la base : téléchargez-en une régulièrement pour en avoir une copie ailleurs.') }}
+    </p>
+    <form method="post" action="{{ url_for('tools.backup_settings') }}" class="flex items-end gap-4 flex-wrap mt-4"
+          style="border-top:1px solid var(--border, rgba(255,255,255,.1)); padding-top:1rem">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label class="toggle-label text-sm">
+        <input type="hidden" name="BACKUP_AUTO" value="false">
+        <input type="checkbox" class="switch" name="BACKUP_AUTO" value="true" {% if auto %}checked{% endif %}>
+        {{ _('Sauvegarde automatique quotidienne') }}
+      </label>
+      <div><label class="form-label">{{ _('Sauvegardes automatiques conservées') }}</label>
+        <input class="form-control" type="number" name="BACKUP_KEEP" min="1" max="60" value="{{ keep }}" style="width:6rem"></div>
+      <button class="btn btn-secondary btn-sm" type="submit">{{ _('Enregistrer') }}</button>
+    </form>
+  </div>
+
+  <div class="card mb-5">
+    <h2 class="text-lg font-bold text-txt mb-3">{{ _('Sauvegardes disponibles') }}</h2>
+    {% if not backups %}
+    <p class="text-sm text-dim">{{ _('Aucune sauvegarde pour le moment.') }}</p>
+    {% else %}
+    <div class="table-wrapper">
+      <table class="table-base">
+        <thead><tr><th>{{ _('Fichier') }}</th><th>{{ _('Date (UTC)') }}</th><th class="mono">{{ _('Taille') }}</th><th></th></tr></thead>
+        <tbody>
+          {% for b in backups %}
+          <tr>
+            <td class="mono">{{ b.name }}
+              {% if b.auto %}<span class="badge">{{ _('auto') }}</span>{% endif %}
+              {% if b.pre_restore %}<span class="badge badge-error">{{ _('avant restauration') }}</span>{% endif %}</td>
+            <td class="mono whitespace-nowrap">{{ b.created.strftime('%Y-%m-%d %H:%M') }}</td>
+            <td class="mono">{{ '%.1f' % (b.size / 1048576) }} Mo</td>
+            <td class="w-px">
+              <div class="flex gap-1.5 justify-end whitespace-nowrap items-center">
+                <a class="btn btn-secondary btn-sm" href="{{ url_for('tools.backup_download', name=b.name) }}">{{ _('Télécharger') }}</a>
+                <form method="post" action="{{ url_for('tools.backup_restore_stored', name=b.name) }}" class="m-0 flex gap-1 items-center"
+                      onsubmit='return confirm({{ _("Remplacer l\'état actuel du panel par cette sauvegarde ?")|tojson }})'>
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <input class="form-control" name="confirm" placeholder="RESTAURER" style="width:8.5rem" autocomplete="off">
+                  <button class="btn btn-secondary btn-sm" type="submit">{{ _('Restaurer') }}</button>
+                </form>
+                <form method="post" action="{{ url_for('tools.backup_delete', name=b.name) }}" class="m-0"
+                      onsubmit='return confirm({{ _("Supprimer cette sauvegarde ?")|tojson }})'>
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button class="btn btn-ghost btn-sm" type="submit">{{ _('Supprimer') }}</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="card mb-5">
+    <h2 class="text-lg font-bold text-txt mb-3">{{ _('Restaurer depuis un fichier') }}</h2>
+    <p class="text-sm text-dim mb-3">{{ _('Le fichier est vérifié avant tout changement (contenu autorisé, base intacte, version compatible), et l\'état actuel est sauvegardé automatiquement avant de le remplacer.') }}</p>
+    <form method="post" action="{{ url_for('tools.backup_restore_upload') }}" enctype="multipart/form-data" class="flex items-end gap-3 flex-wrap"
+          onsubmit='return confirm({{ _("Remplacer l\'état actuel du panel par ce fichier ?")|tojson }})'>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div><label class="form-label">{{ _('Fichier .zip') }}</label>
+        <input class="form-control" type="file" name="file" accept=".zip" required></div>
+      <div><label class="form-label">{{ _('Tapez RESTAURER') }}</label>
+        <input class="form-control" name="confirm" autocomplete="off" required></div>
+      <button class="btn btn-secondary" type="submit">{{ _('Restaurer') }}</button>
+    </form>
+  </div>
+
+  <div class="card mb-5">
+    <h2 class="text-lg font-bold text-txt mb-3">{{ _('Exports CSV') }}</h2>
+    <div class="flex gap-2 flex-wrap">
+      <a class="btn btn-secondary btn-sm" href="{{ url_for('tools.results_csv') }}">{{ _('Tous les résultats') }}</a>
+      <a class="btn btn-secondary btn-sm" href="{{ url_for('tools.fairplay_csv') }}">{{ _('Classement fair-play') }}</a>
+      <a class="btn btn-secondary btn-sm" href="{{ url_for('tools.drivers_csv') }}">{{ _('Pilotes') }}</a>
+      <a class="btn btn-secondary btn-sm" href="{{ url_for('tools.audit_csv') }}">{{ _('Journal d\'audit') }}</a>
+    </div>
+    <p class="text-xs text-dim mt-3">{{ _('Fichiers UTF-8 séparés par des points-virgules, ouvrables directement dans Excel ou LibreOffice. Le classement d\'une session s\'exporte depuis sa page de résultat.') }}</p>
+  </div>
+</div>
+{% endblock %}

@@ -51,7 +51,8 @@ limiter       = Limiter(key_func=client_ip, default_limits=[])
 _SETTINGS_PATH      = Path(__file__).parent.parent / "data" / "settings.json"
 _SETTINGS_SKIP_KEYS = {"SECRET_KEY"}   # clés structurelles : restent dans .env uniquement
 _SETTINGS_BOOL_KEYS = {"SESSION_COOKIE_SECURE", "MAIL_USE_TLS", "ACE_BOT_IS_ADMIN", "REQUIRE_EMAIL_CONFIRMATION",
-                       "DISCORD_NOTIFY_SESSION_SUMMARY", "ACCESS_CONTROL_ENABLED", "ACCESS_APPROVED_ONLY", "LIVE_COLLISIONS"}
+                       "DISCORD_NOTIFY_SESSION_SUMMARY", "ACCESS_CONTROL_ENABLED", "ACCESS_APPROVED_ONLY", "LIVE_COLLISIONS",
+                       "BACKUP_AUTO", "RATING_ENFORCE"}
 # "SERVER_NAME" ici = nom d'affichage du serveur ACE EVO, mais c'est aussi une clé Flask
 # réservée qui pilote url_for(_external=True)/le subdomain matching. Ne jamais la répercuter
 # dans app.config, sous peine de casser toute génération d'URL externe (ex. callback Steam OpenID).
@@ -353,6 +354,8 @@ def _register_blueprints(app):
     from app.routes.leaderboard     import leaderboard_bp
     from app.routes.live            import live_bp
     from app.routes.container_mgmt import container_mgmt_bp
+    from app.routes.tools_admin     import tools_bp
+    from app.routes.championships   import championships_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
@@ -362,6 +365,8 @@ def _register_blueprints(app):
     app.register_blueprint(leaderboard_bp)
     app.register_blueprint(live_bp)
     app.register_blueprint(container_mgmt_bp)
+    app.register_blueprint(tools_bp)
+    app.register_blueprint(championships_bp)
     # Webhook protégé par HMAC/réseau privé, pas par CSRF (pas de session navigateur).
     csrf.exempt(results_ingest)
 
@@ -615,6 +620,9 @@ def _start_services(app):
     from app.services.lap_archiver import init as init_lap_archiver
     init_lap_archiver(app)
 
+    from app.services import maintenance
+    maintenance.init(app)
+
     if app.config.get("ACE_BOT_STEAM_ID", ""):
         from app.services import ace_tcp_client
         ace_tcp_client.init_app(app)
@@ -667,6 +675,8 @@ def create_app():
         _migrate_dotenv_to_settings()   # one-time : exporte .env → settings.json
 
     _register_blueprints(app)
+    from app.services import audit as _audit_service
+    _audit_service.install(app)
     _register_jinja(app)
     _register_request_hooks(app)
     _start_services(app)

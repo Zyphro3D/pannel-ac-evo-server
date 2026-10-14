@@ -9,6 +9,8 @@ import pytest
 from flask import Flask
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+os.environ.setdefault("PANEL_DISABLE_MAINTENANCE", "1")   # pas de tâches de fond pendant les tests
+
 
 # config.py exige ces variables à l'import : valeurs factices, uniquement pour les tests.
 _TMP = tempfile.mkdtemp(prefix="panel-tests-")

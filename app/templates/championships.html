@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Championnats') }} — {{ panel_title }}{% endblock %}
+
+{% block content %}
+<div class="page-shell max-w-[1000px]">
+  <div class="flex items-start justify-between gap-3 flex-wrap mb-1">
+    <h1 class="text-2xl font-bold text-txt">{{ _('Championnats') }}</h1>
+    {% if current_user.is_authenticated and current_user.is_admin %}
+    <a class="btn btn-secondary btn-sm" href="{{ url_for('championships.championships_admin') }}">{{ _('Gérer les championnats') }}</a>
+    {% endif %}
+  </div>
+  <p class="text-sm text-dim mb-5">{{ _('Points cumulés sur plusieurs courses. Cliquez sur un championnat pour voir le classement détaillé manche par manche.') }}</p>
+
+  {% if not items %}
+  <div class="card p-7 text-center text-dim">{{ _('Aucun championnat pour le moment.') }}</div>
+  {% else %}
+  <div class="grid gap-4" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr))">
+    {% for it in items %}
+    <a class="card block hover:border-accent transition-colors" href="{{ url_for('championships.championship_detail', slug=it.c.slug) }}">
+      <h2 class="text-lg font-bold text-txt">{{ it.c.name }}</h2>
+      {% if it.c.description %}<p class="text-sm text-dim mt-1">{{ it.c.description }}</p>{% endif %}
+      <p class="text-xs text-dim mt-3">{{ _('%(r)s manche(s)', r=it.rounds) }} · {{ _('%(d)s pilote(s)', d=it.drivers) }}</p>
+      {% if it.leader %}
+      <p class="mt-2 text-sm"><span class="text-dim">{{ _('En tête') }} :</span> <strong>{{ it.leader.nickname }}</strong>
+        <span class="mono text-dim">— {{ it.leader.total }} {{ _('pts') }}</span></p>
+      {% endif %}
+    </a>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

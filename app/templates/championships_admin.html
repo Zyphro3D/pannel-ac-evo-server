@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Gérer les championnats') }} — {{ panel_title }}{% endblock %}
+
+{% block content %}
+<div class="page-shell max-w-[900px]">
+  <h1 class="text-2xl font-bold text-txt mb-1">{{ _('Gérer les championnats') }}</h1>
+  <p class="text-sm text-dim mb-5">{{ _('Un championnat rassemble des courses déjà jouées (les « manches ») et additionne des points selon le barème choisi.') }}</p>
+
+  <div class="card mb-5">
+    <h2 class="text-lg font-bold text-txt mb-3">{{ _('Nouveau championnat') }}</h2>
+    {% set c = none %}
+    {% include "_partials/championship_form.html" %}
+  </div>
+
+  <div class="card">
+    <h2 class="text-lg font-bold text-txt mb-3">{{ _('Championnats existants') }}</h2>
+    {% if not champs %}<p class="text-sm text-dim">{{ _('Aucun championnat.') }}</p>{% else %}
+    <div class="table-wrapper"><table class="table-base">
+      <thead><tr><th>{{ _('Nom') }}</th><th class="mono">{{ _('Manches') }}</th><th>{{ _('Visibilité') }}</th><th></th></tr></thead>
+      <tbody>
+        {% for c in champs %}
+        <tr>
+          <td><strong>{{ c.name }}</strong></td>
+          <td class="mono">{{ c.rounds|length }}</td>
+          <td>{{ _('Public') if c.is_public else _('Privé') }}</td>
+          <td class="w-px"><div class="flex gap-1.5 justify-end whitespace-nowrap">
+            <a class="btn btn-secondary btn-sm" href="{{ url_for('championships.championship_detail', slug=c.slug) }}">{{ _('Voir') }}</a>
+            <a class="btn btn-secondary btn-sm" href="{{ url_for('championships.championship_edit_page', cid=c.id) }}">{{ _('Modifier') }}</a>
+          </div></td>
+        </tr>
+        {% endfor %}
+      </tbody></table></div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

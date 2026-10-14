@@ -54,5 +54,70 @@
     {% endif %}
   </section>
 
+
+  {# ── Authentification à deux facteurs ── #}
+  <section class="card mb-6" id="two-factor">
+    <div class="card-head">
+      <h2 class="card-title">{{ _('Authentification à deux facteurs (2FA)') }}</h2>
+    </div>
+
+    {% if totp_new_codes %}
+    <div class="card mb-4" style="border-color: var(--yellow, #f0a500)">
+      <p class="text-sm mb-2"><strong>{{ _('Codes de secours — notez-les maintenant, ils ne seront plus affichés.') }}</strong>
+        {{ _('Chacun ne sert qu\'une fois, si vous perdez votre téléphone.') }}</p>
+      <div class="mono" style="columns:2; max-width:320px; font-size:1.05rem; line-height:1.9">
+        {% for c in totp_new_codes %}<div>{{ c }}</div>{% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if current_user.totp_enabled %}
+      <p class="text-sm mb-3"><span class="badge badge-success">✓ {{ _('Activée') }}</span>
+        · {{ _('%(n)s code(s) de secours restant(s)', n=totp_recovery_left) }}</p>
+      <form method="post" action="{{ url_for('admin.my_account_2fa_disable') }}" class="flex items-end gap-3 flex-wrap mb-3">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div><label class="form-label">{{ _('Mot de passe') }}</label>
+          <input class="form-control" type="password" name="password" required autocomplete="current-password"></div>
+        <div><label class="form-label">{{ _('Code 2FA ou de secours') }}</label>
+          <input class="form-control mono" name="code" required autocomplete="one-time-code" maxlength="12"></div>
+        <button class="btn-secondary btn-sm" type="submit" data-confirm="{{ _('Désactiver la double authentification ?') }}">{{ _('Désactiver') }}</button>
+        <button class="btn-secondary btn-sm" type="submit" formaction="{{ url_for('admin.my_account_2fa_recovery') }}">{{ _('Nouveaux codes de secours') }}</button>
+      </form>
+    {% elif totp_setup_secret %}
+      <p class="text-sm text-dim mb-3">{{ _('1. Scannez ce code avec votre application (Google Authenticator, Aegis, 2FAS, Bitwarden…). 2. Saisissez le code à 6 chiffres qu\'elle affiche.') }}</p>
+      <div class="flex gap-6 flex-wrap items-start mb-3">
+        <div id="totp-qr" data-uri="{{ totp_setup_uri }}" style="background:#fff; padding:10px; border-radius:8px; width:200px; height:200px"></div>
+        <div>
+          <p class="text-xs text-dim mb-1">{{ _('Ou saisissez la clé à la main :') }}</p>
+          <p class="mono" style="font-size:1.05rem; letter-spacing:.08em; overflow-wrap:anywhere; max-width:300px">{{ totp_setup_secret }}</p>
+          <form method="post" action="{{ url_for('admin.my_account_2fa_enable') }}" class="flex items-end gap-3 mt-4">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div><label class="form-label">{{ _('Code à 6 chiffres') }}</label>
+              <input class="form-control mono" name="code" required autocomplete="one-time-code" inputmode="numeric" maxlength="8" autofocus></div>
+            <button class="btn-primary btn-sm" type="submit">{{ _('Activer') }}</button>
+          </form>
+        </div>
+      </div>
+      <script src="{{ url_for('static', filename='js/qrcode.js') }}"></script>
+      <script nonce="{{ csp_nonce }}">
+        (function () {
+          var el = document.getElementById('totp-qr');
+          if (!el || typeof qrcode === 'undefined') return;
+          var qr = qrcode(0, 'M'); qr.addData(el.dataset.uri); qr.make();
+          el.innerHTML = qr.createSvgTag({cellSize: 4, margin: 0, scalable: true});
+          var svg = el.querySelector('svg'); if (svg) { svg.style.width = '100%'; svg.style.height = '100%'; }
+        })();
+      </script>
+    {% else %}
+      <p class="text-sm text-dim mb-3">
+        {{ _('Ajoute un code temporaire à votre mot de passe pour vous connecter. Fortement recommandé pour un compte administrateur.') }}
+      </p>
+      <form method="post" action="{{ url_for('admin.my_account_2fa_setup') }}" class="m-0">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn-primary btn-sm" type="submit">{{ _('Activer la double authentification') }}</button>
+      </form>
+    {% endif %}
+  </section>
+
 </div>
 {% endblock %}

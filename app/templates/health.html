@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Santé du serveur') }} — {{ panel_title }}{% endblock %}
+
+{% macro duration(s) -%}
+  {%- if s is none -%}—{%- else -%}
+    {%- set d = s // 86400 -%}{%- set h = (s % 86400) // 3600 -%}{%- set m = (s % 3600) // 60 -%}
+    {%- if d %}{{ d }} j {% endif %}{{ h }} h {{ '%02d' % m }}
+  {%- endif -%}
+{%- endmacro %}
+
+{% block content %}
+<div class="page-shell max-w-[1100px]">
+
+  <h1 class="text-2xl font-bold text-txt mb-1">{{ _('Santé du serveur') }}</h1>
+  <p class="text-sm text-dim mb-5">{{ _('Ressources, disponibilité et stockage. Une mesure est prise chaque minute et conservée 7 jours.') }}</p>
+
+  {% for s in snap.servers %}
+  <div class="card mb-5">
+    <div class="flex items-center justify-between flex-wrap gap-2 mb-3">
+      <h2 class="text-lg font-bold text-txt">{{ s.name }}</h2>
+      <span class="badge {% if s.running %}badge-success{% else %}badge-error{% endif %}">{{ _('En marche') if s.running else _('Arrêté') }}</span>
+    </div>
+    <div class="grid gap-3" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr))">
+      <div><div class="text-xs text-dim">{{ _('En ligne depuis') }}</div><div class="mono text-lg">{{ duration(s.uptime_s) }}</div></div>
+      <div><div class="text-xs text-dim">{{ _('Joueurs') }}</div><div class="mono text-lg">{{ s.players if s.players is not none else '—' }}</div></div>
+      <div><div class="text-xs text-dim">{{ _('CPU') }}</div><div class="mono text-lg">{{ s.res.cpu if s.res else '—' }}{% if s.res %} %{% endif %}</div></div>
+      <div><div class="text-xs text-dim">{{ _('Mémoire') }}</div><div class="mono text-lg">{{ s.res.mem_mb|round|int if s.res else '—' }}{% if s.res %} Mo{% endif %}</div></div>
+      <div><div class="text-xs text-dim">{{ _('Disponibilité 24 h') }}</div><div class="mono text-lg">{{ s.availability_24h if s.availability_24h is not none else '—' }}{% if s.availability_24h is not none %} %{% endif %}</div></div>
+      <div><div class="text-xs text-dim">{{ _('Redémarrages auto') }}</div><div class="mono text-lg">{{ s.res.restarts if s.res else '—' }}</div></div>
+    </div>
+    <div class="grid gap-4 mt-4" style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr))">
+      {% for key, label, color in (('cpu', _('CPU (24 h)'), '#e63946'), ('mem', _('Mémoire (24 h)'), '#4aa3df'), ('players', _('Joueurs (24 h)'), '#2fbf71')) %}
+      <div>
+        <div class="text-xs text-dim mb-1">{{ label }}</div>
+        {% if s.spark[key] %}
+        <svg viewBox="0 0 300 48" preserveAspectRatio="none" style="width:100%; height:56px; background:rgba(255,255,255,.03); border-radius:6px">
+          <polyline fill="none" stroke="{{ color }}" stroke-width="1.6" points="{{ s.spark[key] }}"/>
+        </svg>
+        {% else %}
+        <div class="text-xs text-dim" style="height:56px">{{ _('Pas encore assez de mesures.') }}</div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+
+  <div class="card mb-5">
+    <h2 class="text-lg font-bold text-txt mb-3">{{ _('Panel et stockage') }}</h2>
+    <div class="grid gap-3" style="grid-template-columns: repeat(auto-fit, minmax(170px, 1fr))">
+      <div><div class="text-xs text-dim">{{ _('Version du panel') }}</div><div class="mono text-lg">{{ snap.panel.version }}</div></div>
+      <div><div class="text-xs text-dim">{{ _('Panel en ligne depuis') }}</div><div class="mono text-lg">{{ duration(snap.panel.uptime_s) }}</div></div>
+      <div><div class="text-xs text-dim">{{ _('Mémoire du panel') }}</div><div class="mono text-lg">{{ snap.panel.mem_mb|round|int }} Mo</div></div>
+      <div><div class="text-xs text-dim">{{ _('Base de données') }}</div><div class="mono text-lg">{{ snap.db_mb }} Mo</div></div>
+      <div><div class="text-xs text-dim">{{ _('Résultats importés') }}</div><div class="mono text-lg">{{ snap.results_count }}</div></div>
+      <div><div class="text-xs text-dim">{{ _('Dernier résultat reçu') }}</div><div class="mono text-lg">{{ snap.last_result_at.strftime('%d/%m %H:%M') if snap.last_result_at else '—' }}</div></div>
+      <div><div class="text-xs text-dim">{{ _('Dernière sauvegarde') }}</div><div class="mono text-lg">{{ snap.last_backup_at.strftime('%d/%m %H:%M') if snap.last_backup_at else _('jamais') }}</div></div>
+      <div><div class="text-xs text-dim">{{ _('Images / sauvegardes') }}</div><div class="mono text-lg">{{ snap.media_mb }} / {{ snap.backups_mb }} Mo</div></div>
+    </div>
+    {% for d in snap.disks %}
+    <div class="mt-4">
+      <div class="flex justify-between text-xs text-dim mb-1"><span class="mono">{{ d.path }}</span><span>{{ d.free_gb }} Go {{ _('libres sur') }} {{ d.total_gb }} Go</span></div>
+      <div style="height:8px; background:rgba(255,255,255,.08); border-radius:4px; overflow:hidden">
+        <div style="height:100%; width:{{ d.used_pct }}%; background:{% if d.used_pct > 90 %}#e63946{% elif d.used_pct > 75 %}#f0a500{% else %}#2fbf71{% endif %}"></div>
+      </div>
+    </div>
+    {% endfor %}
+    {% if not snap.last_backup_at %}
+    <p class="text-sm mt-4" style="color:#f0a500">{{ _('Aucune sauvegarde du panel n\'a encore été faite.') }}
+      <a class="text-accent" href="{{ url_for('tools.backup_page') }}">{{ _('Sauvegarder maintenant') }}</a></p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

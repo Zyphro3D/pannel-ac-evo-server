@@ -23,6 +23,7 @@ from app.services.server_config import (
 )
 from app.services.process_manager import get_status, get_server_logs
 from app.services import mailer, discord_notifier
+from app.services import audit as _audit
 from app.utils import (
     admin_required as _admin_required,
     superadmin_required as _superadmin_required,
@@ -192,6 +193,10 @@ def _migrate_admin_account_extra(db):
         ("email",                  "VARCHAR(120)"),
         ("steam_id",               "VARCHAR(32)"),
         ("steam_id_confirmed_at",  "DATETIME"),
+        ("totp_secret",            "VARCHAR(64)"),
+        ("totp_enabled",           "BOOLEAN NOT NULL DEFAULT 0"),
+        ("totp_recovery",          "TEXT"),
+        ("totp_last_step",         "INTEGER DEFAULT 0"),
     ]
     with db.engine.connect() as conn:
         existing = [r[1] for r in conn.execute(sa.text("PRAGMA table_info(admin_account)"))]
@@ -692,6 +697,11 @@ def _write_env_file(new_values: dict):
 # optionnelle — c'est ce qui alimente le bandeau affiché aux admins tant qu'ils
 # ne l'ont pas explicitement fermé (cf. dismiss_env_notice ci-dessous).
 NEW_ENV_VARS_BY_VERSION: dict[str, list[tuple[str, str]]] = {
+    "2.3.0": [
+        ("BACKUP_AUTO", _l("Sauvegarde automatique quotidienne du panel (base, réglages, configurations), activée par défaut ; nombre conservé : BACKUP_KEEP. Voir Admin → Sauvegarde.")),
+        ("AUDIT_RETENTION_DAYS", _l("Durée de conservation du journal d'audit, en jours (365 par défaut).")),
+        ("RATING_ENFORCE", _l("Refus des pilotes dont le niveau ELO est sous RATING_MIN_TO_JOIN (désactivé par défaut) : se règle dans la page Accès.")),
+    ],
     "2.2.1": [
         ("TRUSTED_PROXIES", _l("Derrière un reverse proxy (Caddy, nginx, Cloudflare) : adresse du proxy vue par le panel, pour lire l'IP réelle des visiteurs (limite de débit, anti-brute-force du login). Vide si le panel est exposé directement.")),
     ],
@@ -882,12 +892,14 @@ def settings():
                     else:
                         new_vals[k] = stripped
             if new_vals:
+                _changed = [_k for _k, _v in new_vals.items() if os.environ.get(_k, "") != _v]
                 with _env_write_lock:
                     _write_env_file(new_vals)
                     for _k, _v in new_vals.items():
                         os.environ[_k] = _v
                         if _k not in _APPCONFIG_RESERVED_KEYS:
                             current_app.config[_k] = _v
+                _audit.record("settings.save", target="server", detail={"changed": _changed})
             if is_htmx():
                 if _port_errors:
                     return _toast("error", " — ".join(_port_errors))
@@ -916,6 +928,7 @@ def settings():
                             pass  # mot de passe laissé vide → conserver la valeur actuelle
                         else:
                             new_vals[k] = stripped
+        _changed = [_k for _k, _v in new_vals.items() if os.environ.get(_k, "") != _v]
         with _env_write_lock:
             _write_env_file(new_vals)
             env_values.update(new_vals)
@@ -927,6 +940,7 @@ def settings():
                 os.environ[_k] = _v
                 if _k not in _APPCONFIG_RESERVED_KEYS:
                     current_app.config[_k] = (_v.lower() == "true") if _k in _SETTINGS_BOOL_KEYS else _v
+        _audit.record("settings.save", target=tab, detail={"changed": _changed})
         if is_htmx():
             return _toast("success", _("Paramètres sauvegardés"))
         flash(_("Paramètres sauvegardés"), "success")
@@ -1195,7 +1209,124 @@ def account_role_change():
 @admin_bp.route("/mon-compte")
 @_admin_required
 def my_account():
-    return render_template("my_account.html")
+    from app.services import totp
+    setup_secret = session.get("totp_setup")
+    setup_uri = ""
+    if setup_secret:
+        setup_uri = totp.otpauth_uri(setup_secret, current_user.username,
+                                     current_app.config.get("PANEL_TITLE") or "EVO Panel")
+    return render_template("my_account.html", totp_setup_secret=setup_secret, totp_setup_uri=setup_uri,
+                           totp_new_codes=session.pop("totp_new_codes", None),
+                           totp_recovery_left=totp.recovery_left(current_user.totp_recovery or ""))
+
+
+def _check_password_and_code(password: str, code: str) -> bool:
+    """Confirmation d'une action sensible : mot de passe actuel ET code (TOTP ou secours)."""
+    from app.services import totp
+    if not current_user.check_password(password or ""):
+        return False
+    if current_user.totp_enabled:
+        step = totp.verify(current_user.totp_secret or "", code, current_user.totp_last_step or 0)
+        if step is not None:
+            current_user.totp_last_step = step
+            return True
+        remaining = totp.consume_recovery(current_user.totp_recovery or "", code, current_app.config["SECRET_KEY"])
+        if remaining is not None:
+            current_user.totp_recovery = remaining
+            return True
+        return False
+    return True
+
+
+@admin_bp.route("/mon-compte/2fa/setup", methods=["POST"])
+@_admin_required
+def my_account_2fa_setup():
+    from app.services import totp
+    if current_user.totp_enabled:
+        return redirect(url_for("admin.my_account"))
+    session["totp_setup"] = totp.new_secret()
+    return redirect(url_for("admin.my_account"))
+
+
+@admin_bp.route("/mon-compte/2fa/enable", methods=["POST"])
+@_admin_required
+def my_account_2fa_enable():
+    from app.services import totp
+    secret = session.get("totp_setup")
+    if not secret or current_user.totp_enabled:
+        return redirect(url_for("admin.my_account"))
+    step = totp.verify(secret, request.form.get("code", ""))
+    if step is None:
+        flash(_("Code incorrect : vérifiez l'heure de votre téléphone et réessayez."), "error")
+        return redirect(url_for("admin.my_account"))
+    shown, stored = totp.new_recovery_codes(current_app.config["SECRET_KEY"])
+    current_user.totp_secret = secret
+    current_user.totp_enabled = True
+    current_user.totp_recovery = stored
+    current_user.totp_last_step = step
+    db.session.commit()
+    session.pop("totp_setup", None)
+    session["totp_new_codes"] = shown
+    _audit.record("2fa.enable", target=current_user.username)
+    flash(_("Authentification à deux facteurs activée."), "success")
+    return redirect(url_for("admin.my_account"))
+
+
+@admin_bp.route("/mon-compte/2fa/disable", methods=["POST"])
+@_admin_required
+def my_account_2fa_disable():
+    if not current_user.totp_enabled:
+        return redirect(url_for("admin.my_account"))
+    if not _check_password_and_code(request.form.get("password", ""), request.form.get("code", "")):
+        _audit.record("2fa.disable", target=current_user.username, ok=False)
+        db.session.rollback()
+        flash(_("Mot de passe ou code incorrect."), "error")
+        return redirect(url_for("admin.my_account"))
+    current_user.totp_enabled = False
+    current_user.totp_secret = None
+    current_user.totp_recovery = None
+    current_user.totp_last_step = 0
+    db.session.commit()
+    _audit.record("2fa.disable", target=current_user.username)
+    flash(_("Authentification à deux facteurs désactivée."), "success")
+    return redirect(url_for("admin.my_account"))
+
+
+@admin_bp.route("/mon-compte/2fa/recovery", methods=["POST"])
+@_admin_required
+def my_account_2fa_recovery():
+    from app.services import totp
+    if not current_user.totp_enabled:
+        return redirect(url_for("admin.my_account"))
+    if not _check_password_and_code(request.form.get("password", ""), request.form.get("code", "")):
+        _audit.record("2fa.recovery_regenerate", target=current_user.username, ok=False)
+        db.session.rollback()
+        flash(_("Mot de passe ou code incorrect."), "error")
+        return redirect(url_for("admin.my_account"))
+    shown, stored = totp.new_recovery_codes(current_app.config["SECRET_KEY"])
+    current_user.totp_recovery = stored
+    db.session.commit()
+    session["totp_new_codes"] = shown
+    _audit.record("2fa.recovery_regenerate", target=current_user.username)
+    return redirect(url_for("admin.my_account"))
+
+
+@admin_bp.route("/accounts/<int:account_id>/2fa-reset", methods=["POST"])
+@_admin_required
+@_superadmin_required
+def account_2fa_reset(account_id):
+    """Un super-admin désactive le 2FA d'un compte (appareil perdu, codes de secours épuisés)."""
+    acc = db.session.get(AdminAccount, account_id)
+    if acc is None:
+        return redirect(url_for("admin.settings", tab="accounts"))
+    acc.totp_enabled = False
+    acc.totp_secret = None
+    acc.totp_recovery = None
+    acc.totp_last_step = 0
+    db.session.commit()
+    _audit.record("2fa.reset_by_superadmin", target=acc.username)
+    flash(_("Authentification à deux facteurs désactivée pour %(u)s.", u=acc.username), "success")
+    return redirect(url_for("admin.settings", tab="accounts"))
 
 
 @admin_bp.route("/mon-compte/email", methods=["POST"])

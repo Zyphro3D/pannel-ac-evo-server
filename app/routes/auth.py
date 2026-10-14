@@ -6,11 +6,12 @@ import threading
 import time
 from datetime import datetime, timedelta, timezone
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+from flask import Blueprint, current_app, render_template, request, redirect, url_for, flash, session
 from flask_babel import _
 from flask_login import login_user, logout_user, login_required, current_user
 from app.models import AdminAccount, Driver, DriverStatus
 from app.services.netutil import client_ip
+from app.services import audit, totp
 from app.services.database import db
 from app import limiter
 
@@ -95,9 +96,18 @@ def login():
                    or AdminAccount.query.filter_by(email=identifier.lower(), is_active=True).first())
         if account and account.check_password(password):
             _bf_ok(ip)
+            if account.totp_enabled:
+                # Deuxième facteur : le mot de passe seul ne suffit plus, on ne connecte pas encore.
+                session.clear()
+                session["pending_2fa"] = {"uid": account.id, "ts": time.time(), "tries": 0}
+                audit.record("login.password_ok_2fa_pending", target=account.username, actor=account.username,
+                             role="superadmin" if account.is_superadmin else "admin")
+                return redirect(url_for("auth.login_2fa"))
             account.last_login = datetime.now(timezone.utc).replace(tzinfo=None)
             db.session.commit()
             login_user(account)
+            audit.record("login.ok", target=account.username, actor=account.username,
+                         role="superadmin" if account.is_superadmin else "admin")
             return redirect(url_for("admin.server"))
 
         driver = (Driver.query.filter_by(email=identifier.lower()).first()
@@ -114,6 +124,10 @@ def login():
             return render_template("login.html")
 
         _bf_fail(ip)
+        # Le champ « identifiant » reçoit parfois un mot de passe tapé par erreur : on ne le journalise que
+        # s'il correspond à un compte existant.
+        audit.record("login.fail", target=identifier if account or driver else "(compte inconnu)", ok=False,
+                     actor=identifier if account or driver else "")
         log.warning("auth: échec connexion pour '%s' depuis %s", identifier, ip)
         flash(_("Identifiants incorrects."), "error")
 
@@ -123,6 +137,7 @@ def login():
 @auth_bp.route("/logout")
 @login_required
 def logout():
+    audit.record("logout")
     logout_user()
     return redirect(url_for("public.index"))
 
@@ -251,3 +266,60 @@ def set_language(lang):
     if referrer and urlparse(referrer).netloc == urlparse(request.url).netloc:
         return redirect(referrer)
     return redirect(url_for("public.index"))
+
+
+# ── Deuxième facteur (TOTP) ───────────────────────────────────────────────────
+
+_2FA_TTL   = 300        # le mot de passe a été validé il y a moins de 5 minutes
+_2FA_TRIES = 5
+
+
+def _clear_pending():
+    session.pop("pending_2fa", None)
+
+
+@auth_bp.route("/login/2fa", methods=["GET", "POST"])
+@limiter.limit("10 per minute; 40 per hour", methods=["POST"])
+def login_2fa():
+    pend = session.get("pending_2fa")
+    account = db.session.get(AdminAccount, pend["uid"]) if pend else None
+    if not pend or not account or not account.totp_enabled or time.time() - pend["ts"] > _2FA_TTL:
+        _clear_pending()
+        flash(_("Session de vérification expirée, reconnectez-vous."), "error")
+        return redirect(url_for("auth.login"))
+
+    if request.method == "POST":
+        code = request.form.get("code", "").strip()
+        role = "superadmin" if account.is_superadmin else "admin"
+        ok = False
+        used_recovery = False
+        step = totp.verify(account.totp_secret or "", code, account.totp_last_step or 0)
+        if step is not None:
+            account.totp_last_step = step
+            ok = True
+        elif len(code.replace("-", "").replace(" ", "")) >= 8:
+            remaining = totp.consume_recovery(account.totp_recovery or "", code,
+                                              current_app.config["SECRET_KEY"])
+            if remaining is not None:
+                account.totp_recovery = remaining
+                ok = used_recovery = True
+        if ok:
+            account.last_login = datetime.now(timezone.utc).replace(tzinfo=None)
+            db.session.commit()
+            _clear_pending()
+            login_user(account)
+            audit.record("login.ok", target=account.username, actor=account.username, role=role,
+                         detail={"2fa": "recovery" if used_recovery else "totp"})
+            if used_recovery:
+                left = totp.recovery_left(account.totp_recovery)
+                flash(_("Code de secours utilisé : il vous en reste %(n)s.", n=left), "warning")
+            return redirect(url_for("admin.server"))
+        pend["tries"] = pend.get("tries", 0) + 1
+        session["pending_2fa"] = pend
+        audit.record("login.2fa_fail", target=account.username, ok=False, actor=account.username, role=role)
+        if pend["tries"] >= _2FA_TRIES:
+            _clear_pending()
+            flash(_("Trop d'essais. Reconnectez-vous."), "error")
+            return redirect(url_for("auth.login"))
+        flash(_("Code incorrect."), "error")
+    return render_template("login_2fa.html")

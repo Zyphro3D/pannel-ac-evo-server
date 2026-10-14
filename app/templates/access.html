@@ -49,6 +49,28 @@
           {{ _('Seuls les pilotes approuvés ayant lié leur compte Steam (%(n)s actuellement), le bot du panel et les joueurs ayant une règle ci-dessous peuvent se connecter.', n=approved_count) }}
         </span>
       </div>
+      <div class="form-group mt-5" style="border-top:1px solid var(--border, rgba(255,255,255,.1)); padding-top:1rem">
+        <label class="toggle-label">
+          <input type="hidden" name="RATING_ENFORCE" value="false">
+          <input type="checkbox" class="switch" name="RATING_ENFORCE" value="true" {% if rating_enforce %}checked{% endif %}>
+          {{ _('Refuser les pilotes dont le niveau ELO est trop bas (préparé, désactivé par défaut)') }}
+        </label>
+        <span class="hint text-xs text-dim block mt-1">
+          {{ _('Les pilotes sous le seuil sont ajoutés à la liste noire du serveur de jeu au prochain démarrage. Les pilotes provisoires (moins de courses que le minimum) ne sont jamais refusés. Nécessite le contrôle d\'accès activé.') }}
+        </span>
+        <div class="form-row mt-2">
+          <div class="form-group"><label>{{ _('ELO minimum') }}</label>
+            <input type="number" name="RATING_MIN_TO_JOIN" min="0" max="5000" value="{{ rating_min }}"></div>
+          <div class="form-group"><label>{{ _('Courses minimum avant refus') }}</label>
+            <input type="number" name="RATING_MIN_RACES" min="5" max="500" value="{{ rating_min_races }}"></div>
+        </div>
+        {% if rating_min > 0 %}
+        <p class="text-xs text-dim mt-2">
+          {% if rating_below %}{{ _('Actuellement sous le seuil : %(p)s', p=(rating_below|map(attribute='nickname')|join(', '))) }}
+          {% else %}{{ _('Aucun pilote définitif n\'est actuellement sous le seuil.') }}{% endif %}
+        </p>
+        {% endif %}
+      </div>
       <button type="submit" class="btn btn-primary mt-4">{{ _('Enregistrer') }}</button>
     </form>
     {% else %}

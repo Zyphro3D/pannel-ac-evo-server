@@ -56,14 +56,16 @@ def clamp_rule(ballast, restrictor) -> tuple[int, float]:
     return b, r
 
 
-def build_document(rules, approved_ids, only_approved: bool, always_allow=()) -> dict:
+def build_document(rules, approved_ids, only_approved: bool, always_allow=(), rating_blocked=()) -> dict:
     """Construit le fichier d'engagés.
 
     rules        : objets avec steam_id, banned, ballast, restrictor (AccessRule)
     approved_ids : SteamID des pilotes approuvés (comptes du panel)
     only_approved: True = liste blanche = pilotes approuvés + joueurs ayant une règle non bannie
-    always_allow : SteamID toujours autorisés (le bot du panel)"""
-    banned = sorted({r.steam_id for r in rules if r.banned and valid_steam_id(r.steam_id)})
+    always_allow : SteamID toujours autorisés (le bot du panel)
+    rating_blocked: SteamID refusés pour niveau ELO insuffisant (ajoutés à la liste noire ; voir services/rating.py)"""
+    banned = sorted({r.steam_id for r in rules if r.banned and valid_steam_id(r.steam_id)}
+                    | {i for i in rating_blocked if valid_steam_id(i)})
     entries = []
     for r in sorted(rules, key=lambda x: x.steam_id):
         if r.banned or not valid_steam_id(r.steam_id):
@@ -103,7 +105,15 @@ def current_document() -> dict:
     rules = AccessRule.query.all()
     approved = [d.steam_id for d in Driver.query.filter_by(status=DriverStatus.APPROVED).all() if d.steam_id]
     bot = os.environ.get("ACE_BOT_STEAM_ID", "").strip()
-    return build_document(rules, approved, approved_only(), always_allow=[bot] if bot else [])
+    blocked = []
+    from app.services import rating
+    if rating.enforce():
+        from app.models import SessionResult
+        blocked = rating.blocked_ids(rating.build_rating(
+            lambda: SessionResult.query.order_by(SessionResult.received_at.asc()).yield_per(100)))
+        blocked = [i for i in blocked if i != bot]
+    return build_document(rules, approved, approved_only(), always_allow=[bot] if bot else [],
+                          rating_blocked=blocked)
 
 
 def prepare_file() -> str | None:

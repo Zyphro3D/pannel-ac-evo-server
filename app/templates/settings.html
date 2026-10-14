@@ -1020,6 +1020,13 @@
                 <td class="w-px">
                   <div class="flex gap-1.5 justify-end whitespace-nowrap">
                     <button class="btn btn-secondary btn-sm" @click="openEdit({{ acc.id }}, {{ acc.username | tojson | forceescape }}, {{ (acc.display_name or '') | tojson | forceescape }})">{{ _('Modifier') }}</button>
+                    {% if acc.totp_enabled and acc.get_id() != current_user.get_id() %}
+                    <form method="post" action="{{ url_for('admin.account_2fa_reset', account_id=acc.id) }}" class="m-0 inline">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <button class="btn btn-ghost btn-sm" type="submit" title="{{ _('Appareil perdu : désactive la double authentification de ce compte') }}"
+                              data-confirm="{{ _('Désactiver la double authentification de ce compte ?') }}">{{ _('Réinit. 2FA') }}</button>
+                    </form>
+                    {% endif %}
                     {% if acc.get_id() != current_user.get_id() %}
                     <button class="btn btn-ghost btn-sm acc-toggle-btn" id="acc-toggle-{{ acc.id }}"
                             data-id="{{ acc.id }}" data-active="{{ 'true' if acc.is_active else 'false' }}">{{ _('Désactiver') if acc.is_active else _('Activer') }}</button>

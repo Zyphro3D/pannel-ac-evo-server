@@ -114,7 +114,7 @@
 
       {# ── Admin dropdown ── #}
       {% if current_user.is_authenticated and current_user.is_admin %}
-      {% set _admin_eps = ('admin.server','events_admin.drivers_list','events_admin.events_list','live.live_page','admin.settings','admin.vehicles','admin.tracks','admin.mods','admin.servers_list','admin.my_account') %}
+      {% set _admin_eps = ('admin.server','events_admin.drivers_list','events_admin.events_list','live.live_page','admin.settings','admin.vehicles','admin.tracks','admin.mods','admin.servers_list','admin.my_account','events_admin.access_page','tools.health_page','tools.audit_page','tools.backup_page','championships.championships_admin','championships.championship_edit_page') %}
       <div x-data="{ open: false }" class="relative" @click.outside="open = false">
         <button @click="open = !open"
                 class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm
@@ -156,9 +156,15 @@
             {% endif %}
           </a>
           {{ adminitem('events_admin.events_list', _('Événements')) }}
+          {{ adminitem('events_admin.access_page', _('Accès')) }}
+          {{ adminitem('championships.championships_admin', _('Championnats'), ['championships.championship_edit_page']) }}
           {{ adminitem('admin.vehicles', _('Véhicules'), ['admin.vehicle_upload_image']) }}
           {{ adminitem('admin.tracks',   _('Tracks'),   ['admin.track_upload_image']) }}
+          <div class="nav-dropdown-divider"></div>
+          {{ adminitem('tools.health_page', _('Santé du serveur')) }}
           {% if current_user.is_superadmin %}
+          {{ adminitem('tools.audit_page', _('Journal d\'audit')) }}
+          {{ adminitem('tools.backup_page', _('Sauvegarde')) }}
           <div class="nav-dropdown-divider"></div>
           {{ adminitem('admin.servers_list', _('Serveurs'), ['admin.server_create','admin.server_toggle','admin.server_delete']) }}
           {{ adminitem('admin.settings', _('Paramètres')) }}
@@ -270,9 +276,13 @@
       </a>
       <a href="{{ url_for('events_admin.access_page') }}" class="nav-dropdown-item rounded-lg pl-5 py-3 text-base">{{ _('Accès') }}</a>
       <a href="{{ url_for('events_admin.events_list') }}" class="nav-dropdown-item rounded-lg pl-5 py-3 text-base">{{ _('Événements') }}</a>
+      <a href="{{ url_for('championships.championships_admin') }}" class="nav-dropdown-item rounded-lg pl-5 py-3 text-base">{{ _('Championnats') }}</a>
       <a href="{{ url_for('admin.vehicles') }}" class="nav-dropdown-item rounded-lg pl-5 py-3 text-base">{{ _('Véhicules') }}</a>
       <a href="{{ url_for('admin.tracks') }}" class="nav-dropdown-item rounded-lg pl-5 py-3 text-base">{{ _('Tracks') }}</a>
+      <a href="{{ url_for('tools.health_page') }}" class="nav-dropdown-item rounded-lg pl-5 py-3 text-base">{{ _('Santé du serveur') }}</a>
       {% if current_user.is_superadmin %}
+        <a href="{{ url_for('tools.audit_page') }}" class="nav-dropdown-item rounded-lg pl-5 py-3 text-base">{{ _('Journal d\'audit') }}</a>
+        <a href="{{ url_for('tools.backup_page') }}" class="nav-dropdown-item rounded-lg pl-5 py-3 text-base">{{ _('Sauvegarde') }}</a>
         <a href="{{ url_for('admin.servers_list') }}" class="nav-dropdown-item rounded-lg pl-5 py-3 text-base">{{ _('Serveurs') }}</a>
         <a href="{{ url_for('admin.settings') }}" class="nav-dropdown-item rounded-lg pl-5 py-3 text-base">{{ _('Paramètres') }}</a>
       {% endif %}

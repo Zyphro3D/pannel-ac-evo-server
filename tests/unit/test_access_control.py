@@ -56,3 +56,15 @@ def test_identifiants_invalides_ignores():
 
 def test_handicap_nul_n_apparait_pas():
     assert ac.build_document([rule(A)], [], False)["entrylist"] == []
+
+
+def test_rating_blocked_players_go_to_the_blacklist():
+    from types import SimpleNamespace as NS
+    from app.services import access_control as ac
+    rules = [NS(steam_id="76561198000000001", banned=False, ballast=0, restrictor=0.0)]
+    doc = ac.build_document(rules, ["76561198000000001", "76561198000000002"], True,
+                            rating_blocked=["76561198000000002", "pas-un-id"])
+    assert "76561198000000002" in doc["steamid_blacklist"] and "pas-un-id" not in doc["steamid_blacklist"]
+    assert "76561198000000002" not in doc["steamid_whitelist"]          # la liste noire l'emporte, fichier net
+    doc2 = ac.build_document(rules, [], False, rating_blocked=["76561198000000003"])
+    assert doc2["steamid_blacklist"] == ["76561198000000003"]           # fonctionne sans liste blanche

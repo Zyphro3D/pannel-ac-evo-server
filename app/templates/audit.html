@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Journal d\'audit') }} — {{ panel_title }}{% endblock %}
+
+{% block content %}
+<div class="page-shell max-w-[1200px]">
+
+  <div class="flex items-start justify-between gap-3 flex-wrap mb-1">
+    <h1 class="text-2xl font-bold text-txt">{{ _('Journal d\'audit') }}</h1>
+    <a class="btn btn-secondary btn-sm" href="{{ url_for('tools.audit_csv', **qargs) }}">{{ _('Exporter en CSV') }}</a>
+  </div>
+  <p class="text-sm text-dim mb-5">
+    {{ _('Qui a fait quoi, quand et depuis quelle adresse : connexions, actions sur le serveur, réglages, comptes, sauvegardes. Aucun mot de passe ni secret n\'y est écrit. Conservation : %(n)s jours.', n=retention) }}
+  </p>
+
+  <form method="get" class="card mb-4 flex gap-3 flex-wrap items-end">
+    <div class="form-group">
+      <label class="text-xs text-dim">{{ _('Utilisateur') }}</label>
+      <select name="actor" class="form-control">
+        <option value="">{{ _('Tous') }}</option>
+        {% for a in actors %}<option value="{{ a }}" {% if args.get('actor') == a %}selected{% endif %}>{{ a }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="text-xs text-dim">{{ _('Action commence par') }}</label>
+      <input class="form-control" name="action" value="{{ args.get('action', '') }}" placeholder="login, server, backup…">
+    </div>
+    <div class="form-group">
+      <label class="text-xs text-dim">{{ _('Période') }}</label>
+      <select name="days" class="form-control">
+        {% for d, lab in (('1', _('24 h')), ('7', _('7 jours')), ('30', _('30 jours')), ('365', _('1 an')), ('0', _('Tout'))) %}
+        <option value="{{ d }}" {% if args.get('days', '30') == d %}selected{% endif %}>{{ lab }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <label class="toggle-label text-sm">
+      <input type="checkbox" name="fail" value="1" {% if args.get('fail') == '1' %}checked{% endif %}> {{ _('Échecs seulement') }}
+    </label>
+    <button class="btn btn-primary btn-sm" type="submit">{{ _('Filtrer') }}</button>
+  </form>
+
+  {% if not rows %}
+  <div class="card p-7 text-center text-dim">{{ _('Aucune entrée pour ces critères.') }}</div>
+  {% else %}
+  <div class="table-wrapper">
+    <table class="table-base">
+      <thead>
+        <tr>
+          <th>{{ _('Date (UTC)') }}</th><th>{{ _('Utilisateur') }}</th><th>{{ _('Adresse IP') }}</th>
+          <th>{{ _('Action') }}</th><th>{{ _('Cible') }}</th><th>{{ _('Détail') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in rows %}
+        <tr {% if not r.ok %}style="background: rgba(255, 80, 80, .08)"{% endif %}>
+          <td class="mono whitespace-nowrap">{{ r.ts.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+          <td>{{ r.actor or '—' }}{% if r.actor_role %} <span class="text-dim text-xs">({{ r.actor_role }})</span>{% endif %}</td>
+          <td class="mono">{{ r.ip or '—' }}</td>
+          <td class="mono">{{ r.action }}{% if not r.ok %} <span class="badge badge-error">{{ _('échec') }}</span>{% endif %}</td>
+          <td>{{ r.target }}</td>
+          <td class="text-xs text-dim" style="max-width: 360px; overflow-wrap: anywhere">{{ r.detail }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% set pages = ((total + per_page - 1) // per_page) %}
+  {% if pages > 1 %}
+  <div class="flex items-center gap-3 mt-4 text-sm">
+    {% if page > 1 %}<a class="btn btn-secondary btn-sm" href="{{ url_for('tools.audit_page', page=page-1, **qargs) }}">←</a>{% endif %}
+    <span class="text-dim">{{ _('Page %(p)s sur %(n)s', p=page, n=pages) }} · {{ _('%(t)s entrées', t=total) }}</span>
+    {% if page < pages %}<a class="btn btn-secondary btn-sm" href="{{ url_for('tools.audit_page', page=page+1, **qargs) }}">→</a>{% endif %}
+  </div>
+  {% endif %}
+  {% endif %}
+</div>
+{% endblock %}

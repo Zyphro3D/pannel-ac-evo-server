@@ -29,6 +29,7 @@
         {% if result.received_at %}
           <span class="text-xs text-dim">{{ result.received_at | local_dt_short }}</span>
         {% endif %}
+        <a class="btn btn-secondary btn-sm" href="{{ url_for('tools.result_csv', result_id=result.id) }}">{{ _('Exporter en CSV') }}</a>
       </div>
     </div>
 

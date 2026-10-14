@@ -4513,6 +4513,704 @@ msgstr ""
 "(límite de peticiones, protección contra fuerza bruta del login). Vacío "
 "si el panel está expuesto directamente."
 
+msgid "Code incorrect : vérifiez l'heure de votre téléphone et réessayez."
+msgstr "Código incorrecto: compruebe la hora de su teléfono e inténtelo de nuevo."
+
+msgid "Authentification à deux facteurs activée."
+msgstr "Autenticación en dos factores activada."
+
+msgid "Mot de passe ou code incorrect."
+msgstr "Contraseña o código incorrecto."
+
+msgid "Authentification à deux facteurs désactivée."
+msgstr "Autenticación en dos factores desactivada."
+
+#, python-format
+msgid "Authentification à deux facteurs désactivée pour %(u)s."
+msgstr "Autenticación en dos factores desactivada para %(u)s."
+
+msgid "Session de vérification expirée, reconnectez-vous."
+msgstr "La sesión de verificación ha caducado, vuelva a iniciar sesión."
+
+#, python-format
+msgid "Code de secours utilisé : il vous en reste %(n)s."
+msgstr "Código de recuperación usado: le quedan %(n)s."
+
+msgid "Trop d'essais. Reconnectez-vous."
+msgstr "Demasiados intentos. Vuelva a iniciar sesión."
+
+msgid "Code incorrect."
+msgstr "Código incorrecto."
+
+msgid "Le nom est obligatoire."
+msgstr "El nombre es obligatorio."
+
+msgid ""
+"Barème invalide : des nombres entiers entre 0 et 1000 séparés par des "
+"virgules (ex. 25,18,15,12,10)."
+msgstr ""
+"Baremo no válido: números enteros entre 0 y 1000 separados por comas (p. "
+"ej. 25,18,15,12,10)."
+
+msgid "Championnat créé : ajoutez maintenant ses manches."
+msgstr "Campeonato creado: añada ahora sus rondas."
+
+msgid "Championnat enregistré."
+msgstr "Campeonato guardado."
+
+msgid "Choisissez une course."
+msgstr "Elija una carrera."
+
+msgid "Cette course est introuvable ou déjà comptée."
+msgstr "Esta carrera no se encuentra o ya está contada."
+
+#, python-format
+msgid "Manche %(n)s"
+msgstr "Ronda %(n)s"
+
+msgid "Championnat supprimé."
+msgstr "Campeonato eliminado."
+
+msgid ""
+"Compteur fair-play remis à zéro : seuls les incidents à partir de "
+"maintenant comptent."
+msgstr ""
+"Contador de juego limpio reiniciado: solo cuentan los incidentes a partir"
+" de ahora."
+
+msgid "Réglages de sauvegarde enregistrés."
+msgstr "Ajustes de copia de seguridad guardados."
+
+#, python-format
+msgid "La sauvegarde a échoué : %(e)s"
+msgstr "La copia de seguridad ha fallado: %(e)s"
+
+#, python-format
+msgid "Sauvegarde créée : %(n)s"
+msgstr "Copia de seguridad creada: %(n)s"
+
+msgid "Sauvegarde supprimée."
+msgstr "Copia de seguridad eliminada."
+
+msgid "Tapez RESTAURER pour confirmer."
+msgstr "Escriba RESTAURER para confirmar."
+
+#, python-format
+msgid "La restauration a échoué : %(e)s"
+msgstr "La restauración ha fallado: %(e)s"
+
+msgid "Nom de sauvegarde invalide."
+msgstr "Nombre de copia de seguridad no válido."
+
+msgid "Sauvegarde introuvable."
+msgstr "Copia de seguridad no encontrada."
+
+msgid "Ce fichier n'est pas une archive zip valide."
+msgstr "Este archivo no es un zip válido."
+
+msgid "Archive trop volumineuse (trop de fichiers)."
+msgstr "Archivo demasiado grande (demasiados ficheros)."
+
+#, python-format
+msgid "Fichier non autorisé dans l'archive : %(f)s"
+msgstr "Fichero no permitido en el archivo: %(f)s"
+
+#, python-format
+msgid "Fichier trop gros dans l'archive : %(f)s"
+msgstr "Fichero demasiado grande en el archivo: %(f)s"
+
+msgid "Archive trop volumineuse une fois décompressée."
+msgstr "Archivo demasiado grande una vez descomprimido."
+
+msgid "Archive incomplète : manifest ou base de données absents."
+msgstr "Archivo incompleto: falta el manifiesto o la base de datos."
+
+msgid "Manifest illisible."
+msgstr "Manifiesto ilegible."
+
+msgid "Format de sauvegarde inconnu."
+msgstr "Formato de copia de seguridad desconocido."
+
+msgid ""
+"Cette sauvegarde vient d'une version plus récente du panel : mettez le "
+"panel à jour d'abord."
+msgstr ""
+"Esta copia procede de una versión más reciente del panel: actualice el "
+"panel primero."
+
+msgid "La base de données de la sauvegarde est corrompue."
+msgstr "La base de datos de la copia está dañada."
+
+msgid "La base de données de la sauvegarde ne ressemble pas à celle du panel."
+msgstr "La base de datos de la copia no se parece a la del panel."
+
+msgid "La base de données de la sauvegarde est illisible."
+msgstr "La base de datos de la copia es ilegible."
+
+msgid ""
+"Refuser les pilotes dont le niveau ELO est trop bas (préparé, désactivé "
+"par défaut)"
+msgstr ""
+"Rechazar a los pilotos con un ELO demasiado bajo (preparado, desactivado "
+"por defecto)"
+
+msgid ""
+"Les pilotes sous le seuil sont ajoutés à la liste noire du serveur de jeu"
+" au prochain démarrage. Les pilotes provisoires (moins de courses que le "
+"minimum) ne sont jamais refusés. Nécessite le contrôle d'accès activé."
+msgstr ""
+"Los pilotos por debajo del umbral se añaden a la lista negra del servidor"
+" de juego en su próximo arranque. Los pilotos provisionales (menos "
+"carreras que el mínimo) nunca se rechazan. Requiere el control de acceso "
+"activado."
+
+msgid "ELO minimum"
+msgstr "ELO mínimo"
+
+msgid "Courses minimum avant refus"
+msgstr "Carreras mínimas antes del rechazo"
+
+#, python-format
+msgid "Actuellement sous le seuil : %(p)s"
+msgstr "Actualmente por debajo del umbral: %(p)s"
+
+msgid "Aucun pilote définitif n'est actuellement sous le seuil."
+msgstr "Ningún piloto definitivo está actualmente por debajo del umbral."
+
+msgid "Journal d'audit"
+msgstr "Registro de auditoría"
+
+msgid "Exporter en CSV"
+msgstr "Exportar a CSV"
+
+#, python-format
+msgid ""
+"Qui a fait quoi, quand et depuis quelle adresse : connexions, actions sur"
+" le serveur, réglages, comptes, sauvegardes. Aucun mot de passe ni secret"
+" n'y est écrit. Conservation : %(n)s jours."
+msgstr ""
+"Quién hizo qué, cuándo y desde qué dirección: inicios de sesión, acciones"
+" del servidor, ajustes, cuentas, copias de seguridad. No se escribe "
+"ninguna contraseña ni secreto. Conservación: %(n)s días."
+
+msgid "Utilisateur"
+msgstr "Usuario"
+
+msgid "Action commence par"
+msgstr "La acción empieza por"
+
+msgid "Période"
+msgstr "Periodo"
+
+msgid "24 h"
+msgstr "24 h"
+
+msgid "7 jours"
+msgstr "7 días"
+
+msgid "30 jours"
+msgstr "30 días"
+
+msgid "1 an"
+msgstr "1 año"
+
+msgid "Tout"
+msgstr "Todo"
+
+msgid "Échecs seulement"
+msgstr "Solo fallos"
+
+msgid "Filtrer"
+msgstr "Filtrar"
+
+msgid "Aucune entrée pour ces critères."
+msgstr "Ninguna entrada con estos criterios."
+
+msgid "Date (UTC)"
+msgstr "Fecha (UTC)"
+
+msgid "Adresse IP"
+msgstr "Dirección IP"
+
+msgid "Cible"
+msgstr "Objetivo"
+
+msgid "Détail"
+msgstr "Detalle"
+
+msgid "échec"
+msgstr "fallo"
+
+#, python-format
+msgid "Page %(p)s sur %(n)s"
+msgstr "Página %(p)s de %(n)s"
+
+#, python-format
+msgid "%(t)s entrées"
+msgstr "%(t)s entradas"
+
+msgid "Sauvegarde et restauration"
+msgstr "Copia de seguridad y restauración"
+
+msgid ""
+"Une sauvegarde contient la base de données du panel (pilotes, résultats, "
+"événements, comptes), les réglages, les configurations serveur et les "
+"images. Les mods (plusieurs Go) et les fichiers du serveur de jeu n'y "
+"sont pas."
+msgstr ""
+"Una copia contiene la base de datos del panel (pilotos, resultados, "
+"eventos, cuentas), los ajustes, las configuraciones del servidor y las "
+"imágenes. Los mods (varios GB) y los archivos del servidor de juego no "
+"están incluidos."
+
+msgid "Restauration effectuée."
+msgstr "Restauración realizada."
+
+#, python-format
+msgid ""
+"Redémarrez le panel pour qu'il utilise la base restaurée (docker compose "
+"restart panel). L'état précédent a été sauvegardé dans %(n)s."
+msgstr ""
+"Reinicie el panel para que use la base restaurada (docker compose restart"
+" panel). El estado anterior se guardó en %(n)s."
+
+msgid "Créer une sauvegarde"
+msgstr "Crear una copia de seguridad"
+
+msgid "Inclure les réglages (webhooks Discord, mots de passe)"
+msgstr "Incluir los ajustes (webhooks de Discord, contraseñas)"
+
+msgid "Sauvegarder maintenant"
+msgstr "Guardar ahora"
+
+msgid ""
+"Le fichier avec réglages contient des secrets : gardez-le en lieu sûr. "
+"Les sauvegardes sont rangées sur le même disque que la base : "
+"téléchargez-en une régulièrement pour en avoir une copie ailleurs."
+msgstr ""
+"El archivo con ajustes contiene secretos: guárdelo en un lugar seguro. "
+"Las copias están en el mismo disco que la base: descargue una con "
+"regularidad para tener otra copia en otro sitio."
+
+msgid "Sauvegarde automatique quotidienne"
+msgstr "Copia de seguridad automática diaria"
+
+msgid "Sauvegardes automatiques conservées"
+msgstr "Copias automáticas conservadas"
+
+msgid "Sauvegardes disponibles"
+msgstr "Copias disponibles"
+
+msgid "Aucune sauvegarde pour le moment."
+msgstr "Aún no hay copias de seguridad."
+
+msgid "auto"
+msgstr "auto"
+
+msgid "avant restauration"
+msgstr "antes de restaurar"
+
+msgid "Remplacer l'état actuel du panel par cette sauvegarde ?"
+msgstr "¿Reemplazar el estado actual del panel por esta copia?"
+
+msgid "Restaurer"
+msgstr "Restaurar"
+
+msgid "Supprimer cette sauvegarde ?"
+msgstr "¿Eliminar esta copia de seguridad?"
+
+msgid "Restaurer depuis un fichier"
+msgstr "Restaurar desde un archivo"
+
+msgid ""
+"Le fichier est vérifié avant tout changement (contenu autorisé, base "
+"intacte, version compatible), et l'état actuel est sauvegardé "
+"automatiquement avant de le remplacer."
+msgstr ""
+"El archivo se comprueba antes de cualquier cambio (contenido permitido, "
+"base intacta, versión compatible) y el estado actual se guarda "
+"automáticamente antes de reemplazarlo."
+
+msgid "Remplacer l'état actuel du panel par ce fichier ?"
+msgstr "¿Reemplazar el estado actual del panel por este archivo?"
+
+msgid "Fichier .zip"
+msgstr "Archivo .zip"
+
+msgid "Tapez RESTAURER"
+msgstr "Escriba RESTAURER"
+
+msgid "Exports CSV"
+msgstr "Exportaciones CSV"
+
+msgid "Tous les résultats"
+msgstr "Todos los resultados"
+
+msgid "Classement fair-play"
+msgstr "Clasificación de juego limpio"
+
+msgid ""
+"Fichiers UTF-8 séparés par des points-virgules, ouvrables directement "
+"dans Excel ou LibreOffice. Le classement d'une session s'exporte depuis "
+"sa page de résultat."
+msgstr ""
+"Archivos UTF-8 separados por punto y coma, que se abren directamente en "
+"Excel o LibreOffice. La clasificación de una sesión se exporta desde su "
+"página de resultados."
+
+msgid "Championnats"
+msgstr "Campeonatos"
+
+msgid "Santé du serveur"
+msgstr "Estado del servidor"
+
+msgid "Sauvegarde"
+msgstr "Copia de seguridad"
+
+msgid "Barème"
+msgstr "Baremo"
+
+msgid "meilleur tour"
+msgstr "vuelta rápida"
+
+msgid "pole"
+msgstr "pole"
+
+#, python-format
+msgid "%(n)s pire(s) manche(s) retirée(s)"
+msgstr "%(n)s peor(es) ronda(s) descartada(s)"
+
+#, python-format
+msgid "classé à partir de %(p)s %% des manches"
+msgstr "clasificado desde el %(p)s %% de las rondas"
+
+msgid "Aucune manche pour le moment."
+msgstr "Aún no hay rondas."
+
+msgid "Points"
+msgstr "Puntos"
+
+msgid "Victoires"
+msgstr "Victorias"
+
+msgid "Non classé dans la manche"
+msgstr "No clasificado en la ronda"
+
+msgid "Gérer les championnats"
+msgstr "Gestionar campeonatos"
+
+msgid "Voir le classement"
+msgstr "Ver clasificación"
+
+msgid "Manches"
+msgstr "Rondas"
+
+msgid "Aucune manche : ajoutez une course ci-dessous."
+msgstr "Ninguna ronda: añada una carrera abajo."
+
+msgid "introuvable"
+msgstr "no encontrada"
+
+msgid "Retirer cette manche du championnat ?"
+msgstr "¿Quitar esta ronda del campeonato?"
+
+msgid "Retirer"
+msgstr "Quitar"
+
+msgid "Ajouter une course"
+msgstr "Añadir una carrera"
+
+msgid "— choisir —"
+msgstr "— elegir —"
+
+#, python-format
+msgid "%(n)s pilote(s)"
+msgstr "%(n)s piloto(s)"
+
+msgid "Nom de la manche (facultatif)"
+msgstr "Nombre de la ronda (opcional)"
+
+msgid ""
+"Aucune course disponible : seules les courses récentes avec au moins un "
+"pilote identifié sont proposées."
+msgstr ""
+"Ninguna carrera disponible: solo se ofrecen carreras recientes con al "
+"menos un piloto identificado."
+
+msgid "Supprimer ce championnat ? Les courses ne sont pas supprimées."
+msgstr "¿Eliminar este campeonato? Las carreras no se eliminan."
+
+msgid "Supprimer le championnat"
+msgstr "Eliminar el campeonato"
+
+msgid ""
+"Points cumulés sur plusieurs courses. Cliquez sur un championnat pour "
+"voir le classement détaillé manche par manche."
+msgstr ""
+"Puntos acumulados en varias carreras. Haga clic en un campeonato para ver"
+" la clasificación ronda por ronda."
+
+msgid "Aucun championnat pour le moment."
+msgstr "Aún no hay campeonatos."
+
+#, python-format
+msgid "%(r)s manche(s)"
+msgstr "%(r)s ronda(s)"
+
+#, python-format
+msgid "%(d)s pilote(s)"
+msgstr "%(d)s piloto(s)"
+
+msgid "En tête"
+msgstr "Líder"
+
+msgid "pts"
+msgstr "pts"
+
+msgid ""
+"Un championnat rassemble des courses déjà jouées (les « manches ») et "
+"additionne des points selon le barème choisi."
+msgstr ""
+"Un campeonato reúne carreras ya disputadas (las «rondas») y suma puntos "
+"según el baremo elegido."
+
+msgid "Nouveau championnat"
+msgstr "Nuevo campeonato"
+
+msgid "Championnats existants"
+msgstr "Campeonatos existentes"
+
+msgid "Aucun championnat."
+msgstr "Ningún campeonato."
+
+msgid "Visibilité"
+msgstr "Visibilidad"
+
+msgid "Voir"
+msgstr "Ver"
+
+msgid ""
+"Ressources, disponibilité et stockage. Une mesure est prise chaque minute"
+" et conservée 7 jours."
+msgstr ""
+"Recursos, disponibilidad y almacenamiento. Se toma una medida cada minuto"
+" y se conserva 7 días."
+
+msgid "En marche"
+msgstr "En marcha"
+
+msgid "CPU"
+msgstr "CPU"
+
+msgid "Mémoire"
+msgstr "Memoria"
+
+msgid "Disponibilité 24 h"
+msgstr "Disponibilidad 24 h"
+
+msgid "Redémarrages auto"
+msgstr "Reinicios automáticos"
+
+msgid "CPU (24 h)"
+msgstr "CPU (24 h)"
+
+msgid "Mémoire (24 h)"
+msgstr "Memoria (24 h)"
+
+msgid "Joueurs (24 h)"
+msgstr "Jugadores (24 h)"
+
+msgid "Pas encore assez de mesures."
+msgstr "Aún no hay suficientes medidas."
+
+msgid "Panel et stockage"
+msgstr "Panel y almacenamiento"
+
+msgid "Version du panel"
+msgstr "Versión del panel"
+
+msgid "Panel en ligne depuis"
+msgstr "Panel en línea desde hace"
+
+msgid "Mémoire du panel"
+msgstr "Memoria del panel"
+
+msgid "Base de données"
+msgstr "Base de datos"
+
+msgid "Résultats importés"
+msgstr "Resultados importados"
+
+msgid "Dernier résultat reçu"
+msgstr "Último resultado recibido"
+
+msgid "Dernière sauvegarde"
+msgstr "Última copia de seguridad"
+
+msgid "jamais"
+msgstr "nunca"
+
+msgid "Images / sauvegardes"
+msgstr "Imágenes / copias"
+
+msgid "libres sur"
+msgstr "libres de"
+
+msgid "Aucune sauvegarde du panel n'a encore été faite."
+msgstr "Aún no se ha hecho ninguna copia de seguridad del panel."
+
+msgid "Vérification en deux étapes"
+msgstr "Verificación en dos pasos"
+
+msgid ""
+"Saisissez le code à 6 chiffres de votre application d'authentification, "
+"ou un code de secours."
+msgstr ""
+"Introduzca el código de 6 dígitos de su aplicación de autenticación, o un"
+" código de recuperación."
+
+msgid "Code"
+msgstr "Código"
+
+msgid "Authentification à deux facteurs (2FA)"
+msgstr "Autenticación en dos factores (2FA)"
+
+msgid "Codes de secours — notez-les maintenant, ils ne seront plus affichés."
+msgstr "Códigos de recuperación — anótelos ahora, no se volverán a mostrar."
+
+msgid "Chacun ne sert qu'une fois, si vous perdez votre téléphone."
+msgstr "Cada uno sirve una sola vez, si pierde su teléfono."
+
+msgid "Activée"
+msgstr "Activada"
+
+#, python-format
+msgid "%(n)s code(s) de secours restant(s)"
+msgstr "%(n)s código(s) de recuperación restante(s)"
+
+msgid "Code 2FA ou de secours"
+msgstr "Código 2FA o de recuperación"
+
+msgid "Désactiver la double authentification ?"
+msgstr "¿Desactivar la autenticación en dos factores?"
+
+msgid "Nouveaux codes de secours"
+msgstr "Nuevos códigos de recuperación"
+
+msgid ""
+"1. Scannez ce code avec votre application (Google Authenticator, Aegis, "
+"2FAS, Bitwarden…). 2. Saisissez le code à 6 chiffres qu'elle affiche."
+msgstr ""
+"1. Escanee este código con su aplicación (Google Authenticator, Aegis, "
+"2FAS, Bitwarden…). 2. Introduzca el código de 6 dígitos que muestra."
+
+msgid "Ou saisissez la clé à la main :"
+msgstr "O introduzca la clave a mano:"
+
+msgid "Code à 6 chiffres"
+msgstr "Código de 6 dígitos"
+
+msgid ""
+"Ajoute un code temporaire à votre mot de passe pour vous connecter. "
+"Fortement recommandé pour un compte administrateur."
+msgstr ""
+"Añade un código temporal a su contraseña para iniciar sesión. Muy "
+"recomendado para una cuenta de administrador."
+
+msgid "Activer la double authentification"
+msgstr "Activar la autenticación en dos factores"
+
+msgid "ELO"
+msgstr "ELO"
+
+#, python-format
+msgid ""
+"Compteur remis à zéro le %(d)s : seuls les incidents survenus depuis "
+"cette date comptent."
+msgstr "Contador reiniciado el %(d)s: solo cuentan los incidentes desde esa fecha."
+
+msgid ""
+"Remettre le compteur fair-play à zéro ? Les incidents passés ne "
+"compteront plus."
+msgstr ""
+"¿Reiniciar el contador de juego limpio? Los incidentes pasados dejarán de"
+" contar."
+
+msgid "Remettre le compteur à zéro"
+msgstr "Reiniciar el contador"
+
+msgid "Classement ELO"
+msgstr "Clasificación ELO"
+
+msgid ""
+"Niveau des pilotes d'après leurs courses : battre un pilote mieux classé "
+"rapporte plus. À titre informatif."
+msgstr ""
+"Nivel de los pilotos según sus carreras: ganar a un piloto mejor "
+"clasificado da más. A título informativo."
+
+msgid ""
+"Aucune course comptabilisée pour le moment (au moins deux pilotes et "
+"trois tours)."
+msgstr ""
+"Aún no se ha contabilizado ninguna carrera (al menos dos pilotos y tres "
+"vueltas)."
+
+#, python-format
+msgid ""
+"Départ à 1500. Les %(n)s premières courses d'un pilote sont provisoires. "
+"La variation dépend de la taille de la grille."
+msgstr ""
+"Empieza en 1500. Las primeras %(n)s carreras de un piloto son "
+"provisionales. La variación depende del tamaño de la parrilla."
+
+msgid "Dernière course"
+msgstr "Última carrera"
+
+msgid "Courses"
+msgstr "Carreras"
+
+msgid "Podiums"
+msgstr "Podios"
+
+msgid "Meilleur"
+msgstr "Máximo"
+
+msgid "provisoire"
+msgstr "provisional"
+
+msgid "Appareil perdu : désactive la double authentification de ce compte"
+msgstr ""
+"Dispositivo perdido: desactiva la autenticación en dos factores de esta "
+"cuenta"
+
+msgid "Désactiver la double authentification de ce compte ?"
+msgstr "¿Desactivar la autenticación en dos factores de esta cuenta?"
+
+msgid "Réinit. 2FA"
+msgstr "Restablecer 2FA"
+
+msgid ""
+"Sauvegarde automatique quotidienne du panel (base, réglages, "
+"configurations), activée par défaut ; nombre conservé : BACKUP_KEEP. Voir"
+" Admin → Sauvegarde."
+msgstr ""
+"Copia de seguridad automática diaria del panel (base, ajustes, "
+"configuraciones), activada por defecto; número conservado: BACKUP_KEEP. "
+"Vea Admin → Copia de seguridad."
+
+msgid "Durée de conservation du journal d'audit, en jours (365 par défaut)."
+msgstr ""
+"Duración de conservación del registro de auditoría, en días (365 por "
+"defecto)."
+
+msgid ""
+"Refus des pilotes dont le niveau ELO est sous RATING_MIN_TO_JOIN "
+"(désactivé par défaut) : se règle dans la page Accès."
+msgstr ""
+"Rechazar a los pilotos con ELO inferior a RATING_MIN_TO_JOIN (desactivado"
+" por defecto): se ajusta en la página Acceso."
+
 #~ msgid "Administration serveur"
 #~ msgstr "Administración del servidor"
 
