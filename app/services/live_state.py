@@ -128,8 +128,7 @@ def _docker_log_lines(server_id: int, since_hours: int) -> list[str]:
             buf = _log_buffers[server_id] = {"container": container.id, "covers_from": since_ts,
                                              "last": "", "entries": []}
         fetch_from = since_ts if not buf["last"] else int(_time_from_docker(buf["last"]) or since_ts)
-        raw = container.logs(stream=False, since=fetch_from, timestamps=True)
-        text = raw.decode("utf-8", errors="replace") if isinstance(raw, bytes) else b"".join(raw).decode("utf-8", errors="replace")
+        text = _fetch_docker_logs(container, fetch_from, first=not buf["last"])
         last = buf["last"]
         for line in text.splitlines():
             ts, _, rest = line.partition(" ")
@@ -148,6 +147,22 @@ def _docker_log_lines(server_id: int, since_hours: int) -> list[str]:
             buf["covers_from"] = max(buf["covers_from"], since_ts)
         wanted = _docker_ts(since_ts)
         return [rest for ts, rest in buf["entries"] if ts >= wanted]
+
+
+_TAIL_FIRST, _TAIL_NEXT = 300_000, 20_000
+
+
+def _fetch_docker_logs(container, since: int, first: bool) -> str:
+    """Logs depuis ``since``. Docker relit TOUT le fichier pour filtrer par date (~11 s pour 50 000 lignes) ;
+    avec ``tail`` il lit depuis la fin (~0,02 s). Si le tail est saturé, des lignes ont pu manquer : on
+    retombe alors sur la lecture complète."""
+    tail = _TAIL_FIRST if first else _TAIL_NEXT
+    raw = container.logs(stream=False, since=since, timestamps=True, tail=tail)
+    text = raw.decode("utf-8", errors="replace") if isinstance(raw, bytes) else b"".join(raw).decode("utf-8", errors="replace")
+    if text.count("\n") + 1 >= tail:
+        raw = container.logs(stream=False, since=since, timestamps=True)
+        text = raw.decode("utf-8", errors="replace") if isinstance(raw, bytes) else b"".join(raw).decode("utf-8", errors="replace")
+    return text
 
 
 def _docker_ts(epoch: float) -> str:

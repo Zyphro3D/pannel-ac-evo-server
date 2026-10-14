@@ -15,13 +15,15 @@ class FakeContainer:
     def add(self, epoch, text):
         self.lines.append((epoch, text))
 
-    def logs(self, stream=False, since=0, timestamps=False):
+    def logs(self, stream=False, since=0, timestamps=False, tail=None):
         self.calls.append(since)
         out = []
         for e, t in self.lines:
             if e >= since:
                 ts = datetime.fromtimestamp(e, timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%f") + "000Z"
                 out.append(f"{ts} {t}")
+        if tail is not None:
+            out = out[-tail:]
         return ("\n".join(out)).encode()
 
 
@@ -62,3 +64,14 @@ def test_lines_leaving_the_window_are_dropped(monkeypatch):
     _setup(monkeypatch, fake)
     out = "\n".join(live_state.iter_log_lines(since_hours=1)).splitlines()
     assert out == ["[récente]"]
+
+
+def test_saturated_tail_falls_back_to_full_read(monkeypatch):
+    now = time.time()
+    fake = FakeContainer()
+    for i in range(30):
+        fake.add(now - 100 + i, f"[ligne {i}]")
+    _setup(monkeypatch, fake)
+    monkeypatch.setattr(live_state, "_TAIL_FIRST", 10)
+    out = "\n".join(live_state.iter_log_lines(since_hours=1)).splitlines()
+    assert out == [f"[ligne {i}]" for i in range(30)]      # rien perdu malgré le tail trop court
