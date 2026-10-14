@@ -109,21 +109,68 @@ def container_name(server_id: int) -> str:
     return _CONTAINER
 
 
+# Tampon incrémental des logs Docker : relire 24 h de logs (plusieurs Mo) à chaque rafraîchissement
+# prenait ~8-12 s sur un serveur qui tourne depuis longtemps. On garde les lignes déjà lues et on ne
+# redemande à Docker que les nouvelles (par horodatage Docker, à largeur fixe).
+_log_buffers: dict[int, dict] = {}
+_log_buffers_lock = threading.Lock()
+
+
+def _docker_log_lines(server_id: int, since_hours: int) -> list[str]:
+    import time as _time
+    from app.services.process_manager import _get_docker_client
+    container = _get_docker_client().containers.get(container_name(server_id))
+    now = _time.time()
+    since_ts = int(now) - since_hours * 3600
+    with _log_buffers_lock:
+        buf = _log_buffers.get(server_id)
+        if buf is None or buf["container"] != container.id or since_ts < buf["covers_from"] - 5:
+            buf = _log_buffers[server_id] = {"container": container.id, "covers_from": since_ts,
+                                             "last": "", "entries": []}
+        fetch_from = since_ts if not buf["last"] else int(_time_from_docker(buf["last"]) or since_ts)
+        raw = container.logs(stream=False, since=fetch_from, timestamps=True)
+        text = raw.decode("utf-8", errors="replace") if isinstance(raw, bytes) else b"".join(raw).decode("utf-8", errors="replace")
+        last = buf["last"]
+        for line in text.splitlines():
+            ts, _, rest = line.partition(" ")
+            if len(ts) < 20 or not ts.endswith("Z"):
+                continue                       # ligne sans horodatage Docker (ne devrait pas arriver)
+            if ts <= last:
+                continue                       # déjà dans le tampon (chevauchement d'une seconde)
+            buf["entries"].append((ts, rest))
+            buf["last"] = last = ts
+        # fenêtre glissante : on oublie ce qui sort de la période demandée
+        cutoff = _docker_ts(now - since_hours * 3600)
+        if buf["entries"] and buf["entries"][0][0] < cutoff:
+            import bisect
+            i = bisect.bisect_left(buf["entries"], (cutoff,))
+            del buf["entries"][:i]
+            buf["covers_from"] = max(buf["covers_from"], since_ts)
+        wanted = _docker_ts(since_ts)
+        return [rest for ts, rest in buf["entries"] if ts >= wanted]
+
+
+def _docker_ts(epoch: float) -> str:
+    from datetime import datetime, timezone
+    return datetime.fromtimestamp(epoch, timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.000000000Z")
+
+
+def _time_from_docker(ts: str) -> float | None:
+    from calendar import timegm
+    from datetime import datetime
+    try:
+        return timegm(datetime.strptime(ts[:19], "%Y-%m-%dT%H:%M:%S").timetuple())
+    except ValueError:
+        return None
+
+
 def iter_log_lines(since_hours: int = 12, server_id: int = 1):
-    """Yield log lines. docker_split → Docker SDK ; native → log file."""
+    """Yield log lines. docker_split → Docker SDK (tampon incrémental) ; native → log file."""
     if _DEPLOY_MODE == "docker_split":
         try:
-            import time as _time
-            from app.services.process_manager import _get_docker_client
-            client    = _get_docker_client()
-            container = client.containers.get(container_name(server_id))
-            since_ts  = int(_time.time()) - since_hours * 3600
-            raw = container.logs(stream=False, since=since_ts)
-            if isinstance(raw, bytes):
-                yield raw.decode("utf-8", errors="replace")
-            else:
-                for chunk in raw:
-                    yield chunk.decode("utf-8", errors="replace")
+            lines = _docker_log_lines(server_id, since_hours)
+            if lines:
+                yield "\n".join(lines)
         except Exception as e:
             log.warning("live: docker logs error (server=%d): %s", server_id, e)
     else:

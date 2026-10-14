@@ -692,6 +692,9 @@ def _write_env_file(new_values: dict):
 # optionnelle — c'est ce qui alimente le bandeau affiché aux admins tant qu'ils
 # ne l'ont pas explicitement fermé (cf. dismiss_env_notice ci-dessous).
 NEW_ENV_VARS_BY_VERSION: dict[str, list[tuple[str, str]]] = {
+    "2.2.1": [
+        ("TRUSTED_PROXIES", _l("Derrière un reverse proxy (Caddy, nginx, Cloudflare) : adresse du proxy vue par le panel, pour lire l'IP réelle des visiteurs (limite de débit, anti-brute-force du login). Vide si le panel est exposé directement.")),
+    ],
     "2.2.0": [
         ("LIVE_COLLISIONS", _l("Contacts en direct sur « Classement en direct » : interrupteur dans Paramètres → Notifications, désactivé par défaut.")),
     ],

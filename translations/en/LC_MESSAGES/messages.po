@@ -4452,6 +4452,15 @@ msgstr ""
 "Live contacts on the live timing page: switch in Settings → "
 "Notifications, off by default."
 
+msgid ""
+"Derrière un reverse proxy (Caddy, nginx, Cloudflare) : adresse du proxy "
+"vue par le panel, pour lire l'IP réelle des visiteurs (limite de débit, "
+"anti-brute-force du login). Vide si le panel est exposé directement."
+msgstr ""
+"Behind a reverse proxy (Caddy, nginx, Cloudflare): the proxy address as "
+"seen by the panel, to read the visitors' real IP (rate limiting, login "
+"brute-force protection). Empty if the panel is exposed directly."
+
 #~ msgid "Administration serveur"
 #~ msgstr "Server administration"
 

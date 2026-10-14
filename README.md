@@ -309,7 +309,8 @@ Référence complète des variables `.env` (voir aussi `.env.example`) :
 | `SESSION_COOKIE_SECURE` | `true` derrière HTTPS, `false` en HTTP direct | `true` |
 | `PANEL_PORT` | Port d'écoute du panel | `4300` |
 | `PANEL_GITHUB_URL` | URL GitHub du projet (affichée dans le footer) | dépôt officiel |
-| `RESULTS_INGEST_SECRET` | Secret HMAC du webhook résultats (`/api/results/ingest`) — sans lui, l'endpoint n'accepte que les réseaux privés/locaux | — |
+| `RESULTS_INGEST_SECRET` | Secret HMAC du webhook résultats (`/api/results/ingest`). Facultatif : le serveur de jeu s'authentifie déjà par le jeton `sig` de l'URL que le panel lui donne, ou par le réseau interne (Docker / localhost) ; toute requête passée par un reverse proxy est refusée | — |
+| `TRUSTED_PROXIES` | Reverse proxys autorisés à indiquer l'IP réelle du visiteur (adresses ou réseaux CIDR, séparés par des virgules). **Derrière Caddy/nginx/Cloudflare**, indiquer l'adresse du proxy vue par le panel : sans cela, limite de débit et anti-brute-force du login sont partagés par tous les visiteurs. Panel exposé directement : laisser vide | — |
 | `LAP_HISTORY_RETENTION_MONTHS` | Nombre de mois de conservation détaillée de l'historique des tours pilote, au-delà archivé en résumé mensuel | `6` |
 
 ### Serveur de jeu

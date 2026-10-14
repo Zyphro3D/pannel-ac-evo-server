@@ -42,7 +42,15 @@ def _results_post_url(server_id: int) -> str:
     port       = _os.environ.get("PANEL_PORT", "4300")
     deploy     = _os.environ.get("DEPLOY_MODE", "native")
     panel_host = "panel" if deploy == "docker_split" else "127.0.0.1"
-    return f"http://{panel_host}:{port}/api/results/ingest?server_id={server_id}"
+    url = f"http://{panel_host}:{port}/api/results/ingest?server_id={server_id}"
+    try:
+        from app.services.netutil import ingest_token
+        from flask import has_app_context
+        if has_app_context():
+            url += f"&sig={ingest_token(server_id)}"
+    except Exception as e:     # le jeton est un renfort : sans lui, le repli réseau interne reste actif
+        log.debug("jeton d'ingestion non ajouté : %s", e)
+    return url
 
 
 def deploy_config(config_name: str, server_id: int) -> None:

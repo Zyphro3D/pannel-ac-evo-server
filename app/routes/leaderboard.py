@@ -47,7 +47,9 @@ def _collect_best_by_track() -> dict:
     car_lookup = build_car_lookup()
     best: dict[tuple, dict] = {}
 
-    rows = SessionResult.query.order_by(SessionResult.received_at.asc()).limit(2000).all()
+    # Tous les résultats, lus par lots : l'ancien plafond de 2000 lignes (les plus anciennes) aurait
+    # exclu les résultats récents dès le 2001e, donc figé les records.
+    rows = SessionResult.query.order_by(SessionResult.received_at.asc()).yield_per(100)
     for r in rows:
         try:
             parsed = get_parsed(r)

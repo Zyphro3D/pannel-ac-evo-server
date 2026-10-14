@@ -4494,6 +4494,15 @@ msgstr ""
 "Contacts en direct sur « Classement en direct » : interrupteur dans "
 "Paramètres → Notifications, désactivé par défaut."
 
+msgid ""
+"Derrière un reverse proxy (Caddy, nginx, Cloudflare) : adresse du proxy "
+"vue par le panel, pour lire l'IP réelle des visiteurs (limite de débit, "
+"anti-brute-force du login). Vide si le panel est exposé directement."
+msgstr ""
+"Derrière un reverse proxy (Caddy, nginx, Cloudflare) : adresse du proxy "
+"vue par le panel, pour lire l'IP réelle des visiteurs (limite de débit, "
+"anti-brute-force du login). Vide si le panel est exposé directement."
+
 #~ msgid "Administration serveur"
 #~ msgstr "Administration serveur"
 

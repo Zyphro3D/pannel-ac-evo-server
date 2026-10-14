@@ -24,6 +24,7 @@ from app.services.process_manager import (
 )
 from app.services.rotation_manager import get_rotation, save_rotation
 from app.services import config_builder, discord_notifier
+from app.services.netutil import came_through_proxy, host_is_internal, ingest_token
 from app.models import SessionResult
 from app.services.database import db
 from app.services.results_parser import parse_result_file, scan_and_import, get_parsed
@@ -49,20 +50,33 @@ def _verify_ingest_signature(raw_body: bytes) -> bool:
         if hmac.compare_digest(provided, expected):
             return True
 
+    # Jeton porté par l'URL construite par le panel (voir server_config._results_post_url) :
+    # authentifie le serveur de jeu avec ou sans reverse proxy.
+    try:
+        sid_q = int(request.args.get("server_id", 1) or 1)
+    except (ValueError, TypeError):
+        sid_q = 1
+    token = request.args.get("sig", "")
+    if token and hmac.compare_digest(token, ingest_token(sid_q)):
+        return True
+
     # AssettoCorsaEVOServer.exe (binaire Kunos fermé) poste directement sur
     # ResultsPostUrl sans pouvoir signer la requête — aucun champ pour ça dans
     # sa config. Un secret configuré ne le rendra donc jamais capable de passer
     # la vérif HMAC ci-dessus : sans ce fallback, l'ingestion des résultats est
     # cassée en permanence dès qu'un secret est renseigné. On retombe sur la
     # confiance réseau documentée dans README.md : IP privée = même hôte Docker.
+    # Une requête passée par un reverse proxy (Caddy, Cloudflare…) arrive elle aussi d'une IP
+    # privée : sans ce test, tout Internet passerait par la confiance réseau.
     remote = request.remote_addr or ""
-    try:
-        if ipaddress.ip_address(remote).is_private:
-            return True
-    except ValueError:
-        pass
+    if not came_through_proxy() and host_is_internal():
+        try:
+            if ipaddress.ip_address(remote).is_private:
+                return True
+        except ValueError:
+            pass
 
-    log.warning("Ingest rejeté : signature invalide et IP non privée (%s)", remote)
+    log.warning("Ingest rejeté : signature invalide et origine non fiable (%s, proxy=%s, host=%s)", remote, came_through_proxy(), request.host)
     return False
 
 

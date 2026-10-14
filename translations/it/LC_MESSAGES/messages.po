@@ -4491,6 +4491,16 @@ msgstr ""
 "Contatti in diretta nella classifica in diretta: interruttore in "
 "Impostazioni → Notifiche, disattivato di default."
 
+msgid ""
+"Derrière un reverse proxy (Caddy, nginx, Cloudflare) : adresse du proxy "
+"vue par le panel, pour lire l'IP réelle des visiteurs (limite de débit, "
+"anti-brute-force du login). Vide si le panel est exposé directement."
+msgstr ""
+"Dietro un reverse proxy (Caddy, nginx, Cloudflare): indirizzo del proxy "
+"visto dal pannello, per leggere l'IP reale dei visitatori (limite di "
+"richieste, protezione dal brute force del login). Vuoto se il pannello è "
+"esposto direttamente."
+
 #~ msgid "Administration serveur"
 #~ msgstr "Amministrazione del server"
 

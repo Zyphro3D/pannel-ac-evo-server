@@ -10,6 +10,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_babel import _
 from flask_login import login_user, logout_user, login_required, current_user
 from app.models import AdminAccount, Driver, DriverStatus
+from app.services.netutil import client_ip
 from app.services.database import db
 from app import limiter
 
@@ -80,7 +81,7 @@ def login():
         return redirect(url_for("public.pilot_dashboard") if current_user.is_pilot else url_for("admin.server"))
 
     if request.method == "POST":
-        ip        = request.remote_addr or "unknown"
+        ip        = client_ip()
         remaining = _bf_check(ip)
         if remaining:
             mins = max(1, remaining // 60)

@@ -1,5 +1,31 @@
 # Changelog
 
+### v2.2.1 — 14/10/2026
+
+**Correction de sécurité — l'ingestion des résultats était ouverte à Internet derrière un reverse proxy**
+
+- `/api/results/ingest` acceptait sans signature toute requête venant d'une IP privée, pour laisser passer le serveur de jeu (qui ne sait pas signer). Derrière Caddy, nginx ou Cloudflare, le panel voit l'adresse privée du proxy pour **tous** les visiteurs : n'importe qui sur Internet pouvait donc poster de faux résultats (classements, records, récapitulatif Discord). Vérifié sur une installation réelle.
+- Le serveur de jeu s'authentifie maintenant par un **jeton `sig`** ajouté par le panel à l'URL de retour des résultats (valable avec ou sans proxy). Le repli sur le réseau interne n'est conservé que pour les requêtes **directes** à destination d'une adresse interne (`panel`, `127.0.0.1`, IP) et sans en-tête de proxy ; tout ce qui passe par un nom de domaine public ou un proxy est refusé. Un panel exposé directement sur une IP, sans proxy, fonctionne comme avant. Le jeton est pris en compte au prochain démarrage du serveur de jeu ; d'ici là le repli réseau interne continue de fonctionner.
+
+**Correction — limite de débit et anti-brute-force du login partagés par tous les visiteurs derrière un proxy**
+
+- Pour la même raison, tous les visiteurs avaient la même adresse : 10 essais de connexion par minute pour *tout le monde*, donc un seul visiteur pouvait bloquer les connexions des administrateurs. Nouvelle variable `TRUSTED_PROXIES` (adresse du proxy tel que le panel la voit) : le panel lit alors l'IP réelle du visiteur (`CF-Connecting-IP`), uniquement quand la requête vient de ce proxy. Vide par défaut = comportement historique (panel exposé directement).
+
+**Performance — « Classement en direct » : 8 à 12 s de calcul à chaque rafraîchissement**
+
+- Le panel relisait 24 h de logs du serveur de jeu (plusieurs Mo) via l'API Docker à chaque rafraîchissement. Les lignes déjà lues sont désormais gardées en mémoire et seules les nouvelles sont demandées.
+
+**Correction — records par circuit figés au-delà de 2000 résultats**
+
+- La page des records ne lisait que les 2000 résultats les plus anciens ; les suivants étaient ignorés. Tous les résultats sont maintenant lus, par lots.
+
+**Divers**
+
+- Dépendances mises à jour : Flask 3.1.0 → 3.1.3 et python-dotenv 1.0.1 → 1.2.2 (6 vulnérabilités connues corrigées ; `pip-audit` ne signale plus rien).
+- En-tête de sécurité : `object-src 'none'`, `base-uri 'self'`, `frame-ancestors 'none'` ajoutés à la politique CSP.
+- Le message de démarrage « RESULTS_INGEST_SECRET non défini — rejette tous les résultats » était faux ; remplacé par une information exacte.
+- 67 tests unitaires.
+
 ### v2.2.0 — 14/10/2026
 
 **Ajout — contacts en direct sur « Classement en direct » (option)**
