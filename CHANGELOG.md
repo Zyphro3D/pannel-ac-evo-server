@@ -78,7 +78,7 @@ Section repliable « Options de course », chaque réglage vérifié sur un vrai
 **Ajout — carte des accrochages (Résultats → Accrochages, et sur chaque page de résultat)**
 
 - Le plan du circuit et une voiture en 3D, reliés : chaque impact enregistré par le serveur de jeu s'affiche **à l'endroit de la piste** où il a eu lieu et **à l'endroit de la voiture** qui a été touchée ; le survol d'un point l'allume des deux côtés et affiche sa fiche (type mur / voiture / objet, vitesse de l'impact, dégâts, pilote et pilote touché, session). Couleur par type, taille par vitesse ; filtres par type, vitesse minimale, dégâts, session et pilote ; vue « densité » pour repérer les virages à problème ; voiture orientable (glisser, molette, vues dessus / avant / arrière / côtés).
-- Les positions du jeu sont placées sur le plan du circuit grâce à un calage par circuit (`app/data/track_calibration.json`, 37 circuits : de simples constantes numériques, calculées une fois en alignant le plan sur la ligne idéale du circuit ; vérifié sur 1 021 impacts réels à Spa, tous sur le tracé). Un circuit sans calage (mod, nouveau circuit) n'a pas de carte.
+- Les positions du jeu sont placées sur le plan du circuit grâce à un calage par circuit (`app/calibration/track_calibration.json`, 37 circuits : de simples constantes numériques, calculées une fois en alignant le plan sur la ligne idéale du circuit ; vérifié sur 1 021 impacts réels à Spa, tous sur le tracé). Un circuit sans calage (mod, nouveau circuit) n'a pas de carte.
 - La bibliothèque 3D (three.js r128, licence MIT) est fournie avec le panel : aucun service externe.
 
 **Correction de sécurité — l'ingestion des résultats était ouverte à Internet derrière un reverse proxy**

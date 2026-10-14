@@ -3,7 +3,7 @@
 Le serveur de jeu enregistre pour chaque impact la position dans le monde (x, z), la position sur la
 voiture (repère de la voiture : x droite, y haut, z avant), la vitesse de l'impact, le type (mur, voiture,
 objet) et les dégâts. Pour dessiner les impacts sur le plan SVG d'un circuit il faut passer des
-coordonnées du jeu à celles du SVG : ``app/data/track_calibration.json`` donne, pour chaque circuit, la
+coordonnées du jeu à celles du SVG : ``app/calibration/track_calibration.json`` donne, pour chaque circuit, la
 transformation (matrice 2×2 + translation, miroir éventuel), calculée une fois en alignant le tracé SVG
 sur la ligne idéale du circuit (erreur de forme < 0,15 unité sur 400 pour la plupart des circuits).
 Un circuit sans calage (mod, nouveau circuit) n'a simplement pas de carte."""
@@ -14,7 +14,7 @@ import time
 from pathlib import Path
 
 _BASE = Path(__file__).resolve().parent.parent
-_CAL_PATH = _BASE / "data" / "track_calibration.json"
+_CAL_PATH = _BASE / "calibration" / "track_calibration.json"
 _SVG_DIR = _BASE / "static" / "img" / "tracks"
 _KIND = {"wall": 0, "car": 1, "object": 2}
 _TTL_S = 60.0
