@@ -100,6 +100,28 @@ def live_state():
     return jsonify(state)
 
 
+def _session_info(server_id: int, state: dict) -> dict | None:
+    """Session en cours (nom, phase, temps restant estimé) d'après les logs du serveur de jeu.
+    Voir services/session_tracker.py ; None si aucune session n'est identifiée dans les logs."""
+    import time
+    from flask import current_app
+    from app.services import session_tracker
+    try:
+        from app.services.process_manager import _read_state
+        from app.services.server_config import load_config_by_name
+        cfg_name = _read_state(server_id).get("config")
+        sessions_cfg = (load_config_by_name(cfg_name) or {}).get("Sessions", {}) if cfg_name else {}
+        info = session_tracker.describe(state.get("session_raw"), time.time(),
+                                        state.get("log_clock_offset_s", 0.0), sessions_cfg)
+        if info:
+            label = current_app.jinja_env.filters["session_type_label"]
+            info["name_label"] = label(info["name"])
+        return info
+    except Exception as _e:
+        log.debug("session_info indisponible : %s", _e)
+        return None
+
+
 def _session_timing(server_id: int = 1) -> dict:
     """Retourne started_at et session_length_s depuis le state + config."""
     try:
@@ -161,14 +183,6 @@ def timing_state():
         {k: v for k, v in entry.items() if k not in _TIMING_STRIP_FIELDS}
         for entry in state["leaderboard"]
     ]
-    # Phase et temps restant de la session, lus dans les messages du serveur de jeu (None si le
-    # bot TCP n'est pas connecté ou n'a encore rien reçu : la page masque alors l'indicateur).
-    try:
-        from app.services.ace_tcp_client import get_session_phase
-        session_phase = get_session_phase(sid)
-    except Exception as _e:
-        log.debug("session_phase indisponible : %s", _e)
-        session_phase = None
     return jsonify({
         "leaderboard":      safe_lb,
         "player_count":     state["player_count"],
@@ -179,7 +193,7 @@ def timing_state():
         "sess_s3_ms":       state.get("sess_s3_ms"),
         "track_svg_url":    track_svg_url,
         "track_label":      track_label,
-        "session":          session_phase,
+        "session":          _session_info(sid, state),
     })
 
 

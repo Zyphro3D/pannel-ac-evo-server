@@ -39,6 +39,9 @@ _RE_SECTORC = re.compile(
 )
 
 
+from app.services import session_tracker as _session_tracker
+
+
 def _parse_lapstr(s: str) -> int:
     """'2:33.982' → millisecondes."""
     try:
@@ -133,6 +136,44 @@ def iter_log_lines(since_hours: int = 12, server_id: int = 1):
 
 
 
+# ── Horloge des logs ──────────────────────────────────────────────────────────
+
+_clock_cache: dict[int, tuple[float, float]] = {}     # server_id → (mesuré à, décalage en s)
+_CLOCK_TTL = 600.0
+
+
+def log_clock_offset(server_id: int = 1) -> float:
+    """Secondes à ajouter à un horodatage de log (lu comme UTC) pour obtenir l'heure UTC réelle.
+
+    Les logs du serveur de jeu sont horodatés à l'heure du conteneur, sans fuseau. En mode
+    docker_split on compare la dernière ligne à l'horodatage UTC que Docker lui associe ; en mode
+    natif (fichier de log) les horodatages sont à l'heure locale de la machine."""
+    now = time.monotonic()
+    cached = _clock_cache.get(server_id)
+    if cached and now - cached[0] < _CLOCK_TTL:
+        return cached[1]
+    offset = 0.0
+    try:
+        if _DEPLOY_MODE == "docker_split":
+            from datetime import datetime, timezone
+            from app.services.process_manager import _get_docker_client
+            raw = _get_docker_client().containers.get(container_name(server_id)).logs(tail=3, timestamps=True)
+            for line in reversed(raw.decode("utf-8", errors="replace").splitlines()):
+                # « 2026-10-13T17:20:23.308000000Z [2026-10-13 19:20:23.308] … »
+                dm = re.match(r"(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})\.\d+Z \[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})", line)
+                if dm:
+                    docker_utc = datetime.strptime(dm.group(1), "%Y-%m-%dT%H:%M:%S").replace(tzinfo=timezone.utc)
+                    log_naive = datetime.strptime(dm.group(2), "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc)
+                    offset = round((docker_utc - log_naive).total_seconds() / 900.0) * 900.0
+                    break
+        else:
+            offset = float(-time.localtime().tm_gmtoff)
+    except Exception as e:
+        log.debug("live: décalage d'horloge des logs inconnu (server=%d) : %s", server_id, e)
+    _clock_cache[server_id] = (now, offset)
+    return offset
+
+
 # ── Build current session state ───────────────────────────────────────────────
 
 _state_cache: dict[int, tuple[float, dict]] = {}
@@ -176,8 +217,16 @@ def build_state(server_id: int = 1) -> dict:
     else:
         since_hours = _MAX_SCAN_HOURS
 
+    session_state: dict | None = None
+    last_log_ts = ""
+
     for raw_line in iter_log_lines(since_hours=since_hours, server_id=server_id):
         for line in raw_line.splitlines():
+            if ts_m := _RE_TS.match(line):
+                last_log_ts = ts_m.group(1)
+                if sev := _session_tracker.parse_event(line, last_log_ts):
+                    session_state = _session_tracker.apply_event(session_state, sev)
+                    continue
             if m := _RE_NEWLAP.search(line):
                 car_id = m.group(1)
                 lap_ms = _parse_lapstr(m.group(2))
@@ -329,4 +378,6 @@ def build_state(server_id: int = 1) -> dict:
         "sess_s1_ms":   sess_s1,
         "sess_s2_ms":   sess_s2,
         "sess_s3_ms":   sess_s3,
+        "session_raw":  session_state,     # voir session_tracker.describe()
+        "log_clock_offset_s": log_clock_offset(server_id) if session_state else 0.0,
     }

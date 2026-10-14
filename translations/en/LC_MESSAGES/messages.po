@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-14 02:10+0200\n"
+"POT-Creation-Date: 2026-10-14 02:18+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -2707,7 +2707,7 @@ msgstr "Disabled"
 msgid "Redémarre en cas de crash"
 msgstr "Restarts on crash"
 
-#: app/templates/server.html:225 app/templates/timing.html:185
+#: app/templates/server.html:225 app/templates/timing.html:184
 msgid "Session en cours"
 msgstr "Session in progress"
 
@@ -3690,8 +3690,8 @@ msgid "Chargement…"
 msgstr "Loading…"
 
 #: app/templates/timing.html:44
-msgid "Temps restant"
-msgstr "Time remaining"
+msgid "Temps restant (estimation)"
+msgstr "Time remaining (estimate)"
 
 #: app/templates/timing.html:65
 msgid "Pos"
@@ -3717,27 +3717,27 @@ msgstr "Everyone"
 msgid "Réagir"
 msgstr "React"
 
-#: app/templates/timing.html:100 app/templates/timing.html:219
+#: app/templates/timing.html:100 app/templates/timing.html:218
 msgid "Beau tour !"
 msgstr "Nice lap!"
 
-#: app/templates/timing.html:101 app/templates/timing.html:220
+#: app/templates/timing.html:101 app/templates/timing.html:219
 msgid "Bien joué !"
 msgstr "Well done!"
 
-#: app/templates/timing.html:102 app/templates/timing.html:221
+#: app/templates/timing.html:102 app/templates/timing.html:220
 msgid "Courage !"
 msgstr "Keep it up!"
 
-#: app/templates/timing.html:103 app/templates/timing.html:222
+#: app/templates/timing.html:103 app/templates/timing.html:221
 msgid "En feu !"
 msgstr "On fire!"
 
-#: app/templates/timing.html:104 app/templates/timing.html:223
+#: app/templates/timing.html:104 app/templates/timing.html:222
 msgid "Bravo !"
 msgstr "Bravo!"
 
-#: app/templates/timing.html:105 app/templates/timing.html:224
+#: app/templates/timing.html:105 app/templates/timing.html:223
 msgid "Allez !"
 msgstr "Go go go!"
 
@@ -3813,7 +3813,7 @@ msgstr "Remove drive-through"
 msgid "Retirer stop &amp; go"
 msgstr "Remove stop &amp; go"
 
-#: app/templates/timing.html:150 app/templates/timing.html:519
+#: app/templates/timing.html:150 app/templates/timing.html:518
 msgid "Pilote…"
 msgstr "Driver…"
 
@@ -3842,43 +3842,35 @@ msgstr "Invalid lap"
 msgid "En attente de départ"
 msgstr "Waiting to start"
 
-#: app/templates/timing.html:184
-msgid "Départ"
-msgstr "Start"
-
-#: app/templates/timing.html:186
+#: app/templates/timing.html:185
 msgid "Dernier tour"
 msgstr "Last lap"
 
-#: app/templates/timing.html:187
-msgid "Fin de session"
-msgstr "Session ending"
-
-#: app/templates/timing.html:188
+#: app/templates/timing.html:186
 msgid "Terminée"
 msgstr "Finished"
 
-#: app/templates/timing.html:440
+#: app/templates/timing.html:439
 msgid "TCP connecté"
 msgstr "TCP connected"
 
-#: app/templates/timing.html:441
+#: app/templates/timing.html:440
 msgid "TCP déconnecté"
 msgstr "TCP disconnected"
 
-#: app/templates/timing.html:442
+#: app/templates/timing.html:441
 msgid "non connecté"
 msgstr "not connected"
 
-#: app/templates/timing.html:443
+#: app/templates/timing.html:442
 msgid "erreur réseau"
 msgstr "network error"
 
-#: app/templates/timing.html:444
+#: app/templates/timing.html:443
 msgid "Bot élevé admin"
 msgstr "Bot elevated to admin"
 
-#: app/templates/timing.html:445
+#: app/templates/timing.html:444
 msgid "Échec élévation admin"
 msgstr "Admin elevation failed"
 
@@ -5037,4 +5029,10 @@ msgstr "No vehicle found."
 
 #~ msgid "tours"
 #~ msgstr "laps"
+
+#~ msgid "Départ"
+#~ msgstr "Start"
+
+#~ msgid "Fin de session"
+#~ msgstr "Session ending"
 

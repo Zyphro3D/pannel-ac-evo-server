@@ -1940,8 +1940,7 @@ body::before {
 }
 .timing-session[hidden] { display: none; }
 .timing-session-left { font-family: var(--mono, monospace); font-size: 1.05rem; color: var(--text); font-variant-numeric: tabular-nums; }
-.timing-session[data-phase="last_lap"] .timing-session-left,
-.timing-session[data-phase="finishing"] .timing-session-left { color: var(--accent); }
+.timing-session[data-phase="last_lap"] .timing-session-left { color: var(--accent); }
 .timing-badge {
   display: flex; align-items: center; gap: 6px;
   font-size: 0.85rem; padding: 4px 10px;

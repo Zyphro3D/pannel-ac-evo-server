@@ -41,7 +41,7 @@
         </div>
         <div class="timing-session" id="t-session" hidden>
           <span class="timing-session-phase" id="t-session-phase"></span>
-          <span class="timing-session-left" id="t-session-left" title="{{ _('Temps restant') }}"></span>
+          <span class="timing-session-left" id="t-session-left" title="{{ _('Temps restant (estimation)') }}"></span>
         </div>
       </div>
     </div>
@@ -178,13 +178,11 @@ const T = {
   invalidLap:  "{{ _('Tour invalide') }}",
 };
 
-// Phase de session lue dans les messages du serveur de jeu (clés : voir session_phase.py)
+// Phase de la session, déduite des logs du serveur de jeu (voir session_tracker.py)
 const PHASE_LABELS = {
   waiting:   "{{ _('En attente de départ') }}",
-  starting:  "{{ _('Départ') }}",
   running:   "{{ _('Session en cours') }}",
   last_lap:  "{{ _('Dernier tour') }}",
-  finishing: "{{ _('Fin de session') }}",
   ended:     "{{ _('Terminée') }}",
 };
 let _sessionEndAt = null;   // instant local (ms) où la phase se termine ; null = pas de limite
@@ -208,7 +206,8 @@ function _renderSession(sess) {
   if (!sess || !PHASE_LABELS[sess.phase]) { box.hidden = true; _sessionEndAt = null; return; }
   box.hidden = false;
   box.dataset.phase = sess.phase;
-  document.getElementById('t-session-phase').textContent = PHASE_LABELS[sess.phase];
+  document.getElementById('t-session-phase').textContent =
+    (sess.name_label ? sess.name_label + ' · ' : '') + PHASE_LABELS[sess.phase];
   _sessionEndAt = (sess.remaining_ms === null || sess.remaining_ms === undefined)
     ? null : Date.now() + sess.remaining_ms;
   _tickSession();
