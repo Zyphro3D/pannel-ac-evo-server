@@ -356,6 +356,7 @@ def _register_blueprints(app):
     from app.routes.container_mgmt import container_mgmt_bp
     from app.routes.tools_admin     import tools_bp
     from app.routes.championships   import championships_bp
+    from app.routes.collisions      import collisions_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
@@ -367,6 +368,7 @@ def _register_blueprints(app):
     app.register_blueprint(container_mgmt_bp)
     app.register_blueprint(tools_bp)
     app.register_blueprint(championships_bp)
+    app.register_blueprint(collisions_bp)
     # Webhook protégé par HMAC/réseau privé, pas par CSRF (pas de session navigateur).
     csrf.exempt(results_ingest)
 

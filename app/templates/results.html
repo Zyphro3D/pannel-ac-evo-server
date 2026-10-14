@@ -44,6 +44,12 @@
         </svg>
         {{ _('ELO') }}
       </a>
+      <a class="race-sidebar-link" href="{{ url_for('collisions.collisions_page') }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/><path d="M12 3v4M12 17v4M3 12h4M17 12h4"/>
+        </svg>
+        {{ _('Accrochages') }}
+      </a>
       <a class="race-sidebar-link" href="{{ url_for('championships.championships_list') }}">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M5 21h14M9 21V9M15 21V4M3 21v-6"/>

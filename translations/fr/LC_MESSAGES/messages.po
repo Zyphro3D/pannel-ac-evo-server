@@ -5198,6 +5198,175 @@ msgstr ""
 "Refus des pilotes dont le niveau ELO est sous RATING_MIN_TO_JOIN "
 "(désactivé par défaut) : se règle dans la page Accès."
 
+msgid "Description (facultatif)"
+msgstr "Description (facultatif)"
+
+msgid "Barème (points par place)"
+msgstr "Barème (points par place)"
+
+msgid "De la 1re place à la dernière, séparés par des virgules."
+msgstr "De la 1re place à la dernière, séparés par des virgules."
+
+msgid "Bonus meilleur tour"
+msgstr "Bonus meilleur tour"
+
+msgid "Bonus pole"
+msgstr "Bonus pole"
+
+msgid "Pires manches retirées"
+msgstr "Pires manches retirées"
+
+msgid "Participation minimale (0 à 1)"
+msgstr "Participation minimale (0 à 1)"
+
+msgid "Part des manches à avoir courues pour être classé (0 = aucune)."
+msgstr "Part des manches à avoir courues pour être classé (0 = aucune)."
+
+msgid "Visible par tous"
+msgstr "Visible par tous"
+
+msgid "Toutes"
+msgstr "Toutes"
+
+msgid "Vitesse de l'impact"
+msgstr "Vitesse de l'impact"
+
+msgid "Sur la voiture"
+msgstr "Sur la voiture"
+
+msgid "avec"
+msgstr "avec"
+
+msgid "avant"
+msgstr "avant"
+
+msgid "arrière"
+msgstr "arrière"
+
+msgid "gauche"
+msgstr "gauche"
+
+msgid "droite"
+msgstr "droite"
+
+msgid "centre"
+msgstr "centre"
+
+msgid "Survolez un point"
+msgstr "Survolez un point"
+
+msgid "Astuce"
+msgstr "Astuce"
+
+msgid "Un impact s'allume sur la carte ET sur la voiture. Cliquez pour le garder."
+msgstr "Un impact s'allume sur la carte ET sur la voiture. Cliquez pour le garder."
+
+msgid "Plus fort choc affiché"
+msgstr "Plus fort choc affiché"
+
+msgid "Impact retenu"
+msgstr "Impact retenu"
+
+msgid "Impact survolé"
+msgstr "Impact survolé"
+
+msgid "Filtres"
+msgstr "Filtres"
+
+msgid "Choc minimum"
+msgstr "Choc minimum"
+
+msgid "Avec dégâts seulement"
+msgstr "Avec dégâts seulement"
+
+msgid "impacts affichés"
+msgstr "impacts affichés"
+
+msgid "km/h en moyenne"
+msgstr "km/h en moyenne"
+
+msgid "km/h au plus fort"
+msgstr "km/h au plus fort"
+
+msgid "Aucun impact enregistré pour ce circuit."
+msgstr "Aucun impact enregistré pour ce circuit."
+
+msgid "Carte du circuit"
+msgstr "Carte du circuit"
+
+msgid "Où sur le circuit"
+msgstr "Où sur le circuit"
+
+msgid "Densité"
+msgstr "Densité"
+
+msgid "Recentrer"
+msgstr "Recentrer"
+
+msgid "Plan du circuit avec la position des accrochages"
+msgstr "Plan du circuit avec la position des accrochages"
+
+msgid "Voiture en 3D"
+msgstr "Voiture en 3D"
+
+msgid "Où sur la voiture"
+msgstr "Où sur la voiture"
+
+msgid "Dessus"
+msgstr "Dessus"
+
+msgid "Avant"
+msgstr "Avant"
+
+msgid "Arrière"
+msgstr "Arrière"
+
+msgid "Gauche"
+msgstr "Gauche"
+
+msgid "Droite"
+msgstr "Droite"
+
+msgid "Rotation auto"
+msgstr "Rotation auto"
+
+msgid "Voiture en 3D avec les points d'impact"
+msgstr "Voiture en 3D avec les points d'impact"
+
+msgid "glisser : tourner · molette : zoom"
+msgstr "glisser : tourner · molette : zoom"
+
+msgid ""
+"Un point = un contact enregistré par le serveur de jeu : position sur la "
+"piste, position sur la voiture, vitesse relative de l'impact, type (mur, "
+"autre voiture, objet) et dégâts. Orientation de la voiture déduite des "
+"données : avant = côté le plus touché."
+msgstr ""
+"Un point = un contact enregistré par le serveur de jeu : position sur la "
+"piste, position sur la voiture, vitesse relative de l'impact, type (mur, "
+"autre voiture, objet) et dégâts. Orientation de la voiture déduite des "
+"données : avant = côté le plus touché."
+
+msgid "Carte des accrochages"
+msgstr "Carte des accrochages"
+
+msgid ""
+"Où et comment les pilotes touchent murs, objets et autres voitures, sur "
+"tout l'historique d'un circuit."
+msgstr ""
+"Où et comment les pilotes touchent murs, objets et autres voitures, sur "
+"tout l'historique d'un circuit."
+
+msgid ""
+"Aucun accrochage à afficher pour le moment : il faut des résultats "
+"récents sur un circuit dont le plan est connu."
+msgstr ""
+"Aucun accrochage à afficher pour le moment : il faut des résultats "
+"récents sur un circuit dont le plan est connu."
+
+msgid "Accrochages"
+msgstr "Accrochages"
+
 #~ msgid "Administration serveur"
 #~ msgstr "Administration serveur"
 

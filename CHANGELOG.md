@@ -75,6 +75,12 @@ Section repliable « Options de course », chaque réglage vérifié sur un vrai
 - Chaque voiture impliquée rapporte le même contact : les doublons à moins de 2 s sont fusionnés. La vitesse d'impact et la position ne sont pas journalisées en direct ; elles restent visibles après coup dans la page de détail d'un résultat.
 - Prise en compte au prochain démarrage du serveur de jeu. En déploiement Docker séparé, l'image `aceserver` doit être reconstruite une fois (`docker compose build aceserver`) pour que le script de démarrage lise l'argument.
 
+**Ajout — carte des accrochages (Résultats → Accrochages, et sur chaque page de résultat)**
+
+- Le plan du circuit et une voiture en 3D, reliés : chaque impact enregistré par le serveur de jeu s'affiche **à l'endroit de la piste** où il a eu lieu et **à l'endroit de la voiture** qui a été touchée ; le survol d'un point l'allume des deux côtés et affiche sa fiche (type mur / voiture / objet, vitesse de l'impact, dégâts, pilote et pilote touché, session). Couleur par type, taille par vitesse ; filtres par type, vitesse minimale, dégâts, session et pilote ; vue « densité » pour repérer les virages à problème ; voiture orientable (glisser, molette, vues dessus / avant / arrière / côtés).
+- Les positions du jeu sont placées sur le plan du circuit grâce à un calage par circuit (`app/data/track_calibration.json`, 37 circuits : de simples constantes numériques, calculées une fois en alignant le plan sur la ligne idéale du circuit ; vérifié sur 1 021 impacts réels à Spa, tous sur le tracé). Un circuit sans calage (mod, nouveau circuit) n'a pas de carte.
+- La bibliothèque 3D (three.js r128, licence MIT) est fournie avec le panel : aucun service externe.
+
 **Correction de sécurité — l'ingestion des résultats était ouverte à Internet derrière un reverse proxy**
 
 - `/api/results/ingest` acceptait sans signature toute requête venant d'une IP privée, pour laisser passer le serveur de jeu (qui ne sait pas signer). Derrière Caddy, nginx ou Cloudflare, le panel voit l'adresse privée du proxy pour **tous** les visiteurs : n'importe qui sur Internet pouvait donc poster de faux résultats (classements, records, récapitulatif Discord). Vérifié sur une installation réelle.
@@ -136,7 +142,8 @@ Section repliable « Options de course », chaque réglage vérifié sur un vrai
 - Le message de démarrage « RESULTS_INGEST_SECRET non défini — rejette tous les résultats » était faux ; remplacé par une information exacte.
 - Le menu Admin gagne « Accès » (absent du menu bureau), « Championnats », « Santé du serveur », « Journal d'audit » et « Sauvegarde ».
 - Le classement fair-play lit désormais tout l'historique (plafond de 2000 résultats retiré).
-- 103 tests unitaires (`pytest tests/unit`, données entièrement synthétiques).
+- Les textes des modèles du dossier `_partials` (formulaire de championnat, carte des accrochages) sont traduits en 5 langues ; l'extraction Babel du projet ignore ce dossier (il faut le passer explicitement).
+- 108 tests unitaires (`pytest tests/unit`, données entièrement synthétiques).
 
 ### v2.0.6 — 08/09/2026
 

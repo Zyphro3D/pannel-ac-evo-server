@@ -1,0 +1,59 @@
+{# Carte des accrochages : plan du circuit + voiture 3D. Variable : data_url (JSON des impacts). #}
+{% set cm_i18n = {
+  'types': {'wall': _('Mur'), 'car': _('Voiture'), 'object': _('Objet')},
+  'all': _('Toutes'), 'type': _('Type'), 'speed': _('Vitesse de l\'impact'), 'damage': _('Dégâts'),
+  'yes': _('oui'), 'no': _('non'), 'on_car': _('Sur la voiture'), 'driver': _('Pilote'), 'session': _('Session'),
+  'with': _('avec'), 'front': _('avant'), 'rear': _('arrière'), 'left': _('gauche'), 'right': _('droite'), 'center': _('centre'),
+  'hover_hint_title': _('Survolez un point'), 'tip': _('Astuce'),
+  'hover_hint': _('Un impact s\'allume sur la carte ET sur la voiture. Cliquez pour le garder.'),
+  'top_hit': _('Plus fort choc affiché'), 'pinned': _('Impact retenu'), 'hovered': _('Impact survolé')
+} %}
+<div class="cmap" data-url="{{ data_url }}" id="cmap-root">
+  <script type="application/json" data-cm="i18n">{{ cm_i18n|tojson }}</script>
+
+  <div class="cm-bar" role="group" aria-label="{{ _('Filtres') }}">
+    <div class="cm-chips" data-cm="types"></div>
+    <label class="cm-f">{{ _('Choc minimum') }} <input data-cm="vmin" type="range" min="0" max="120" step="1" value="0"><output data-cm="vmin-o">0 km/h</output></label>
+    <label class="cm-f"><input data-cm="dmg" type="checkbox"> {{ _('Avec dégâts seulement') }}</label>
+    <label class="cm-f">{{ _('Session') }} <select data-cm="sess"></select></label>
+    <label class="cm-f">{{ _('Pilote') }} <select data-cm="drv"></select></label>
+    <div class="cm-stats" aria-live="polite" style="margin-left:auto">
+      <div><b data-cm="s-count">0</b><span>{{ _('impacts affichés') }}</span></div>
+      <div><b data-cm="s-avg">0</b><span>{{ _('km/h en moyenne') }}</span></div>
+      <div><b data-cm="s-max">0</b><span>{{ _('km/h au plus fort') }}</span></div>
+    </div>
+  </div>
+
+  <div class="cm-card cm-empty" data-cm="empty" hidden>{{ _('Aucun impact enregistré pour ce circuit.') }}</div>
+
+  <div class="cm-main">
+    <section class="cm-card" aria-label="{{ _('Carte du circuit') }}">
+      <h2>{{ _('Où sur le circuit') }}</h2>
+      <div class="cm-tools">
+        <button type="button" data-cm="pts" aria-pressed="true">{{ _('Points') }}</button>
+        <button type="button" data-cm="heat" aria-pressed="false">{{ _('Densité') }}</button>
+        <button type="button" data-cm="reset">{{ _('Recentrer') }}</button>
+      </div>
+      <svg class="cm-map" data-cm="map" viewBox="0 0 400 400" role="img" aria-label="{{ _('Plan du circuit avec la position des accrochages') }}"></svg>
+    </section>
+    <section class="cm-card" aria-label="{{ _('Voiture en 3D') }}">
+      <h2>{{ _('Où sur la voiture') }}</h2>
+      <div class="cm-tools">
+        <button type="button" data-cm-view="iso" aria-pressed="true">3/4</button>
+        <button type="button" data-cm-view="top" aria-pressed="false">{{ _('Dessus') }}</button>
+        <button type="button" data-cm-view="front" aria-pressed="false">{{ _('Avant') }}</button>
+        <button type="button" data-cm-view="rear" aria-pressed="false">{{ _('Arrière') }}</button>
+        <button type="button" data-cm-view="left" aria-pressed="false">{{ _('Gauche') }}</button>
+        <button type="button" data-cm-view="right" aria-pressed="false">{{ _('Droite') }}</button>
+        <button type="button" data-cm="spin" aria-pressed="false">{{ _('Rotation auto') }}</button>
+      </div>
+      <div class="cm-stage"><canvas class="cm-scene" data-cm="scene" aria-label="{{ _('Voiture en 3D avec les points d\'impact') }}"></canvas><div class="cm-hint">{{ _('glisser : tourner · molette : zoom') }}</div></div>
+    </section>
+  </div>
+
+  <section class="cm-card" aria-live="polite"><div class="cm-info" data-cm="info"></div></section>
+  <p class="cm-note">{{ _('Un point = un contact enregistré par le serveur de jeu : position sur la piste, position sur la voiture, vitesse relative de l\'impact, type (mur, autre voiture, objet) et dégâts. Orientation de la voiture déduite des données : avant = côté le plus touché.') }}</p>
+</div>
+<script src="{{ url_for('static', filename='js/three.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/collision_map.js') }}"></script>
+<script nonce="{{ csp_nonce }}">initCollisionMap(document.getElementById('cmap-root'));</script>

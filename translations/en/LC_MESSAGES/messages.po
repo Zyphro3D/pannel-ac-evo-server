@@ -5139,6 +5139,175 @@ msgstr ""
 "Refuse drivers whose ELO is below RATING_MIN_TO_JOIN (off by default): "
 "set on the Access page."
 
+msgid "Description (facultatif)"
+msgstr "Description (optional)"
+
+msgid "Barème (points par place)"
+msgstr "Points table (points per position)"
+
+msgid "De la 1re place à la dernière, séparés par des virgules."
+msgstr "From 1st place to last, separated by commas."
+
+msgid "Bonus meilleur tour"
+msgstr "Fastest lap bonus"
+
+msgid "Bonus pole"
+msgstr "Pole bonus"
+
+msgid "Pires manches retirées"
+msgstr "Worst rounds dropped"
+
+msgid "Participation minimale (0 à 1)"
+msgstr "Minimum participation (0 to 1)"
+
+msgid "Part des manches à avoir courues pour être classé (0 = aucune)."
+msgstr "Share of rounds a driver must have run to be ranked (0 = none)."
+
+msgid "Visible par tous"
+msgstr "Visible to everyone"
+
+msgid "Toutes"
+msgstr "All"
+
+msgid "Vitesse de l'impact"
+msgstr "Impact speed"
+
+msgid "Sur la voiture"
+msgstr "On the car"
+
+msgid "avec"
+msgstr "with"
+
+msgid "avant"
+msgstr "front"
+
+msgid "arrière"
+msgstr "rear"
+
+msgid "gauche"
+msgstr "left"
+
+msgid "droite"
+msgstr "right"
+
+msgid "centre"
+msgstr "center"
+
+msgid "Survolez un point"
+msgstr "Hover over a point"
+
+msgid "Astuce"
+msgstr "Tip"
+
+msgid "Un impact s'allume sur la carte ET sur la voiture. Cliquez pour le garder."
+msgstr "An impact lights up on the map AND on the car. Click to keep it."
+
+msgid "Plus fort choc affiché"
+msgstr "Strongest impact shown"
+
+msgid "Impact retenu"
+msgstr "Pinned impact"
+
+msgid "Impact survolé"
+msgstr "Hovered impact"
+
+msgid "Filtres"
+msgstr "Filters"
+
+msgid "Choc minimum"
+msgstr "Minimum impact"
+
+msgid "Avec dégâts seulement"
+msgstr "With damage only"
+
+msgid "impacts affichés"
+msgstr "impacts shown"
+
+msgid "km/h en moyenne"
+msgstr "km/h on average"
+
+msgid "km/h au plus fort"
+msgstr "km/h at the strongest"
+
+msgid "Aucun impact enregistré pour ce circuit."
+msgstr "No impact recorded for this circuit."
+
+msgid "Carte du circuit"
+msgstr "Track map"
+
+msgid "Où sur le circuit"
+msgstr "Where on the track"
+
+msgid "Densité"
+msgstr "Density"
+
+msgid "Recentrer"
+msgstr "Recenter"
+
+msgid "Plan du circuit avec la position des accrochages"
+msgstr "Track plan with the position of the impacts"
+
+msgid "Voiture en 3D"
+msgstr "Car in 3D"
+
+msgid "Où sur la voiture"
+msgstr "Where on the car"
+
+msgid "Dessus"
+msgstr "Top"
+
+msgid "Avant"
+msgstr "Front"
+
+msgid "Arrière"
+msgstr "Rear"
+
+msgid "Gauche"
+msgstr "Left"
+
+msgid "Droite"
+msgstr "Right"
+
+msgid "Rotation auto"
+msgstr "Auto rotate"
+
+msgid "Voiture en 3D avec les points d'impact"
+msgstr "Car in 3D with the impact points"
+
+msgid "glisser : tourner · molette : zoom"
+msgstr "drag: rotate · wheel: zoom"
+
+msgid ""
+"Un point = un contact enregistré par le serveur de jeu : position sur la "
+"piste, position sur la voiture, vitesse relative de l'impact, type (mur, "
+"autre voiture, objet) et dégâts. Orientation de la voiture déduite des "
+"données : avant = côté le plus touché."
+msgstr ""
+"One point = one contact recorded by the game server: position on the "
+"track, position on the car, relative impact speed, type (wall, other car,"
+" object) and damage. Car orientation inferred from the data: front = the "
+"most-hit end."
+
+msgid "Carte des accrochages"
+msgstr "Impact map"
+
+msgid ""
+"Où et comment les pilotes touchent murs, objets et autres voitures, sur "
+"tout l'historique d'un circuit."
+msgstr ""
+"Where and how drivers hit walls, objects and other cars, over a circuit's"
+" whole history."
+
+msgid ""
+"Aucun accrochage à afficher pour le moment : il faut des résultats "
+"récents sur un circuit dont le plan est connu."
+msgstr ""
+"No impact to show yet: you need recent results on a circuit whose plan is"
+" known."
+
+msgid "Accrochages"
+msgstr "Impacts"
+
 #~ msgid "Administration serveur"
 #~ msgstr "Server administration"
 

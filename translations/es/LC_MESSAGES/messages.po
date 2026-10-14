@@ -5211,6 +5211,179 @@ msgstr ""
 "Rechazar a los pilotos con ELO inferior a RATING_MIN_TO_JOIN (desactivado"
 " por defecto): se ajusta en la página Acceso."
 
+msgid "Description (facultatif)"
+msgstr "Descripción (opcional)"
+
+msgid "Barème (points par place)"
+msgstr "Baremo (puntos por posición)"
+
+msgid "De la 1re place à la dernière, séparés par des virgules."
+msgstr "Del 1.er puesto al último, separados por comas."
+
+msgid "Bonus meilleur tour"
+msgstr "Bonus de vuelta rápida"
+
+msgid "Bonus pole"
+msgstr "Bonus de pole"
+
+msgid "Pires manches retirées"
+msgstr "Peores rondas descartadas"
+
+msgid "Participation minimale (0 à 1)"
+msgstr "Participación mínima (0 a 1)"
+
+msgid "Part des manches à avoir courues pour être classé (0 = aucune)."
+msgstr ""
+"Proporción de rondas que hay que haber disputado para ser clasificado (0 "
+"= ninguna)."
+
+msgid "Visible par tous"
+msgstr "Visible para todos"
+
+msgid "Toutes"
+msgstr "Todas"
+
+msgid "Vitesse de l'impact"
+msgstr "Velocidad del impacto"
+
+msgid "Sur la voiture"
+msgstr "En el coche"
+
+msgid "avec"
+msgstr "con"
+
+msgid "avant"
+msgstr "delante"
+
+msgid "arrière"
+msgstr "detrás"
+
+msgid "gauche"
+msgstr "izquierda"
+
+msgid "droite"
+msgstr "derecha"
+
+msgid "centre"
+msgstr "centro"
+
+msgid "Survolez un point"
+msgstr "Pase el ratón sobre un punto"
+
+msgid "Astuce"
+msgstr "Consejo"
+
+msgid "Un impact s'allume sur la carte ET sur la voiture. Cliquez pour le garder."
+msgstr ""
+"Un impacto se ilumina en el mapa Y en el coche. Haga clic para "
+"conservarlo."
+
+msgid "Plus fort choc affiché"
+msgstr "Impacto más fuerte mostrado"
+
+msgid "Impact retenu"
+msgstr "Impacto fijado"
+
+msgid "Impact survolé"
+msgstr "Impacto señalado"
+
+msgid "Filtres"
+msgstr "Filtros"
+
+msgid "Choc minimum"
+msgstr "Impacto mínimo"
+
+msgid "Avec dégâts seulement"
+msgstr "Solo con daños"
+
+msgid "impacts affichés"
+msgstr "impactos mostrados"
+
+msgid "km/h en moyenne"
+msgstr "km/h de media"
+
+msgid "km/h au plus fort"
+msgstr "km/h en el más fuerte"
+
+msgid "Aucun impact enregistré pour ce circuit."
+msgstr "Ningún impacto registrado en este circuito."
+
+msgid "Carte du circuit"
+msgstr "Mapa del circuito"
+
+msgid "Où sur le circuit"
+msgstr "Dónde en el circuito"
+
+msgid "Densité"
+msgstr "Densidad"
+
+msgid "Recentrer"
+msgstr "Recentrar"
+
+msgid "Plan du circuit avec la position des accrochages"
+msgstr "Plano del circuito con la posición de los impactos"
+
+msgid "Voiture en 3D"
+msgstr "Coche en 3D"
+
+msgid "Où sur la voiture"
+msgstr "Dónde en el coche"
+
+msgid "Dessus"
+msgstr "Arriba"
+
+msgid "Avant"
+msgstr "Delante"
+
+msgid "Arrière"
+msgstr "Detrás"
+
+msgid "Gauche"
+msgstr "Izquierda"
+
+msgid "Droite"
+msgstr "Derecha"
+
+msgid "Rotation auto"
+msgstr "Rotación automática"
+
+msgid "Voiture en 3D avec les points d'impact"
+msgstr "Coche en 3D con los puntos de impacto"
+
+msgid "glisser : tourner · molette : zoom"
+msgstr "arrastrar: girar · rueda: zoom"
+
+msgid ""
+"Un point = un contact enregistré par le serveur de jeu : position sur la "
+"piste, position sur la voiture, vitesse relative de l'impact, type (mur, "
+"autre voiture, objet) et dégâts. Orientation de la voiture déduite des "
+"données : avant = côté le plus touché."
+msgstr ""
+"Un punto = un contacto registrado por el servidor de juego: posición en "
+"la pista, posición en el coche, velocidad relativa del impacto, tipo "
+"(muro, otro coche, objeto) y daños. Orientación del coche deducida de los"
+" datos: delante = el extremo más golpeado."
+
+msgid "Carte des accrochages"
+msgstr "Mapa de impactos"
+
+msgid ""
+"Où et comment les pilotes touchent murs, objets et autres voitures, sur "
+"tout l'historique d'un circuit."
+msgstr ""
+"Dónde y cómo los pilotos tocan muros, objetos y otros coches, en todo el "
+"historial de un circuito."
+
+msgid ""
+"Aucun accrochage à afficher pour le moment : il faut des résultats "
+"récents sur un circuit dont le plan est connu."
+msgstr ""
+"Aún no hay impactos que mostrar: hacen falta resultados recientes en un "
+"circuito cuyo plano se conozca."
+
+msgid "Accrochages"
+msgstr "Impactos"
+
 #~ msgid "Administration serveur"
 #~ msgstr "Administración del servidor"
 

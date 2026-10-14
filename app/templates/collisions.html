@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Carte des accrochages') }} — {{ panel_title }}{% endblock %}
+
+{% block content %}
+<div class="page-shell max-w-[1280px]">
+  <div class="flex items-end justify-between gap-3 flex-wrap mb-4">
+    <div>
+      <h1 class="text-2xl font-bold text-txt">{{ _('Carte des accrochages') }}</h1>
+      <p class="text-sm text-dim mt-1">{{ _('Où et comment les pilotes touchent murs, objets et autres voitures, sur tout l\'historique d\'un circuit.') }}</p>
+    </div>
+    {% if circuits|length > 1 %}
+    <form method="get" class="flex items-center gap-2">
+      <label class="text-sm text-dim" for="cm-circuit">{{ _('Circuit') }}</label>
+      <select id="cm-circuit" name="c" class="form-control" onchange="this.form.submit()">
+        {% for c in circuits %}<option value="{{ c.slug }}" {% if c.slug == slug %}selected{% endif %}>{{ c.track }} — {{ c.layout }} ({{ c.count }})</option>{% endfor %}
+      </select>
+    </form>
+    {% endif %}
+  </div>
+
+  {% if not slug %}
+  <div class="card p-7 text-center text-dim">{{ _('Aucun accrochage à afficher pour le moment : il faut des résultats récents sur un circuit dont le plan est connu.') }}</div>
+  {% else %}
+  {% set data_url = url_for('collisions.collisions_data', slug=slug) %}
+  {% include "_partials/collision_map.html" %}
+  {% endif %}
+</div>
+{% endblock %}

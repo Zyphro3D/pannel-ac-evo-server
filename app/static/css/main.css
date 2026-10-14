@@ -4107,3 +4107,45 @@ body::before {
 .race-options > summary { cursor: pointer; font-weight: 600; margin-bottom: 8px; }
 .race-options .hint { display: block; margin: 2px 0 8px; font-size: 0.85rem; color: var(--dim); font-weight: 400; }
 .race-options .form-group { margin-bottom: 12px; }
+
+/* ─── Carte des accrochages (v2.1.0) ─────────────────────────────────────── */
+.cmap { --cm-wall:#ff6a45; --cm-car:#4aa8ff; --cm-obj:#f2c14e; --cm-track:#52607a; --cm-fg:#e6eaf1; display:flex; flex-direction:column; gap:14px; }
+.cmap [hidden] { display:none !important; }
+.cm-bar { background:var(--bg-card); border:1px solid var(--border); border-radius:10px; padding:12px 14px; display:flex; flex-wrap:wrap; gap:10px 20px; align-items:center; }
+.cm-chips { display:flex; gap:8px; flex-wrap:wrap; }
+.cm-chip { border:1px solid var(--border-light); background:var(--bg-hover); color:var(--text); border-radius:999px; padding:6px 12px; font:inherit; font-size:.88rem; cursor:pointer; display:inline-flex; align-items:center; gap:7px; }
+.cm-chip i { width:10px; height:10px; border-radius:50%; display:inline-block; }
+.cm-chip[aria-pressed="false"] { opacity:.45; }
+.cm-chip .cm-n { color:var(--dim); font-family:var(--mono); }
+.cm-f { display:flex; align-items:center; gap:8px; font-size:.88rem; color:var(--dim); }
+.cm-f output { font-family:var(--mono); color:var(--text); min-width:4.6em; }
+.cm-f select, .cm-f input[type=range] { accent-color:var(--accent); }
+.cm-f select { background:var(--bg-input); color:var(--text); border:1px solid var(--border-light); border-radius:8px; padding:6px 8px; font:inherit; font-size:.88rem; max-width:100%; }
+.cm-stats { display:flex; gap:22px; flex-wrap:wrap; font-family:var(--mono); }
+.cm-stats b { display:block; font-size:1.35rem; font-weight:500; color:var(--text); }
+.cm-stats span { color:var(--dim); font-size:.72rem; text-transform:uppercase; letter-spacing:.08em; }
+.cm-main { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:16px; }
+@media (max-width:860px) { .cm-main { grid-template-columns:minmax(0,1fr); } }
+.cm-card { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; overflow:hidden; min-width:0; display:flex; flex-direction:column; }
+.cm-card h2 { font-family:var(--condensed); font-style:italic; font-size:1.05rem; text-transform:uppercase; letter-spacing:.05em; padding:12px 14px 0; }
+.cm-tools { display:flex; gap:6px; flex-wrap:wrap; padding:8px 14px; }
+.cm-tools button { border:1px solid var(--border-light); background:var(--bg-hover); color:var(--text); border-radius:8px; padding:5px 10px; font:inherit; font-size:.82rem; cursor:pointer; }
+.cm-tools button[aria-pressed="true"] { border-color:var(--accent); color:var(--accent); }
+.cm-map, .cm-scene { display:block; width:100%; touch-action:none; cursor:grab; }
+.cm-map { aspect-ratio:1/1; }
+.cm-scene { aspect-ratio:5/4; }
+.cm-stage { position:relative; }
+.cm-hint { position:absolute; left:14px; bottom:10px; font-family:var(--mono); font-size:.7rem; color:var(--dim); pointer-events:none; }
+.cm-info { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px 18px; align-items:start; padding:14px; }
+.cm-info h3 { grid-column:1/-1; font-family:var(--condensed); font-style:italic; font-size:.95rem; text-transform:uppercase; letter-spacing:.06em; color:var(--dim); }
+.cm-info .kv span { display:block; font-size:.7rem; text-transform:uppercase; letter-spacing:.08em; color:var(--dim); }
+.cm-info .kv b { font-family:var(--mono); font-weight:500; font-size:1rem; }
+.cm-info .kv b.plain { font-family:inherit; font-size:.92rem; }
+.cm-info .kv.wide { grid-column:span 2; }
+.cm-info .dimmed { color:var(--dim); font-weight:400; }
+.cm-info .gauge { height:6px; border-radius:3px; background:var(--bg-hover); margin-top:6px; overflow:hidden; }
+.cm-info .gauge div { height:100%; background:var(--accent); }
+.cm-note { color:var(--dim); font-size:.82rem; line-height:1.5; }
+.cm-empty { padding:28px; text-align:center; color:var(--dim); }
+.cmap .dot { transition:r .08s; }
+@media (prefers-reduced-motion:reduce) { .cmap .dot { transition:none; } }

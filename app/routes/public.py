@@ -508,7 +508,10 @@ def result_detail(result_id):
     from app.services.results_parser import get_parsed
     r = db.get_or_404(SessionResult, result_id)
     parsed = get_parsed(r)
-    return render_template("result_detail.html", result=r, parsed=parsed)
+    from app.services import collision_map
+    slug = collision_map.slug_for(parsed)
+    cm_slug = slug if (parsed.get("hits") and collision_map.has_map(slug)) else None
+    return render_template("result_detail.html", result=r, parsed=parsed, cm_slug=cm_slug)
 
 
 @public_bp.route("/mods/<path:filename>/download")

@@ -5187,6 +5187,179 @@ msgstr ""
 "Fahrer mit ELO unter RATING_MIN_TO_JOIN ablehnen (standardmäßig aus): "
 "einzustellen auf der Seite Zugang."
 
+msgid "Description (facultatif)"
+msgstr "Beschreibung (optional)"
+
+msgid "Barème (points par place)"
+msgstr "Punktetabelle (Punkte pro Platz)"
+
+msgid "De la 1re place à la dernière, séparés par des virgules."
+msgstr "Vom 1. Platz bis zum letzten, durch Kommas getrennt."
+
+msgid "Bonus meilleur tour"
+msgstr "Bonus für schnellste Runde"
+
+msgid "Bonus pole"
+msgstr "Pole-Bonus"
+
+msgid "Pires manches retirées"
+msgstr "Gestrichene schlechteste Läufe"
+
+msgid "Participation minimale (0 à 1)"
+msgstr "Mindestteilnahme (0 bis 1)"
+
+msgid "Part des manches à avoir courues pour être classé (0 = aucune)."
+msgstr ""
+"Anteil der Läufe, die ein Fahrer bestritten haben muss, um gewertet zu "
+"werden (0 = keine)."
+
+msgid "Visible par tous"
+msgstr "Für alle sichtbar"
+
+msgid "Toutes"
+msgstr "Alle"
+
+msgid "Vitesse de l'impact"
+msgstr "Aufprallgeschwindigkeit"
+
+msgid "Sur la voiture"
+msgstr "Am Auto"
+
+msgid "avec"
+msgstr "mit"
+
+msgid "avant"
+msgstr "vorne"
+
+msgid "arrière"
+msgstr "hinten"
+
+msgid "gauche"
+msgstr "links"
+
+msgid "droite"
+msgstr "rechts"
+
+msgid "centre"
+msgstr "Mitte"
+
+msgid "Survolez un point"
+msgstr "Fahren Sie über einen Punkt"
+
+msgid "Astuce"
+msgstr "Tipp"
+
+msgid "Un impact s'allume sur la carte ET sur la voiture. Cliquez pour le garder."
+msgstr ""
+"Ein Aufprall leuchtet auf der Karte UND am Auto auf. Klicken Sie, um ihn "
+"zu behalten."
+
+msgid "Plus fort choc affiché"
+msgstr "Stärkster angezeigter Aufprall"
+
+msgid "Impact retenu"
+msgstr "Fixierter Aufprall"
+
+msgid "Impact survolé"
+msgstr "Überfahrener Aufprall"
+
+msgid "Filtres"
+msgstr "Filter"
+
+msgid "Choc minimum"
+msgstr "Mindestaufprall"
+
+msgid "Avec dégâts seulement"
+msgstr "Nur mit Schaden"
+
+msgid "impacts affichés"
+msgstr "angezeigte Aufpralle"
+
+msgid "km/h en moyenne"
+msgstr "km/h im Schnitt"
+
+msgid "km/h au plus fort"
+msgstr "km/h beim stärksten"
+
+msgid "Aucun impact enregistré pour ce circuit."
+msgstr "Kein Aufprall für diese Strecke aufgezeichnet."
+
+msgid "Carte du circuit"
+msgstr "Streckenkarte"
+
+msgid "Où sur le circuit"
+msgstr "Wo auf der Strecke"
+
+msgid "Densité"
+msgstr "Dichte"
+
+msgid "Recentrer"
+msgstr "Zentrieren"
+
+msgid "Plan du circuit avec la position des accrochages"
+msgstr "Streckenplan mit der Position der Aufpralle"
+
+msgid "Voiture en 3D"
+msgstr "Auto in 3D"
+
+msgid "Où sur la voiture"
+msgstr "Wo am Auto"
+
+msgid "Dessus"
+msgstr "Oben"
+
+msgid "Avant"
+msgstr "Vorne"
+
+msgid "Arrière"
+msgstr "Hinten"
+
+msgid "Gauche"
+msgstr "Links"
+
+msgid "Droite"
+msgstr "Rechts"
+
+msgid "Rotation auto"
+msgstr "Automatisch drehen"
+
+msgid "Voiture en 3D avec les points d'impact"
+msgstr "Auto in 3D mit den Aufprallpunkten"
+
+msgid "glisser : tourner · molette : zoom"
+msgstr "Ziehen: drehen · Mausrad: Zoom"
+
+msgid ""
+"Un point = un contact enregistré par le serveur de jeu : position sur la "
+"piste, position sur la voiture, vitesse relative de l'impact, type (mur, "
+"autre voiture, objet) et dégâts. Orientation de la voiture déduite des "
+"données : avant = côté le plus touché."
+msgstr ""
+"Ein Punkt = ein vom Spielserver aufgezeichneter Kontakt: Position auf der"
+" Strecke, Position am Auto, relative Aufprallgeschwindigkeit, Art (Wand, "
+"anderes Auto, Objekt) und Schaden. Ausrichtung des Autos aus den Daten "
+"abgeleitet: vorne = das am häufigsten getroffene Ende."
+
+msgid "Carte des accrochages"
+msgstr "Aufprallkarte"
+
+msgid ""
+"Où et comment les pilotes touchent murs, objets et autres voitures, sur "
+"tout l'historique d'un circuit."
+msgstr ""
+"Wo und wie Fahrer Wände, Objekte und andere Autos berühren, über die "
+"gesamte Historie einer Strecke."
+
+msgid ""
+"Aucun accrochage à afficher pour le moment : il faut des résultats "
+"récents sur un circuit dont le plan est connu."
+msgstr ""
+"Noch kein Aufprall anzuzeigen: Es braucht aktuelle Ergebnisse auf einer "
+"Strecke mit bekanntem Plan."
+
+msgid "Accrochages"
+msgstr "Aufpralle"
+
 #~ msgid "Administration serveur"
 #~ msgstr "Serververwaltung"
 

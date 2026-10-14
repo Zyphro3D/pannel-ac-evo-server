@@ -5189,6 +5189,175 @@ msgstr ""
 "Rifiuta i piloti con ELO sotto RATING_MIN_TO_JOIN (disattivato di "
 "default): si imposta nella pagina Accessi."
 
+msgid "Description (facultatif)"
+msgstr "Descrizione (facoltativa)"
+
+msgid "Barème (points par place)"
+msgstr "Punteggi (punti per posizione)"
+
+msgid "De la 1re place à la dernière, séparés par des virgules."
+msgstr "Dal 1° posto all'ultimo, separati da virgole."
+
+msgid "Bonus meilleur tour"
+msgstr "Bonus giro veloce"
+
+msgid "Bonus pole"
+msgstr "Bonus pole"
+
+msgid "Pires manches retirées"
+msgstr "Peggiori round scartati"
+
+msgid "Participation minimale (0 à 1)"
+msgstr "Partecipazione minima (da 0 a 1)"
+
+msgid "Part des manches à avoir courues pour être classé (0 = aucune)."
+msgstr "Quota di round da aver disputato per essere classificati (0 = nessuna)."
+
+msgid "Visible par tous"
+msgstr "Visibile a tutti"
+
+msgid "Toutes"
+msgstr "Tutte"
+
+msgid "Vitesse de l'impact"
+msgstr "Velocità dell'impatto"
+
+msgid "Sur la voiture"
+msgstr "Sull'auto"
+
+msgid "avec"
+msgstr "con"
+
+msgid "avant"
+msgstr "anteriore"
+
+msgid "arrière"
+msgstr "posteriore"
+
+msgid "gauche"
+msgstr "sinistra"
+
+msgid "droite"
+msgstr "destra"
+
+msgid "centre"
+msgstr "centro"
+
+msgid "Survolez un point"
+msgstr "Passa il mouse su un punto"
+
+msgid "Astuce"
+msgstr "Suggerimento"
+
+msgid "Un impact s'allume sur la carte ET sur la voiture. Cliquez pour le garder."
+msgstr "Un impatto si accende sulla mappa E sull'auto. Clicca per mantenerlo."
+
+msgid "Plus fort choc affiché"
+msgstr "Impatto più forte mostrato"
+
+msgid "Impact retenu"
+msgstr "Impatto fissato"
+
+msgid "Impact survolé"
+msgstr "Impatto evidenziato"
+
+msgid "Filtres"
+msgstr "Filtri"
+
+msgid "Choc minimum"
+msgstr "Impatto minimo"
+
+msgid "Avec dégâts seulement"
+msgstr "Solo con danni"
+
+msgid "impacts affichés"
+msgstr "impatti mostrati"
+
+msgid "km/h en moyenne"
+msgstr "km/h in media"
+
+msgid "km/h au plus fort"
+msgstr "km/h al più forte"
+
+msgid "Aucun impact enregistré pour ce circuit."
+msgstr "Nessun impatto registrato per questo circuito."
+
+msgid "Carte du circuit"
+msgstr "Mappa del circuito"
+
+msgid "Où sur le circuit"
+msgstr "Dove sul circuito"
+
+msgid "Densité"
+msgstr "Densità"
+
+msgid "Recentrer"
+msgstr "Ricentra"
+
+msgid "Plan du circuit avec la position des accrochages"
+msgstr "Piantina del circuito con la posizione degli impatti"
+
+msgid "Voiture en 3D"
+msgstr "Auto in 3D"
+
+msgid "Où sur la voiture"
+msgstr "Dove sull'auto"
+
+msgid "Dessus"
+msgstr "Alto"
+
+msgid "Avant"
+msgstr "Anteriore"
+
+msgid "Arrière"
+msgstr "Posteriore"
+
+msgid "Gauche"
+msgstr "Sinistra"
+
+msgid "Droite"
+msgstr "Destra"
+
+msgid "Rotation auto"
+msgstr "Rotazione automatica"
+
+msgid "Voiture en 3D avec les points d'impact"
+msgstr "Auto in 3D con i punti di impatto"
+
+msgid "glisser : tourner · molette : zoom"
+msgstr "trascina: ruota · rotella: zoom"
+
+msgid ""
+"Un point = un contact enregistré par le serveur de jeu : position sur la "
+"piste, position sur la voiture, vitesse relative de l'impact, type (mur, "
+"autre voiture, objet) et dégâts. Orientation de la voiture déduite des "
+"données : avant = côté le plus touché."
+msgstr ""
+"Un punto = un contatto registrato dal server di gioco: posizione in "
+"pista, posizione sull'auto, velocità relativa dell'impatto, tipo (muro, "
+"altra auto, oggetto) e danni. Orientamento dell'auto dedotto dai dati: "
+"anteriore = l'estremità più colpita."
+
+msgid "Carte des accrochages"
+msgstr "Mappa degli impatti"
+
+msgid ""
+"Où et comment les pilotes touchent murs, objets et autres voitures, sur "
+"tout l'historique d'un circuit."
+msgstr ""
+"Dove e come i piloti toccano muri, oggetti e altre auto, su tutta la "
+"storia di un circuito."
+
+msgid ""
+"Aucun accrochage à afficher pour le moment : il faut des résultats "
+"récents sur un circuit dont le plan est connu."
+msgstr ""
+"Nessun impatto da mostrare per ora: servono risultati recenti su un "
+"circuito di cui si conosce la piantina."
+
+msgid "Accrochages"
+msgstr "Impatti"
+
 #~ msgid "Administration serveur"
 #~ msgstr "Amministrazione del server"
 

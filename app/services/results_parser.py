@@ -228,7 +228,7 @@ def build_incidents(data: dict, driver_map: dict, car_map: dict) -> dict:
                 "car": c.get("model_displayname", "")}
 
     stats: dict = defaultdict(_empty_incident_stats)
-    car_hits, big_hits = [], []
+    car_hits, big_hits, hits = [], [], []
     for col in data.get("collisions", []) or []:
         try:
             ck = _guid_key(col["car_id"])
@@ -245,9 +245,18 @@ def build_incidents(data: dict, driver_map: dict, car_map: dict) -> dict:
             st["damage"] += 1
         st["max_impact_kmh"] = max(st["max_impact_kmh"], impact)
         pos = col.get("world_pos") or {}
+        rel = col.get("rel_pos") or {}
+        # Chaque impact avec sa position sur la piste et sur la voiture (carte des accrochages)
+        rec = {"nickname": person["nickname"], "race_number": person["race_number"],
+               "kind": kind if kind in ("wall", "car", "object") else "object",
+               "kmh": round(impact, 1), "damage": damage,
+               "x": float(pos.get("x", 0)), "z": float(pos.get("z", 0)),
+               "rx": float(rel.get("x", 0)), "ry": float(rel.get("y", 0)), "rz": float(rel.get("z", 0)),
+               "ts": float(col.get("server_timestamp") or 0.0), "with": []}
+        hits.append(rec)
         if kind == "car":
             car_hits.append({"ts": float(col.get("server_timestamp") or 0.0), "car": ck,
-                             "impact": impact, "damage": damage,
+                             "impact": impact, "damage": damage, "rec": rec,
                              "pos": (float(pos.get("x", 0)), float(pos.get("y", 0)), float(pos.get("z", 0)))})
         elif impact >= _BIG_IMPACT_KMH:
             big_hits.append({**person, "kind": kind, "impact_kmh": impact, "damage": damage,
@@ -260,6 +269,9 @@ def build_incidents(data: dict, driver_map: dict, car_map: dict) -> dict:
             if h["car"] not in cars:
                 cars.append(h["car"])
         people = [who(ck) for ck in cars]
+        names = [p["nickname"] for p in people]
+        for h in group:           # qui était l'autre voiture : sert à la carte des accrochages
+            h["rec"]["with"] = [n for n in names if n != h["rec"]["nickname"]]
         for ck in cars:           # un contact compte une fois pour chaque voiture impliquée
             stats[who(ck)["driver_key"] or ck]["car"] += 1
         contacts.append({"ts": group[0]["ts"], "drivers": people, "hits": len(group),
@@ -293,7 +305,7 @@ def build_incidents(data: dict, driver_map: dict, car_map: dict) -> dict:
 
     for st in stats.values():
         st["total"] = st["wall"] + st["object"] + st["car"]
-    return {"stats": dict(stats), "contacts": contacts, "big_hits": big_hits, "penalties": penalties}
+    return {"stats": dict(stats), "contacts": contacts, "big_hits": big_hits, "penalties": penalties, "hits": hits}
 
 
 def parse_result_file(data: dict) -> dict:
@@ -553,6 +565,7 @@ def parse_result_file(data: dict) -> dict:
         "contacts":               incidents["contacts"],
         "big_hits":               incidents["big_hits"],
         "penalties":              incidents["penalties"],
+        "hits":                   incidents["hits"],
         # Les anciennes versions du serveur de jeu n'écrivaient ni collisions ni sanctions :
         # sans ce drapeau, leurs tours compteraient comme « propres » dans le fair-play.
         "incidents_reported":     "collisions" in data or "penalty_collection" in data,
