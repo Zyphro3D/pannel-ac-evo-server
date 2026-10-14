@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-02 10:21+0000\n"
+"POT-Creation-Date: 2026-10-14 01:52+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -87,12 +87,12 @@ msgstr "Practice"
 msgid "Race Weekend"
 msgstr "Race Weekend"
 
-#: app/routes/admin.py:552 app/templates/settings.html:74
+#: app/routes/admin.py:554 app/templates/settings.html:74
 #: app/templates/settings.html:961
 msgid "Comptes"
 msgstr "Comptes"
 
-#: app/routes/admin.py:553 app/templates/base.html:55
+#: app/routes/admin.py:555 app/templates/base.html:55
 #: app/templates/base.html:148 app/templates/base.html:266
 #: app/templates/server.html:2 app/templates/server.html:228
 #: app/templates/settings.html:70 app/templates/settings.html:258
@@ -100,31 +100,31 @@ msgstr "Comptes"
 msgid "Serveur"
 msgstr "Serveur"
 
-#: app/routes/admin.py:561 app/templates/settings.html:71
+#: app/routes/admin.py:563 app/templates/settings.html:71
 msgid "Notifications"
 msgstr "Notifications"
 
-#: app/routes/admin.py:575
+#: app/routes/admin.py:577
 msgid "Nom affiché dans la sidebar"
 msgstr "Nom affiché dans la sidebar"
 
-#: app/routes/admin.py:576
+#: app/routes/admin.py:578
 msgid "Nom de fichier dans media/banner/ (ex: banner.jpg)"
 msgstr "Nom de fichier dans media/banner/ (ex: banner.jpg)"
 
-#: app/routes/admin.py:577
+#: app/routes/admin.py:579
 msgid "Logo sur la bannière (ex: logo.png)"
 msgstr "Logo sur la bannière (ex: logo.png)"
 
-#: app/routes/admin.py:578
+#: app/routes/admin.py:580
 msgid "URL publique du panel (liens dans les emails)"
 msgstr "URL publique du panel (liens dans les emails)"
 
-#: app/routes/admin.py:579
+#: app/routes/admin.py:581
 msgid "Fuseau horaire (ex: Europe/Paris)"
 msgstr "Fuseau horaire (ex: Europe/Paris)"
 
-#: app/routes/admin.py:580
+#: app/routes/admin.py:582
 msgid ""
 "Clé de session Flask — générer avec python -c \"import secrets; "
 "print(secrets.token_hex(32))\""
@@ -132,55 +132,55 @@ msgstr ""
 "Clé de session Flask — générer avec python -c \"import secrets; "
 "print(secrets.token_hex(32))\""
 
-#: app/routes/admin.py:581
+#: app/routes/admin.py:583
 msgid "true si HTTPS, false si HTTP local"
 msgstr "true si HTTPS, false si HTTP local"
 
-#: app/routes/admin.py:582
+#: app/routes/admin.py:584
 msgid "Secret HMAC du webhook résultats (/api/results/ingest)"
 msgstr "Secret HMAC du webhook résultats (/api/results/ingest)"
 
-#: app/routes/admin.py:583
-msgid ""
-"Exige que les pilotes confirment leur email (lien envoyé à l'inscription)"
-" avant de pouvoir s'inscrire à un événement. Les comptes existants ne "
-"sont pas affectés rétroactivement."
-msgstr ""
-"Exige que les pilotes confirment leur email (lien envoyé à l'inscription)"
-" avant de pouvoir s'inscrire à un événement. Les comptes existants ne "
-"sont pas affectés rétroactivement."
-
-#: app/routes/admin.py:584
-msgid ""
-"Nombre de mois de conservation détaillée de l'historique des tours "
-"(temps, voiture, circuit). Au-delà, archivé en résumé mensuel compact "
-"plutôt que supprimé."
-msgstr ""
-"Nombre de mois de conservation détaillée de l'historique des tours "
-"(temps, voiture, circuit). Au-delà, archivé en résumé mensuel compact "
-"plutôt que supprimé."
-
 #: app/routes/admin.py:585
+msgid ""
+"Exige que les pilotes confirment leur email (lien envoyé à l'inscription)"
+" avant de pouvoir s'inscrire à un événement. Les comptes existants ne "
+"sont pas affectés rétroactivement."
+msgstr ""
+"Exige que les pilotes confirment leur email (lien envoyé à l'inscription)"
+" avant de pouvoir s'inscrire à un événement. Les comptes existants ne "
+"sont pas affectés rétroactivement."
+
+#: app/routes/admin.py:586
+msgid ""
+"Nombre de mois de conservation détaillée de l'historique des tours "
+"(temps, voiture, circuit). Au-delà, archivé en résumé mensuel compact "
+"plutôt que supprimé."
+msgstr ""
+"Nombre de mois de conservation détaillée de l'historique des tours "
+"(temps, voiture, circuit). Au-delà, archivé en résumé mensuel compact "
+"plutôt que supprimé."
+
+#: app/routes/admin.py:587
 msgid "Port HTTP de l'API du serveur (défaut 8081)"
 msgstr "Port HTTP de l'API du serveur (défaut 8081)"
 
-#: app/routes/admin.py:586
+#: app/routes/admin.py:588
 msgid "Hôte TCP ACE EVO (défaut 127.0.0.1)"
 msgstr "Hôte TCP ACE EVO (défaut 127.0.0.1)"
 
-#: app/routes/admin.py:587
+#: app/routes/admin.py:589
 msgid "Port TCP ACE EVO (défaut 9700)"
 msgstr "Port TCP ACE EVO (défaut 9700)"
 
-#: app/routes/admin.py:588
+#: app/routes/admin.py:590
 msgid "Dossier d'installation ACE EVO"
 msgstr "Dossier d'installation ACE EVO"
 
-#: app/routes/admin.py:589
+#: app/routes/admin.py:591
 msgid "Dossier des fichiers de configuration JSON"
 msgstr "Dossier des fichiers de configuration JSON"
 
-#: app/routes/admin.py:590
+#: app/routes/admin.py:592
 msgid ""
 "Nom du serveur affiché dans la liste des serveurs ACE EVO (commun à "
 "toutes les configs)"
@@ -188,102 +188,102 @@ msgstr ""
 "Nom du serveur affiché dans la liste des serveurs ACE EVO (commun à "
 "toutes les configs)"
 
-#: app/routes/admin.py:591
+#: app/routes/admin.py:593
 msgid "Nombre maximum de joueurs simultanés (1–128, défaut 8)"
 msgstr "Nombre maximum de joueurs simultanés (1–128, défaut 8)"
 
-#: app/routes/admin.py:592
-msgid ""
-"Port TCP du serveur de jeu (défaut 9700) — doit correspondre aux règles "
-"firewall"
-msgstr ""
-"Port TCP du serveur de jeu (défaut 9700) — doit correspondre aux règles "
-"firewall"
-
-#: app/routes/admin.py:593
-msgid ""
-"Port UDP du serveur de jeu (défaut 9700) — généralement identique au port"
-" TCP"
-msgstr ""
-"Port UDP du serveur de jeu (défaut 9700) — généralement identique au port"
-" TCP"
-
 #: app/routes/admin.py:594
 msgid ""
-"Mot de passe d'accès au serveur pour les pilotes. Laisser vide = accès "
-"libre"
+"Port TCP du serveur de jeu (défaut 9700) — doit correspondre aux règles "
+"firewall"
 msgstr ""
-"Mot de passe d'accès au serveur pour les pilotes. Laisser vide = accès "
-"libre"
+"Port TCP du serveur de jeu (défaut 9700) — doit correspondre aux règles "
+"firewall"
 
 #: app/routes/admin.py:595
 msgid ""
-"Mot de passe admin serveur (commandes /kick, /next, etc.) — utilisé aussi"
-" par le bot TCP"
+"Port UDP du serveur de jeu (défaut 9700) — généralement identique au port"
+" TCP"
 msgstr ""
-"Mot de passe admin serveur (commandes /kick, /next, etc.) — utilisé aussi"
-" par le bot TCP"
+"Port UDP du serveur de jeu (défaut 9700) — généralement identique au port"
+" TCP"
 
 #: app/routes/admin.py:596
-msgid "Chemin vers le fichier entry_list.ini (laisser vide si non utilisé)"
-msgstr "Chemin vers le fichier entry_list.ini (laisser vide si non utilisé)"
+msgid ""
+"Mot de passe d'accès au serveur pour les pilotes. Laisser vide = accès "
+"libre"
+msgstr ""
+"Mot de passe d'accès au serveur pour les pilotes. Laisser vide = accès "
+"libre"
 
 #: app/routes/admin.py:597
 msgid ""
-"Dossier de sortie des résultats de session (laisser vide = dossier par "
-"défaut)"
+"Mot de passe admin serveur (commandes /kick, /next, etc.) — utilisé aussi"
+" par le bot TCP"
 msgstr ""
-"Dossier de sortie des résultats de session (laisser vide = dossier par "
-"défaut)"
+"Mot de passe admin serveur (commandes /kick, /next, etc.) — utilisé aussi"
+" par le bot TCP"
 
 #: app/routes/admin.py:598
-msgid ""
-"Steam ID 64-bit du compte bot — le bot se connecte au serveur avec ce "
-"compte. Laisser vide pour désactiver le bot."
-msgstr ""
-"Steam ID 64-bit du compte bot — le bot se connecte au serveur avec ce "
-"compte. Laisser vide pour désactiver le bot."
+msgid "Chemin vers le fichier entry_list.ini (laisser vide si non utilisé)"
+msgstr "Chemin vers le fichier entry_list.ini (laisser vide si non utilisé)"
 
 #: app/routes/admin.py:599
-msgid "Voiture utilisée par le bot pour rejoindre la session."
-msgstr "Voiture utilisée par le bot pour rejoindre la session."
+msgid ""
+"Dossier de sortie des résultats de session (laisser vide = dossier par "
+"défaut)"
+msgstr ""
+"Dossier de sortie des résultats de session (laisser vide = dossier par "
+"défaut)"
 
 #: app/routes/admin.py:600
 msgid ""
-"Activer les droits admin pour le bot (true/false). Le mot de passe est lu"
-" automatiquement depuis la config serveur active."
+"Steam ID 64-bit du compte bot — le bot se connecte au serveur avec ce "
+"compte. Laisser vide pour désactiver le bot."
 msgstr ""
-"Activer les droits admin pour le bot (true/false). Le mot de passe est lu"
-" automatiquement depuis la config serveur active."
+"Steam ID 64-bit du compte bot — le bot se connecte au serveur avec ce "
+"compte. Laisser vide pour désactiver le bot."
 
 #: app/routes/admin.py:601
-#, python-brace-format
-msgid ""
-"Message de bienvenue envoyé à chaque connexion. Variable : {name}. "
-"Laisser vide pour désactiver."
-msgstr ""
-"Message de bienvenue envoyé à chaque connexion. Variable : {name}. "
-"Laisser vide pour désactiver."
+msgid "Voiture utilisée par le bot pour rejoindre la session."
+msgstr "Voiture utilisée par le bot pour rejoindre la session."
 
 #: app/routes/admin.py:602
-#, python-brace-format
 msgid ""
-"Message Discord envoyé si DISCORD_INVITE_URL est défini. Variables : "
-"{name}, {discord_url}. Laisser vide pour désactiver."
+"Activer les droits admin pour le bot (true/false). Le mot de passe est lu"
+" automatiquement depuis la config serveur active."
 msgstr ""
-"Message Discord envoyé si DISCORD_INVITE_URL est défini. Variables : "
-"{name}, {discord_url}. Laisser vide pour désactiver."
+"Activer les droits admin pour le bot (true/false). Le mot de passe est lu"
+" automatiquement depuis la config serveur active."
 
 #: app/routes/admin.py:603
 #, python-brace-format
 msgid ""
+"Message de bienvenue envoyé à chaque connexion. Variable : {name}. "
+"Laisser vide pour désactiver."
+msgstr ""
+"Message de bienvenue envoyé à chaque connexion. Variable : {name}. "
+"Laisser vide pour désactiver."
+
+#: app/routes/admin.py:604
+#, python-brace-format
+msgid ""
+"Message Discord envoyé si DISCORD_INVITE_URL est défini. Variables : "
+"{name}, {discord_url}. Laisser vide pour désactiver."
+msgstr ""
+"Message Discord envoyé si DISCORD_INVITE_URL est défini. Variables : "
+"{name}, {discord_url}. Laisser vide pour désactiver."
+
+#: app/routes/admin.py:605
+#, python-brace-format
+msgid ""
 "Message site envoyé si PANEL_URL est défini. Variables : {name}, "
 "{site_url}. Laisser vide pour désactiver."
 msgstr ""
 "Message site envoyé si PANEL_URL est défini. Variables : {name}, "
 "{site_url}. Laisser vide pour désactiver."
 
-#: app/routes/admin.py:604
+#: app/routes/admin.py:606
 msgid ""
 "Pré-remplit le formulaire de mise à jour. Le mot de passe est saisi au "
 "moment de la mise à jour, jamais stocké."
@@ -291,23 +291,23 @@ msgstr ""
 "Pré-remplit le formulaire de mise à jour. Le mot de passe est saisi au "
 "moment de la mise à jour, jamais stocké."
 
-#: app/routes/admin.py:605
+#: app/routes/admin.py:607
 msgid "Webhook principal — démarrage, arrêt, crash du serveur"
 msgstr "Webhook principal — démarrage, arrêt, crash du serveur"
 
-#: app/routes/admin.py:606
+#: app/routes/admin.py:608
 msgid "Webhook pilotes — connexions, déconnexions, changements de véhicule"
 msgstr "Webhook pilotes — connexions, déconnexions, changements de véhicule"
 
-#: app/routes/admin.py:607
+#: app/routes/admin.py:609
 msgid "Webhook course — meilleur tour, actions admin (kick, pénalités…)"
 msgstr "Webhook course — meilleur tour, actions admin (kick, pénalités…)"
 
-#: app/routes/admin.py:608
+#: app/routes/admin.py:610
 msgid "Lien d'invitation Discord affiché sur le panel"
 msgstr "Lien d'invitation Discord affiché sur le panel"
 
-#: app/routes/admin.py:609
+#: app/routes/admin.py:611
 msgid ""
 "Mention envoyée avec les événements serveur (ex: @here ou <@&123456789>)."
 " Laisser vide pour désactiver."
@@ -315,103 +315,107 @@ msgstr ""
 "Mention envoyée avec les événements serveur (ex: @here ou <@&123456789>)."
 " Laisser vide pour désactiver."
 
-#: app/routes/admin.py:610
+#: app/routes/admin.py:612
 msgid "Mention envoyée avec les connexions joueurs. Laisser vide pour désactiver."
 msgstr "Mention envoyée avec les connexions joueurs. Laisser vide pour désactiver."
 
-#: app/routes/admin.py:611
+#: app/routes/admin.py:613
 msgid "Mention envoyée avec les événements course. Laisser vide pour désactiver."
 msgstr "Mention envoyée avec les événements course. Laisser vide pour désactiver."
 
-#: app/routes/admin.py:612
+#: app/routes/admin.py:614
 #, python-brace-format
 msgid "Titre embed — Serveur démarré. Variables : {config}, {mode}, {circuit}"
 msgstr "Titre embed — Serveur démarré. Variables : {config}, {mode}, {circuit}"
 
-#: app/routes/admin.py:613
+#: app/routes/admin.py:615
 #, python-brace-format
 msgid "Titre embed — Serveur arrêté. Variables : {config}"
 msgstr "Titre embed — Serveur arrêté. Variables : {config}"
 
-#: app/routes/admin.py:614
+#: app/routes/admin.py:616
 #, python-brace-format
 msgid "Titre embed — Crash détecté. Variables : {config}"
 msgstr "Titre embed — Crash détecté. Variables : {config}"
 
-#: app/routes/admin.py:615
-#, python-brace-format
-msgid ""
-"Titre embed — Connexion joueur. Variables : {name}, {num}, {car}, "
-"{steam_id}"
-msgstr ""
-"Titre embed — Connexion joueur. Variables : {name}, {num}, {car}, "
-"{steam_id}"
-
-#: app/routes/admin.py:616
-#, python-brace-format
-msgid ""
-"Titre embed — Déconnexion joueur. Variables : {name}, {duration}, "
-"{steam_id}"
-msgstr ""
-"Titre embed — Déconnexion joueur. Variables : {name}, {duration}, "
-"{steam_id}"
-
 #: app/routes/admin.py:617
 #, python-brace-format
 msgid ""
-"Titre embed — Changement de véhicule. Variables : {name}, {num}, "
-"{old_car}, {new_car}"
+"Titre embed — Connexion joueur. Variables : {name}, {num}, {car}, "
+"{steam_id}"
 msgstr ""
-"Titre embed — Changement de véhicule. Variables : {name}, {num}, "
-"{old_car}, {new_car}"
+"Titre embed — Connexion joueur. Variables : {name}, {num}, {car}, "
+"{steam_id}"
 
 #: app/routes/admin.py:618
 #, python-brace-format
-msgid "Titre embed — Meilleur tour serveur. Variables : {name}, {lap}, {car}, {circuit}"
-msgstr "Titre embed — Meilleur tour serveur. Variables : {name}, {lap}, {car}, {circuit}"
+msgid ""
+"Titre embed — Déconnexion joueur. Variables : {name}, {duration}, "
+"{steam_id}"
+msgstr ""
+"Titre embed — Déconnexion joueur. Variables : {name}, {duration}, "
+"{steam_id}"
 
 #: app/routes/admin.py:619
 #, python-brace-format
 msgid ""
+"Titre embed — Changement de véhicule. Variables : {name}, {num}, "
+"{old_car}, {new_car}"
+msgstr ""
+"Titre embed — Changement de véhicule. Variables : {name}, {num}, "
+"{old_car}, {new_car}"
+
+#: app/routes/admin.py:620
+#, python-brace-format
+msgid ""
+"Titre embed — Meilleur tour serveur. Variables : {name}, {lap}, {car}, "
+"{circuit}"
+msgstr ""
+"Titre embed — Meilleur tour serveur. Variables : {name}, {lap}, {car}, "
+"{circuit}"
+
+#: app/routes/admin.py:621
+#, python-brace-format
+msgid ""
 "Titre embed — Action admin. Variables : {action}, {target}, {admin}, "
 "{detail}"
 msgstr ""
 "Titre embed — Action admin. Variables : {action}, {target}, {admin}, "
 "{detail}"
 
-#: app/routes/admin.py:620
+#: app/routes/admin.py:622
 msgid "Serveur SMTP (laisser vide pour désactiver les emails)"
 msgstr "Serveur SMTP (laisser vide pour désactiver les emails)"
 
-#: app/routes/admin.py:621
+#: app/routes/admin.py:623
 msgid "Port SMTP (ex: 587 ou 465)"
 msgstr "Port SMTP (ex: 587 ou 465)"
 
-#: app/routes/admin.py:622
+#: app/routes/admin.py:624
 msgid "TLS : true ou false"
 msgstr "TLS : true ou false"
 
-#: app/routes/admin.py:623
+#: app/routes/admin.py:625
 msgid "Identifiant SMTP"
 msgstr "Identifiant SMTP"
 
-#: app/routes/admin.py:624
+#: app/routes/admin.py:626
 msgid "Mot de passe SMTP"
 msgstr "Mot de passe SMTP"
 
-#: app/routes/admin.py:625
+#: app/routes/admin.py:627
 msgid "Adresse expéditeur"
 msgstr "Adresse expéditeur"
 
-#: app/routes/admin.py:626
+#: app/routes/admin.py:628
 msgid "Adresse(s) admin pour les notifications (séparées par virgule)"
 msgstr "Adresse(s) admin pour les notifications (séparées par virgule)"
 
-#: app/routes/admin.py:627
+#: app/routes/admin.py:629
 msgid "Langue par défaut : fr, en, es, de, it"
 msgstr "Langue par défaut : fr, en, es, de, it"
 
-#: app/routes/admin.py:679
+#: app/routes/admin.py:681
 msgid ""
 "Dossier de session Steam à monter si le panel est lancé via systemd ou "
 "sudo sans -E (sinon ça reste vide et $HOME est utilisé, comme avant)."
@@ -419,156 +423,156 @@ msgstr ""
 "Dossier de session Steam à monter si le panel est lancé via systemd ou "
 "sudo sans -E (sinon ça reste vide et $HOME est utilisé, comme avant)."
 
-#: app/routes/admin.py:836 app/routes/admin.py:1232
+#: app/routes/admin.py:838 app/routes/admin.py:1234
 msgid "Port invalide (1024–65535)."
 msgstr "Port invalide (1024–65535)."
 
-#: app/routes/admin.py:838
+#: app/routes/admin.py:840
 #, python-format
 msgid "Le port %(port)d est déjà utilisé par '%(name)s'."
 msgstr "Le port %(port)d est déjà utilisé par '%(name)s'."
 
-#: app/routes/admin.py:866 app/routes/admin.py:867
+#: app/routes/admin.py:868 app/routes/admin.py:869
 msgid "Paramètres du serveur sauvegardés."
 msgstr "Paramètres du serveur sauvegardés."
 
-#: app/routes/admin.py:903 app/routes/admin.py:904
+#: app/routes/admin.py:905 app/routes/admin.py:906
 msgid "Paramètres sauvegardés"
 msgstr "Paramètres sauvegardés"
 
-#: app/routes/admin.py:961 app/routes/admin.py:1500
+#: app/routes/admin.py:963 app/routes/admin.py:1502
 msgid "Aucun fichier fourni"
 msgstr "Aucun fichier fourni"
 
-#: app/routes/admin.py:970
+#: app/routes/admin.py:972
 msgid "Fichier trop volumineux (max 5 Mo)"
 msgstr "Fichier trop volumineux (max 5 Mo)"
 
-#: app/routes/admin.py:973
+#: app/routes/admin.py:975
 msgid "Type non autorisé"
 msgstr "Type non autorisé"
 
-#: app/routes/admin.py:984
+#: app/routes/admin.py:986
 msgid "Signature de fichier invalide"
 msgstr "Signature de fichier invalide"
 
-#: app/routes/admin.py:1015
+#: app/routes/admin.py:1017
 msgid "Identifiant et mot de passe requis."
 msgstr "Identifiant et mot de passe requis."
 
-#: app/routes/admin.py:1020 app/routes/admin.py:1051
+#: app/routes/admin.py:1022 app/routes/admin.py:1053
 msgid "Cet identifiant est déjà utilisé."
 msgstr "Cet identifiant est déjà utilisé."
 
-#: app/routes/admin.py:1026
+#: app/routes/admin.py:1028
 msgid "Compte créé avec succès."
 msgstr "Compte créé avec succès."
 
-#: app/routes/admin.py:1036 app/routes/admin.py:1087
+#: app/routes/admin.py:1038 app/routes/admin.py:1089
 msgid "Compte introuvable."
 msgstr "Compte introuvable."
 
-#: app/routes/admin.py:1047 app/routes/admin.py:1135
+#: app/routes/admin.py:1049 app/routes/admin.py:1137
 msgid "Impossible : il doit rester au moins un superadmin actif."
 msgstr "Impossible : il doit rester au moins un superadmin actif."
 
-#: app/routes/admin.py:1059
+#: app/routes/admin.py:1061
 msgid "Compte mis à jour."
 msgstr "Compte mis à jour."
 
-#: app/routes/admin.py:1069 app/routes/admin.py:1121
+#: app/routes/admin.py:1071 app/routes/admin.py:1123
 msgid "Compte introuvable"
 msgstr "Compte introuvable"
 
-#: app/routes/admin.py:1073
+#: app/routes/admin.py:1075
 msgid "Dernier superadmin actif — impossible de désactiver"
 msgstr "Dernier superadmin actif — impossible de désactiver"
 
-#: app/routes/admin.py:1075
+#: app/routes/admin.py:1077
 msgid "Impossible de vous désactiver vous-même"
 msgstr "Impossible de vous désactiver vous-même"
 
-#: app/routes/admin.py:1090 app/routes/admin.py:1124
+#: app/routes/admin.py:1092 app/routes/admin.py:1126
 msgid "Impossible de supprimer votre propre compte."
 msgstr "Impossible de supprimer votre propre compte."
 
-#: app/routes/admin.py:1095 app/routes/admin.py:1128
+#: app/routes/admin.py:1097 app/routes/admin.py:1130
 msgid "Impossible : il doit rester au moins un superadmin."
 msgstr "Impossible : il doit rester au moins un superadmin."
 
-#: app/routes/admin.py:1099
+#: app/routes/admin.py:1101
 msgid "Compte supprimé."
 msgstr "Compte supprimé."
 
-#: app/routes/admin.py:1115
+#: app/routes/admin.py:1117
 msgid "Rôle invalide"
 msgstr "Rôle invalide"
 
-#: app/routes/admin.py:1144
+#: app/routes/admin.py:1146
 msgid "Pilote introuvable"
 msgstr "Pilote introuvable"
 
-#: app/routes/admin.py:1149
+#: app/routes/admin.py:1151
 msgid ""
 "Cet identifiant est déjà utilisé par un compte admin — renomme le pilote "
 "ou l'admin existant."
 msgstr ""
 
-#: app/routes/admin.py:1162
+#: app/routes/admin.py:1164
 msgid "Requête invalide"
 msgstr "Requête invalide"
 
-#: app/routes/admin.py:1182 app/routes/public.py:214
+#: app/routes/admin.py:1184 app/routes/public.py:214
 msgid "Cet email est déjà utilisé."
 msgstr "Cet email est déjà utilisé."
 
-#: app/routes/admin.py:1186
+#: app/routes/admin.py:1188
 msgid "Email mis à jour."
 msgstr "Email mis à jour."
 
-#: app/routes/admin.py:1230 app/routes/admin.py:1319
+#: app/routes/admin.py:1232 app/routes/admin.py:1321
 msgid "Le nom est requis."
 msgstr "Le nom est requis."
 
-#: app/routes/admin.py:1234
+#: app/routes/admin.py:1236
 #, python-format
 msgid "Le port %(port)d est déjà utilisé par un autre serveur."
 msgstr "Le port %(port)d est déjà utilisé par un autre serveur."
 
-#: app/routes/admin.py:1236
+#: app/routes/admin.py:1238
 #, python-format
 msgid "Un container Docker nommé '%(name)s' existe déjà."
 msgstr "Un container Docker nommé '%(name)s' existe déjà."
 
-#: app/routes/admin.py:1259
+#: app/routes/admin.py:1261
 #, python-format
 msgid "Erreur lors de la création du container : %(err)s"
 msgstr "Erreur lors de la création du container : %(err)s"
 
-#: app/routes/admin.py:1283
+#: app/routes/admin.py:1285
 #, python-format
 msgid "Serveur '%(name)s' créé avec succès."
 msgstr "Serveur '%(name)s' créé avec succès."
 
-#: app/routes/admin.py:1292
+#: app/routes/admin.py:1294
 msgid "Le serveur principal ne peut pas être désactivé."
 msgstr "Le serveur principal ne peut pas être désactivé."
 
-#: app/routes/admin.py:1295 app/routes/admin.py:1316 app/routes/admin.py:1351
+#: app/routes/admin.py:1297 app/routes/admin.py:1318 app/routes/admin.py:1353
 msgid "Serveur introuvable."
 msgstr "Serveur introuvable."
 
-#: app/routes/admin.py:1298
+#: app/routes/admin.py:1300
 #, python-format
 msgid "Serveur '%(name)s' activé."
 msgstr "Serveur '%(name)s' activé."
 
-#: app/routes/admin.py:1298
+#: app/routes/admin.py:1300
 #, python-format
 msgid "Serveur '%(name)s' désactivé."
 msgstr "Serveur '%(name)s' désactivé."
 
-#: app/routes/admin.py:1330
+#: app/routes/admin.py:1332
 #, python-format
 msgid ""
 "Serveur renommé en '%(name)s'. Le nom affiché dans le navigateur de "
@@ -577,28 +581,28 @@ msgstr ""
 "Serveur renommé en '%(name)s'. Le nom affiché dans le navigateur de "
 "serveurs du jeu ne sera mis à jour qu'au prochain redémarrage."
 
-#: app/routes/admin.py:1348
+#: app/routes/admin.py:1350
 msgid "Le serveur principal ne peut pas être supprimé."
 msgstr "Le serveur principal ne peut pas être supprimé."
 
-#: app/routes/admin.py:1371 app/routes/admin.py:1372
+#: app/routes/admin.py:1373 app/routes/admin.py:1374
 #, python-format
 msgid "Serveur '%(name)s' supprimé."
 msgstr "Serveur '%(name)s' supprimé."
 
-#: app/routes/admin.py:1497
+#: app/routes/admin.py:1499
 msgid "Fichier trop volumineux (max 3 Go)"
 msgstr "Fichier trop volumineux (max 3 Go)"
 
-#: app/routes/admin.py:1520 app/routes/admin.py:1533
+#: app/routes/admin.py:1522 app/routes/admin.py:1535
 msgid "Mod introuvable"
 msgstr "Mod introuvable"
 
-#: app/routes/admin.py:1539 app/routes/admin.py:1541 app/routes/admin.py:1543
+#: app/routes/admin.py:1541 app/routes/admin.py:1543 app/routes/admin.py:1545
 msgid "Tag invalide"
 msgstr "Tag invalide"
 
-#: app/routes/admin.py:1549
+#: app/routes/admin.py:1551
 msgid "PI invalide"
 msgstr "PI invalide"
 
@@ -865,6 +869,156 @@ msgstr "Réinitialisation mot de passe"
 #: app/services/mailer.py:463
 msgid "Rappel événement"
 msgstr "Rappel événement"
+
+#: app/services/race_labels.py:18
+msgid "Avertissement"
+msgstr "Avertissement"
+
+#: app/services/race_labels.py:19
+msgid "Réprimande"
+msgstr "Réprimande"
+
+#: app/services/race_labels.py:20
+msgid "Amende"
+msgstr "Amende"
+
+#: app/services/race_labels.py:21
+msgid "Meilleur tour supprimé"
+msgstr "Meilleur tour supprimé"
+
+#: app/services/race_labels.py:22
+msgid "Recul sur la grille"
+msgstr "Recul sur la grille"
+
+#: app/services/race_labels.py:23 app/services/race_labels.py:58
+msgid "Départ des stands"
+msgstr "Départ des stands"
+
+#: app/services/race_labels.py:24
+msgid "Pénalité de temps"
+msgstr "Pénalité de temps"
+
+#: app/services/race_labels.py:25
+msgid "Pénalité de tours"
+msgstr "Pénalité de tours"
+
+#: app/services/race_labels.py:26
+msgid "Places perdues au classement"
+msgstr "Places perdues au classement"
+
+#: app/services/race_labels.py:27 app/templates/timing.html:136
+msgid "Drive-through"
+msgstr "Drive-through"
+
+#: app/services/race_labels.py:28
+msgid "Stop-and-go"
+msgstr "Stop-and-go"
+
+#: app/services/race_labels.py:29
+msgid "Tour suivant invalidé"
+msgstr "Tour suivant invalidé"
+
+#: app/services/race_labels.py:30
+msgid "Tour invalidé"
+msgstr "Tour invalidé"
+
+#: app/services/race_labels.py:31 app/templates/timing.html:135
+msgid "Disqualification"
+msgstr "Disqualification"
+
+#: app/services/race_labels.py:32
+msgid "Téléportation aux stands"
+msgstr "Téléportation aux stands"
+
+#: app/services/race_labels.py:39
+msgid "Coupure de piste"
+msgstr "Coupure de piste"
+
+#: app/services/race_labels.py:40
+msgid "Collision"
+msgstr "Collision"
+
+#: app/services/race_labels.py:41
+msgid "Dépassement illégal"
+msgstr "Dépassement illégal"
+
+#: app/services/race_labels.py:42
+msgid "Excès de vitesse aux stands"
+msgstr "Excès de vitesse aux stands"
+
+#: app/services/race_labels.py:43
+msgid "Entrée des stands irrégulière"
+msgstr "Entrée des stands irrégulière"
+
+#: app/services/race_labels.py:44
+msgid "Sortie des stands irrégulière"
+msgstr "Sortie des stands irrégulière"
+
+#: app/services/race_labels.py:45
+msgid "Arrêt obligatoire ignoré"
+msgstr "Arrêt obligatoire ignoré"
+
+#: app/services/race_labels.py:46
+msgid "Rejointe dangereuse"
+msgstr "Rejointe dangereuse"
+
+#: app/services/race_labels.py:47
+msgid "Direction de course"
+msgstr "Direction de course"
+
+#: app/services/race_labels.py:48
+msgid "Marche arrière dans les stands"
+msgstr "Marche arrière dans les stands"
+
+#: app/services/race_labels.py:49
+msgid "Mauvais sens"
+msgstr "Mauvais sens"
+
+#: app/services/race_labels.py:50
+msgid "Relais ignoré"
+msgstr "Relais ignoré"
+
+#: app/services/race_labels.py:51
+msgid "Relais trop long"
+msgstr "Relais trop long"
+
+#: app/services/race_labels.py:52
+msgid "Relais non effectué"
+msgstr "Relais non effectué"
+
+#: app/services/race_labels.py:53
+msgid "Voiture endommagée"
+msgstr "Voiture endommagée"
+
+#: app/services/race_labels.py:54
+msgid "Phares éteints"
+msgstr "Phares éteints"
+
+#: app/services/race_labels.py:55
+msgid "Excès de vitesse au départ"
+msgstr "Excès de vitesse au départ"
+
+#: app/services/race_labels.py:56
+msgid "Mauvaise position au départ"
+msgstr "Mauvaise position au départ"
+
+#: app/services/race_labels.py:57
+msgid "Excès de vitesse"
+msgstr "Excès de vitesse"
+
+#: app/services/race_labels.py:65
+msgid "Mur"
+msgstr "Mur"
+
+#: app/services/race_labels.py:66 app/templates/pilot_dashboard.html:113
+#: app/templates/pilot_dashboard.html:156 app/templates/result_detail.html:62
+#: app/templates/timing.html:61
+msgid "Voiture"
+msgstr "Voiture"
+
+#: app/services/race_labels.py:67
+msgid "Objet"
+msgstr "Objet"
 
 #: app/templates/base.html:98 app/templates/base.html:250
 msgid "Accueil"
@@ -1200,7 +1354,8 @@ msgstr "Terminé"
 msgid "LEADER"
 msgstr "LEADER"
 
-#: app/templates/base.html:459 app/templates/result_detail.html:194
+#: app/templates/_partials/result_incidents.html:16 app/templates/base.html:459
+#: app/templates/result_detail.html:194
 msgid "Tour"
 msgstr "Tour"
 
@@ -1275,6 +1430,9 @@ msgid "Course privée"
 msgstr "Course privée"
 
 #: app/templates/_partials/circuit_results_table.html:6
+#: app/templates/_partials/result_incidents.html:13
+#: app/templates/_partials/result_incidents.html:60
+#: app/templates/_partials/result_incidents.html:128
 #: app/templates/event_detail.html:36 app/templates/result_detail.html:61
 #: app/templates/settings.html:988 app/templates/settings.html:1024
 #: app/templates/timing.html:60
@@ -1291,6 +1449,7 @@ msgstr "Email"
 msgid "Voiture assignée"
 msgstr "Voiture assignée"
 
+#: app/templates/_partials/result_incidents.html:18
 #: app/templates/event_detail.html:39 app/templates/events_admin.html:70
 #: app/templates/server.html:109 app/templates/settings.html:974
 msgid "Statut"
@@ -2008,12 +2167,6 @@ msgstr "Compte en attente"
 msgid "Inscriptions à venir"
 msgstr "Inscriptions à venir"
 
-#: app/templates/pilot_dashboard.html:113
-#: app/templates/pilot_dashboard.html:156 app/templates/result_detail.html:62
-#: app/templates/timing.html:61
-msgid "Voiture"
-msgstr "Voiture"
-
 #: app/templates/pilot_dashboard.html:126
 msgid "Se désinscrire ?"
 msgstr "Se désinscrire ?"
@@ -2105,6 +2258,7 @@ msgstr "Événements à venir"
 msgid "Gérer"
 msgstr "Gérer"
 
+#: app/templates/_partials/result_incidents.html:38
 #: app/templates/public.html:154 app/templates/settings.html:480
 msgid "En cours"
 msgstr "En cours"
@@ -2308,7 +2462,7 @@ msgstr "Tour noté"
 msgid "Tour invalide / out-lap"
 msgstr "Tour invalide / out-lap"
 
-#: app/templates/result_detail.html:270
+#: app/templates/result_detail.html:272
 msgid "Aucun pilote enregistré dans cette session."
 msgstr "Aucun pilote enregistré dans cette session."
 
@@ -3608,14 +3762,6 @@ msgstr "Restricteur"
 msgid "Pénalités"
 msgstr "Pénalités"
 
-#: app/templates/timing.html:135
-msgid "Disqualification"
-msgstr "Disqualification"
-
-#: app/templates/timing.html:136
-msgid "Drive-through"
-msgstr "Drive-through"
-
 #: app/templates/timing.html:137
 msgid "Stop &amp; Go"
 msgstr "Stop &amp; Go"
@@ -3789,6 +3935,112 @@ msgstr ""
 #: app/templates/_partials/pilot_circuit_results_table.html:33
 msgid "Aucun temps pour ces filtres."
 msgstr "Aucun temps pour ces filtres."
+
+#: app/templates/_partials/result_incidents.html:7
+msgid "Sanctions"
+msgstr "Sanctions"
+
+#: app/templates/_partials/result_incidents.html:8
+msgid "Sanctions infligées automatiquement par le serveur pendant la session."
+msgstr "Sanctions infligées automatiquement par le serveur pendant la session."
+
+#: app/templates/_partials/result_incidents.html:14
+msgid "Sanction"
+msgstr "Sanction"
+
+#: app/templates/_partials/result_incidents.html:15
+msgid "Cause"
+msgstr "Cause"
+
+#: app/templates/_partials/result_incidents.html:17
+msgid "Moment"
+msgstr "Moment"
+
+#: app/templates/_partials/result_incidents.html:31
+msgid "tour(s)"
+msgstr "tour(s)"
+
+#: app/templates/_partials/result_incidents.html:40
+msgid "Levée"
+msgstr "Levée"
+
+#: app/templates/_partials/result_incidents.html:53
+msgid "Incidents"
+msgstr "Incidents"
+
+#: app/templates/_partials/result_incidents.html:54
+msgid ""
+"Chocs enregistrés par le serveur : contacts entre voitures, murs et "
+"objets."
+msgstr ""
+
+#: app/templates/_partials/result_incidents.html:61
+msgid "Contacts avec une autre voiture"
+msgstr "Contacts avec une autre voiture"
+
+#: app/templates/_partials/result_incidents.html:61
+msgid "Contacts"
+msgstr "Contacts"
+
+#: app/templates/_partials/result_incidents.html:62
+msgid "Murs"
+msgstr "Murs"
+
+#: app/templates/_partials/result_incidents.html:63
+msgid "Objets"
+msgstr "Objets"
+
+#: app/templates/_partials/result_incidents.html:64
+msgid "Chocs ayant causé des dégâts"
+msgstr "Chocs ayant causé des dégâts"
+
+#: app/templates/_partials/result_incidents.html:64
+#: app/templates/_partials/result_incidents.html:100
+#: app/templates/_partials/result_incidents.html:131
+msgid "Dégâts"
+msgstr "Dégâts"
+
+#: app/templates/_partials/result_incidents.html:65
+msgid "Choc max"
+msgstr "Choc max"
+
+#: app/templates/_partials/result_incidents.html:66
+msgid "Incidents par tour : plus ce chiffre est bas, plus la conduite est propre"
+msgstr "Incidents par tour : plus ce chiffre est bas, plus la conduite est propre"
+
+#: app/templates/_partials/result_incidents.html:66
+msgid "Par tour"
+msgstr "Par tour"
+
+#: app/templates/_partials/result_incidents.html:92
+msgid "Détail des contacts entre voitures"
+msgstr "Détail des contacts entre voitures"
+
+#: app/templates/_partials/result_incidents.html:98
+msgid "Pilotes concernés"
+msgstr "Pilotes concernés"
+
+#: app/templates/_partials/result_incidents.html:99
+#: app/templates/_partials/result_incidents.html:130
+msgid "Impact"
+msgstr "Impact"
+
+#: app/templates/_partials/result_incidents.html:109
+msgid "adversaire non identifié"
+msgstr "adversaire non identifié"
+
+#: app/templates/_partials/result_incidents.html:112
+#: app/templates/_partials/result_incidents.html:140
+msgid "Oui"
+msgstr "Oui"
+
+#: app/templates/_partials/result_incidents.html:123
+msgid "Gros chocs contre un mur ou un objet"
+msgstr "Gros chocs contre un mur ou un objet"
+
+#: app/templates/_partials/result_incidents.html:129
+msgid "Obstacle"
+msgstr "Obstacle"
 
 #: app/templates/_partials/server_row.html:7
 msgid "désactivé"

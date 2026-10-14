@@ -436,6 +436,11 @@ def _register_jinja(app):
 
     app.jinja_env.filters['session_type_label'] = _session_type_label
 
+    from app.services import race_labels
+    app.jinja_env.filters['penalty_type_label'] = race_labels.penalty_type_label
+    app.jinja_env.filters['investigation_label'] = race_labels.investigation_label
+    app.jinja_env.filters['collider_label']      = race_labels.collider_label
+
 
 def _register_request_hooks(app):
     import secrets

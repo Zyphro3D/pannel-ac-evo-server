@@ -1026,6 +1026,27 @@ def elevate_admin(server_id: int = 1) -> str | None:
     return None
 
 
+def send_admin_command(text: str, server_id: int = 1) -> tuple[bool, str | None]:
+    """Envoie une commande admin in-game (« \\kick 12 »…) en ré-élevant le bot juste avant.
+
+    Pourquoi : le battement toutes les 20 s renvoie un ClientConnectionRequest, seul message
+    qui remet à zéro le délai d'inactivité du serveur (testé : ni le tchat ni les mises à jour
+    de voiture ne suffisent) ; or chaque ClientConnectionRequest efface le statut admin de la
+    connexion. Sans ré-élévation, une commande envoyée plus de ~20 s après la connexion était
+    refusée en silence. TCP garde l'ordre : le serveur traite \\admin avant la commande.
+
+    Retourne (envoyé, erreur). Sans mot de passe admin configuré, la commande part quand même
+    (cas où le bot est déjà admin autrement) : le serveur tranchera."""
+    if not is_connected(server_id):
+        return False, "not_connected"
+    err = elevate_admin(server_id)
+    if err:
+        log.info("ace_tcp_client: élévation avant commande impossible (%s), commande envoyée telle quelle", err)
+    else:
+        time.sleep(0.2)
+    return send_chat(text, server_id), None
+
+
 def start_for_server(srv, cfg: dict):
     """Démarre le bot TCP pour un objet Server de la DB, si ACE_BOT_STEAM_ID est configuré."""
     steam_id = cfg.get("ACE_BOT_STEAM_ID", "")

@@ -599,7 +599,7 @@ def live_admin_cmd():
     try:
         from app.services import ace_tcp_client
         _cmd_sid = _current_server_id()
-        sent = ace_tcp_client.send_chat(msg, _cmd_sid)
+        sent, _err = ace_tcp_client.send_admin_command(msg, _cmd_sid)
         log.info("admin_cmd: %r → sent=%s", msg, sent)
         if sent:
             try:

@@ -265,6 +265,8 @@
     <span class="rd-legend-item"><span class="legend-dot dot-invalid">!</span> {{ _('Tour invalide / out-lap') }}</span>
   </div>
 
+  {% include "_partials/result_incidents.html" %}
+
   {% else %}
   <div class="card mt-4">
     <p class="text-dim text-sm">{{ _('Aucun pilote enregistré dans cette session.') }}</p>

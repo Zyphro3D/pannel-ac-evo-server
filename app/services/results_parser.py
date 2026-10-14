@@ -122,6 +122,177 @@ def _lap_is_formation(flags: int) -> bool:
     return bool(flags & 128)
 
 
+
+# ── Incidents (collisions) et sanctions ──────────────────────────────────────
+# Ces données sont dans tous les fichiers de résultats du serveur mais n'étaient
+# pas exploitées. Format observé (200 fichiers réels, juin–octobre 2026) :
+#   collisions[]        : server_timestamp (ms, horloge serveur), car_id, collider
+#                         ("Wall" | "Car" | "Object"), has_damage, relative_impact_kmh,
+#                         world_pos {x,y,z}. local_timestamp = horloge du CLIENT qui a
+#                         rapporté le choc : ne sert pas à comparer deux voitures.
+#   penalty_collection  : {"session_penalties": [{car_id, pending_penalties[],
+#                         cleared_penalties[{penalty_data{type, penalty_time_ms,
+#                         laps_for_clearing}, investigation, given_lap_count,
+#                         given_session_time_ms (chaîne), cleared_session_time_ms}]}]}
+# Deux voitures qui se touchent produisent deux enregistrements « Car » quasi
+# simultanés (un par voiture) : on les apparie pour compter un contact, pas deux.
+
+_CLUSTER_WINDOW_MS = 1000   # écart max entre deux enregistrements d'un même contact
+_CLUSTER_DISTANCE_M = 15.0  # distance max entre leurs positions dans le monde
+_BIG_IMPACT_KMH = 30.0      # seuil d'un « gros choc » mur / objet
+
+
+def _empty_incident_stats() -> dict:
+    return {"total": 0, "wall": 0, "car": 0, "object": 0, "damage": 0,
+            "max_impact_kmh": 0.0, "per_lap": 0.0}
+
+
+def _to_int(value) -> int:
+    """Les durées sont parfois des chaînes (uint64 sérialisé en JSON)."""
+    try:
+        return int(float(value))
+    except (TypeError, ValueError):
+        return 0
+
+
+def _car_to_driver_map(data: dict) -> dict:
+    """car_key → driver_key, déduit des tours ; repli par index pour les voitures sans tour."""
+    mapping: dict = {}
+    for lap in data.get("laps", []):
+        try:
+            mapping[_guid_key(lap["car_key"])] = _guid_key(lap["driver_key"])
+        except KeyError:
+            continue
+    cs = data.get("car_standings", [])
+    ds = data.get("driver_standings", [])
+    for i, entry in enumerate(cs):
+        ck = _guid_key(entry.get("car_id", {}))
+        if ck not in mapping and i < len(ds):
+            mapping[ck] = _guid_key(ds[i])
+    return mapping
+
+
+def _cluster_car_contacts(car_hits: list) -> list:
+    """Regroupe les enregistrements « Car » en événements de contact.
+
+    Un frottement produit plusieurs enregistrements, rapportés par une ou deux voitures :
+    on relie deux enregistrements proches dans le temps (_CLUSTER_WINDOW_MS) et l'espace
+    (_CLUSTER_DISTANCE_M), puis chaque groupe connexe est un contact. Retourne une liste de
+    listes d'enregistrements, triée par instant."""
+    hits = sorted(car_hits, key=lambda h: h["ts"])
+    parent = list(range(len(hits)))
+
+    def find(i: int) -> int:
+        while parent[i] != i:
+            parent[i] = parent[parent[i]]
+            i = parent[i]
+        return i
+
+    for i, a in enumerate(hits):
+        for j in range(i + 1, len(hits)):
+            b = hits[j]
+            if b["ts"] - a["ts"] > _CLUSTER_WINDOW_MS:
+                break
+            dx, dy, dz = (a["pos"][k] - b["pos"][k] for k in range(3))
+            if (dx * dx + dy * dy + dz * dz) ** 0.5 <= _CLUSTER_DISTANCE_M:
+                parent[find(j)] = find(i)
+
+    groups: dict[int, list] = defaultdict(list)
+    for i, h in enumerate(hits):
+        groups[find(i)].append(h)
+    return sorted(groups.values(), key=lambda g: g[0]["ts"])
+
+
+def _driver_incident_stats(stats: dict, driver_key: tuple, lap_count: int) -> dict:
+    st = dict(stats.get(driver_key) or _empty_incident_stats())
+    st["per_lap"] = round(st["total"] / lap_count, 2) if lap_count else 0.0
+    return st
+
+
+def build_incidents(data: dict, driver_map: dict, car_map: dict) -> dict:
+    """Extrait incidents et sanctions d'un fichier de résultats.
+
+    Retourne {"stats": {driver_key: stats}, "contacts": [...], "big_hits": [...],
+              "penalties": [...]} — toutes les clés présentes même sans donnée."""
+    car_driver = _car_to_driver_map(data)
+
+    def who(car_key: tuple) -> dict:
+        dk = car_driver.get(car_key)
+        d = driver_map.get(dk, {}) if dk else {}
+        c = car_map.get(car_key, {})
+        nick = d.get("nickname") or f"{d.get('first_name', '')} {d.get('last_name', '')}".strip()
+        return {"driver_key": dk, "nickname": nick or "?", "race_number": c.get("race_number", 0),
+                "car": c.get("model_displayname", "")}
+
+    stats: dict = defaultdict(_empty_incident_stats)
+    car_hits, big_hits = [], []
+    for col in data.get("collisions", []) or []:
+        try:
+            ck = _guid_key(col["car_id"])
+        except KeyError:
+            continue
+        kind = (col.get("collider") or "").lower()
+        impact = float(col.get("relative_impact_kmh") or 0.0)
+        damage = bool(col.get("has_damage"))
+        person = who(ck)
+        st = stats[person["driver_key"] or ck]
+        if kind in ("wall", "object"):      # les contacts « car » sont comptés après regroupement
+            st[kind] += 1
+        if damage:
+            st["damage"] += 1
+        st["max_impact_kmh"] = max(st["max_impact_kmh"], impact)
+        pos = col.get("world_pos") or {}
+        if kind == "car":
+            car_hits.append({"ts": float(col.get("server_timestamp") or 0.0), "car": ck,
+                             "impact": impact, "damage": damage,
+                             "pos": (float(pos.get("x", 0)), float(pos.get("y", 0)), float(pos.get("z", 0)))})
+        elif impact >= _BIG_IMPACT_KMH:
+            big_hits.append({**person, "kind": kind, "impact_kmh": impact, "damage": damage,
+                             "ts": float(col.get("server_timestamp") or 0.0)})
+
+    contacts = []
+    for group in _cluster_car_contacts(car_hits):
+        cars = []
+        for h in group:
+            if h["car"] not in cars:
+                cars.append(h["car"])
+        people = [who(ck) for ck in cars]
+        for ck in cars:           # un contact compte une fois pour chaque voiture impliquée
+            stats[who(ck)["driver_key"] or ck]["car"] += 1
+        contacts.append({"ts": group[0]["ts"], "drivers": people, "hits": len(group),
+                         "impact_kmh": max(h["impact"] for h in group),
+                         "damage": any(h["damage"] for h in group)})
+    big_hits.sort(key=lambda h: h["impact_kmh"], reverse=True)
+
+    # Sanctions
+    penalties = []
+    pc = data.get("penalty_collection") or {}
+    for entry in pc.get("session_penalties", []) or []:
+        try:
+            ck = _guid_key(entry["car_id"])
+        except KeyError:
+            continue
+        person = who(ck)
+        for status, key in (("pending", "pending_penalties"), ("cleared", "cleared_penalties")):
+            for pen in entry.get(key, []) or []:
+                pd = pen.get("penalty_data", {}) or {}
+                penalties.append({
+                    **person,
+                    "status": status,
+                    "type": pd.get("type", ""),
+                    "time_ms": _to_int(pd.get("penalty_time_ms")),
+                    "laps": _to_int(pd.get("laps_for_clearing")),
+                    "investigation": pen.get("investigation", ""),
+                    "lap": _to_int(pen.get("given_lap_count")),
+                    "given_ms": _to_int(pen.get("given_session_time_ms")),
+                })
+    penalties.sort(key=lambda p: (p["given_ms"], p["nickname"]))
+
+    for st in stats.values():
+        st["total"] = st["wall"] + st["object"] + st["car"]
+    return {"stats": dict(stats), "contacts": contacts, "big_hits": big_hits, "penalties": penalties}
+
+
 def parse_result_file(data: dict) -> dict:
     """Transforme le JSON brut ACE EVO en dict structuré prêt à afficher."""
     session_type = data.get("session_type", "")
@@ -166,6 +337,9 @@ def parse_result_file(data: dict) -> dict:
                 if len(l.get("split", [])) > s and l["split"][s] > 0
             ]
             session_best_splits_ms.append(min(candidates) if candidates else 0)
+
+    # ── Incidents et sanctions ────────────────────────────────────────────────
+    incidents = build_incidents(data, driver_map, car_map)
 
     # ── Classement pilotes ────────────────────────────────────────────────────
     standings = []
@@ -306,6 +480,8 @@ def parse_result_file(data: dict) -> dict:
             "consistency_ms":        consistency_ms,
             "consistency":           _ms_to_laptime(consistency_ms) if consistency_ms else "—",
             "total_km":              car_stats.get("total_km", 0),
+            "incident_stats":        _driver_incident_stats(incidents["stats"], dk, len(laps)),
+            "penalty_count":         sum(1 for p in incidents["penalties"] if p["driver_key"] == dk),
             "gap_ms":                0,
             "gap":                   "—",
             "gap_laps":              0,
@@ -369,6 +545,12 @@ def parse_result_file(data: dict) -> dict:
         "session_best":           _ms_to_laptime(session_best_ms),
         "session_best_splits_ms": session_best_splits_ms,
         "standings":              standings,
+        "contacts":               incidents["contacts"],
+        "big_hits":               incidents["big_hits"],
+        "penalties":              incidents["penalties"],
+        "has_incidents":          bool(incidents["contacts"] or incidents["big_hits"]
+                                       or any(v["total"] for v in incidents["stats"].values())),
+        "has_penalties":          bool(incidents["penalties"]),
     }
 
 

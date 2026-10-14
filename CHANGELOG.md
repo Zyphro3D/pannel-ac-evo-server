@@ -1,5 +1,26 @@
 # Changelog
 
+### v2.1.0 — 14/10/2026
+
+**Ajout — incidents et sanctions sur la page de détail d'un résultat**
+
+- Le serveur de jeu écrit depuis toujours, dans chaque fichier de résultats, les **collisions** (voiture, mur ou objet, vitesse d'impact, dégâts) et les **sanctions** infligées (avertissement, secondes, drive-through, disqualification…, avec leur cause, le tour et le moment) — le panel ne les lisait pas. Deux nouvelles sections apparaissent maintenant sous le classement quand la session en contient :
+  - **Sanctions** : pilote, sanction (avec la pénalité de temps), cause (coupure de piste, excès de vitesse aux stands, mauvaise position au départ…), tour, moment, statut (en cours / levée).
+  - **Incidents** : par pilote, nombre de contacts avec une autre voiture, de murs, d'objets, de chocs avec dégâts, choc maximal et **incidents par tour** (indicateur de conduite propre) ; détail des contacts entre voitures (un frottement qui produit plusieurs enregistrements n'est compté qu'une fois) et des gros chocs contre un mur ou un objet.
+- Aucune migration de base de données : tout est relu depuis les résultats déjà importés, y compris l'historique. Vérifié sur 200 résultats réels (juin–octobre 2026). Textes traduits en 5 langues.
+
+**Correction — noms de voitures : « Preset M4gt3 Mech 1 » au lieu de « BMW M4 GT3 »**
+
+- La lecture du paquet `content.kspkg` du serveur de jeu ne retrouvait plus aucune voiture (sa table est éparpillée dans le fichier) : les pages live et publiques affichaient des noms déduits de l'identifiant. Les noms et classes viennent maintenant de `cars.json` (voitures officielles et mods, relu toutes les 5 minutes), avec l'ancienne méthode en secours.
+
+**Correction — les commandes admin de la page Live (kick, pénalités, lest, restricteur, passer la session…) étaient refusées en silence**
+
+- Le bot du panel renvoie toutes les 20 s une requête de connexion pour éviter la coupure du serveur (seul message qui réinitialise le délai d'inactivité ; vérifié : ni le tchat ni les mises à jour de voiture ne suffisent). Mais chaque requête de connexion **efface le statut admin** de la connexion : une commande envoyée plus de ~20 s après la connexion recevait « You do not have permissions to execute this command ». Le bot se ré-élève maintenant juste avant chaque commande admin. Reproduit puis corrigé sur un vrai serveur de jeu.
+
+**Tests**
+
+- Premiers tests unitaires (`pytest tests/unit`, données entièrement synthétiques) : noms de voitures, extraction des incidents et sanctions, commandes admin.
+
 ### v2.0.6 — 08/09/2026
 
 **Ajout — message clair si l'exécutable du serveur de jeu est manquant au lancement**

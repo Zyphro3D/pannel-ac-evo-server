@@ -1,0 +1,149 @@
+{# Incidents et sanctions d'une session — données lues dans le fichier de résultats du serveur.
+   Variable attendue : parsed (voir results_parser.parse_result_file). #}
+{% macro mmss(ms) %}{{ "%d:%02d"|format(ms // 60000, (ms // 1000) % 60) }}{% endmacro %}
+
+{% if parsed.has_penalties %}
+<div class="card mb-5">
+  <h2 class="text-lg font-bold text-txt">{{ _('Sanctions') }}</h2>
+  <p class="text-xs text-dim mt-1 mb-3">{{ _('Sanctions infligées automatiquement par le serveur pendant la session.') }}</p>
+  <div class="table-wrapper">
+    <table class="table-base">
+      <thead>
+        <tr>
+          <th>{{ _('Pilote') }}</th>
+          <th>{{ _('Sanction') }}</th>
+          <th>{{ _('Cause') }}</th>
+          <th class="mono">{{ _('Tour') }}</th>
+          <th class="mono">{{ _('Moment') }}</th>
+          <th>{{ _('Statut') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in parsed.penalties %}
+        <tr>
+          <td>
+            {% if p.race_number %}<span class="race-number">#{{ p.race_number }}</span>{% endif %}
+            <span class="rd-nickname">{{ p.nickname }}</span>
+          </td>
+          <td>
+            {{ p.type | penalty_type_label }}
+            {% if p.time_ms %}<span class="text-dim">(+{{ p.time_ms // 1000 }} s)</span>{% endif %}
+            {% if p.laps %}<span class="text-dim">({{ p.laps }} {{ _('tour(s)') }})</span>{% endif %}
+          </td>
+          <td>{{ p.investigation | investigation_label }}</td>
+          <td class="mono">{{ p.lap if p.lap else '—' }}</td>
+          <td class="mono">{{ mmss(p.given_ms) if p.given_ms else '—' }}</td>
+          <td>
+            {% if p.status == 'pending' %}
+              <span class="badge badge-warning">{{ _('En cours') }}</span>
+            {% else %}
+              <span class="badge badge-neutral">{{ _('Levée') }}</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+{% if parsed.has_incidents %}
+<div class="card mb-5">
+  <h2 class="text-lg font-bold text-txt">{{ _('Incidents') }}</h2>
+  <p class="text-xs text-dim mt-1 mb-3">{{ _('Chocs enregistrés par le serveur : contacts entre voitures, murs et objets.') }}</p>
+
+  <div class="table-wrapper">
+    <table class="table-base">
+      <thead>
+        <tr>
+          <th>{{ _('Pilote') }}</th>
+          <th class="mono" title="{{ _('Contacts avec une autre voiture') }}">{{ _('Contacts') }}</th>
+          <th class="mono">{{ _('Murs') }}</th>
+          <th class="mono">{{ _('Objets') }}</th>
+          <th class="mono" title="{{ _('Chocs ayant causé des dégâts') }}">{{ _('Dégâts') }}</th>
+          <th class="mono">{{ _('Choc max') }}</th>
+          <th class="mono" title="{{ _('Incidents par tour : plus ce chiffre est bas, plus la conduite est propre') }}">{{ _('Par tour') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for drv in parsed.standings | sort(attribute='incident_stats.total') | reverse %}
+        {% if drv.incident_stats.total %}
+        <tr>
+          <td>
+            {% if drv.race_number %}<span class="race-number">#{{ drv.race_number }}</span>{% endif %}
+            <span class="rd-nickname">{{ drv.nickname }}</span>
+          </td>
+          <td class="mono">{{ drv.incident_stats.car }}</td>
+          <td class="mono">{{ drv.incident_stats.wall }}</td>
+          <td class="mono">{{ drv.incident_stats.object }}</td>
+          <td class="mono">{{ drv.incident_stats.damage }}</td>
+          <td class="mono">{{ "%.0f"|format(drv.incident_stats.max_impact_kmh) }} km/h</td>
+          <td class="mono">{{ "%.2f"|format(drv.incident_stats.per_lap) if drv.laps_count else '—' }}</td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if parsed.contacts %}
+  <details class="mt-4">
+    <summary class="cursor-pointer text-sm text-txt">{{ _('Détail des contacts entre voitures') }} ({{ parsed.contacts|length }})</summary>
+    <div class="table-wrapper mt-2">
+      <table class="table-base">
+        <thead>
+          <tr>
+            <th class="mono">#</th>
+            <th>{{ _('Pilotes concernés') }}</th>
+            <th class="mono">{{ _('Impact') }}</th>
+            <th>{{ _('Dégâts') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in parsed.contacts %}
+          <tr>
+            <td class="mono">{{ loop.index }}</td>
+            <td>
+              {% for d in c.drivers %}{{ d.nickname }}{% if not loop.last %} ↔ {% endif %}{% endfor %}
+              {% if c.drivers|length == 1 %}<span class="text-dim">({{ _('adversaire non identifié') }})</span>{% endif %}
+            </td>
+            <td class="mono">{{ "%.0f"|format(c.impact_kmh) }} km/h</td>
+            <td>{% if c.damage %}<span class="badge badge-error">{{ _('Oui') }}</span>{% else %}<span class="text-dim">—</span>{% endif %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </details>
+  {% endif %}
+
+  {% if parsed.big_hits %}
+  <details class="mt-3">
+    <summary class="cursor-pointer text-sm text-txt">{{ _('Gros chocs contre un mur ou un objet') }} ({{ parsed.big_hits|length }})</summary>
+    <div class="table-wrapper mt-2">
+      <table class="table-base">
+        <thead>
+          <tr>
+            <th>{{ _('Pilote') }}</th>
+            <th>{{ _('Obstacle') }}</th>
+            <th class="mono">{{ _('Impact') }}</th>
+            <th>{{ _('Dégâts') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for h in parsed.big_hits[:15] %}
+          <tr>
+            <td>{{ h.nickname }}</td>
+            <td>{{ h.kind | collider_label }}</td>
+            <td class="mono">{{ "%.0f"|format(h.impact_kmh) }} km/h</td>
+            <td>{% if h.damage %}<span class="badge badge-error">{{ _('Oui') }}</span>{% else %}<span class="text-dim">—</span>{% endif %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </details>
+  {% endif %}
+</div>
+{% endif %}
