@@ -62,6 +62,9 @@
   <tr>
     <td colspan="2"><img src="docs/screenshots/server-create.png" alt="Création de serveur" title="Création d'un serveur additionnel"></td>
   </tr>
+  <tr>
+    <td colspan="2"><img src="docs/screenshots/collision-map.png" alt="Carte des accrochages" title="Carte des accrochages : le plan du circuit et la voiture en 3D"></td>
+  </tr>
 </table>
 
 ---
@@ -77,6 +80,7 @@ Public ⊂ Pilote ⊂ Admin ⊂ Superadmin.
 | Fonctionnalité | Public | Pilote | Admin | Superadmin |
 |---|:---:|:---:|:---:|:---:|
 | Accueil, résultats, classements, timing en direct | ✓ | ✓ | ✓ | ✓ |
+| Fair-play, ELO, championnats, carte des accrochages, exports CSV des classements | ✓ | ✓ | ✓ | ✓ |
 | Inscription pilote, mot de passe oublié | ✓ | ✓ | ✓ | ✓ |
 | Tableau de bord, inscription/désinscription aux événements | — | ✓ | ✓ | ✓ |
 | Historique personnel des tours, liaison Steam | — | ✓ | ✓ | ✓ |
@@ -88,6 +92,8 @@ Public ⊂ Pilote ⊂ Admin ⊂ Superadmin.
 | Uploader / supprimer un mod, poser ses tags (catégorie, PI) | — | — | ✓ | ✓ |
 | Uploader une image véhicule / circuit | — | — | ✓ | ✓ |
 | Modération in-game : chat, kick, mute, pénalités, lest | — | — | ✓ | ✓ |
+| Gérer les championnats, l'accès au serveur (bannissements, lest), voir la santé du serveur | — | — | ✓ | ✓ |
+| Journal d'audit, sauvegarde / restauration, réglages d'accès et de sécurité | — | — | — | ✓ |
 | Variables `.env`, mise à jour SteamCMD du serveur de jeu | — | — | — | ✓ |
 | Créer / supprimer un serveur additionnel (multi-serveurs) | — | — | — | ✓ |
 | Créer / supprimer un compte admin, changer un rôle | — | — | — | ✓ |
@@ -100,6 +106,14 @@ Public ⊂ Pilote ⊂ Admin ⊂ Superadmin.
 - Réactions emoji vers le chat in-game depuis la page timing
 - Résultats de session détaillés : drapeaux, meilleurs tours, secteurs color-codés, gap au leader
 - Classement par circuit avec filtres (véhicule, catégorie, plage de performance/PI) et meilleur temps mis en avant
+- **Session en cours** sur le timing : nom de la session, phase (attente de départ, en cours, dernier tour, terminée) et temps restant estimé
+- **Incidents et sanctions** dans chaque résultat : contacts, murs, objets, chocs avec dégâts, sanctions de course (avec leur cause, le tour et le moment)
+- **Fair-play** : classement des pilotes à la conduite la plus propre (incidents par tour), avec un compteur que l'administrateur peut remettre à zéro
+- **ELO** : niveau des pilotes d'après leurs courses, dans l'esprit de Low Fuel Motorsport (informatif ; refus de participation sous un seuil possible, désactivé par défaut)
+- **Championnats** : points cumulés sur plusieurs courses (barème libre, bonus pole / meilleur tour, pires manches retirées, participation minimale), publics ou privés
+- **Carte des accrochages** : le plan du circuit et une voiture en 3D, reliés — chaque impact (mur, voiture, objet) s'affiche à l'endroit de la piste et de la voiture où il a eu lieu, avec sa vitesse, ses dégâts et les pilotes concernés ; filtres, vue densité (37 circuits calés)
+- **Contacts en direct** sur le timing (option) : qui vient de toucher qui, un mur ou un objet
+- Exports CSV : classement d'une session, fair-play, championnats
 - Inscription pilote (validation manuelle ensuite par un admin), confirmation d'email optionnelle
 - Interface multilingue : FR / EN / ES / DE / IT
 
@@ -117,7 +131,14 @@ Public ⊂ Pilote ⊂ Admin ⊂ Superadmin.
 - Roulement de configs avec file d'attente, glisser-déposer, option cycle
 - Gestion complète des événements (création, publication, inscriptions, génération de l'`entry_list.json`) et des comptes pilotes (approbation/rejet)
 - Emails transactionnels (approbation, rejet, rappel)
-- Modération in-game depuis le panel : chat admin, kick, envoi aux stands, mute, pénalités, lest/restricteur, saut de session
+- Modération in-game depuis le panel : chat admin, kick, envoi aux stands, mute, pénalités, lest/restricteur, saut de session, **bannissement en direct** (`\ban`, enregistré dans la page Accès et signalé sur Discord)
+- **Modes de jeu supplémentaires** : course instantanée, tour lancé, rallye, A vers B, test drive
+- **Options de course** : course au nombre de tours, arrêt aux stands obligatoire (pneus / ravitaillement), sanctions personnalisées — toutes désactivées par défaut
+- **Page Accès** : liste blanche des pilotes approuvés, bannissement par SteamID, lest et restricteur par joueur, refus selon le niveau ELO (option)
+- **Avertissement de capacité** : si le nombre de joueurs dépasse celui des stands du circuit choisi
+- **Santé du serveur** : en marche ou non, joueurs, CPU, mémoire, redémarrages, disponibilité sur 24 h et courbes, espace disque, dernière sauvegarde
+- **Championnats** : création, choix des manches parmi les courses jouées, barème et bonus
+- Exports CSV : tous les résultats, pilotes
 - Élévation du bot du panel en admin in-game à la demande, redémarrage du container du serveur de jeu
 
 **👑 Superadmin**
@@ -125,13 +146,22 @@ Public ⊂ Pilote ⊂ Admin ⊂ Superadmin.
 - Gestion des comptes admin/superadmin (création, désactivation, suppression)
 - Multi-serveurs : création, activation/désactivation, suppression de serveurs — chacun dans son propre container Docker, avec son propre bot et son propre watchdog
 - **Mise à jour du serveur de jeu ACE EVO depuis l'interface** (SteamCMD, identifiants + code Steam Guard, suivi de progression en direct) — distincte de la mise à jour du panel lui-même
+- **Journal d'audit** : qui a fait quoi, quand et depuis quelle adresse (connexions, serveur, réglages, comptes, sauvegardes) — jamais de secret ; filtres, export CSV, conservation configurable
+- **Sauvegarde et restauration en un clic** : base, réglages, configurations, images ; sauvegarde automatique quotidienne ; restauration vérifiée (contenu, intégrité de la base, version) avec sauvegarde de sécurité préalable
+- **Double authentification** : réinitialisation du 2FA d'un compte (appareil perdu)
 - Upload des images véhicules/circuits
 
 **🔒 Sécurité**
 - CSRF, rate limiting, protection anti brute-force sur le login (blocage IP après 5 échecs), HSTS, CSP, X-Frame-Options
+- **Double authentification (TOTP)** pour les comptes administrateurs : Google Authenticator, Aegis, 2FAS, Bitwarden… avec QR code, 10 codes de secours à usage unique, codes non rejouables
+- **Journal d'audit** de toutes les actions d'administration
+- **Ingestion des résultats authentifiée** : le serveur de jeu s'identifie par un jeton propre à l'installation, avec ou sans reverse proxy ; toute requête passée par un proxy sans jeton est refusée
+- **IP réelle des visiteurs** derrière un reverse proxy (`TRUSTED_PROXIES`) : limite de débit et anti-brute-force par visiteur, pas par proxy
+- Dépendances à jour (contrôle `pip-audit`), restauration de sauvegarde protégée contre les archives piégées
 
 **🔔 Notifications Discord**
 - Webhooks configurables par serveur : démarrage/arrêt/crash, connexions joueurs, meilleur tour, actions admin — avec fallback sur le webhook global
+- **Récapitulatif de fin de session** (option) : podium, meilleur tour, incidents et sanctions regroupés par pilote ; notification des bannissements
 
 **🎨 Interface**
 - UI Tailwind CSS v3 + HTMX + Alpine.js — actions sans rechargement, toasts temps réel, transitions fluides
@@ -314,6 +344,9 @@ Référence complète des variables `.env` (voir aussi `.env.example`) :
 | `BACKUP_AUTO` / `BACKUP_KEEP` | Sauvegarde automatique quotidienne du panel (base, réglages, configurations, images) et nombre de sauvegardes automatiques conservées | `true` / `7` |
 | `AUDIT_RETENTION_DAYS` | Durée de conservation du journal d'audit, en jours | `365` |
 | `RATING_ENFORCE` / `RATING_MIN_TO_JOIN` / `RATING_MIN_RACES` | Refus des pilotes définitifs dont l'ELO est sous le seuil (liste noire du serveur de jeu, nécessite le contrôle d'accès) ; réglé depuis la page Accès | `false` / `0` / `5` |
+| `LIVE_COLLISIONS` | Affiche les derniers contacts sur le timing : lance le serveur de jeu avec `-log_debug gameplay` (une douzaine de lignes de log par session) ; pris en compte au prochain démarrage du serveur de jeu | `false` |
+| `ACCESS_CONTROL_ENABLED` / `ACCESS_APPROVED_ONLY` | Contrôle d'accès au serveur de jeu (liste blanche des pilotes approuvés, bannissements, lest et restricteur) ; réglé depuis la page Accès | `false` / `false` |
+| `SERVER_ENTRY_LIST_PATH` | Chemin d'un fichier d'engagés défini à la main : il reste prioritaire sur le contrôle d'accès | — |
 | `LAP_HISTORY_RETENTION_MONTHS` | Nombre de mois de conservation détaillée de l'historique des tours pilote, au-delà archivé en résumé mensuel | `6` |
 
 ### Serveur de jeu
@@ -358,6 +391,7 @@ Le bot TCP se connecte au serveur ACE EVO pour envoyer des messages de bienvenue
 | `DISCORD_PILOTS_WEBHOOK_URL` | Webhook pilotes — fallback sur le principal si vide |
 | `DISCORD_RACE_WEBHOOK_URL` | Webhook course — fallback sur le principal si vide |
 | `DISCORD_INVITE_URL` | Lien d'invitation affiché sur la page d'accueil |
+| `DISCORD_NOTIFY_SESSION_SUMMARY` | Récapitulatif de fin de session sur le webhook course (podium, meilleur tour, incidents, sanctions) | `false` |
 
 ### Emails *(optionnel)*
 

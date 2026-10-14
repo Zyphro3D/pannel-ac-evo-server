@@ -149,6 +149,7 @@ Section repliable « Options de course », chaque réglage vérifié sur un vrai
 - Le menu Admin gagne « Accès » (absent du menu bureau), « Championnats », « Santé du serveur », « Journal d'audit » et « Sauvegarde ».
 - Le classement fair-play lit désormais tout l'historique (plafond de 2000 résultats retiré).
 - Les textes des modèles du dossier `_partials` (formulaire de championnat, carte des accrochages) sont traduits en 5 langues ; l'extraction Babel du projet ignore ce dossier (il faut le passer explicitement).
+- README mis à jour : fonctionnalités par rôle, matrice des droits, sécurité, Discord, nouvelles variables, capture de la carte des accrochages.
 - 108 tests unitaires (`pytest tests/unit`, données entièrement synthétiques).
 
 ### v2.0.6 — 08/09/2026
