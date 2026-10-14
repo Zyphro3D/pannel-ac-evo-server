@@ -697,18 +697,12 @@ def _write_env_file(new_values: dict):
 # optionnelle — c'est ce qui alimente le bandeau affiché aux admins tant qu'ils
 # ne l'ont pas explicitement fermé (cf. dismiss_env_notice ci-dessous).
 NEW_ENV_VARS_BY_VERSION: dict[str, list[tuple[str, str]]] = {
-    "2.3.0": [
+    "2.1.0": [
         ("BACKUP_AUTO", _l("Sauvegarde automatique quotidienne du panel (base, réglages, configurations), activée par défaut ; nombre conservé : BACKUP_KEEP. Voir Admin → Sauvegarde.")),
         ("AUDIT_RETENTION_DAYS", _l("Durée de conservation du journal d'audit, en jours (365 par défaut).")),
         ("RATING_ENFORCE", _l("Refus des pilotes dont le niveau ELO est sous RATING_MIN_TO_JOIN (désactivé par défaut) : se règle dans la page Accès.")),
-    ],
-    "2.2.1": [
         ("TRUSTED_PROXIES", _l("Derrière un reverse proxy (Caddy, nginx, Cloudflare) : adresse du proxy vue par le panel, pour lire l'IP réelle des visiteurs (limite de débit, anti-brute-force du login). Vide si le panel est exposé directement.")),
-    ],
-    "2.2.0": [
         ("LIVE_COLLISIONS", _l("Contacts en direct sur « Classement en direct » : interrupteur dans Paramètres → Notifications, désactivé par défaut.")),
-    ],
-    "2.1.0": [
         ("DISCORD_NOTIFY_SESSION_SUMMARY", _l("Récapitulatif Discord à la fin de chaque session (podium, meilleur tour, incidents, sanctions) : interrupteur dans Paramètres → Notifications, désactivé par défaut.")),
         ("ACCESS_CONTROL_ENABLED", _l("Contrôle d'accès au serveur de jeu (liste blanche des pilotes approuvés, bannissements, lest et restricteur par SteamID) : se règle dans la page Accès, désactivé par défaut.")),
         ("ACCESS_APPROVED_ONLY", _l("Réserve le serveur aux pilotes approuvés (page Accès, désactivé par défaut).")),

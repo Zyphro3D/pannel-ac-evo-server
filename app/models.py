@@ -47,7 +47,7 @@ class AdminAccount(UserMixin, db.Model):
     steam_id              = db.Column(db.String(32),  nullable=True)
     steam_id_confirmed_at = db.Column(db.DateTime,    nullable=True)
 
-    # Authentification à deux facteurs (v2.3.0) — voir services/totp.py
+    # Authentification à deux facteurs (v2.1.0) — voir services/totp.py
     totp_secret    = db.Column(db.String(64), nullable=True)
     totp_enabled   = db.Column(db.Boolean, default=False, nullable=False, server_default="0")
     totp_recovery  = db.Column(db.Text, nullable=True)        # JSON : hachés des codes de secours restants
@@ -401,7 +401,7 @@ class AccessRule(db.Model):
     created_at = db.Column(db.DateTime, default=_utcnow)
 
 
-# ── Journal d'audit, état du panel, mesures de santé, championnats (v2.3.0) ───
+# ── Journal d'audit, état du panel, mesures de santé, championnats (v2.1.0) ───
 
 class PanelState(db.Model):
     """Petites valeurs d'état modifiées à l'exécution (ex. date de remise à zéro du fair-play)."""

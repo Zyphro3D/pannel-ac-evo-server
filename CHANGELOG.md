@@ -1,88 +1,8 @@
 # Changelog
 
-### v2.3.0 — 14/10/2026
-
-> Cette version ajoute les outils d'administration (journal d'audit, double authentification, sauvegarde, santé, exports) et la compétition (ELO, championnats). Rien ne change pour une installation existante tant que vous n'activez pas les nouvelles options. Les nouvelles tables se créent toutes seules au démarrage.
-
-**Ajout — journal d'audit (Admin → Journal d'audit, super-admin)**
-
-- Enregistre qui a fait quoi, quand et depuis quelle adresse : connexions réussies et échouées, double authentification, démarrage/arrêt du serveur, changements de configuration et de réglages (les **noms** des champs modifiés, jamais leurs valeurs), comptes, bannissements et commandes en direct, événements, accès, mods, sauvegardes, exports. Aucun mot de passe ni secret n'y est écrit (un mot de passe tapé par erreur dans le champ identifiant n'est pas journalisé).
-- Filtres (utilisateur, action, période, échecs seulement), pagination, export CSV, conservation configurable (`AUDIT_RETENTION_DAYS`, 365 jours par défaut).
-
-**Ajout — authentification à deux facteurs (Mon compte)**
-
-- Code à 6 chiffres (TOTP, compatible Google Authenticator, Aegis, 2FAS, Bitwarden…) avec QR code ; 10 codes de secours à usage unique ; un code ne peut pas être rejoué ; limitation des essais. Un super-admin peut réinitialiser le 2FA d'un compte (appareil perdu). Désactivation et nouveaux codes de secours exigent le mot de passe et un code. Comptes administrateurs uniquement.
-
-**Ajout — sauvegarde et restauration (Admin → Sauvegarde, super-admin)**
-
-- Un clic : zip de la base (copie cohérente), des réglages (option), des configurations serveur et des images ; téléchargement, suppression, **sauvegarde automatique quotidienne** (`BACKUP_AUTO`, `BACKUP_KEEP`).
-- Restauration depuis une sauvegarde rangée ou un fichier envoyé : l'archive est vérifiée avant tout changement (noms de fichiers autorisés, tailles, intégrité et structure de la base, version compatible), l'état actuel est sauvegardé automatiquement, confirmation en tapant `RESTAURER`. Redémarrage du panel nécessaire ensuite.
-
-**Ajout — page « Santé du serveur » (Admin)**
-
-- Pour chaque serveur : en marche ou non, durée de fonctionnement, joueurs, CPU, mémoire, redémarrages automatiques, disponibilité sur 24 h et courbes (mesure chaque minute, conservée 7 jours) ; pour le panel : version, mémoire, base, dernier résultat reçu, dernière sauvegarde, espace disque.
-
-**Ajout — exports CSV**
-
-- Classement d'une session (bouton sur la page de résultat), classement fair-play, championnats, et pour les admins : tous les résultats, pilotes, journal d'audit. Fichiers UTF-8 avec séparateur point-virgule, ouvrables dans Excel ; protection contre l'injection de formules.
-
-**Ajout — classement ELO (Résultats → ELO)**
-
-- Niveau des pilotes d'après leurs courses, dans l'esprit de Low Fuel Motorsport : départ à 1500, comparaison de chaque pilote avec tous les autres (battre un pilote mieux classé rapporte plus), pilotes non classés pénalisés, variation réduite sur les petites grilles, 5 premières courses provisoires. Calculé depuis tout l'historique, à titre informatif.
-- **Refus de participation préparé** (Admin → Accès, désactivé par défaut) : `RATING_ENFORCE` + `RATING_MIN_TO_JOIN` ajoutent à la liste noire du serveur de jeu les pilotes définitifs dont l'ELO est sous le seuil. Les pilotes provisoires ne sont jamais refusés.
-
-**Ajout — championnats (Résultats → Championnats ; Admin → Championnats)**
-
-- Un championnat regroupe des courses déjà jouées (les manches). Barème libre, bonus meilleur tour et pole, pires manches retirées, participation minimale pour être classé, départage par victoires puis places. Les IA sont ignorées, les places recalculées parmi les humains, un pilote qui n'a pas fait la moitié des tours est non classé dans la manche. Championnats publics ou privés, export CSV.
-
-**Changement — le compteur fair-play peut être remis à zéro (super-admin)**
-
-- Le suivi des incidents n'était pas actif avant la v2.1.0 : un bouton remet le compteur à zéro à la date du jour, sans rien supprimer, pour ne pas pénaliser les pilotes sur une période où ils ne pouvaient pas le savoir.
-
-**Divers**
-
-- Le menu Admin gagne « Accès » (absent du menu bureau), « Championnats », « Santé du serveur », « Journal d'audit » et « Sauvegarde ».
-- Le classement fair-play lit désormais tout l'historique (plafond de 2000 résultats retiré).
-- Les textes sont traduits en 5 langues. 102 tests unitaires.
-
-### v2.2.1 — 14/10/2026
-
-**Correction de sécurité — l'ingestion des résultats était ouverte à Internet derrière un reverse proxy**
-
-- `/api/results/ingest` acceptait sans signature toute requête venant d'une IP privée, pour laisser passer le serveur de jeu (qui ne sait pas signer). Derrière Caddy, nginx ou Cloudflare, le panel voit l'adresse privée du proxy pour **tous** les visiteurs : n'importe qui sur Internet pouvait donc poster de faux résultats (classements, records, récapitulatif Discord). Vérifié sur une installation réelle.
-- Le serveur de jeu s'authentifie maintenant par un **jeton `sig`** ajouté par le panel à l'URL de retour des résultats (valable avec ou sans proxy). Le repli sur le réseau interne n'est conservé que pour les requêtes **directes** à destination d'une adresse interne (`panel`, `127.0.0.1`, IP) et sans en-tête de proxy ; tout ce qui passe par un nom de domaine public ou un proxy est refusé. Un panel exposé directement sur une IP, sans proxy, fonctionne comme avant. Le jeton est pris en compte au prochain démarrage du serveur de jeu ; d'ici là le repli réseau interne continue de fonctionner.
-
-**Correction — limite de débit et anti-brute-force du login partagés par tous les visiteurs derrière un proxy**
-
-- Pour la même raison, tous les visiteurs avaient la même adresse : 10 essais de connexion par minute pour *tout le monde*, donc un seul visiteur pouvait bloquer les connexions des administrateurs. Nouvelle variable `TRUSTED_PROXIES` (adresse du proxy tel que le panel la voit) : le panel lit alors l'IP réelle du visiteur (`CF-Connecting-IP`), uniquement quand la requête vient de ce proxy. Vide par défaut = comportement historique (panel exposé directement).
-
-**Performance — « Classement en direct » : 8 à 12 s de calcul à chaque rafraîchissement**
-
-- Le panel relisait 24 h de logs du serveur de jeu (plusieurs Mo) via l'API Docker à chaque rafraîchissement. Les lignes déjà lues sont désormais gardées en mémoire et seules les nouvelles sont demandées, en lecture depuis la fin du journal (`tail`) : Docker relit sinon tout le fichier pour filtrer par date. Mesuré sur un serveur à 50 000 lignes : 7,7 s → 0,2 s par rafraîchissement, résultat identique à l'ancienne méthode.
-
-**Correction — records par circuit figés au-delà de 2000 résultats**
-
-- La page des records ne lisait que les 2000 résultats les plus anciens ; les suivants étaient ignorés. Tous les résultats sont maintenant lus, par lots.
-
-**Divers**
-
-- Dépendances mises à jour : Flask 3.1.0 → 3.1.3 et python-dotenv 1.0.1 → 1.2.2 (6 vulnérabilités connues corrigées ; `pip-audit` ne signale plus rien).
-- En-tête de sécurité : `object-src 'none'`, `base-uri 'self'`, `frame-ancestors 'none'` ajoutés à la politique CSP.
-- Le message de démarrage « RESULTS_INGEST_SECRET non défini — rejette tous les résultats » était faux ; remplacé par une information exacte.
-- 67 tests unitaires.
-
-### v2.2.0 — 14/10/2026
-
-**Ajout — contacts en direct sur « Classement en direct » (option)**
-
-- Nouvel interrupteur **« Contacts en direct »** (Paramètres → Notifications, `LIVE_COLLISIONS`, désactivé par défaut) : le panel lance alors le serveur de jeu avec `-log_debug gameplay`, ce qui lui fait écrire chaque collision dans ses logs (une douzaine de lignes par session, rien d'autre ne change). Une carte **« Derniers contacts »** affiche, du plus récent au plus ancien : qui a touché qui, un mur ou un objet, s'il y a eu des dégâts, et depuis combien de temps.
-- Découvert dans le binaire du serveur : la ligne « Collision between … » existe depuis toujours mais n'est émise qu'au niveau de log « debug » du journal `gameplay`. Vérifié sur un vrai serveur avec les trois types de contact (voiture, mur, objet).
-- Chaque voiture impliquée rapporte le même contact : les doublons à moins de 2 s sont fusionnés. La vitesse d'impact et la position ne sont pas journalisées en direct ; elles restent visibles après coup dans la page de détail d'un résultat.
-- Prise en compte au prochain démarrage du serveur de jeu. En déploiement Docker séparé, l'image `aceserver` doit être reconstruite une fois (`docker compose build aceserver`) pour que le script de démarrage lise l'argument.
-
 ### v2.1.0 — 14/10/2026
 
-> Cette version regroupe plusieurs chantiers menés à partir de l'analyse du serveur de jeu. Toutes les nouvelles options sont **désactivées par défaut** : une configuration existante produit exactement les mêmes arguments qu'avant.
+> Cette version regroupe plusieurs chantiers menés à partir de l'analyse du serveur de jeu. Toutes les nouvelles options sont **désactivées par défaut** : une configuration existante produit exactement les mêmes arguments qu'avant. Elle ajoute aussi les outils d'administration (journal d'audit, double authentification, sauvegarde, santé, exports CSV) et la compétition (ELO, championnats). Les nouvelles tables se créent toutes seules au démarrage.
 
 **Ajout — incidents et sanctions sur la page de détail d'un résultat**
 
@@ -148,11 +68,75 @@ Section repliable « Options de course », chaque réglage vérifié sur un vrai
 
 - Le fichier généré depuis les inscriptions d'un événement était écrit dans un format d'un autre jeu (`entries` / `driverName` / `carModel`) que le serveur ACE EVO ignore sans erreur. Il est maintenant au format du serveur : liste blanche = pilotes confirmés de l'événement (avec SteamID) + bot du panel, plus les règles de la page Accès. Pour qu'il soit lu, renseigner `SERVER_ENTRY_LIST_PATH` avec son chemin.
 
+**Ajout — contacts en direct sur « Classement en direct » (option)**
+
+- Nouvel interrupteur **« Contacts en direct »** (Paramètres → Notifications, `LIVE_COLLISIONS`, désactivé par défaut) : le panel lance alors le serveur de jeu avec `-log_debug gameplay`, ce qui lui fait écrire chaque collision dans ses logs (une douzaine de lignes par session, rien d'autre ne change). Une carte **« Derniers contacts »** affiche, du plus récent au plus ancien : qui a touché qui, un mur ou un objet, s'il y a eu des dégâts, et depuis combien de temps.
+- Découvert dans le binaire du serveur : la ligne « Collision between … » existe depuis toujours mais n'est émise qu'au niveau de log « debug » du journal `gameplay`. Vérifié sur un vrai serveur avec les trois types de contact (voiture, mur, objet).
+- Chaque voiture impliquée rapporte le même contact : les doublons à moins de 2 s sont fusionnés. La vitesse d'impact et la position ne sont pas journalisées en direct ; elles restent visibles après coup dans la page de détail d'un résultat.
+- Prise en compte au prochain démarrage du serveur de jeu. En déploiement Docker séparé, l'image `aceserver` doit être reconstruite une fois (`docker compose build aceserver`) pour que le script de démarrage lise l'argument.
+
+**Correction de sécurité — l'ingestion des résultats était ouverte à Internet derrière un reverse proxy**
+
+- `/api/results/ingest` acceptait sans signature toute requête venant d'une IP privée, pour laisser passer le serveur de jeu (qui ne sait pas signer). Derrière Caddy, nginx ou Cloudflare, le panel voit l'adresse privée du proxy pour **tous** les visiteurs : n'importe qui sur Internet pouvait donc poster de faux résultats (classements, records, récapitulatif Discord). Vérifié sur une installation réelle.
+- Le serveur de jeu s'authentifie maintenant par un **jeton `sig`** ajouté par le panel à l'URL de retour des résultats (valable avec ou sans proxy). Le repli sur le réseau interne n'est conservé que pour les requêtes **directes** à destination d'une adresse interne (`panel`, `127.0.0.1`, IP) et sans en-tête de proxy ; tout ce qui passe par un nom de domaine public ou un proxy est refusé. Un panel exposé directement sur une IP, sans proxy, fonctionne comme avant. Le jeton est pris en compte au prochain démarrage du serveur de jeu ; d'ici là le repli réseau interne continue de fonctionner.
+
+**Correction — limite de débit et anti-brute-force du login partagés par tous les visiteurs derrière un proxy**
+
+- Pour la même raison, tous les visiteurs avaient la même adresse : 10 essais de connexion par minute pour *tout le monde*, donc un seul visiteur pouvait bloquer les connexions des administrateurs. Nouvelle variable `TRUSTED_PROXIES` (adresse du proxy tel que le panel la voit) : le panel lit alors l'IP réelle du visiteur (`CF-Connecting-IP`), uniquement quand la requête vient de ce proxy. Vide par défaut = comportement historique (panel exposé directement).
+
+**Performance — « Classement en direct » : 8 à 12 s de calcul à chaque rafraîchissement**
+
+- Le panel relisait 24 h de logs du serveur de jeu (plusieurs Mo) via l'API Docker à chaque rafraîchissement. Les lignes déjà lues sont désormais gardées en mémoire et seules les nouvelles sont demandées, en lecture depuis la fin du journal (`tail`) : Docker relit sinon tout le fichier pour filtrer par date. Mesuré sur un serveur à 50 000 lignes : 7,7 s → 0,2 s par rafraîchissement, résultat identique à l'ancienne méthode.
+
+**Correction — records par circuit figés au-delà de 2000 résultats**
+
+- La page des records ne lisait que les 2000 résultats les plus anciens ; les suivants étaient ignorés. Tous les résultats sont maintenant lus, par lots.
+
+**Ajout — journal d'audit (Admin → Journal d'audit, super-admin)**
+
+- Enregistre qui a fait quoi, quand et depuis quelle adresse : connexions réussies et échouées, double authentification, démarrage/arrêt du serveur, changements de configuration et de réglages (les **noms** des champs modifiés, jamais leurs valeurs), comptes, bannissements et commandes en direct, événements, accès, mods, sauvegardes, exports. Aucun mot de passe ni secret n'y est écrit (un mot de passe tapé par erreur dans le champ identifiant n'est pas journalisé).
+- Filtres (utilisateur, action, période, échecs seulement), pagination, export CSV, conservation configurable (`AUDIT_RETENTION_DAYS`, 365 jours par défaut).
+
+**Ajout — authentification à deux facteurs (Mon compte)**
+
+- Code à 6 chiffres (TOTP, compatible Google Authenticator, Aegis, 2FAS, Bitwarden…) avec QR code ; 10 codes de secours à usage unique ; un code ne peut pas être rejoué ; limitation des essais. Un super-admin peut réinitialiser le 2FA d'un compte (appareil perdu). Désactivation et nouveaux codes de secours exigent le mot de passe et un code. Comptes administrateurs uniquement.
+
+**Ajout — sauvegarde et restauration (Admin → Sauvegarde, super-admin)**
+
+- Un clic : zip de la base (copie cohérente), des réglages (option), des configurations serveur et des images ; téléchargement, suppression, **sauvegarde automatique quotidienne** (`BACKUP_AUTO`, `BACKUP_KEEP`).
+- Restauration depuis une sauvegarde rangée ou un fichier envoyé : l'archive est vérifiée avant tout changement (noms de fichiers autorisés, tailles, intégrité et structure de la base, version compatible), l'état actuel est sauvegardé automatiquement, confirmation en tapant `RESTAURER`. Redémarrage du panel nécessaire ensuite.
+
+**Ajout — page « Santé du serveur » (Admin)**
+
+- Pour chaque serveur : en marche ou non, durée de fonctionnement, joueurs, CPU, mémoire, redémarrages automatiques, disponibilité sur 24 h et courbes (mesure chaque minute, conservée 7 jours) ; pour le panel : version, mémoire, base, dernier résultat reçu, dernière sauvegarde, espace disque.
+
+**Ajout — exports CSV**
+
+- Classement d'une session (bouton sur la page de résultat), classement fair-play, championnats, et pour les admins : tous les résultats, pilotes, journal d'audit. Fichiers UTF-8 avec séparateur point-virgule, ouvrables dans Excel ; protection contre l'injection de formules.
+
+**Ajout — classement ELO (Résultats → ELO)**
+
+- Niveau des pilotes d'après leurs courses, dans l'esprit de Low Fuel Motorsport : départ à 1500, comparaison de chaque pilote avec tous les autres (battre un pilote mieux classé rapporte plus), pilotes non classés pénalisés, variation réduite sur les petites grilles, 5 premières courses provisoires. Calculé depuis tout l'historique, à titre informatif.
+- **Refus de participation préparé** (Admin → Accès, désactivé par défaut) : `RATING_ENFORCE` + `RATING_MIN_TO_JOIN` ajoutent à la liste noire du serveur de jeu les pilotes définitifs dont l'ELO est sous le seuil. Les pilotes provisoires ne sont jamais refusés.
+
+**Ajout — championnats (Résultats → Championnats ; Admin → Championnats)**
+
+- Un championnat regroupe des courses déjà jouées (les manches). Barème libre, bonus meilleur tour et pole, pires manches retirées, participation minimale pour être classé, départage par victoires puis places. Les IA sont ignorées, les places recalculées parmi les humains, un pilote qui n'a pas fait la moitié des tours est non classé dans la manche. Championnats publics ou privés, export CSV.
+
+**Changement — le compteur fair-play peut être remis à zéro (super-admin)**
+
+- Le suivi des incidents n'était pas actif avant la v2.1.0 : un bouton remet le compteur à zéro à la date du jour, sans rien supprimer, pour ne pas pénaliser les pilotes sur une période où ils ne pouvaient pas le savoir.
+
 **Divers**
 
 - Le bandeau « nouvelles variables .env » mentionne les nouveaux interrupteurs (récapitulatif Discord, contrôle d'accès).
 - Textes manquants traduits en 5 langues.
-- 55 tests unitaires (`pytest tests/unit`, données entièrement synthétiques).
+- Dépendances mises à jour : Flask 3.1.0 → 3.1.3 et python-dotenv 1.0.1 → 1.2.2 (6 vulnérabilités connues corrigées ; `pip-audit` ne signale plus rien).
+- En-tête de sécurité : `object-src 'none'`, `base-uri 'self'`, `frame-ancestors 'none'` ajoutés à la politique CSP.
+- Le message de démarrage « RESULTS_INGEST_SECRET non défini — rejette tous les résultats » était faux ; remplacé par une information exacte.
+- Le menu Admin gagne « Accès » (absent du menu bureau), « Championnats », « Santé du serveur », « Journal d'audit » et « Sauvegarde ».
+- Le classement fair-play lit désormais tout l'historique (plafond de 2000 résultats retiré).
+- 103 tests unitaires (`pytest tests/unit`, données entièrement synthétiques).
 
 ### v2.0.6 — 08/09/2026
 

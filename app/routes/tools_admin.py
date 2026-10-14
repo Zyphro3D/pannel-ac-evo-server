@@ -1,5 +1,5 @@
 """Outils d'administration : journal d'audit, remise à zéro du fair-play, exports CSV,
-sauvegarde / restauration, santé du serveur (v2.3.0)."""
+sauvegarde / restauration, santé du serveur (v2.1.0)."""
 import json
 import logging
 from datetime import datetime, timedelta
