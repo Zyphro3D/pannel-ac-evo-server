@@ -468,6 +468,92 @@ def notify_admin_action(cmd: str, target_name: str, car_num: str, extra: str, by
     }]), server_id=server_id)
 
 
+_SESSION_NAMES_FR = {"practice": "Practice", "qualify": "Qualification", "qualifying": "Qualification",
+                     "warmup": "Warmup", "race": "Course"}
+_MEDALS = ("🥇", "🥈", "🥉")
+_MAX_PENALTY_LINES = 6
+_SEVERE_PENALTIES = {"PenaltyType_Disqualification", "PenaltyType_Drive_Through", "PenaltyType_Stop_And_Go"}
+
+
+def build_session_summary_embed(parsed: dict, server_name: str = "",
+                                penalty_label=lambda raw: raw, investigation_label=lambda raw: raw) -> dict | None:
+    """Embed Discord « fin de session » à partir d'un résultat décodé (results_parser).
+
+    Retourne None s'il n'y a rien à annoncer (aucun pilote classé). Les libellés de sanctions
+    et de causes sont fournis par l'appelant (traduits) ; sans eux, les valeurs brutes."""
+    standings = [d for d in parsed.get("standings", []) if d.get("position")]
+    if not standings:
+        return None
+    is_race = bool(parsed.get("is_race"))
+    session = _SESSION_NAMES_FR.get((parsed.get("session_type") or "").strip().lower(),
+                                    parsed.get("session_type") or "Session")
+    circuit = parsed.get("track") or ""
+    if parsed.get("layout"):
+        circuit = f"{circuit} ({parsed['layout']})" if circuit else parsed["layout"]
+
+    lines = []
+    for medal, d in zip(_MEDALS, standings):
+        score = d.get("race_time") if is_race else d.get("best_lap")
+        if not score or score == "—":
+            continue
+        extra = f" ({d['gap']})" if is_race and d.get("gap") not in (None, "", "—") else ""
+        lines.append(f"{medal} **{d.get('nickname') or '?'}** — {score}{extra}")
+
+    fields = []
+    best_driver = next((d for d in standings if (d.get("is_fastest_lap") if is_race else d.get("is_session_fastest"))), None)
+    if parsed.get("session_best_ms") and best_driver:
+        fields.append({"name": "Meilleur tour", "inline": True,
+                       "value": f"**{parsed.get('session_best')}** — {best_driver.get('nickname') or '?'}"})
+    if parsed.get("has_incidents"):
+        walls = sum(d.get("incident_stats", {}).get("wall", 0) + d.get("incident_stats", {}).get("object", 0)
+                    for d in standings)
+        fields.append({"name": "Incidents", "inline": True,
+                       "value": f"{len(parsed.get('contacts', []))} contact(s) · {walls} choc(s) mur/objet"})
+    penalties = parsed.get("penalties", [])
+    if penalties:
+        # Regroupées par pilote (une course produit vite des dizaines d'avertissements) ; les
+        # sanctions lourdes passent en premier et gardent leur cause.
+        by_driver: dict[str, dict[str, int]] = {}
+        severe_drivers: set[str] = set()
+        for p in penalties:
+            who = p.get("nickname") or "?"
+            label = penalty_label(p.get("type", ""))
+            if p.get("type") in _SEVERE_PENALTIES:
+                label = f"{label} ({investigation_label(p.get('investigation', ''))})"
+                severe_drivers.add(who)
+            by_driver.setdefault(who, {})
+            by_driver[who][label] = by_driver[who].get(label, 0) + 1
+        ordered = sorted(by_driver, key=lambda w: (w not in severe_drivers, -sum(by_driver[w].values()), w.lower()))
+        shown = ["• **{}** — {}".format(w, ", ".join(f"{n}× {lab}" if n > 1 else lab
+                                                    for lab, n in by_driver[w].items()))
+                 for w in ordered[:_MAX_PENALTY_LINES]]
+        if len(ordered) > _MAX_PENALTY_LINES:
+            shown.append(f"… +{len(ordered) - _MAX_PENALTY_LINES} pilote(s)")
+        fields.append({"name": f"Sanctions ({len(penalties)})", "value": "\n".join(shown)[:1000], "inline": False})
+
+    title = _srv(_tmpl("DISCORD_MSG_SESSION_SUMMARY", "🏁 {session} terminée — {circuit}",
+                       session=session, circuit=circuit or "—"), server_name)
+    return {"title": title, "color": _COLOR_GREEN, "description": "\n".join(lines) or None,
+            "fields": fields, "footer": _footer(server_name)}
+
+
+def notify_session_summary(parsed: dict, server_id: int | None = None, server_name: str = ""):
+    """Récapitulatif de fin de session sur le webhook course (option DISCORD_NOTIFY_SESSION_SUMMARY)."""
+    from app.services import race_labels
+    try:
+        from flask_babel import force_locale
+        with force_locale("fr"):        # les messages Discord sont en français, comme les autres
+            embed = build_session_summary_embed(parsed, server_name, race_labels.penalty_type_label,
+                                                race_labels.investigation_label)
+    except RuntimeError:                # pas de contexte Flask : valeurs brutes
+        embed = build_session_summary_embed(parsed, server_name)
+    if embed is None:
+        return
+    if embed.get("description") is None:
+        embed.pop("description")
+    _send_race(_with_mention("DISCORD_MENTION_RACE", [embed]), server_id=server_id)
+
+
 def safe_notify(fn, *args, **kwargs):
     """Appelle un notifier Discord en loggant l'erreur sans propager l'exception."""
     try:

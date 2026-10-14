@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-14 02:18+0200\n"
+"POT-Creation-Date: 2026-10-14 02:32+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -89,7 +89,7 @@ msgid "Race Weekend"
 msgstr "Weekend di gara"
 
 #: app/routes/admin.py:554 app/templates/settings.html:74
-#: app/templates/settings.html:961
+#: app/templates/settings.html:968
 msgid "Comptes"
 msgstr "Account"
 
@@ -97,7 +97,7 @@ msgstr "Account"
 #: app/templates/base.html:148 app/templates/base.html:266
 #: app/templates/server.html:2 app/templates/server.html:228
 #: app/templates/settings.html:70 app/templates/settings.html:258
-#: app/templates/settings.html:855
+#: app/templates/settings.html:862
 msgid "Serveur"
 msgstr "Server"
 
@@ -305,10 +305,19 @@ msgid "Webhook course — meilleur tour, actions admin (kick, pénalités…)"
 msgstr "Webhook gara — miglior giro, azioni admin (kick, penalità…)"
 
 #: app/routes/admin.py:610
+msgid ""
+"Envoie sur le webhook course un récapitulatif à la fin de chaque session "
+": podium, meilleur tour, incidents et sanctions (true/false, désactivé "
+"par défaut)."
+msgstr ""
+"Invia al webhook gara un riepilogo alla fine di ogni sessione: podio, "
+"giro migliore, incidenti e penalità (true/false, disattivato di default)."
+
+#: app/routes/admin.py:611
 msgid "Lien d'invitation Discord affiché sur le panel"
 msgstr "Link di invito Discord mostrato sul pannello"
 
-#: app/routes/admin.py:611
+#: app/routes/admin.py:612
 msgid ""
 "Mention envoyée avec les événements serveur (ex: @here ou <@&123456789>)."
 " Laisser vide pour désactiver."
@@ -316,32 +325,32 @@ msgstr ""
 "Menzione inviata con gli eventi del server (es: @here o <@&123456789>). "
 "Lasciare vuoto per disattivare."
 
-#: app/routes/admin.py:612
+#: app/routes/admin.py:613
 msgid "Mention envoyée avec les connexions joueurs. Laisser vide pour désactiver."
 msgstr ""
 "Menzione inviata con le connessioni dei giocatori. Lasciare vuoto per "
 "disattivare."
 
-#: app/routes/admin.py:613
+#: app/routes/admin.py:614
 msgid "Mention envoyée avec les événements course. Laisser vide pour désactiver."
 msgstr "Menzione inviata con gli eventi gara. Lasciare vuoto per disattivare."
 
-#: app/routes/admin.py:614
+#: app/routes/admin.py:615
 #, python-brace-format
 msgid "Titre embed — Serveur démarré. Variables : {config}, {mode}, {circuit}"
 msgstr "Titolo embed — Server avviato. Variabili: {config}, {mode}, {circuit}"
 
-#: app/routes/admin.py:615
+#: app/routes/admin.py:616
 #, python-brace-format
 msgid "Titre embed — Serveur arrêté. Variables : {config}"
 msgstr "Titolo embed — Server arrestato. Variabili: {config}"
 
-#: app/routes/admin.py:616
+#: app/routes/admin.py:617
 #, python-brace-format
 msgid "Titre embed — Crash détecté. Variables : {config}"
 msgstr "Titolo embed — Crash rilevato. Variabili: {config}"
 
-#: app/routes/admin.py:617
+#: app/routes/admin.py:618
 #, python-brace-format
 msgid ""
 "Titre embed — Connexion joueur. Variables : {name}, {num}, {car}, "
@@ -350,7 +359,7 @@ msgstr ""
 "Titolo embed — Connessione giocatore. Variabili: {name}, {num}, {car}, "
 "{steam_id}"
 
-#: app/routes/admin.py:618
+#: app/routes/admin.py:619
 #, python-brace-format
 msgid ""
 "Titre embed — Déconnexion joueur. Variables : {name}, {duration}, "
@@ -359,7 +368,7 @@ msgstr ""
 "Titolo embed — Disconnessione giocatore. Variabili: {name}, {duration}, "
 "{steam_id}"
 
-#: app/routes/admin.py:619
+#: app/routes/admin.py:620
 #, python-brace-format
 msgid ""
 "Titre embed — Changement de véhicule. Variables : {name}, {num}, "
@@ -368,7 +377,7 @@ msgstr ""
 "Titolo embed — Cambio veicolo. Variabili: {name}, {num}, {old_car}, "
 "{new_car}"
 
-#: app/routes/admin.py:620
+#: app/routes/admin.py:621
 #, python-brace-format
 msgid ""
 "Titre embed — Meilleur tour serveur. Variables : {name}, {lap}, {car}, "
@@ -377,7 +386,7 @@ msgstr ""
 "Titolo embed — Miglior giro del server. Variabili: {name}, {lap}, {car}, "
 "{circuit}"
 
-#: app/routes/admin.py:621
+#: app/routes/admin.py:622
 #, python-brace-format
 msgid ""
 "Titre embed — Action admin. Variables : {action}, {target}, {admin}, "
@@ -386,39 +395,44 @@ msgstr ""
 "Titolo embed — Azione admin. Variabili: {action}, {target}, {admin}, "
 "{detail}"
 
-#: app/routes/admin.py:622
+#: app/routes/admin.py:623
+#, python-brace-format
+msgid "Titre embed — Fin de session. Variables : {session}, {circuit}"
+msgstr "Titolo embed — Fine sessione. Variabili: {session}, {circuit}"
+
+#: app/routes/admin.py:624
 msgid "Serveur SMTP (laisser vide pour désactiver les emails)"
 msgstr "Server SMTP (lasciare vuoto per disattivare le email)"
 
-#: app/routes/admin.py:623
+#: app/routes/admin.py:625
 msgid "Port SMTP (ex: 587 ou 465)"
 msgstr "Porta SMTP (es: 587 o 465)"
 
-#: app/routes/admin.py:624
+#: app/routes/admin.py:626
 msgid "TLS : true ou false"
 msgstr "TLS: true o false"
 
-#: app/routes/admin.py:625
+#: app/routes/admin.py:627
 msgid "Identifiant SMTP"
 msgstr "Nome utente SMTP"
 
-#: app/routes/admin.py:626
+#: app/routes/admin.py:628
 msgid "Mot de passe SMTP"
 msgstr "Password SMTP"
 
-#: app/routes/admin.py:627
+#: app/routes/admin.py:629
 msgid "Adresse expéditeur"
 msgstr "Indirizzo mittente"
 
-#: app/routes/admin.py:628
+#: app/routes/admin.py:630
 msgid "Adresse(s) admin pour les notifications (séparées par virgule)"
 msgstr "Indirizzo/i admin per le notifiche (separati da virgola)"
 
-#: app/routes/admin.py:629
+#: app/routes/admin.py:631
 msgid "Langue par défaut : fr, en, es, de, it"
 msgstr "Lingua predefinita: fr, en, es, de, it"
 
-#: app/routes/admin.py:681
+#: app/routes/admin.py:684
 msgid ""
 "Dossier de session Steam à monter si le panel est lancé via systemd ou "
 "sudo sans -E (sinon ça reste vide et $HOME est utilisé, comme avant)."
@@ -427,156 +441,156 @@ msgstr ""
 "tramite systemd o sudo senza -E (altrimenti resta vuota e viene usata "
 "$HOME, come prima)."
 
-#: app/routes/admin.py:838 app/routes/admin.py:1234
+#: app/routes/admin.py:841 app/routes/admin.py:1237
 msgid "Port invalide (1024–65535)."
 msgstr "Porta non valida (1024–65535)."
 
-#: app/routes/admin.py:840
+#: app/routes/admin.py:843
 #, python-format
 msgid "Le port %(port)d est déjà utilisé par '%(name)s'."
 msgstr "La porta %(port)d è già in uso da '%(name)s'."
 
-#: app/routes/admin.py:868 app/routes/admin.py:869
+#: app/routes/admin.py:871 app/routes/admin.py:872
 msgid "Paramètres du serveur sauvegardés."
 msgstr "Impostazioni del server salvate."
 
-#: app/routes/admin.py:905 app/routes/admin.py:906
+#: app/routes/admin.py:908 app/routes/admin.py:909
 msgid "Paramètres sauvegardés"
 msgstr "Impostazioni salvate"
 
-#: app/routes/admin.py:963 app/routes/admin.py:1502
+#: app/routes/admin.py:966 app/routes/admin.py:1505
 msgid "Aucun fichier fourni"
 msgstr "Nessun file fornito"
 
-#: app/routes/admin.py:972
+#: app/routes/admin.py:975
 msgid "Fichier trop volumineux (max 5 Mo)"
 msgstr "File troppo grande (max 5 MB)"
 
-#: app/routes/admin.py:975
+#: app/routes/admin.py:978
 msgid "Type non autorisé"
 msgstr "Tipo non autorizzato"
 
-#: app/routes/admin.py:986
+#: app/routes/admin.py:989
 msgid "Signature de fichier invalide"
 msgstr "Firma file non valida"
 
-#: app/routes/admin.py:1017
+#: app/routes/admin.py:1020
 msgid "Identifiant et mot de passe requis."
 msgstr "Nome utente e password richiesti."
 
-#: app/routes/admin.py:1022 app/routes/admin.py:1053
+#: app/routes/admin.py:1025 app/routes/admin.py:1056
 msgid "Cet identifiant est déjà utilisé."
 msgstr "Questo identificatore è già in uso."
 
-#: app/routes/admin.py:1028
+#: app/routes/admin.py:1031
 msgid "Compte créé avec succès."
 msgstr "Account creato con successo."
 
-#: app/routes/admin.py:1038 app/routes/admin.py:1089
+#: app/routes/admin.py:1041 app/routes/admin.py:1092
 msgid "Compte introuvable."
 msgstr "Account non trovato."
 
-#: app/routes/admin.py:1049 app/routes/admin.py:1137
+#: app/routes/admin.py:1052 app/routes/admin.py:1140
 msgid "Impossible : il doit rester au moins un superadmin actif."
 msgstr "Impossibile: deve rimanere almeno un superadmin attivo."
 
-#: app/routes/admin.py:1061
+#: app/routes/admin.py:1064
 msgid "Compte mis à jour."
 msgstr "Account aggiornato."
 
-#: app/routes/admin.py:1071 app/routes/admin.py:1123
+#: app/routes/admin.py:1074 app/routes/admin.py:1126
 msgid "Compte introuvable"
 msgstr "Account non trovato"
 
-#: app/routes/admin.py:1075
+#: app/routes/admin.py:1078
 msgid "Dernier superadmin actif — impossible de désactiver"
 msgstr "Ultimo superadmin attivo — impossibile disattivare"
 
-#: app/routes/admin.py:1077
+#: app/routes/admin.py:1080
 msgid "Impossible de vous désactiver vous-même"
 msgstr "Non puoi disattivare te stesso"
 
-#: app/routes/admin.py:1092 app/routes/admin.py:1126
+#: app/routes/admin.py:1095 app/routes/admin.py:1129
 msgid "Impossible de supprimer votre propre compte."
 msgstr "Impossibile eliminare il proprio account."
 
-#: app/routes/admin.py:1097 app/routes/admin.py:1130
+#: app/routes/admin.py:1100 app/routes/admin.py:1133
 msgid "Impossible : il doit rester au moins un superadmin."
 msgstr "Impossibile: deve rimanere almeno un superadmin."
 
-#: app/routes/admin.py:1101
+#: app/routes/admin.py:1104
 msgid "Compte supprimé."
 msgstr "Account eliminato."
 
-#: app/routes/admin.py:1117
+#: app/routes/admin.py:1120
 msgid "Rôle invalide"
 msgstr "Ruolo non valido"
 
-#: app/routes/admin.py:1146
+#: app/routes/admin.py:1149
 msgid "Pilote introuvable"
 msgstr "Pilota non trovato"
 
-#: app/routes/admin.py:1151
+#: app/routes/admin.py:1154
 msgid ""
 "Cet identifiant est déjà utilisé par un compte admin — renomme le pilote "
 "ou l'admin existant."
 msgstr ""
 
-#: app/routes/admin.py:1164
+#: app/routes/admin.py:1167
 msgid "Requête invalide"
 msgstr "Richiesta non valida"
 
-#: app/routes/admin.py:1184 app/routes/public.py:214
+#: app/routes/admin.py:1187 app/routes/public.py:214
 msgid "Cet email est déjà utilisé."
 msgstr "Questa email è già in uso."
 
-#: app/routes/admin.py:1188
+#: app/routes/admin.py:1191
 msgid "Email mis à jour."
 msgstr "Email aggiornata."
 
-#: app/routes/admin.py:1232 app/routes/admin.py:1321
+#: app/routes/admin.py:1235 app/routes/admin.py:1324
 msgid "Le nom est requis."
 msgstr "Il nome è obbligatorio."
 
-#: app/routes/admin.py:1236
+#: app/routes/admin.py:1239
 #, python-format
 msgid "Le port %(port)d est déjà utilisé par un autre serveur."
 msgstr "La porta %(port)d è già in uso da un altro server."
 
-#: app/routes/admin.py:1238
+#: app/routes/admin.py:1241
 #, python-format
 msgid "Un container Docker nommé '%(name)s' existe déjà."
 msgstr "Esiste già un container Docker chiamato '%(name)s'."
 
-#: app/routes/admin.py:1261
+#: app/routes/admin.py:1264
 #, python-format
 msgid "Erreur lors de la création du container : %(err)s"
 msgstr "Errore nella creazione del container: %(err)s"
 
-#: app/routes/admin.py:1285
+#: app/routes/admin.py:1288
 #, python-format
 msgid "Serveur '%(name)s' créé avec succès."
 msgstr "Server '%(name)s' creato con successo."
 
-#: app/routes/admin.py:1294
+#: app/routes/admin.py:1297
 msgid "Le serveur principal ne peut pas être désactivé."
 msgstr "Il server principale non può essere disabilitato."
 
-#: app/routes/admin.py:1297 app/routes/admin.py:1318 app/routes/admin.py:1353
+#: app/routes/admin.py:1300 app/routes/admin.py:1321 app/routes/admin.py:1356
 msgid "Serveur introuvable."
 msgstr "Server non trovato."
 
-#: app/routes/admin.py:1300
+#: app/routes/admin.py:1303
 #, python-format
 msgid "Serveur '%(name)s' activé."
 msgstr "Server '%(name)s' abilitato."
 
-#: app/routes/admin.py:1300
+#: app/routes/admin.py:1303
 #, python-format
 msgid "Serveur '%(name)s' désactivé."
 msgstr "Server '%(name)s' disabilitato."
 
-#: app/routes/admin.py:1332
+#: app/routes/admin.py:1335
 #, python-format
 msgid ""
 "Serveur renommé en '%(name)s'. Le nom affiché dans le navigateur de "
@@ -585,28 +599,28 @@ msgstr ""
 "Server rinominato in '%(name)s'. Il nome mostrato nel browser server del "
 "gioco verrà aggiornato solo al prossimo riavvio."
 
-#: app/routes/admin.py:1350
+#: app/routes/admin.py:1353
 msgid "Le serveur principal ne peut pas être supprimé."
 msgstr "Il server principale non può essere eliminato."
 
-#: app/routes/admin.py:1373 app/routes/admin.py:1374
+#: app/routes/admin.py:1376 app/routes/admin.py:1377
 #, python-format
 msgid "Serveur '%(name)s' supprimé."
 msgstr "Server '%(name)s' eliminato."
 
-#: app/routes/admin.py:1499
+#: app/routes/admin.py:1502
 msgid "Fichier trop volumineux (max 3 Go)"
 msgstr "File troppo grande (max 3 GB)"
 
-#: app/routes/admin.py:1522 app/routes/admin.py:1535
+#: app/routes/admin.py:1525 app/routes/admin.py:1538
 msgid "Mod introuvable"
 msgstr "Mod non trovata"
 
-#: app/routes/admin.py:1541 app/routes/admin.py:1543 app/routes/admin.py:1545
+#: app/routes/admin.py:1544 app/routes/admin.py:1546 app/routes/admin.py:1548
 msgid "Tag invalide"
 msgstr "Tag non valido"
 
-#: app/routes/admin.py:1551
+#: app/routes/admin.py:1554
 msgid "PI invalide"
 msgstr "PI non valido"
 
@@ -1118,8 +1132,8 @@ msgstr "Menu"
 msgid "Classement"
 msgstr "Classifica"
 
-#: app/templates/base.html:265 app/templates/settings.html:989
-#: app/templates/settings.html:1025 app/templates/settings.html:1074
+#: app/templates/base.html:265 app/templates/settings.html:996
+#: app/templates/settings.html:1032 app/templates/settings.html:1081
 msgid "Admin"
 msgstr "Admin"
 
@@ -1199,8 +1213,8 @@ msgstr ""
 #: app/templates/_partials/server_row.html:19 app/templates/base.html:406
 #: app/templates/event_form.html:326 app/templates/pilot_dashboard.html:126
 #: app/templates/server.html:36 app/templates/server.html:63
-#: app/templates/settings.html:455 app/templates/settings.html:1080
-#: app/templates/settings.html:1109 app/templates/vehicles.html:94
+#: app/templates/settings.html:455 app/templates/settings.html:1087
+#: app/templates/settings.html:1116 app/templates/vehicles.html:94
 msgid "Annuler"
 msgstr "Annulla"
 
@@ -1233,15 +1247,15 @@ msgid "Erreur"
 msgstr "Errore"
 
 #: app/templates/base.html:429 app/templates/mods.html:263
-#: app/templates/settings.html:1190
+#: app/templates/settings.html:1197
 msgid "Erreur réseau"
 msgstr "Errore di rete"
 
-#: app/templates/base.html:430 app/templates/settings.html:771
+#: app/templates/base.html:430 app/templates/settings.html:778
 msgid "Serveur démarré"
 msgstr "Server avviato"
 
-#: app/templates/base.html:431 app/templates/settings.html:775
+#: app/templates/base.html:431 app/templates/settings.html:782
 msgid "Serveur arrêté"
 msgstr "Server fermato"
 
@@ -1417,7 +1431,7 @@ msgstr "Genera entry list"
 #: app/templates/my_account.html:36 app/templates/pilot_dashboard.html:35
 #: app/templates/pilot_dashboard.html:119
 #: app/templates/pilot_dashboard.html:162 app/templates/public.html:4
-#: app/templates/settings.html:995 app/templates/settings.html:1031
+#: app/templates/settings.html:1002 app/templates/settings.html:1038
 msgid "Confirmé"
 msgstr "Confermato"
 
@@ -1436,8 +1450,8 @@ msgstr "Gara privata"
 #: app/templates/_partials/result_incidents.html:60
 #: app/templates/_partials/result_incidents.html:128
 #: app/templates/event_detail.html:36 app/templates/result_detail.html:61
-#: app/templates/results.html:248 app/templates/settings.html:988
-#: app/templates/settings.html:1024 app/templates/timing.html:66
+#: app/templates/results.html:248 app/templates/settings.html:995
+#: app/templates/settings.html:1031 app/templates/timing.html:66
 msgid "Pilote"
 msgstr "Pilota"
 
@@ -1453,7 +1467,7 @@ msgstr "Auto assegnata"
 
 #: app/templates/_partials/result_incidents.html:18
 #: app/templates/event_detail.html:39 app/templates/events_admin.html:70
-#: app/templates/server.html:109 app/templates/settings.html:974
+#: app/templates/server.html:109 app/templates/settings.html:981
 msgid "Statut"
 msgstr "Stato"
 
@@ -1661,13 +1675,13 @@ msgstr ""
 "effettivamente selezionabile in gioco."
 
 #: app/templates/event_form.html:328 app/templates/my_account.html:24
-#: app/templates/settings.html:1110 app/templates/vehicles.html:95
+#: app/templates/settings.html:1117 app/templates/vehicles.html:95
 msgid "Enregistrer"
 msgstr "Salva"
 
 #: app/templates/event_form.html:328 app/templates/events_admin.html:18
 #: app/templates/server.html:37 app/templates/server.html:583
-#: app/templates/settings.html:1081
+#: app/templates/settings.html:1088
 msgid "Créer"
 msgstr "Crea"
 
@@ -1742,7 +1756,7 @@ msgstr "Pubblicato"
 
 #: app/templates/_partials/event_row.html:23 app/templates/events_admin.html:99
 #: app/templates/server.html:336 app/templates/server.html:350
-#: app/templates/server.html:594 app/templates/settings.html:1008
+#: app/templates/server.html:594 app/templates/settings.html:1015
 msgid "Modifier"
 msgstr "Modifica"
 
@@ -1936,7 +1950,7 @@ msgid "Identifiant ou email"
 msgstr "Nome utente o email"
 
 #: app/templates/login.html:34 app/templates/register.html:46
-#: app/templates/settings.html:443 app/templates/settings.html:1068
+#: app/templates/settings.html:443 app/templates/settings.html:1075
 msgid "Mot de passe"
 msgstr "Password"
 
@@ -2057,7 +2071,7 @@ msgid "Envoi et analyse en cours…"
 msgstr "Caricamento e analisi in corso…"
 
 #: app/templates/mods.html:251 app/templates/mods.html:298
-#: app/templates/settings.html:1185 app/templates/vehicles.html:135
+#: app/templates/settings.html:1192 app/templates/vehicles.html:135
 msgid "Erreur upload"
 msgstr "Errore di caricamento"
 
@@ -2367,7 +2381,7 @@ msgid "Votre compte sera activé par un administrateur."
 msgstr "Il tuo account sarà attivato da un amministratore."
 
 #: app/templates/reset_password.html:2 app/templates/reset_password.html:12
-#: app/templates/reset_password.html:20 app/templates/settings.html:1103
+#: app/templates/reset_password.html:20 app/templates/settings.html:1110
 msgid "Nouveau mot de passe"
 msgstr "Nuova password"
 
@@ -3039,23 +3053,23 @@ msgid "Créer le serveur"
 msgstr "Crea server"
 
 #: app/templates/settings.html:23 app/templates/settings.html:165
-#: app/templates/settings.html:687 app/templates/settings.html:702
-#: app/templates/settings.html:831
+#: app/templates/settings.html:687 app/templates/settings.html:709
+#: app/templates/settings.html:838
 msgid "Non défini"
 msgstr "Non definito"
 
 #: app/templates/settings.html:26 app/templates/settings.html:110
 #: app/templates/settings.html:133 app/templates/settings.html:168
-#: app/templates/settings.html:362 app/templates/settings.html:833
+#: app/templates/settings.html:362 app/templates/settings.html:840
 msgid "Valeur par défaut"
 msgstr "Valore predefinito"
 
 #: app/templates/settings.html:31 app/templates/settings.html:114
 #: app/templates/settings.html:145 app/templates/settings.html:195
 #: app/templates/settings.html:341 app/templates/settings.html:366
-#: app/templates/settings.html:388 app/templates/settings.html:704
-#: app/templates/settings.html:751 app/templates/settings.html:849
-#: app/templates/settings.html:934
+#: app/templates/settings.html:388 app/templates/settings.html:711
+#: app/templates/settings.html:758 app/templates/settings.html:856
+#: app/templates/settings.html:941
 msgid "Enregistrer les modifications"
 msgstr "Salva modifiche"
 
@@ -3384,26 +3398,30 @@ msgid "Meilleur tour, actions admin"
 msgstr "Miglior giro, azioni admin"
 
 #: app/templates/settings.html:700
+msgid "Récapitulatif de fin de session"
+msgstr "Riepilogo a fine sessione"
+
+#: app/templates/settings.html:707
 msgid "Lien d'invitation"
 msgstr "Link di invito"
 
-#: app/templates/settings.html:701
+#: app/templates/settings.html:708
 msgid "Affiché sur le dashboard public"
 msgstr "Mostrato nel dashboard pubblico"
 
-#: app/templates/settings.html:713
+#: app/templates/settings.html:720
 msgid "Tester — Serveur"
 msgstr "Prova — Server"
 
-#: app/templates/settings.html:722
+#: app/templates/settings.html:729
 msgid "Tester — Pilotes"
 msgstr "Prova — Piloti"
 
-#: app/templates/settings.html:734
+#: app/templates/settings.html:741
 msgid "Mentions"
 msgstr "Menzioni"
 
-#: app/templates/settings.html:736
+#: app/templates/settings.html:743
 msgid ""
 "Texte envoyé avant l'embed pour mentionner un rôle ou @here. Laisser vide"
 " pour désactiver."
@@ -3411,33 +3429,33 @@ msgstr ""
 "Testo inviato prima dell'embed per menzionare un ruolo o @here. Lasciare "
 "vuoto per disabilitare."
 
-#: app/templates/settings.html:737
+#: app/templates/settings.html:744
 msgid "Exemples"
 msgstr "Esempi"
 
-#: app/templates/settings.html:740 app/templates/settings.html:769
+#: app/templates/settings.html:747 app/templates/settings.html:776
 msgid "Channel principal"
 msgstr "Canale principale"
 
-#: app/templates/settings.html:741 app/templates/settings.html:745
-#: app/templates/settings.html:749
+#: app/templates/settings.html:748 app/templates/settings.html:752
+#: app/templates/settings.html:756
 msgid "Vide = pas de mention"
 msgstr "Vuoto = nessuna menzione"
 
 # Result/Race page translations
-#: app/templates/settings.html:744 app/templates/settings.html:784
+#: app/templates/settings.html:751 app/templates/settings.html:791
 msgid "Channel pilotes"
 msgstr "Canale piloti"
 
-#: app/templates/settings.html:748 app/templates/settings.html:799
+#: app/templates/settings.html:755 app/templates/settings.html:806
 msgid "Channel course"
 msgstr "Canale gara"
 
-#: app/templates/settings.html:763
+#: app/templates/settings.html:770
 msgid "Messages de notification"
 msgstr "Messaggi di notifica"
 
-#: app/templates/settings.html:765
+#: app/templates/settings.html:772
 msgid ""
 "Titre des embeds Discord envoyés dans chaque channel. Laisser vide = "
 "texte par défaut. Les variables entre accolades sont remplacées "
@@ -3447,111 +3465,111 @@ msgstr ""
 "il testo predefinito. Le variabili tra parentesi graffe vengono "
 "sostituite automaticamente all'invio."
 
-#: app/templates/settings.html:772
+#: app/templates/settings.html:779
 msgid "🏁 Serveur démarré"
 msgstr "🏁 Server avviato"
 
-#: app/templates/settings.html:776
+#: app/templates/settings.html:783
 msgid "⏹ Serveur arrêté"
 msgstr "⏹ Server arrestato"
 
-#: app/templates/settings.html:779
+#: app/templates/settings.html:786
 msgid "Crash détecté"
 msgstr "Crash rilevato"
 
-#: app/templates/settings.html:780
+#: app/templates/settings.html:787
 msgid "💥 Crash détecté — Relance auto"
 msgstr "💥 Crash rilevato — Riavvio automatico"
 
-#: app/templates/settings.html:786
+#: app/templates/settings.html:793
 msgid "Connexion joueur"
 msgstr "Connessione giocatore"
 
-#: app/templates/settings.html:787
+#: app/templates/settings.html:794
 #, python-brace-format
 msgid "🟢 {num} — {name}"
 msgstr "🟢 {num} — {name}"
 
-#: app/templates/settings.html:790
+#: app/templates/settings.html:797
 msgid "Déconnexion joueur"
 msgstr "Disconnessione giocatore"
 
-#: app/templates/settings.html:791
+#: app/templates/settings.html:798
 #, python-brace-format
 msgid "🔴 {name}"
 msgstr "🔴 {name}"
 
-#: app/templates/settings.html:794
+#: app/templates/settings.html:801
 msgid "Changement de véhicule"
 msgstr "Cambio veicolo"
 
-#: app/templates/settings.html:795
+#: app/templates/settings.html:802
 #, python-brace-format
 msgid "🔄 {name} — Changement de véhicule"
 msgstr "🔄 {name} — Cambio veicolo"
 
-#: app/templates/settings.html:801
+#: app/templates/settings.html:808
 msgid "Meilleur tour du serveur"
 msgstr "Miglior giro del server"
 
-#: app/templates/settings.html:802
+#: app/templates/settings.html:809
 msgid "⏱ Nouveau meilleur tour du serveur"
 msgstr "⏱ Nuovo miglior giro del server"
 
-#: app/templates/settings.html:805
+#: app/templates/settings.html:812
 msgid "Action admin"
 msgstr "Azione admin"
 
-#: app/templates/settings.html:806
+#: app/templates/settings.html:813
 #, python-brace-format
 msgid "⚙️ {action} — {target}"
 msgstr "⚙️ {action} — {target}"
 
-#: app/templates/settings.html:810
+#: app/templates/settings.html:817
 msgid "Enregistrer les messages"
 msgstr "Salva i messaggi"
 
-#: app/templates/settings.html:822
+#: app/templates/settings.html:829
 msgid "Mail (SMTP)"
 msgstr "Email (SMTP)"
 
-#: app/templates/settings.html:853
+#: app/templates/settings.html:860
 msgid "Mail — Test et aperçu"
 msgstr "Email — Test e anteprima"
 
-#: app/templates/settings.html:856
+#: app/templates/settings.html:863
 msgid "Port"
 msgstr "Porta"
 
-#: app/templates/settings.html:857
+#: app/templates/settings.html:864
 msgid "Expéditeur"
 msgstr "Mittente"
 
-#: app/templates/settings.html:858
+#: app/templates/settings.html:865
 msgid "Admin(s)"
 msgstr "Admin"
 
-#: app/templates/settings.html:866
+#: app/templates/settings.html:873
 msgid "Destinataire"
 msgstr "Destinatario"
 
-#: app/templates/settings.html:870
+#: app/templates/settings.html:877
 msgid "Envoyer un test"
 msgstr "Invia un test"
 
-#: app/templates/settings.html:875
+#: app/templates/settings.html:882
 msgid "Aperçu du design"
 msgstr "Anteprima del design"
 
-#: app/templates/settings.html:882
+#: app/templates/settings.html:889
 msgid "Voir l'aperçu"
 msgstr "Vedi anteprima"
 
-#: app/templates/settings.html:892
+#: app/templates/settings.html:899
 msgid "Bot TCP"
 msgstr "Bot TCP"
 
-#: app/templates/settings.html:894
+#: app/templates/settings.html:901
 msgid ""
 "Le bot est un client fantôme qui se connecte silencieusement au serveur "
 "ACE EVO via TCP (port 9700). Il écoute les événements de session en temps"
@@ -3563,11 +3581,11 @@ msgstr ""
 "messaggi in-game, comandi admin e gestire i piloti (kick, mute, "
 "penalità…) direttamente da questo pannello."
 
-#: app/templates/settings.html:895
+#: app/templates/settings.html:902
 msgid "Steam ID"
 msgstr "Steam ID"
 
-#: app/templates/settings.html:895
+#: app/templates/settings.html:902
 msgid ""
 "Compte Steam dédié recommandé (pas votre compte personnel). Le Steam ID "
 "64-bit se trouve sur"
@@ -3575,11 +3593,11 @@ msgstr ""
 "Si consiglia un account Steam dedicato (non il tuo account personale). "
 "L'ID Steam a 64 bit verrà compilato automaticamente."
 
-#: app/templates/settings.html:900
+#: app/templates/settings.html:907
 msgid "Laisser vide pour désactiver"
 msgstr "Lasciare vuoto per disabilitare"
 
-#: app/templates/settings.html:910
+#: app/templates/settings.html:917
 msgid ""
 "AdminPassword vide dans la config serveur — le bot se connectera sans "
 "droits admin."
@@ -3587,107 +3605,107 @@ msgstr ""
 "AdminPassword vuoto nella configurazione del server — il bot si "
 "connetterà senza diritti admin."
 
-#: app/templates/settings.html:911
+#: app/templates/settings.html:918
 msgid "Configurer"
 msgstr "Configura"
 
-#: app/templates/settings.html:923
+#: app/templates/settings.html:930
 #, python-brace-format
 msgid "Bienvenue {name} !"
 msgstr "Benvenuto {name}!"
 
-#: app/templates/settings.html:927
+#: app/templates/settings.html:934
 #, python-brace-format
 msgid "Rejoins le discord : {discord_url}"
 msgstr "Unisciti al Discord: {discord_url}"
 
-#: app/templates/settings.html:931
+#: app/templates/settings.html:938
 #, python-brace-format
 msgid "Retrouve tes resultats et evenements sur : {site_url}"
 msgstr "Trova i tuoi risultati ed eventi su: {site_url}"
 
-#: app/templates/settings.html:963
+#: app/templates/settings.html:970
 msgid "Gestion des pilotes"
 msgstr "Gestione piloti"
 
-#: app/templates/settings.html:964
+#: app/templates/settings.html:971
 msgid "Ajouter un admin"
 msgstr "Aggiungi un admin"
 
-#: app/templates/settings.html:970 app/templates/settings.html:1060
-#: app/templates/settings.html:1095
+#: app/templates/settings.html:977 app/templates/settings.html:1067
+#: app/templates/settings.html:1102
 msgid "Identifiant"
 msgstr "Identificatore"
 
-#: app/templates/settings.html:971
+#: app/templates/settings.html:978
 msgid "Nom / Email"
 msgstr "Nome / Email"
 
-#: app/templates/settings.html:972 app/templates/settings.html:1072
+#: app/templates/settings.html:979 app/templates/settings.html:1079
 msgid "Rôle"
 msgstr "Ruolo"
 
-#: app/templates/settings.html:973
+#: app/templates/settings.html:980
 msgid "Steam"
 msgstr "Steam"
 
-#: app/templates/settings.html:975
+#: app/templates/settings.html:982
 msgid "Connexion / Inscription"
 msgstr "Ultimo accesso / Registrazione"
 
-#: app/templates/settings.html:987
+#: app/templates/settings.html:994
 msgid "Vous ne pouvez pas modifier votre propre rôle ici"
 msgstr "Non puoi modificare il tuo ruolo qui"
 
-#: app/templates/settings.html:990 app/templates/settings.html:1026
-#: app/templates/settings.html:1075
+#: app/templates/settings.html:997 app/templates/settings.html:1033
+#: app/templates/settings.html:1082
 msgid "Super Admin"
 msgstr "Super Admin"
 
-#: app/templates/settings.html:1002 app/templates/settings.html:1036
-#: app/templates/settings.html:1137
+#: app/templates/settings.html:1009 app/templates/settings.html:1043
+#: app/templates/settings.html:1144
 msgid "Actif"
 msgstr "Attivo"
 
-#: app/templates/settings.html:1002 app/templates/settings.html:1137
+#: app/templates/settings.html:1009 app/templates/settings.html:1144
 msgid "Inactif"
 msgstr "Inattivo"
 
-#: app/templates/_partials/server_row.html:47 app/templates/settings.html:1011
-#: app/templates/settings.html:1139
+#: app/templates/_partials/server_row.html:47 app/templates/settings.html:1018
+#: app/templates/settings.html:1146
 msgid "Désactiver"
 msgstr "Disabilita"
 
-#: app/templates/_partials/server_row.html:47 app/templates/settings.html:1011
-#: app/templates/settings.html:1139
+#: app/templates/_partials/server_row.html:47 app/templates/settings.html:1018
+#: app/templates/settings.html:1146
 msgid "Activer"
 msgstr "Abilita"
 
-#: app/templates/settings.html:1042
+#: app/templates/settings.html:1049
 msgid "Aucun compte."
 msgstr "Nessun account."
 
-#: app/templates/settings.html:1054
+#: app/templates/settings.html:1061
 msgid "Nouveau compte administrateur"
 msgstr "Nuovo account amministratore"
 
-#: app/templates/settings.html:1064 app/templates/settings.html:1099
+#: app/templates/settings.html:1071 app/templates/settings.html:1106
 msgid "Nom affiché"
 msgstr "Nome visualizzato"
 
-#: app/templates/settings.html:1089
+#: app/templates/settings.html:1096
 msgid "Modifier le compte"
 msgstr "Modifica account"
 
-#: app/templates/settings.html:1103
+#: app/templates/settings.html:1110
 msgid "laisser vide pour ne pas changer"
 msgstr "lasciare vuoto per non modificare"
 
-#: app/templates/settings.html:1106
+#: app/templates/settings.html:1113
 msgid "Pour changer le rôle, utilise le menu déroulant dans le tableau."
 msgstr "Per cambiare il ruolo, usa il menu a tendina nella tabella."
 
-#: app/templates/settings.html:1162
+#: app/templates/settings.html:1169
 msgid ""
 "Compte promu. Le pilote doit se déconnecter puis se reconnecter pour "
 "obtenir ses nouveaux droits."
@@ -3695,11 +3713,11 @@ msgstr ""
 "Account promosso. Il pilota deve disconnettersi e riconnettersi per "
 "ottenere i nuovi permessi."
 
-#: app/templates/settings.html:1178
+#: app/templates/settings.html:1185
 msgid "Envoi..."
 msgstr "Caricamento..."
 
-#: app/templates/settings.html:1187
+#: app/templates/settings.html:1194
 msgid " uploadé. Rechargez la page pour le voir."
 msgstr " caricato. Ricarica la pagina per vederlo."
 

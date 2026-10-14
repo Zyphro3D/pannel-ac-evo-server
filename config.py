@@ -70,6 +70,7 @@ class Config:
     DISCORD_WEBHOOK_URL        = os.environ.get("DISCORD_WEBHOOK_URL", "")
     DISCORD_PILOTS_WEBHOOK_URL = os.environ.get("DISCORD_PILOTS_WEBHOOK_URL", "")
     DISCORD_RACE_WEBHOOK_URL   = os.environ.get("DISCORD_RACE_WEBHOOK_URL", "")
+    DISCORD_NOTIFY_SESSION_SUMMARY = os.environ.get("DISCORD_NOTIFY_SESSION_SUMMARY", "false").lower() == "true"
     DISCORD_INVITE_URL         = os.environ.get("DISCORD_INVITE_URL", "")
     RESULTS_INGEST_SECRET      = os.environ.get("RESULTS_INGEST_SECRET", "")
     REQUIRE_EMAIL_CONFIRMATION = os.environ.get("REQUIRE_EMAIL_CONFIRMATION", "false").lower() == "true"

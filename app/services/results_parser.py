@@ -618,7 +618,38 @@ def import_result_file(path: Path, source: str = "file",
         invalidate_circuits_cache()
     except Exception:
         pass
+    _notify_session_summary(parsed, path, server_id)
     return True
+
+
+_SUMMARY_MAX_AGE_S = 900   # au-delà, le fichier est un rattrapage (scan au démarrage) : pas de notification
+
+
+def _notify_session_summary(parsed: dict, path: Path, server_id: int | None) -> None:
+    """Annonce la fin d'une session sur Discord si l'option est activée.
+
+    Garde-fous : option désactivée par défaut ; jamais pour un fichier ancien (le panel
+    réimporte les résultats manquants à chaque démarrage) ; jamais pour une session vide."""
+    import os
+    import time
+    if os.environ.get("DISCORD_NOTIFY_SESSION_SUMMARY", "false").lower() != "true":
+        return
+    if not parsed.get("standings"):
+        return
+    try:
+        if time.time() - path.stat().st_mtime > _SUMMARY_MAX_AGE_S:
+            return
+    except OSError:
+        return
+    try:
+        from app.models import Server
+        from app.services import discord_notifier
+        from app.services.database import db
+        srv = db.session.get(Server, server_id) if server_id else None
+        discord_notifier.safe_notify(discord_notifier.notify_session_summary, parsed,
+                                     server_id=server_id, server_name=srv.name if srv else "")
+    except Exception as e:      # une notification ne doit jamais faire échouer un import
+        log.warning("notification de fin de session ignorée : %s", e)
 
 
 def scan_and_import(aceserver_dir: str, config_name: str | None = None,

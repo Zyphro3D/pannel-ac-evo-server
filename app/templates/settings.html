@@ -697,6 +697,13 @@
             <input class="form-control" type="password" name="DISCORD_RACE_WEBHOOK_URL" value="{{ env_values.get('DISCORD_RACE_WEBHOOK_URL', '') }}" autocomplete="off" placeholder="{{ _('Vide = webhook principal') }}">
           </div>
           <div class="dc-field">
+            <div class="dc-field-label"><strong>{{ _('Récapitulatif de fin de session') }}</strong></div>
+            <span class="dc-field-desc">{{ env_descs.get('DISCORD_NOTIFY_SESSION_SUMMARY', '') }}</span>
+            <input type="hidden" name="DISCORD_NOTIFY_SESSION_SUMMARY" value="false">
+            <input type="checkbox" name="DISCORD_NOTIFY_SESSION_SUMMARY" value="true" class="switch"
+                   {% if env_values.get('DISCORD_NOTIFY_SESSION_SUMMARY', 'false') == 'true' %}checked{% endif %}>
+          </div>
+          <div class="dc-field">
             <div class="dc-field-label"><strong>{{ _('Lien d\'invitation') }}</strong></div>
             <span class="dc-field-desc">{{ _('Affiché sur le dashboard public') }}</span>
             <input class="form-control" type="password" name="DISCORD_INVITE_URL" value="{{ env_values.get('DISCORD_INVITE_URL', '') }}" autocomplete="off" placeholder="{{ _('Non défini') }}">

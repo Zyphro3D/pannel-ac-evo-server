@@ -1,5 +1,18 @@
 # Changelog
 
+### v2.3.0 — 14/10/2026
+
+**Ajout — récapitulatif Discord de fin de session (option, désactivée par défaut)**
+
+- Nouvel interrupteur **« Récapitulatif de fin de session »** dans Paramètres → Notifications → Discord. Activé, le panel publie sur le webhook course (ou le webhook principal s'il est vide) un message à la fin de chaque session : **podium** (temps ou écart en course, meilleur tour sinon), **meilleur tour** de la session, **incidents** (contacts entre voitures, chocs mur/objet) et **sanctions** regroupées par pilote, les plus lourdes en premier avec leur cause (drive-through, stop-and-go, disqualification).
+- Titre personnalisable comme les autres messages (`DISCORD_MSG_SESSION_SUMMARY`, variables `{session}` et `{circuit}`). Aucune annonce pour une session sans pilote.
+- Garde-fous : jamais pour un fichier de résultats de plus de 15 minutes (le panel réimporte les résultats manquants à chaque démarrage : activer l'option ne déclenche pas de rafale de messages sur l'historique), et une erreur d'envoi ne fait jamais échouer l'import des résultats.
+- Les libellés des messages Discord sont en français, comme les autres notifications Discord du panel.
+
+**Tests**
+
+- 30 tests unitaires (`pytest tests/unit`), dont la construction du message (podium, regroupement et troncature des sanctions, sessions vides).
+
 ### v2.2.0 — 14/10/2026
 
 **Ajout — session en cours et temps restant sur la page « Classement en direct »**

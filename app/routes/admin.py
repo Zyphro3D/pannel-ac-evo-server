@@ -564,11 +564,11 @@ _ENV_SECTIONS = [
         "ACE_BOT_STEAM_ID", "ACE_BOT_CAR_MODEL", "ACE_BOT_IS_ADMIN",
         "ACE_BOT_MSG_WELCOME", "ACE_BOT_MSG_DISCORD", "ACE_BOT_MSG_SITE",
         "DISCORD_WEBHOOK_URL", "DISCORD_PILOTS_WEBHOOK_URL", "DISCORD_RACE_WEBHOOK_URL",
-        "DISCORD_INVITE_URL",
+        "DISCORD_NOTIFY_SESSION_SUMMARY", "DISCORD_INVITE_URL",
         "DISCORD_MENTION_MAIN", "DISCORD_MENTION_PILOTS", "DISCORD_MENTION_RACE",
         "DISCORD_MSG_SERVER_START", "DISCORD_MSG_SERVER_STOP", "DISCORD_MSG_SERVER_CRASH",
         "DISCORD_MSG_PLAYER_JOIN", "DISCORD_MSG_PLAYER_DISCONNECT", "DISCORD_MSG_VEHICLE_CHANGE",
-        "DISCORD_MSG_BEST_LAP", "DISCORD_MSG_ADMIN_ACTION",
+        "DISCORD_MSG_BEST_LAP", "DISCORD_MSG_ADMIN_ACTION", "DISCORD_MSG_SESSION_SUMMARY",
         "MAIL_SERVER", "MAIL_PORT", "MAIL_USE_TLS", "MAIL_USERNAME",
         "MAIL_PASSWORD", "MAIL_FROM", "MAIL_ADMIN",
     ]),
@@ -607,6 +607,7 @@ _ENV_DESCS = {
     "DISCORD_WEBHOOK_URL":        _l("Webhook principal — démarrage, arrêt, crash du serveur"),
     "DISCORD_PILOTS_WEBHOOK_URL": _l("Webhook pilotes — connexions, déconnexions, changements de véhicule"),
     "DISCORD_RACE_WEBHOOK_URL":   _l("Webhook course — meilleur tour, actions admin (kick, pénalités…)"),
+    "DISCORD_NOTIFY_SESSION_SUMMARY": _l("Envoie sur le webhook course un récapitulatif à la fin de chaque session : podium, meilleur tour, incidents et sanctions (true/false, désactivé par défaut)."),
     "DISCORD_INVITE_URL":         _l("Lien d'invitation Discord affiché sur le panel"),
     "DISCORD_MENTION_MAIN":       _l("Mention envoyée avec les événements serveur (ex: @here ou <@&123456789>). Laisser vide pour désactiver."),
     "DISCORD_MENTION_PILOTS":     _l("Mention envoyée avec les connexions joueurs. Laisser vide pour désactiver."),
@@ -619,6 +620,7 @@ _ENV_DESCS = {
     "DISCORD_MSG_VEHICLE_CHANGE": _l("Titre embed — Changement de véhicule. Variables : {name}, {num}, {old_car}, {new_car}"),
     "DISCORD_MSG_BEST_LAP":       _l("Titre embed — Meilleur tour serveur. Variables : {name}, {lap}, {car}, {circuit}"),
     "DISCORD_MSG_ADMIN_ACTION":   _l("Titre embed — Action admin. Variables : {action}, {target}, {admin}, {detail}"),
+    "DISCORD_MSG_SESSION_SUMMARY": _l("Titre embed — Fin de session. Variables : {session}, {circuit}"),
     "MAIL_SERVER":      _l("Serveur SMTP (laisser vide pour désactiver les emails)"),
     "MAIL_PORT":        _l("Port SMTP (ex: 587 ou 465)"),
     "MAIL_USE_TLS":     _l("TLS : true ou false"),
@@ -634,7 +636,8 @@ _SENSITIVE = {"SECRET_KEY", "MAIL_PASSWORD", "MAIL_USERNAME",
               "RESULTS_INGEST_SECRET",
               "SERVER_DRIVER_PASSWORD", "SERVER_ADMIN_PASSWORD"}
 _SKIP_IF_EMPTY = {"MAIL_PASSWORD"}
-_CHECKBOXES = {"ACE_BOT_IS_ADMIN", "SESSION_COOKIE_SECURE", "MAIL_USE_TLS", "REQUIRE_EMAIL_CONFIRMATION"}
+_CHECKBOXES = {"ACE_BOT_IS_ADMIN", "SESSION_COOKIE_SECURE", "MAIL_USE_TLS", "REQUIRE_EMAIL_CONFIRMATION",
+               "DISCORD_NOTIFY_SESSION_SUMMARY"}
 
 
 from app import _SETTINGS_PATH, _SETTINGS_SKIP_KEYS, _SETTINGS_BOOL_KEYS, _APPCONFIG_RESERVED_KEYS, _APP_VERSION
