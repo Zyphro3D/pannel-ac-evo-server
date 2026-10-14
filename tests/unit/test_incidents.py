@@ -108,6 +108,8 @@ def test_fichier_ancien_sans_les_cles():
     data.pop("collisions"); data.pop("penalty_collection")
     parsed = parse_result_file(data)
     assert parsed["contacts"] == [] and not parsed["has_penalties"]
+    assert parsed["incidents_reported"] is False          # ancienne version du serveur : à ne pas compter « propre »
+    assert parse_result_file(_session())["incidents_reported"] is True
 
 
 def test_donnees_incompletes_ne_plantent_pas():

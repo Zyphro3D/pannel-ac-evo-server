@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-14 01:52+0200\n"
+"POT-Creation-Date: 2026-10-14 02:10+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -79,7 +79,7 @@ msgstr "Statico"
 msgid "Dynamique"
 msgstr "Dinamico"
 
-#: app/routes/admin.py:466 app/templates/results.html:126
+#: app/routes/admin.py:466 app/templates/results.html:132
 msgid "Practice"
 msgstr "Pratica"
 
@@ -828,11 +828,11 @@ msgstr "Questo evento è al completo."
 msgid "Inscription envoyée !"
 msgstr "Iscrizione inviata!"
 
-#: app/routes/public.py:524
+#: app/routes/public.py:529
 msgid "Désinscription effectuée."
 msgstr "Disiscrizione effettuata."
 
-#: app/routes/public.py:526
+#: app/routes/public.py:531
 msgid "Impossible de se désinscrire (inscription confirmée)."
 msgstr "Impossibile disiscriversi (iscrizione confermata)."
 
@@ -912,7 +912,7 @@ msgstr "Penalità di giri"
 msgid "Places perdues au classement"
 msgstr "Posizioni perse in classifica"
 
-#: app/services/race_labels.py:27 app/templates/timing.html:136
+#: app/services/race_labels.py:27 app/templates/timing.html:142
 msgid "Drive-through"
 msgstr "Drive-through"
 
@@ -928,7 +928,7 @@ msgstr "Giro successivo invalidato"
 msgid "Tour invalidé"
 msgstr "Giro invalidato"
 
-#: app/services/race_labels.py:31 app/templates/timing.html:135
+#: app/services/race_labels.py:31 app/templates/timing.html:141
 msgid "Disqualification"
 msgstr "Squalifica"
 
@@ -1018,7 +1018,7 @@ msgstr "Muro"
 
 #: app/services/race_labels.py:66 app/templates/pilot_dashboard.html:113
 #: app/templates/pilot_dashboard.html:156 app/templates/result_detail.html:62
-#: app/templates/timing.html:61
+#: app/templates/timing.html:67
 msgid "Voiture"
 msgstr "Auto"
 
@@ -1114,7 +1114,7 @@ msgid "Menu"
 msgstr "Menu"
 
 #: app/templates/base.html:252 app/templates/results.html:33
-#: app/templates/results.html:179
+#: app/templates/results.html:185
 msgid "Classement"
 msgstr "Classifica"
 
@@ -1436,8 +1436,8 @@ msgstr "Gara privata"
 #: app/templates/_partials/result_incidents.html:60
 #: app/templates/_partials/result_incidents.html:128
 #: app/templates/event_detail.html:36 app/templates/result_detail.html:61
-#: app/templates/settings.html:988 app/templates/settings.html:1024
-#: app/templates/timing.html:60
+#: app/templates/results.html:248 app/templates/settings.html:988
+#: app/templates/settings.html:1024 app/templates/timing.html:66
 msgid "Pilote"
 msgstr "Pilota"
 
@@ -1634,7 +1634,7 @@ msgid "Catégories"
 msgstr "Categorie"
 
 #: app/templates/event_form.html:277 app/templates/server.html:660
-#: app/templates/timing.html:131
+#: app/templates/timing.html:137
 msgid "Ballast"
 msgstr "Zavorra"
 
@@ -1983,7 +1983,7 @@ msgstr ""
 msgid "Cliquer ou déposer un ou plusieurs fichiers .kspkg ici"
 msgstr "Clicca o trascina qui uno o più file .kspkg"
 
-#: app/templates/mods.html:44 app/templates/timing.html:148
+#: app/templates/mods.html:44 app/templates/timing.html:154
 msgid "Envoyer"
 msgstr "Invia"
 
@@ -2229,7 +2229,7 @@ msgstr "Unisciti al Discord"
 msgid "Rejoindre le panel"
 msgstr "Unisciti al pannello"
 
-#: app/templates/public.html:46 app/templates/timing.html:164
+#: app/templates/public.html:46 app/templates/timing.html:170
 msgid "En direct"
 msgstr "In diretta"
 
@@ -2278,7 +2278,7 @@ msgstr "Durata"
 msgid "Aucun événement à venir."
 msgstr "Nessun evento in arrivo."
 
-#: app/templates/public.html:241 app/templates/results.html:58
+#: app/templates/public.html:241 app/templates/results.html:64
 msgid "Derniers résultats"
 msgstr "Ultimi risultati"
 
@@ -2295,7 +2295,7 @@ msgid "Pole position"
 msgstr "Pole position"
 
 #: app/templates/public.html:254 app/templates/result_detail.html:65
-#: app/templates/timing.html:62
+#: app/templates/timing.html:68
 msgid "Meilleur tour"
 msgstr "Giro migliore"
 
@@ -2377,8 +2377,8 @@ msgstr "Salva password"
 
 #: app/templates/_partials/drivers_approved.html:3
 #: app/templates/_partials/drivers_pending.html:3
-#: app/templates/result_detail.html:28 app/templates/results.html:81
-#: app/templates/results.html:162 app/templates/timing.html:34
+#: app/templates/result_detail.html:28 app/templates/results.html:87
+#: app/templates/results.html:168 app/templates/timing.html:34
 msgid "pilote(s)"
 msgstr "pilota/i"
 
@@ -2411,7 +2411,7 @@ msgstr "Migliore"
 msgid "Gap"
 msgstr "Distacco"
 
-#: app/templates/result_detail.html:75
+#: app/templates/result_detail.html:75 app/templates/results.html:249
 msgid "Tours"
 msgstr "Giri"
 
@@ -2445,7 +2445,7 @@ msgstr "Dev. standard"
 msgid "Temps"
 msgstr "Tempo"
 
-#: app/templates/result_detail.html:199 app/templates/timing.html:66
+#: app/templates/result_detail.html:199 app/templates/timing.html:72
 msgid "Écart"
 msgstr "Divario"
 
@@ -2473,19 +2473,23 @@ msgstr "Nessun pilota registrato in questa sessione."
 msgid "Navigation"
 msgstr "Navigazione"
 
-#: app/templates/results.html:21 app/templates/results.html:53
+#: app/templates/results.html:21 app/templates/results.html:59
 msgid "Vue d'ensemble"
 msgstr "Panoramica"
 
-#: app/templates/results.html:54
+#: app/templates/results.html:39 app/templates/results.html:233
+msgid "Fair-play"
+msgstr "Fair play"
+
+#: app/templates/results.html:60
 msgid "Résumé des dernières sessions et meilleurs temps"
 msgstr "Riepilogo delle ultime sessioni e migliori tempi"
 
-#: app/templates/results.html:59
+#: app/templates/results.html:65
 msgid "Voir tous les résultats →"
 msgstr "Vedi tutti i risultati →"
 
-#: app/templates/results.html:85 app/templates/results.html:171
+#: app/templates/results.html:91 app/templates/results.html:177
 msgid ""
 "Aucun résultat disponible pour le moment. Les résultats apparaissent ici "
 "à la fin de chaque session."
@@ -2493,62 +2497,112 @@ msgstr ""
 "Nessun risultato disponibile per il momento. I risultati appaiono qui "
 "alla fine di ogni sessione."
 
-#: app/templates/results.html:93
+#: app/templates/results.html:99
 msgid "Aperçu du classement"
 msgstr "Anteprima classifica"
 
-#: app/templates/results.html:94
+#: app/templates/results.html:100
 msgid "Voir le classement complet →"
 msgstr "Vedi classifica completa →"
 
-#: app/templates/results.html:112
+#: app/templates/results.html:118
 msgid "Résultats des sessions"
 msgstr "Risultati delle sessioni"
 
-#: app/templates/results.html:113
+#: app/templates/results.html:119
 msgid "session(s) enregistrée(s)"
 msgstr "sessione/i registrata/e"
 
-#: app/templates/results.html:123 app/templates/server.html:156
-#: app/templates/timing.html:122
+#: app/templates/results.html:129 app/templates/server.html:156
+#: app/templates/timing.html:128
 msgid "Session"
 msgstr "Sessione"
 
-#: app/templates/results.html:126
+#: app/templates/results.html:132
 msgid "Qualifying"
 msgstr "Qualifica"
 
-#: app/templates/results.html:126
+#: app/templates/results.html:132
 msgid "Warmup"
 msgstr "Riscaldamento"
 
-#: app/templates/results.html:126
+#: app/templates/results.html:132
 msgid "Race"
 msgstr "Gara"
 
-#: app/templates/results.html:133
+#: app/templates/results.html:139
 msgid "session(s)"
 msgstr "sessione/i"
 
-#: app/templates/results.html:155
+#: app/templates/results.html:161
 msgid "1er"
 msgstr "1°"
 
-#: app/templates/results.html:180
+#: app/templates/results.html:186
 msgid "Meilleurs temps par circuit"
 msgstr "Migliori tempi per circuito"
 
-#: app/templates/results.html:185
+#: app/templates/results.html:191
 msgid "Aucun circuit configuré pour le moment."
 msgstr "Nessun circuito configurato al momento."
 
-#: app/templates/results.html:203
+#: app/templates/results.html:209
 msgid "Top 1"
 msgstr "Top 1"
 
-#: app/templates/results.html:209
+#: app/templates/results.html:215
 msgid "Aucun résultat"
 msgstr "Nessun risultato"
+
+#: app/templates/results.html:234
+msgid "Conduite propre : incidents par tour, tous résultats confondus"
+msgstr "Guida pulita: incidenti per giro, tutti i risultati"
+
+#: app/templates/results.html:238
+msgid "Aucune donnée pour le moment."
+msgstr "Nessun dato per ora."
+
+#: app/templates/results.html:241
+#, python-format
+msgid ""
+"Un incident = un contact avec une autre voiture, un mur ou un objet. "
+"Classement à partir de %(n)s tours."
+msgstr ""
+"Un incidente = un contatto con un'altra auto, un muro o un oggetto. "
+"Classifica da %(n)s giri."
+
+#: app/templates/_partials/result_incidents.html:61
+#: app/templates/results.html:250
+msgid "Contacts"
+msgstr "Contatti"
+
+#: app/templates/results.html:251
+msgid "Murs / objets"
+msgstr "Muri / oggetti"
+
+#: app/templates/_partials/result_incidents.html:65
+#: app/templates/results.html:252
+msgid "Choc max"
+msgstr "Urto max"
+
+#: app/templates/_partials/result_incidents.html:7
+#: app/templates/results.html:253
+msgid "Sanctions"
+msgstr "Penalità"
+
+#: app/templates/_partials/result_incidents.html:66
+#: app/templates/results.html:254
+msgid "Incidents par tour : plus ce chiffre est bas, plus la conduite est propre"
+msgstr "Incidenti per giro: più il numero è basso, più la guida è pulita"
+
+#: app/templates/_partials/result_incidents.html:66
+#: app/templates/results.html:254
+msgid "Par tour"
+msgstr "Per giro"
+
+#: app/templates/results.html:272
+msgid "lourde(s)"
+msgstr "grave/i"
 
 #: app/templates/server.html:30
 msgid "Nom du fichier"
@@ -2679,7 +2733,7 @@ msgstr "Disabilitato"
 msgid "Redémarre en cas de crash"
 msgstr "Riavvia in caso di crash"
 
-#: app/templates/server.html:225
+#: app/templates/server.html:225 app/templates/timing.html:185
 msgid "Session en cours"
 msgstr "Sessione in corso"
 
@@ -3657,177 +3711,201 @@ msgstr "Classifica in diretta"
 msgid "Mis à jour toutes les 15s"
 msgstr "Aggiornato ogni 15s"
 
-#: app/templates/timing.html:39 app/templates/timing.html:70
-#: app/templates/timing.html:165
+#: app/templates/timing.html:40 app/templates/timing.html:76
+#: app/templates/timing.html:171
 msgid "Chargement…"
 msgstr "Caricamento…"
 
-#: app/templates/timing.html:59
+#: app/templates/timing.html:44
+msgid "Temps restant"
+msgstr "Tempo rimanente"
+
+#: app/templates/timing.html:65
 msgid "Pos"
 msgstr "Pos"
 
-#: app/templates/timing.html:77
+#: app/templates/timing.html:83
 msgid "Chat en direct"
 msgstr "Chat in diretta"
 
-#: app/templates/timing.html:79 app/templates/timing.html:167
+#: app/templates/timing.html:85 app/templates/timing.html:173
 msgid "Aucun message récent"
 msgstr "Nessun messaggio recente"
 
-#: app/templates/timing.html:84
+#: app/templates/timing.html:90
 msgid "Pour"
 msgstr "Per"
 
-#: app/templates/timing.html:86 app/templates/timing.html:171
+#: app/templates/timing.html:92 app/templates/timing.html:177
 msgid "Tout le monde"
 msgstr "Tutti"
 
-#: app/templates/timing.html:92
+#: app/templates/timing.html:98
 msgid "Réagir"
 msgstr "Reagisci"
 
-#: app/templates/timing.html:94 app/templates/timing.html:176
+#: app/templates/timing.html:100 app/templates/timing.html:219
 msgid "Beau tour !"
 msgstr "Bel giro!"
 
-#: app/templates/timing.html:95 app/templates/timing.html:177
+#: app/templates/timing.html:101 app/templates/timing.html:220
 msgid "Bien joué !"
 msgstr "Ben fatto!"
 
-#: app/templates/timing.html:96 app/templates/timing.html:178
+#: app/templates/timing.html:102 app/templates/timing.html:221
 msgid "Courage !"
 msgstr "Forza!"
 
-#: app/templates/timing.html:97 app/templates/timing.html:179
+#: app/templates/timing.html:103 app/templates/timing.html:222
 msgid "En feu !"
 msgstr "In fiamme!"
 
-#: app/templates/timing.html:98 app/templates/timing.html:180
+#: app/templates/timing.html:104 app/templates/timing.html:223
 msgid "Bravo !"
 msgstr "Bravo!"
 
-#: app/templates/timing.html:99 app/templates/timing.html:181
+#: app/templates/timing.html:105 app/templates/timing.html:224
 msgid "Allez !"
 msgstr "Vai vai vai!"
 
-#: app/templates/timing.html:109
+#: app/templates/timing.html:115
 msgid "Administration in-game"
 msgstr "Amministrazione in-game"
 
-#: app/templates/timing.html:110
+#: app/templates/timing.html:116
 msgid "Connexion TCP directe au serveur de jeu"
 msgstr "Connessione TCP diretta al server di gioco"
 
-#: app/templates/timing.html:115
+#: app/templates/timing.html:121
 msgid "Envoyer \\admin <password> via le bot TCP"
 msgstr "Invia \\admin <password> tramite il bot TCP"
 
-#: app/templates/timing.html:116
+#: app/templates/timing.html:122
 msgid "Élever admin"
 msgstr "Eleva ad admin"
 
-#: app/templates/timing.html:121
+#: app/templates/timing.html:127
 msgid "Commande admin…"
 msgstr "Comando admin…"
 
-#: app/templates/timing.html:123
+#: app/templates/timing.html:129
 msgid "Phase suivante"
 msgstr "Fase successiva"
 
-#: app/templates/timing.html:125
+#: app/templates/timing.html:131
 msgid "Joueur"
 msgstr "Giocatore"
 
-#: app/templates/timing.html:126
+#: app/templates/timing.html:132
 msgid "Expulser"
 msgstr "Espelli"
 
-#: app/templates/timing.html:127
+#: app/templates/timing.html:133
 msgid "Muet"
 msgstr "Muto"
 
-#: app/templates/timing.html:128
+#: app/templates/timing.html:134
 msgid "Retirer le muet"
 msgstr "Rimuovi muto"
 
-#: app/templates/timing.html:129
+#: app/templates/timing.html:135
 msgid "Envoyer aux stands"
 msgstr "Manda ai box"
 
-#: app/templates/timing.html:130
+#: app/templates/timing.html:136
 msgid "Ajouter du temps"
 msgstr "Aggiungi tempo"
 
-#: app/templates/timing.html:132
+#: app/templates/timing.html:138
 msgid "Restricteur"
 msgstr "Restrittore"
 
-#: app/templates/timing.html:134
+#: app/templates/timing.html:140
 msgid "Pénalités"
 msgstr "Penalità"
 
-#: app/templates/timing.html:137
+#: app/templates/timing.html:143
 msgid "Stop &amp; Go"
 msgstr "Stop &amp; Go"
 
-#: app/templates/timing.html:138
+#: app/templates/timing.html:144
 msgid "Retirer disq"
 msgstr "Rimuovi squalifica"
 
-#: app/templates/timing.html:139
+#: app/templates/timing.html:145
 msgid "Retirer drive-through"
 msgstr "Rimuovi drive-through"
 
-#: app/templates/timing.html:140
+#: app/templates/timing.html:146
 msgid "Retirer stop &amp; go"
 msgstr "Rimuovi stop &amp; go"
 
-#: app/templates/timing.html:144 app/templates/timing.html:475
+#: app/templates/timing.html:150 app/templates/timing.html:519
 msgid "Pilote…"
 msgstr "Pilota…"
 
-#: app/templates/timing.html:147
+#: app/templates/timing.html:153
 msgid "Tapez un message ou commande…"
 msgstr "Digita un messaggio o un comando…"
 
 # Result/Race page translations
-#: app/templates/timing.html:166
+#: app/templates/timing.html:172
 msgid "Aucun pilote connecté"
 msgstr "Nessun pilota connesso"
 
-#: app/templates/timing.html:169
+#: app/templates/timing.html:175
 msgid "Réaction envoyée !"
 msgstr "Reazione inviata!"
 
-#: app/templates/timing.html:170
+#: app/templates/timing.html:176
 msgid "Serveur non connecté"
 msgstr "Server non connesso"
 
-#: app/templates/timing.html:172
+#: app/templates/timing.html:178
 msgid "Tour invalide"
 msgstr "Giro non valido"
 
-#: app/templates/timing.html:396
+#: app/templates/timing.html:183
+msgid "En attente de départ"
+msgstr "In attesa della partenza"
+
+#: app/templates/timing.html:184
+msgid "Départ"
+msgstr "Partenza"
+
+#: app/templates/timing.html:186
+msgid "Dernier tour"
+msgstr "Ultimo giro"
+
+#: app/templates/timing.html:187
+msgid "Fin de session"
+msgstr "Fine sessione"
+
+#: app/templates/timing.html:188
+msgid "Terminée"
+msgstr "Terminata"
+
+#: app/templates/timing.html:440
 msgid "TCP connecté"
 msgstr "TCP connesso"
 
-#: app/templates/timing.html:397
+#: app/templates/timing.html:441
 msgid "TCP déconnecté"
 msgstr "TCP disconnesso"
 
-#: app/templates/timing.html:398
+#: app/templates/timing.html:442
 msgid "non connecté"
 msgstr "non connesso"
 
-#: app/templates/timing.html:399
+#: app/templates/timing.html:443
 msgid "erreur réseau"
 msgstr "errore di rete"
 
-#: app/templates/timing.html:400
+#: app/templates/timing.html:444
 msgid "Bot élevé admin"
 msgstr "Bot elevato ad admin"
 
-#: app/templates/timing.html:401
+#: app/templates/timing.html:445
 msgid "Échec élévation admin"
 msgstr "Errore elevazione admin"
 
@@ -3940,10 +4018,6 @@ msgstr ""
 msgid "Aucun temps pour ces filtres."
 msgstr "Nessun tempo per questi filtri."
 
-#: app/templates/_partials/result_incidents.html:7
-msgid "Sanctions"
-msgstr "Penalità"
-
 #: app/templates/_partials/result_incidents.html:8
 msgid "Sanctions infligées automatiquement par le serveur pendant la session."
 msgstr "Penalità applicate automaticamente dal server durante la sessione."
@@ -3982,10 +4056,6 @@ msgstr ""
 msgid "Contacts avec une autre voiture"
 msgstr "Contatti con un'altra auto"
 
-#: app/templates/_partials/result_incidents.html:61
-msgid "Contacts"
-msgstr "Contatti"
-
 #: app/templates/_partials/result_incidents.html:62
 msgid "Murs"
 msgstr "Muri"
@@ -4003,18 +4073,6 @@ msgstr "Urti che hanno causato danni"
 #: app/templates/_partials/result_incidents.html:131
 msgid "Dégâts"
 msgstr "Danni"
-
-#: app/templates/_partials/result_incidents.html:65
-msgid "Choc max"
-msgstr "Urto max"
-
-#: app/templates/_partials/result_incidents.html:66
-msgid "Incidents par tour : plus ce chiffre est bas, plus la conduite est propre"
-msgstr "Incidenti per giro: più il numero è basso, più la guida è pulita"
-
-#: app/templates/_partials/result_incidents.html:66
-msgid "Par tour"
-msgstr "Per giro"
 
 #: app/templates/_partials/result_incidents.html:92
 msgid "Détail des contacts entre voitures"

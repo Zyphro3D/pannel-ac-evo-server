@@ -140,6 +140,9 @@ def _lap_is_formation(flags: int) -> bool:
 _CLUSTER_WINDOW_MS = 1000   # écart max entre deux enregistrements d'un même contact
 _CLUSTER_DISTANCE_M = 15.0  # distance max entre leurs positions dans le monde
 _BIG_IMPACT_KMH = 30.0      # seuil d'un « gros choc » mur / objet
+# Sanctions lourdes (hors avertissements et secondes) : comptées à part pour le fair-play
+SEVERE_PENALTIES = frozenset({"PenaltyType_Disqualification", "PenaltyType_Drive_Through",
+                              "PenaltyType_Stop_And_Go"})
 
 
 def _empty_incident_stats() -> dict:
@@ -482,6 +485,8 @@ def parse_result_file(data: dict) -> dict:
             "total_km":              car_stats.get("total_km", 0),
             "incident_stats":        _driver_incident_stats(incidents["stats"], dk, len(laps)),
             "penalty_count":         sum(1 for p in incidents["penalties"] if p["driver_key"] == dk),
+            "severe_penalty_count":  sum(1 for p in incidents["penalties"]
+                                         if p["driver_key"] == dk and p["type"] in SEVERE_PENALTIES),
             "gap_ms":                0,
             "gap":                   "—",
             "gap_laps":              0,
@@ -548,6 +553,9 @@ def parse_result_file(data: dict) -> dict:
         "contacts":               incidents["contacts"],
         "big_hits":               incidents["big_hits"],
         "penalties":              incidents["penalties"],
+        # Les anciennes versions du serveur de jeu n'écrivaient ni collisions ni sanctions :
+        # sans ce drapeau, leurs tours compteraient comme « propres » dans le fair-play.
+        "incidents_reported":     "collisions" in data or "penalty_collection" in data,
         "has_incidents":          bool(incidents["contacts"] or incidents["big_hits"]
                                        or any(v["total"] for v in incidents["stats"].values())),
         "has_penalties":          bool(incidents["penalties"]),

@@ -1,5 +1,21 @@
 # Changelog
 
+### v2.2.0 — 14/10/2026
+
+**Ajout — phase et temps restant de la session sur la page « Classement en direct »**
+
+- Le serveur de jeu annonce à chaque client la phase de la session (attente, départ, session en cours, dernier tour, fin de session, terminée) et l'heure de fin de cette phase. Le panel les lit maintenant par sa connexion TCP : un indicateur « Session en cours — 24:01 » apparaît en haut de la page, avec un compte à rebours à la seconde, qui passe en rouge pendant le dernier tour. Valable pour les sessions de type practice / qualification / hot lap et pour les courses (départ lancé, feux, attente du leader…).
+- Jusqu'ici le panel ne disposait que d'une estimation (heure de démarrage + durées de la config), fausse dès qu'une session change ou qu'un serveur redémarre. L'indicateur est masqué si le bot TCP n'est pas connecté ou n'a encore rien reçu. Aucune configuration à faire.
+
+**Ajout — onglet « Fair-play » sur la page Résultats**
+
+- Classement des pilotes à la conduite la plus propre : **incidents par tour** (contacts avec une autre voiture, murs, objets), choc maximal et nombre de sanctions (dont les sanctions lourdes : drive-through, stop-and-go, disqualification), cumulés sur tous les résultats. Un pilote est classé à partir de 20 tours ; en dessous il reste listé, sans rang.
+- Seules les sessions qui enregistrent les incidents comptent : les anciennes versions du serveur de jeu n'écrivaient ni collisions ni sanctions, leurs tours ne rendent donc pas un pilote « propre » à tort.
+
+**Tests**
+
+- 25 tests unitaires (`pytest tests/unit`) : lecture de la phase de session (dont une session de 30 minutes vérifiée sur des messages réels du serveur), cumul fair-play, incidents, commandes admin.
+
 ### v2.1.0 — 14/10/2026
 
 **Ajout — incidents et sanctions sur la page de détail d'un résultat**

@@ -461,7 +461,7 @@ def results():
     from app.routes.leaderboard import build_circuit_overview
 
     initial_view = request.args.get("v", "overview")
-    if initial_view not in ("overview", "results", "leaderboard"):
+    if initial_view not in ("overview", "results", "leaderboard", "fairplay"):
         initial_view = "overview"
 
     rows = (SessionResult.query
@@ -486,9 +486,14 @@ def results():
 
     circuits = build_circuit_overview()
 
+    from app.services.fairplay import build_fairplay, MIN_LAPS
+    fairplay = build_fairplay(lambda: SessionResult.query.order_by(SessionResult.received_at.asc())
+                              .limit(2000).all())
+
     return render_template("results.html",
                            sessions=sessions, groups=groups,
                            circuits=circuits,
+                           fairplay=fairplay, fairplay_min_laps=MIN_LAPS,
                            initial_view=initial_view)
 
 

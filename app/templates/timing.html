@@ -34,9 +34,15 @@
           <span id="t-count">0</span> {{ _('pilote(s)') }}
         </p>
       </div>
-      <div class="timing-badge" id="t-badge">
-        <span class="dot offline" id="t-dot"></span>
-        <span id="t-label">{{ _('Chargement…') }}</span>
+      <div class="timing-header-right">
+        <div class="timing-badge" id="t-badge">
+          <span class="dot offline" id="t-dot"></span>
+          <span id="t-label">{{ _('Chargement…') }}</span>
+        </div>
+        <div class="timing-session" id="t-session" hidden>
+          <span class="timing-session-phase" id="t-session-phase"></span>
+          <span class="timing-session-left" id="t-session-left" title="{{ _('Temps restant') }}"></span>
+        </div>
       </div>
     </div>
 
@@ -171,6 +177,43 @@ const T = {
   everyone:    "{{ _('Tout le monde') }}",
   invalidLap:  "{{ _('Tour invalide') }}",
 };
+
+// Phase de session lue dans les messages du serveur de jeu (clés : voir session_phase.py)
+const PHASE_LABELS = {
+  waiting:   "{{ _('En attente de départ') }}",
+  starting:  "{{ _('Départ') }}",
+  running:   "{{ _('Session en cours') }}",
+  last_lap:  "{{ _('Dernier tour') }}",
+  finishing: "{{ _('Fin de session') }}",
+  ended:     "{{ _('Terminée') }}",
+};
+let _sessionEndAt = null;   // instant local (ms) où la phase se termine ; null = pas de limite
+
+function _fmtClock(ms) {
+  const total = Math.max(0, Math.ceil(ms / 1000));
+  const h = Math.floor(total / 3600), m = Math.floor((total % 3600) / 60), s = total % 60;
+  const mm = String(m).padStart(h ? 2 : 1, '0'), ss = String(s).padStart(2, '0');
+  return h ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
+}
+
+function _tickSession() {
+  const left = document.getElementById('t-session-left');
+  if (!left) return;
+  left.textContent = _sessionEndAt === null ? '' : _fmtClock(_sessionEndAt - Date.now());
+}
+
+function _renderSession(sess) {
+  const box = document.getElementById('t-session');
+  if (!box) return;
+  if (!sess || !PHASE_LABELS[sess.phase]) { box.hidden = true; _sessionEndAt = null; return; }
+  box.hidden = false;
+  box.dataset.phase = sess.phase;
+  document.getElementById('t-session-phase').textContent = PHASE_LABELS[sess.phase];
+  _sessionEndAt = (sess.remaining_ms === null || sess.remaining_ms === undefined)
+    ? null : Date.now() + sess.remaining_ms;
+  _tickSession();
+}
+setInterval(_tickSession, 1000);
 
 const REACTION_LABELS = {
   "🏁": "{{ _('Beau tour !') }}",
@@ -329,6 +372,7 @@ async function refresh() {
       sess_s1_ms: d.sess_s1_ms, sess_s2_ms: d.sess_s2_ms, sess_s3_ms: d.sess_s3_ms,
     })); } catch(e) {}
     _renderLeaderboard(d);
+    _renderSession(d.session);
   } catch(e) {
     document.getElementById('t-dot').className    = 'dot offline';
     document.getElementById('t-label').textContent = I18N.error;

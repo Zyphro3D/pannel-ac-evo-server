@@ -32,6 +32,12 @@
         </svg>
         {{ _('Classement') }}
       </a>
+      <a class="race-sidebar-link" data-view="fairplay">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3Z"/><path d="M9 12l2 2 4-4"/>
+        </svg>
+        {{ _('Fair-play') }}
+      </a>
     </nav>
     <div class="race-sidebar-brand">
       <div class="brand-logo">AC</div>
@@ -216,6 +222,59 @@
           </div>
         </a>
         {% endfor %}
+      </div>
+      {% endif %}
+    </section>
+
+
+    {# ══════════════ FAIR-PLAY ══════════════ #}
+    <section class="view" id="view-fairplay">
+      <div class="col-head">
+        <h1>{{ _('Fair-play') }}</h1>
+        <p>{{ _('Conduite propre : incidents par tour, tous résultats confondus') }}</p>
+      </div>
+
+      {% if not fairplay %}
+      <div class="card p-7 text-center text-dim">{{ _('Aucune donnée pour le moment.') }}</div>
+      {% else %}
+      <p class="text-xs text-dim mb-3">
+        {{ _('Un incident = un contact avec une autre voiture, un mur ou un objet. Classement à partir de %(n)s tours.', n=fairplay_min_laps) }}
+      </p>
+      <div class="table-wrapper">
+        <table class="table-base">
+          <thead>
+            <tr>
+              <th class="col-pos">#</th>
+              <th>{{ _('Pilote') }}</th>
+              <th class="mono">{{ _('Tours') }}</th>
+              <th class="mono">{{ _('Contacts') }}</th>
+              <th class="mono">{{ _('Murs / objets') }}</th>
+              <th class="mono">{{ _('Choc max') }}</th>
+              <th class="mono">{{ _('Sanctions') }}</th>
+              <th class="mono" title="{{ _('Incidents par tour : plus ce chiffre est bas, plus la conduite est propre') }}">{{ _('Par tour') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% set ns = namespace(rank=0) %}
+            {% for d in fairplay %}
+            {% if d.ranked %}{% set ns.rank = ns.rank + 1 %}{% endif %}
+            <tr {% if not d.ranked %}class="opacity-60"{% endif %}>
+              <td class="col-pos">
+                {% if d.ranked %}
+                <span class="pos-badge {% if ns.rank == 1 %}pos-gold{% elif ns.rank == 2 %}pos-silver{% elif ns.rank == 3 %}pos-bronze{% endif %}">{{ ns.rank }}</span>
+                {% else %}—{% endif %}
+              </td>
+              <td><span class="rd-nickname">{{ d.nickname }}</span></td>
+              <td class="mono">{{ d.laps }}</td>
+              <td class="mono">{{ d.contacts }}</td>
+              <td class="mono">{{ d.walls + d.objects }}</td>
+              <td class="mono">{{ "%.0f"|format(d.max_impact_kmh) }} km/h</td>
+              <td class="mono">{{ d.penalties }}{% if d.severe_penalties %} <span class="text-dim">({{ d.severe_penalties }} {{ _('lourde(s)') }})</span>{% endif %}</td>
+              <td class="mono">{{ "%.2f"|format(d.per_lap) }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
       </div>
       {% endif %}
     </section>

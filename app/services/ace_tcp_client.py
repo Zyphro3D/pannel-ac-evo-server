@@ -20,6 +20,7 @@ import time
 import logging
 
 from config import DEFAULT_BOT_MSG_WELCOME, DEFAULT_BOT_MSG_DISCORD, DEFAULT_BOT_MSG_SITE
+from app.services import session_phase as _session_phase
 
 log = logging.getLogger(__name__)
 
@@ -73,6 +74,8 @@ def _get_client(server_id: int) -> dict:
                 "msg_site":              DEFAULT_BOT_MSG_SITE,
                 "track_cache":           {"track_value": "", "session_type": "", "circuit": "", "fetched_at": 0.0},
                 "manual_admin":          False,
+                "session_phase":         None,   # dernier SessionPhaseData décodé (voir session_phase.py)
+                "session_phase_at":      0.0,    # heure locale de sa réception
             }
         return _clients[server_id]
 
@@ -212,6 +215,10 @@ def _parse_broadcast(payload: bytes, server_id: int):
     type_url = af.get(1, [b''])[0]
     type_str = type_url.decode('utf-8', errors='replace') if isinstance(type_url, bytes) else str(type_url)
     log.info("broadcast reçu: %s", type_str.split('/')[-1])
+    phase_mode = _session_phase.BROADCAST_TYPES.get(type_str.split('/')[-1])
+    if phase_mode:
+        _store_session_phase(af.get(2, [b''])[0], phase_mode, server_id)
+        return
     if b'PlatformRaceLeaderboard' not in type_url:
         return
 
@@ -289,11 +296,42 @@ def _parse_split(payload: bytes, server_id: int):
             pass
 
 
+def _store_session_phase(buf: bytes, mode: str, server_id: int):
+    """Mémorise la phase de session reçue (message d'état complet ou diffusion)."""
+    try:
+        data = _session_phase.parse_session_data(buf, mode, _parse_proto)
+    except Exception as e:      # message inattendu : on garde la valeur précédente
+        log.debug("ace_tcp_client: SessionPhaseData illisible (%s)", e)
+        return
+    if not data:
+        return
+    c = _get_client(server_id)
+    with c["lb_lock"]:
+        c["session_phase"]    = data
+        c["session_phase_at"] = time.time()
+    log.debug("ace_tcp_client: phase de session %s (%s), fin=%s (server=%d)",
+              data["phase"], data["phase_raw"], data["end_ms"], server_id)
+
+
+def get_session_phase(server_id: int = 1) -> dict | None:
+    """Phase de session courante {mode, phase, remaining_ms} ou None si inconnue
+    (bot non connecté, aucun message reçu). remaining_ms vaut None sans limite de temps."""
+    c = _get_client(server_id)
+    with c["lb_lock"]:
+        stored, at = c["session_phase"], c["session_phase_at"]
+    if not c["connected"]:
+        return None
+    return _session_phase.with_remaining(stored, at)
+
+
 def _handle_message(name: str, payload: bytes, server_id: int):
     if name == 'BroadcastStateMessage':
         _parse_broadcast(payload, server_id)
     elif name == 'SplitFromRemoteMessage':
         _parse_split(payload, server_id)
+    elif name in _session_phase.STATE_MESSAGES:
+        mode, field_no = _session_phase.STATE_MESSAGES[name]
+        _store_session_phase(_parse_proto(payload).get(field_no, [b''])[0], mode, server_id)
     else:
         # Diagnostic : utile pour repérer un futur type de message non géré (ex. si
         # le tchat repasse un jour par ce canal — voir CHANGELOG, plus aucune trace
@@ -372,6 +410,9 @@ def _connect_loop(server_id: int):
             with c["lock"]:
                 c["sock"]      = sock
                 c["connected"] = True
+            with c["lb_lock"]:      # nouvelle connexion = nouvel état complet envoyé par le serveur
+                c["session_phase"]    = None
+                c["session_phase_at"] = 0.0
             # S'élève admin dès la connexion si configuré (même config déjà lue ci-dessus),
             # ou si une élévation manuelle a déjà été demandée sur ce serveur — le serveur de
             # jeu déconnecte le bot toutes les ~60s ("software timeout", aucun keepalive
