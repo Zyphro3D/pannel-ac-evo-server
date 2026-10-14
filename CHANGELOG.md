@@ -133,6 +133,12 @@ Section repliable « Options de course », chaque réglage vérifié sur un vrai
 
 - Le suivi des incidents n'était pas actif avant la v2.1.0 : un bouton remet le compteur à zéro à la date du jour, sans rien supprimer, pour ne pas pénaliser les pilotes sur une période où ils ne pouvaient pas le savoir.
 
+**Correction — affichage sur téléphone**
+
+- **Page Résultats** : le menu latéral gardait sa colonne de 212 px sur téléphone et mangeait la moitié de l'écran, le contenu restait invisible. Les règles mobiles étaient écrites avant les règles de base du même menu et se faisaient écraser ; elles sont reposées après. Le menu devient une rangée d'onglets défilante.
+- **Classement en direct** : la page prenait la largeur de son tableau (8 colonnes) au lieu de celle de l'écran et débordait à droite ; le tableau défile maintenant dans son cadre.
+- **Bandeau cookies** : ne prend plus 7 lignes de l'écran, deux lignes suffisent.
+
 **Divers**
 
 - Le bandeau « nouvelles variables .env » mentionne les nouveaux interrupteurs (récapitulatif Discord, contrôle d'accès).

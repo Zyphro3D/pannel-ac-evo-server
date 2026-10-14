@@ -4149,3 +4149,32 @@ body::before {
 .cm-empty { padding:28px; text-align:center; color:var(--dim); }
 .cmap .dot { transition:r .08s; }
 @media (prefers-reduced-motion:reduce) { .cmap .dot { transition:none; } }
+
+/* ─── Mobile : règles reposées APRÈS les règles de base ─────────────────────
+   Celles du bloc « Mobile » du haut du fichier étaient écrasées par .race-sidebar & co. définis plus bas :
+   sur téléphone le menu des Résultats gardait sa colonne de 212 px et mangeait l'écran. */
+@media (max-width: 760px) {
+  .race-layout { flex-direction: column; }
+  .race-sidebar {
+    position: static; width: 100%; min-height: 0; flex-direction: row; align-items: center;
+    border-right: none; border-bottom: 1px solid var(--border); overflow-x: auto; padding: 8px 12px;
+  }
+  .race-sidebar-nav { flex-direction: row; gap: 4px; }
+  .race-sidebar-link { white-space: nowrap; flex: none; }
+  .race-sidebar-link.active::before { display: none; }
+  .race-content { padding: 16px 16px 32px; min-width: 0; }
+}
+
+/* Bandeau cookies : ne couvre plus l'écran d'un téléphone (7 lignes de texte avant) */
+#cookie-banner { width: calc(100vw - 1.5rem); max-width: 40rem; }
+@media (max-width: 640px) {
+  #cookie-banner { bottom: .5rem; padding: .5rem .75rem; font-size: .78rem; gap: .75rem; }
+}
+
+/* Classement en direct sur téléphone : en colonne, « align-items: flex-start » donnait à la page la largeur de son
+   tableau (8 colonnes) au lieu de celle de l'écran, d'où la page qui débordait à droite. */
+@media (max-width: 900px) {
+  .timing-layout { align-items: stretch; }
+  .timing-page { width: 100%; }
+  .timing-track-card { flex-wrap: wrap; justify-content: center; gap: 12px; }
+}
