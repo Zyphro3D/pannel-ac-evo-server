@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-14 03:15+0200\n"
+"POT-Creation-Date: 2026-10-14 02:49+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: de\n"
@@ -12,7 +12,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.18.0\n"
+"Generated-By: Babel 2.17.0\n"
 
 #: app/routes/admin.py:318
 msgid "Type d'email inconnu."
@@ -56,25 +56,25 @@ msgstr ""
 "Spalte %(col)s. Korrigieren und im Tab Konfiguration speichern."
 
 #: app/routes/admin.py:457 app/templates/event_form.html:101
-#: app/templates/server.html:397
+#: app/templates/server.html:389
 msgid "Dégagé"
 msgstr "Klar"
 
 #: app/routes/admin.py:458 app/templates/event_form.html:102
-#: app/templates/server.html:400
+#: app/templates/server.html:392
 msgid "Nuageux"
 msgstr "Bewölkt"
 
 #: app/routes/admin.py:459 app/templates/event_form.html:103
-#: app/templates/server.html:402
+#: app/templates/server.html:394
 msgid "Pluie"
 msgstr "Regen"
 
-#: app/routes/admin.py:462 app/templates/server.html:410
+#: app/routes/admin.py:462 app/templates/server.html:402
 msgid "Statique"
 msgstr "Statisch"
 
-#: app/routes/admin.py:463 app/templates/server.html:411
+#: app/routes/admin.py:463 app/templates/server.html:403
 msgid "Dynamique"
 msgstr "Dynamisch"
 
@@ -87,116 +87,466 @@ msgstr "Training"
 msgid "Race Weekend"
 msgstr "Rennwochenende"
 
-#: app/routes/admin.py:468 app/templates/server.html:383
-msgid "Course instantanée"
-msgstr "Schnelles Rennen"
+#: app/routes/admin.py:554 app/templates/settings.html:74
+#: app/templates/settings.html:968
+msgid "Comptes"
+msgstr "Konten"
 
-#: app/routes/admin.py:469 app/templates/server.html:384
-msgid "Tour lancé"
-msgstr "Schnelle Runde"
+#: app/routes/admin.py:555 app/templates/base.html:55
+#: app/templates/base.html:148 app/templates/base.html:266
+#: app/templates/server.html:2 app/templates/server.html:228
+#: app/templates/settings.html:70 app/templates/settings.html:258
+#: app/templates/settings.html:862
+msgid "Serveur"
+msgstr "Server"
 
-#: app/routes/admin.py:470 app/templates/server.html:385
-msgid "Rallye"
-msgstr "Rallye"
+#: app/routes/admin.py:563 app/templates/settings.html:71
+msgid "Notifications"
+msgstr "Benachrichtigungen"
 
-#: app/routes/admin.py:471 app/templates/server.html:386
-msgid "A vers B"
-msgstr "A nach B"
+#: app/routes/admin.py:577
+msgid "Nom affiché dans la sidebar"
+msgstr "Im Seitenmenü angezeigter Name"
 
-#: app/routes/admin.py:472 app/templates/server.html:387
-msgid "Test drive"
-msgstr "Testfahrt"
+#: app/routes/admin.py:578
+msgid "Nom de fichier dans media/banner/ (ex: banner.jpg)"
+msgstr "Dateiname in media/banner/ (z. B. banner.jpg)"
 
-#: app/routes/admin.py:857 app/routes/admin.py:1253
+#: app/routes/admin.py:579
+msgid "Logo sur la bannière (ex: logo.png)"
+msgstr "Logo auf dem Banner (z. B. logo.png)"
+
+#: app/routes/admin.py:580
+msgid "URL publique du panel (liens dans les emails)"
+msgstr "Öffentliche Panel-URL (Links in E-Mails)"
+
+#: app/routes/admin.py:581
+msgid "Fuseau horaire (ex: Europe/Paris)"
+msgstr "Zeitzone (z. B. Europe/Paris)"
+
+#: app/routes/admin.py:582
+msgid ""
+"Clé de session Flask — générer avec python -c \"import secrets; "
+"print(secrets.token_hex(32))\""
+msgstr ""
+"Flask-Session-Schlüssel — generieren mit python -c \"import secrets; "
+"print(secrets.token_hex(32))\""
+
+#: app/routes/admin.py:583
+msgid "true si HTTPS, false si HTTP local"
+msgstr "true bei HTTPS, false bei lokalem HTTP"
+
+#: app/routes/admin.py:584
+msgid "Secret HMAC du webhook résultats (/api/results/ingest)"
+msgstr "HMAC-Secret für den Ergebnis-Webhook (/api/results/ingest)"
+
+#: app/routes/admin.py:585
+msgid ""
+"Exige que les pilotes confirment leur email (lien envoyé à l'inscription)"
+" avant de pouvoir s'inscrire à un événement. Les comptes existants ne "
+"sont pas affectés rétroactivement."
+msgstr ""
+"Verlangt von Fahrern, ihre E-Mail zu bestätigen (Link bei der "
+"Registrierung gesendet), bevor sie sich für eine Veranstaltung anmelden "
+"können. Bestehende Konten sind nicht rückwirkend betroffen."
+
+#: app/routes/admin.py:586
+msgid ""
+"Nombre de mois de conservation détaillée de l'historique des tours "
+"(temps, voiture, circuit). Au-delà, archivé en résumé mensuel compact "
+"plutôt que supprimé."
+msgstr ""
+"Anzahl der Monate, für die die detaillierte Rundenhistorie (Zeit, Auto, "
+"Strecke) aufbewahrt wird. Danach wird sie als kompakte monatliche "
+"Zusammenfassung archiviert statt gelöscht."
+
+#: app/routes/admin.py:587
+msgid "Port HTTP de l'API du serveur (défaut 8081)"
+msgstr "HTTP-Port der Server-API (Standard 8081)"
+
+#: app/routes/admin.py:588
+msgid "Hôte TCP ACE EVO (défaut 127.0.0.1)"
+msgstr "ACE EVO TCP-Host (Standard 127.0.0.1)"
+
+#: app/routes/admin.py:589
+msgid "Port TCP ACE EVO (défaut 9700)"
+msgstr "ACE EVO TCP-Port (Standard 9700)"
+
+#: app/routes/admin.py:590
+msgid "Dossier d'installation ACE EVO"
+msgstr "ACE EVO Installationsordner"
+
+#: app/routes/admin.py:591
+msgid "Dossier des fichiers de configuration JSON"
+msgstr "Ordner für JSON-Konfigurationsdateien"
+
+#: app/routes/admin.py:592
+msgid ""
+"Nom du serveur affiché dans la liste des serveurs ACE EVO (commun à "
+"toutes les configs)"
+msgstr "Servername in der ACE-EVO-Serverliste (für alle Konfigurationen gleich)"
+
+#: app/routes/admin.py:593
+msgid "Nombre maximum de joueurs simultanés (1–128, défaut 8)"
+msgstr "Maximale Anzahl gleichzeitiger Spieler (1–128, Standard 8)"
+
+#: app/routes/admin.py:594
+msgid ""
+"Port TCP du serveur de jeu (défaut 9700) — doit correspondre aux règles "
+"firewall"
+msgstr ""
+"TCP-Port des Spielservers (Standard 9700) — muss mit den Firewall-Regeln "
+"übereinstimmen"
+
+#: app/routes/admin.py:595
+msgid ""
+"Port UDP du serveur de jeu (défaut 9700) — généralement identique au port"
+" TCP"
+msgstr ""
+"UDP-Port des Spielservers (Standard 9700) — normalerweise identisch mit "
+"dem TCP-Port"
+
+#: app/routes/admin.py:596
+msgid ""
+"Mot de passe d'accès au serveur pour les pilotes. Laisser vide = accès "
+"libre"
+msgstr "Serverzugangspasswort für Fahrer. Leer lassen = freier Zugang"
+
+#: app/routes/admin.py:597
+msgid ""
+"Mot de passe admin serveur (commandes /kick, /next, etc.) — utilisé aussi"
+" par le bot TCP"
+msgstr ""
+"Server-Admin-Passwort (/kick-, /next-Befehle usw.) — wird auch vom TCP-"
+"Bot verwendet"
+
+#: app/routes/admin.py:598
+msgid "Chemin vers le fichier entry_list.ini (laisser vide si non utilisé)"
+msgstr "Pfad zur Datei entry_list.ini (leer lassen, falls nicht verwendet)"
+
+#: app/routes/admin.py:599
+msgid ""
+"Dossier de sortie des résultats de session (laisser vide = dossier par "
+"défaut)"
+msgstr "Ausgabeordner für Sitzungsergebnisse (leer lassen = Standardordner)"
+
+#: app/routes/admin.py:600
+msgid ""
+"Steam ID 64-bit du compte bot — le bot se connecte au serveur avec ce "
+"compte. Laisser vide pour désactiver le bot."
+msgstr ""
+"64-Bit-Steam-ID des Bot-Kontos — der Bot verbindet sich mit diesem Konto "
+"zum Server. Leer lassen, um den Bot zu deaktivieren."
+
+#: app/routes/admin.py:601
+msgid "Voiture utilisée par le bot pour rejoindre la session."
+msgstr "Fahrzeug, das der Bot zum Beitreten der Session verwendet."
+
+#: app/routes/admin.py:602
+msgid ""
+"Activer les droits admin pour le bot (true/false). Le mot de passe est lu"
+" automatiquement depuis la config serveur active."
+msgstr ""
+"Admin-Rechte für den Bot aktivieren (true/false). Das Passwort wird "
+"automatisch aus der aktiven Serverkonfiguration gelesen."
+
+#: app/routes/admin.py:603
+#, python-brace-format
+msgid ""
+"Message de bienvenue envoyé à chaque connexion. Variable : {name}. "
+"Laisser vide pour désactiver."
+msgstr ""
+"Willkommensnachricht bei jeder Verbindung. Variable: {name}. Leer lassen "
+"zum Deaktivieren."
+
+#: app/routes/admin.py:604
+#, python-brace-format
+msgid ""
+"Message Discord envoyé si DISCORD_INVITE_URL est défini. Variables : "
+"{name}, {discord_url}. Laisser vide pour désactiver."
+msgstr ""
+"Discord-Nachricht, gesendet wenn DISCORD_INVITE_URL gesetzt ist. "
+"Variablen: {name}, {discord_url}. Leer lassen zum Deaktivieren."
+
+#: app/routes/admin.py:605
+#, python-brace-format
+msgid ""
+"Message site envoyé si PANEL_URL est défini. Variables : {name}, "
+"{site_url}. Laisser vide pour désactiver."
+msgstr ""
+"Website-Nachricht, gesendet wenn PANEL_URL gesetzt ist. Variablen: "
+"{name}, {site_url}. Leer lassen zum Deaktivieren."
+
+#: app/routes/admin.py:606
+msgid ""
+"Pré-remplit le formulaire de mise à jour. Le mot de passe est saisi au "
+"moment de la mise à jour, jamais stocké."
+msgstr ""
+"Füllt das Update-Formular vor. Das Passwort wird zum Zeitpunkt des "
+"Updates eingegeben, nie gespeichert."
+
+#: app/routes/admin.py:607
+msgid "Webhook principal — démarrage, arrêt, crash du serveur"
+msgstr "Haupt-Webhook — Serverstart, -stopp, Absturz"
+
+#: app/routes/admin.py:608
+msgid "Webhook pilotes — connexions, déconnexions, changements de véhicule"
+msgstr "Fahrer-Webhook — Verbindungen, Trennungen, Fahrzeugwechsel"
+
+#: app/routes/admin.py:609
+msgid "Webhook course — meilleur tour, actions admin (kick, pénalités…)"
+msgstr "Rennen-Webhook — Bestzeit, Admin-Aktionen (Kick, Strafen…)"
+
+#: app/routes/admin.py:610
+msgid ""
+"Envoie sur le webhook course un récapitulatif à la fin de chaque session "
+": podium, meilleur tour, incidents et sanctions (true/false, désactivé "
+"par défaut)."
+msgstr ""
+"Sendet am Ende jeder Sitzung eine Zusammenfassung an den Rennen-Webhook: "
+"Podium, schnellste Runde, Vorfälle und Strafen (true/false, standardmäßig"
+" aus)."
+
+#: app/routes/admin.py:611
+msgid "Lien d'invitation Discord affiché sur le panel"
+msgstr "Discord-Einladungslink, angezeigt im Panel"
+
+#: app/routes/admin.py:612
+msgid ""
+"Mention envoyée avec les événements serveur (ex: @here ou <@&123456789>)."
+" Laisser vide pour désactiver."
+msgstr ""
+"Erwähnung bei Server-Ereignissen (z. B. @here oder <@&123456789>). Leer "
+"lassen zum Deaktivieren."
+
+#: app/routes/admin.py:613
+msgid "Mention envoyée avec les connexions joueurs. Laisser vide pour désactiver."
+msgstr "Erwähnung bei Spielerverbindungen. Leer lassen zum Deaktivieren."
+
+#: app/routes/admin.py:614
+msgid "Mention envoyée avec les événements course. Laisser vide pour désactiver."
+msgstr "Erwähnung bei Renn-Ereignissen. Leer lassen zum Deaktivieren."
+
+#: app/routes/admin.py:615
+#, python-brace-format
+msgid "Titre embed — Serveur démarré. Variables : {config}, {mode}, {circuit}"
+msgstr "Embed-Titel — Server gestartet. Variablen: {config}, {mode}, {circuit}"
+
+#: app/routes/admin.py:616
+#, python-brace-format
+msgid "Titre embed — Serveur arrêté. Variables : {config}"
+msgstr "Embed-Titel — Server gestoppt. Variablen: {config}"
+
+#: app/routes/admin.py:617
+#, python-brace-format
+msgid "Titre embed — Crash détecté. Variables : {config}"
+msgstr "Embed-Titel — Absturz erkannt. Variablen: {config}"
+
+#: app/routes/admin.py:618
+#, python-brace-format
+msgid ""
+"Titre embed — Connexion joueur. Variables : {name}, {num}, {car}, "
+"{steam_id}"
+msgstr ""
+"Embed-Titel — Spielerverbindung. Variablen: {name}, {num}, {car}, "
+"{steam_id}"
+
+#: app/routes/admin.py:619
+#, python-brace-format
+msgid ""
+"Titre embed — Déconnexion joueur. Variables : {name}, {duration}, "
+"{steam_id}"
+msgstr "Embed-Titel — Spielertrennung. Variablen: {name}, {duration}, {steam_id}"
+
+#: app/routes/admin.py:620
+#, python-brace-format
+msgid ""
+"Titre embed — Changement de véhicule. Variables : {name}, {num}, "
+"{old_car}, {new_car}"
+msgstr ""
+"Embed-Titel — Fahrzeugwechsel. Variablen: {name}, {num}, {old_car}, "
+"{new_car}"
+
+#: app/routes/admin.py:621
+#, python-brace-format
+msgid ""
+"Titre embed — Meilleur tour serveur. Variables : {name}, {lap}, {car}, "
+"{circuit}"
+msgstr "Embed-Titel — Server-Bestzeit. Variablen: {name}, {lap}, {car}, {circuit}"
+
+#: app/routes/admin.py:622
+#, python-brace-format
+msgid ""
+"Titre embed — Action admin. Variables : {action}, {target}, {admin}, "
+"{detail}"
+msgstr ""
+"Embed-Titel — Admin-Aktion. Variablen: {action}, {target}, {admin}, "
+"{detail}"
+
+#: app/routes/admin.py:623
+#, python-brace-format
+msgid "Titre embed — Fin de session. Variables : {session}, {circuit}"
+msgstr "Embed-Titel — Sitzungsende. Variablen: {session}, {circuit}"
+
+#: app/routes/admin.py:624
+msgid "Serveur SMTP (laisser vide pour désactiver les emails)"
+msgstr "SMTP-Server (leer lassen, um E-Mails zu deaktivieren)"
+
+#: app/routes/admin.py:625
+msgid "Port SMTP (ex: 587 ou 465)"
+msgstr "SMTP-Port (z. B. 587 oder 465)"
+
+#: app/routes/admin.py:626
+msgid "TLS : true ou false"
+msgstr "TLS: true oder false"
+
+#: app/routes/admin.py:627
+msgid "Identifiant SMTP"
+msgstr "SMTP-Benutzername"
+
+#: app/routes/admin.py:628
+msgid "Mot de passe SMTP"
+msgstr "SMTP-Passwort"
+
+#: app/routes/admin.py:629
+msgid "Adresse expéditeur"
+msgstr "Absenderadresse"
+
+#: app/routes/admin.py:630
+msgid "Adresse(s) admin pour les notifications (séparées par virgule)"
+msgstr "Admin-Adresse(n) für Benachrichtigungen (durch Komma getrennt)"
+
+#: app/routes/admin.py:631
+msgid "Langue par défaut : fr, en, es, de, it"
+msgstr "Standardsprache: fr, en, es, de, it"
+
+#: app/routes/admin.py:684
+msgid ""
+"Contrôle d'accès au serveur de jeu (liste blanche des pilotes approuvés, "
+"bannissements, lest et restricteur par SteamID) : se règle dans la page "
+"Accès, désactivé par défaut."
+msgstr ""
+"Zugriffskontrolle für den Spielserver (Whitelist freigegebener Fahrer, "
+"Sperren, Ballast und Restriktor pro SteamID): einzustellen auf der Seite "
+"Zugriff, standardmäßig aus."
+
+#: app/routes/admin.py:685
+msgid ""
+"Réserve le serveur aux pilotes approuvés (page Accès, désactivé par "
+"défaut)."
+msgstr ""
+"Reserviert den Server für freigegebene Fahrer (Seite Zugriff, "
+"standardmäßig aus)."
+
+#: app/routes/admin.py:688
+msgid ""
+"Récapitulatif Discord à la fin de chaque session (podium, meilleur tour, "
+"incidents, sanctions) : interrupteur dans Paramètres → Notifications, "
+"désactivé par défaut."
+msgstr ""
+"Discord-Zusammenfassung am Ende jeder Sitzung (Podium, schnellste Runde, "
+"Vorfälle, Strafen): Schalter unter Einstellungen → Benachrichtigungen, "
+"standardmäßig aus."
+
+#: app/routes/admin.py:691
+msgid ""
+"Dossier de session Steam à monter si le panel est lancé via systemd ou "
+"sudo sans -E (sinon ça reste vide et $HOME est utilisé, comme avant)."
+msgstr ""
+"Zu bindender Steam-Sitzungsordner, falls das Panel über systemd oder sudo"
+" ohne -E gestartet wird (sonst bleibt es leer und $HOME wird wie zuvor "
+"verwendet)."
+
+#: app/routes/admin.py:848 app/routes/admin.py:1244
 msgid "Port invalide (1024–65535)."
 msgstr "Ungültiger Port (1024–65535)."
 
-#: app/routes/admin.py:859
+#: app/routes/admin.py:850
 #, python-format
 msgid "Le port %(port)d est déjà utilisé par '%(name)s'."
 msgstr "Port %(port)d wird bereits von '%(name)s' verwendet."
 
-#: app/routes/admin.py:887 app/routes/admin.py:888
+#: app/routes/admin.py:878 app/routes/admin.py:879
 msgid "Paramètres du serveur sauvegardés."
 msgstr "Servereinstellungen gespeichert."
 
-#: app/routes/admin.py:924 app/routes/admin.py:925
+#: app/routes/admin.py:915 app/routes/admin.py:916
 msgid "Paramètres sauvegardés"
 msgstr "Einstellungen gespeichert"
 
-#: app/routes/admin.py:982 app/routes/admin.py:1521
+#: app/routes/admin.py:973 app/routes/admin.py:1512
 msgid "Aucun fichier fourni"
 msgstr "Keine Datei angegeben"
 
-#: app/routes/admin.py:991
+#: app/routes/admin.py:982
 msgid "Fichier trop volumineux (max 5 Mo)"
 msgstr "Datei zu groß (max. 5 MB)"
 
-#: app/routes/admin.py:994
+#: app/routes/admin.py:985
 msgid "Type non autorisé"
 msgstr "Nicht erlaubter Typ"
 
-#: app/routes/admin.py:1005
+#: app/routes/admin.py:996
 msgid "Signature de fichier invalide"
 msgstr "Ungültige Dateisignatur"
 
-#: app/routes/admin.py:1036
+#: app/routes/admin.py:1027
 msgid "Identifiant et mot de passe requis."
 msgstr "Benutzername und Passwort erforderlich."
 
-#: app/routes/admin.py:1041 app/routes/admin.py:1072
+#: app/routes/admin.py:1032 app/routes/admin.py:1063
 msgid "Cet identifiant est déjà utilisé."
 msgstr "Dieser Benutzername ist bereits vergeben."
 
-#: app/routes/admin.py:1047
+#: app/routes/admin.py:1038
 msgid "Compte créé avec succès."
 msgstr "Konto erfolgreich erstellt."
 
-#: app/routes/admin.py:1057 app/routes/admin.py:1108
+#: app/routes/admin.py:1048 app/routes/admin.py:1099
 msgid "Compte introuvable."
 msgstr "Konto nicht gefunden."
 
-#: app/routes/admin.py:1068 app/routes/admin.py:1156
+#: app/routes/admin.py:1059 app/routes/admin.py:1147
 msgid "Impossible : il doit rester au moins un superadmin actif."
 msgstr "Unmöglich: Es muss mindestens ein aktiver Superadmin verbleiben."
 
-#: app/routes/admin.py:1080
+#: app/routes/admin.py:1071
 msgid "Compte mis à jour."
 msgstr "Konto aktualisiert."
 
-#: app/routes/admin.py:1090 app/routes/admin.py:1142
+#: app/routes/admin.py:1081 app/routes/admin.py:1133
 msgid "Compte introuvable"
 msgstr "Konto nicht gefunden"
 
-#: app/routes/admin.py:1094
+#: app/routes/admin.py:1085
 msgid "Dernier superadmin actif — impossible de désactiver"
 msgstr "Letzter aktiver Superadmin — kann nicht deaktiviert werden"
 
-#: app/routes/admin.py:1096
+#: app/routes/admin.py:1087
 msgid "Impossible de vous désactiver vous-même"
 msgstr "Sie können sich nicht selbst deaktivieren"
 
-#: app/routes/admin.py:1111 app/routes/admin.py:1145
+#: app/routes/admin.py:1102 app/routes/admin.py:1136
 msgid "Impossible de supprimer votre propre compte."
 msgstr "Sie können Ihr eigenes Konto nicht löschen."
 
-#: app/routes/admin.py:1116 app/routes/admin.py:1149
+#: app/routes/admin.py:1107 app/routes/admin.py:1140
 msgid "Impossible : il doit rester au moins un superadmin."
 msgstr "Unmöglich: Es muss mindestens ein Superadmin verbleiben."
 
-#: app/routes/admin.py:1120
+#: app/routes/admin.py:1111
 msgid "Compte supprimé."
 msgstr "Konto gelöscht."
 
-#: app/routes/admin.py:1136
+#: app/routes/admin.py:1127
 msgid "Rôle invalide"
 msgstr "Ungültige Rolle"
 
-#: app/routes/admin.py:1165
+#: app/routes/admin.py:1156
 msgid "Pilote introuvable"
 msgstr "Fahrer nicht gefunden"
 
-#: app/routes/admin.py:1170
+#: app/routes/admin.py:1161
 msgid ""
 "Cet identifiant est déjà utilisé par un compte admin — renomme le pilote "
 "ou l'admin existant."
@@ -204,61 +554,61 @@ msgstr ""
 "Dieser Name wird bereits von einem Admin-Konto verwendet — benenne den "
 "Fahrer oder den bestehenden Admin um."
 
-#: app/routes/admin.py:1183
+#: app/routes/admin.py:1174
 msgid "Requête invalide"
 msgstr "Ungültige Anfrage"
 
-#: app/routes/admin.py:1203 app/routes/public.py:214
+#: app/routes/admin.py:1194 app/routes/public.py:214
 msgid "Cet email est déjà utilisé."
 msgstr "Diese E-Mail-Adresse wird bereits verwendet."
 
-#: app/routes/admin.py:1207
+#: app/routes/admin.py:1198
 msgid "Email mis à jour."
 msgstr "E-Mail aktualisiert."
 
-#: app/routes/admin.py:1251 app/routes/admin.py:1340
+#: app/routes/admin.py:1242 app/routes/admin.py:1331
 msgid "Le nom est requis."
 msgstr "Name ist erforderlich."
 
-#: app/routes/admin.py:1255
+#: app/routes/admin.py:1246
 #, python-format
 msgid "Le port %(port)d est déjà utilisé par un autre serveur."
 msgstr "Port %(port)d wird bereits von einem anderen Server verwendet."
 
-#: app/routes/admin.py:1257
+#: app/routes/admin.py:1248
 #, python-format
 msgid "Un container Docker nommé '%(name)s' existe déjà."
 msgstr "Ein Docker-Container namens '%(name)s' existiert bereits."
 
-#: app/routes/admin.py:1280
+#: app/routes/admin.py:1271
 #, python-format
 msgid "Erreur lors de la création du container : %(err)s"
 msgstr "Fehler beim Erstellen des Containers: %(err)s"
 
-#: app/routes/admin.py:1304
+#: app/routes/admin.py:1295
 #, python-format
 msgid "Serveur '%(name)s' créé avec succès."
 msgstr "Server '%(name)s' erfolgreich erstellt."
 
-#: app/routes/admin.py:1313
+#: app/routes/admin.py:1304
 msgid "Le serveur principal ne peut pas être désactivé."
 msgstr "Der Hauptserver kann nicht deaktiviert werden."
 
-#: app/routes/admin.py:1316 app/routes/admin.py:1337 app/routes/admin.py:1372
+#: app/routes/admin.py:1307 app/routes/admin.py:1328 app/routes/admin.py:1363
 msgid "Serveur introuvable."
 msgstr "Server nicht gefunden."
 
-#: app/routes/admin.py:1319
+#: app/routes/admin.py:1310
 #, python-format
 msgid "Serveur '%(name)s' activé."
 msgstr "Server '%(name)s' aktiviert."
 
-#: app/routes/admin.py:1319
+#: app/routes/admin.py:1310
 #, python-format
 msgid "Serveur '%(name)s' désactivé."
 msgstr "Server '%(name)s' deaktiviert."
 
-#: app/routes/admin.py:1351
+#: app/routes/admin.py:1342
 #, python-format
 msgid ""
 "Serveur renommé en '%(name)s'. Le nom affiché dans le navigateur de "
@@ -267,28 +617,28 @@ msgstr ""
 "Server umbenannt in '%(name)s'. Der im Server-Browser des Spiels "
 "angezeigte Name wird erst beim nächsten Neustart aktualisiert."
 
-#: app/routes/admin.py:1369
+#: app/routes/admin.py:1360
 msgid "Le serveur principal ne peut pas être supprimé."
 msgstr "Der Hauptserver kann nicht gelöscht werden."
 
-#: app/routes/admin.py:1392 app/routes/admin.py:1393
+#: app/routes/admin.py:1383 app/routes/admin.py:1384
 #, python-format
 msgid "Serveur '%(name)s' supprimé."
 msgstr "Server '%(name)s' gelöscht."
 
-#: app/routes/admin.py:1518
+#: app/routes/admin.py:1509
 msgid "Fichier trop volumineux (max 3 Go)"
 msgstr "Datei zu groß (max. 3 GB)"
 
-#: app/routes/admin.py:1541 app/routes/admin.py:1554
+#: app/routes/admin.py:1532 app/routes/admin.py:1545
 msgid "Mod introuvable"
 msgstr "Mod nicht gefunden"
 
-#: app/routes/admin.py:1560 app/routes/admin.py:1562 app/routes/admin.py:1564
+#: app/routes/admin.py:1551 app/routes/admin.py:1553 app/routes/admin.py:1555
 msgid "Tag invalide"
 msgstr "Ungültiger Tag"
 
-#: app/routes/admin.py:1570
+#: app/routes/admin.py:1561
 msgid "PI invalide"
 msgstr "Ungültiger PI-Wert"
 
@@ -458,13 +808,13 @@ msgstr ""
 msgid "SteamID invalide : 17 chiffres commençant par 7656119."
 msgstr "Ungültige SteamID: 17 Ziffern, beginnend mit 7656119."
 
-#: app/routes/events_admin.py:340
+#: app/routes/events_admin.py:333
 msgid ""
 "Règle enregistrée. Elle s'applique au prochain démarrage du serveur de "
 "jeu."
 msgstr "Regel gespeichert. Sie gilt ab dem nächsten Start des Spielservers."
 
-#: app/routes/events_admin.py:350
+#: app/routes/events_admin.py:343
 msgid "Règle supprimée."
 msgstr "Regel gelöscht."
 
@@ -540,6 +890,46 @@ msgstr "Abmeldung erfolgreich."
 msgid "Impossible de se désinscrire (inscription confirmée)."
 msgstr "Abmeldung nicht möglich (Anmeldung bestätigt)."
 
+#: app/services/mailer.py:454
+msgid "Email de test"
+msgstr "Test-E-Mail"
+
+#: app/services/mailer.py:455
+msgid "Nouvelle inscription (notif. admin)"
+msgstr "Neue Anmeldung (Admin-Benachrichtigung)"
+
+#: app/services/mailer.py:456
+msgid "Inscription reçue"
+msgstr "Anmeldung erhalten"
+
+#: app/services/mailer.py:457
+msgid "Compte validé"
+msgstr "Konto bestätigt"
+
+#: app/services/mailer.py:458
+msgid "Inscription refusée"
+msgstr "Anmeldung abgelehnt"
+
+#: app/services/mailer.py:459
+msgid "Inscription événement confirmée"
+msgstr "Veranstaltungsanmeldung bestätigt"
+
+#: app/services/mailer.py:460
+msgid "Inscription événement refusée"
+msgstr "Veranstaltungsanmeldung abgelehnt"
+
+#: app/services/mailer.py:461
+msgid "Confirmation d'email"
+msgstr "E-Mail-Bestätigung"
+
+#: app/services/mailer.py:462
+msgid "Réinitialisation mot de passe"
+msgstr "Passwort zurücksetzen"
+
+#: app/services/mailer.py:463
+msgid "Rappel événement"
+msgstr "Veranstaltungserinnerung"
+
 #: app/services/race_labels.py:18
 msgid "Avertissement"
 msgstr "Verwarnung"
@@ -576,7 +966,7 @@ msgstr "Rundenstrafe"
 msgid "Places perdues au classement"
 msgstr "Verlorene Plätze in der Wertung"
 
-#: app/services/race_labels.py:27 app/templates/timing.html:143
+#: app/services/race_labels.py:27 app/templates/timing.html:142
 msgid "Drive-through"
 msgstr "Drive-through"
 
@@ -592,7 +982,7 @@ msgstr "Nächste Runde ungültig"
 msgid "Tour invalidé"
 msgstr "Runde ungültig"
 
-#: app/services/race_labels.py:31 app/templates/timing.html:142
+#: app/services/race_labels.py:31 app/templates/timing.html:141
 msgid "Disqualification"
 msgstr "Disqualifikation"
 
@@ -715,37 +1105,25 @@ msgstr ""
 "(SERVER_ENTRY_LIST_PATH): sie hat Vorrang, die Zugriffskontrolle unten "
 "wird ignoriert, solange sie gesetzt ist."
 
-#: app/templates/access.html:23
-msgid ""
-"Le contrôle d'accès est désactivé : les règles ci-dessous (bannissements,"
-" handicaps) ne sont pas appliquées au serveur de jeu. Un bannissement "
-"fait en direct avec la commande \\ban ne dure que jusqu'au redémarrage du"
-" serveur : activez le contrôle d'accès pour qu'il soit conservé."
-msgstr ""
-"Die Zugangskontrolle ist deaktiviert: Die folgenden Regeln (Sperren, "
-"Handicaps) werden nicht auf den Spielserver angewendet. Eine Live-Sperre "
-"mit dem Befehl \\ban gilt nur bis zum Neustart des Servers: Aktivieren "
-"Sie die Zugangskontrolle, um sie zu behalten."
-
-#: app/templates/access.html:30
+#: app/templates/access.html:22
 msgid "Réglages"
 msgstr "Einstellungen"
 
-#: app/templates/access.html:38
+#: app/templates/access.html:30
 msgid "Activer le contrôle d'accès"
 msgstr "Zugriffskontrolle aktivieren"
 
-#: app/templates/access.html:40
+#: app/templates/access.html:32
 msgid ""
 "Désactivé : le serveur de jeu ne reçoit aucun fichier d'engagés, comme "
 "avant."
 msgstr "Aus: Der Spielserver erhält keine Starterliste, wie bisher."
 
-#: app/templates/access.html:46
+#: app/templates/access.html:38
 msgid "Réserver le serveur aux pilotes approuvés"
 msgstr "Server für freigegebene Fahrer reservieren"
 
-#: app/templates/access.html:49
+#: app/templates/access.html:41
 #, python-format
 msgid ""
 "Seuls les pilotes approuvés ayant lié leur compte Steam (%(n)s "
@@ -755,45 +1133,45 @@ msgstr ""
 "Nur freigegebene Fahrer mit verknüpftem Steam-Konto (derzeit %(n)s), der "
 "Panel-Bot und Spieler mit einer Regel unten können sich verbinden."
 
-#: app/templates/access.html:52 app/templates/event_form.html:328
+#: app/templates/access.html:44 app/templates/event_form.html:328
 #: app/templates/my_account.html:24 app/templates/settings.html:1117
 #: app/templates/vehicles.html:95
 msgid "Enregistrer"
 msgstr "Speichern"
 
-#: app/templates/access.html:56
+#: app/templates/access.html:48
 msgid "Contrôle d'accès"
 msgstr "Zugriffskontrolle"
 
-#: app/templates/access.html:56
+#: app/templates/access.html:48
 msgid "activé"
 msgstr "an"
 
-#: app/templates/access.html:56
+#: app/templates/_partials/server_row.html:7 app/templates/access.html:48
 msgid "désactivé"
 msgstr "deaktiviert"
 
-#: app/templates/access.html:57
+#: app/templates/access.html:49
 msgid "Pilotes approuvés seulement"
 msgstr "Nur freigegebene Fahrer"
 
-#: app/templates/access.html:57
+#: app/templates/access.html:49
 msgid "oui"
 msgstr "ja"
 
-#: app/templates/access.html:57
+#: app/templates/access.html:49
 msgid "non"
 msgstr "nein"
 
-#: app/templates/access.html:58
+#: app/templates/access.html:50
 msgid "Seul un super-admin peut modifier ces réglages."
 msgstr "Nur ein Super-Admin kann diese Einstellungen ändern."
 
-#: app/templates/access.html:65
+#: app/templates/access.html:57
 msgid "Règles par SteamID"
 msgstr "Regeln pro SteamID"
 
-#: app/templates/access.html:67
+#: app/templates/access.html:59
 #, python-format
 msgid ""
 "Lest : 0 à %(b)s kg. Restricteur : 0 à %(r)s. Un joueur banni ne peut "
@@ -802,72 +1180,67 @@ msgstr ""
 "Ballast: 0 bis %(b)s kg. Restriktor: 0 bis %(r)s. Ein gesperrter Spieler "
 "kann sich nicht mehr verbinden, auch nicht als freigegebener Fahrer."
 
-#: app/templates/access.html:74
+#: app/templates/access.html:66
 msgid "SteamID (17 chiffres)"
 msgstr "SteamID (17 Ziffern)"
 
-#: app/templates/access.html:78
+#: app/templates/access.html:70
 msgid "Note"
 msgstr "Notiz"
 
-#: app/templates/access.html:79
+#: app/templates/access.html:71
 msgid "Pseudo ou raison"
 msgstr "Name oder Grund"
 
-#: app/templates/access.html:84
+#: app/templates/access.html:76
 msgid "Lest (kg)"
 msgstr "Ballast (kg)"
 
-#: app/templates/access.html:88 app/templates/access.html:110
-#: app/templates/timing.html:139
+#: app/templates/access.html:80 app/templates/access.html:102
+#: app/templates/timing.html:138
 msgid "Restricteur"
 msgstr "Restriktor"
 
-#: app/templates/access.html:94 app/templates/access.html:120
+#: app/templates/access.html:86 app/templates/access.html:112
 msgid "Banni"
 msgstr "Gesperrt"
 
-#: app/templates/access.html:98
+#: app/templates/access.html:90
 msgid "Ajouter / mettre à jour"
 msgstr "Hinzufügen / aktualisieren"
 
-#: app/templates/access.html:106 app/templates/timing.html:131
+#: app/templates/access.html:98 app/templates/timing.html:131
 msgid "Joueur"
 msgstr "Spieler"
 
-#: app/templates/access.html:108 app/templates/event_detail.html:39
+#: app/templates/_partials/result_incidents.html:18
+#: app/templates/access.html:100 app/templates/event_detail.html:39
 #: app/templates/events_admin.html:70 app/templates/server.html:109
 #: app/templates/settings.html:981
 msgid "Statut"
 msgstr "Status"
 
-#: app/templates/access.html:109
+#: app/templates/access.html:101
 msgid "Lest"
 msgstr "Ballast"
 
-#: app/templates/access.html:121
+#: app/templates/access.html:113
 msgid "Handicap"
 msgstr "Handicap"
 
-#: app/templates/access.html:127
+#: app/templates/access.html:119
 msgid "Supprimer cette règle ?"
 msgstr "Diese Regel löschen?"
 
-#: app/templates/access.html:129 app/templates/mods.html:105
-#: app/templates/mods.html:115 app/templates/server.html:339
+#: app/templates/_partials/server_row.html:53 app/templates/access.html:121
+#: app/templates/mods.html:105 app/templates/mods.html:115
+#: app/templates/server.html:339
 msgid "Supprimer"
 msgstr "Löschen"
 
-#: app/templates/access.html:138
+#: app/templates/access.html:130
 msgid "Aucune règle pour le moment."
 msgstr "Noch keine Regeln."
-
-#: app/templates/base.html:55 app/templates/base.html:148
-#: app/templates/base.html:266 app/templates/server.html:2
-#: app/templates/server.html:228 app/templates/settings.html:70
-#: app/templates/settings.html:258 app/templates/settings.html:862
-msgid "Serveur"
-msgstr "Server"
 
 #: app/templates/base.html:98 app/templates/base.html:250
 msgid "Accueil"
@@ -883,9 +1256,10 @@ msgstr "Ergebnisse"
 msgid "Live"
 msgstr "Live"
 
-#: app/templates/base.html:102 app/templates/base.html:255
-#: app/templates/mods.html:2 app/templates/mods.html:8
-#: app/templates/tracks.html:22 app/templates/vehicles.html:32
+#: app/templates/_partials/vehicle_grid.html:47 app/templates/base.html:102
+#: app/templates/base.html:255 app/templates/mods.html:2
+#: app/templates/mods.html:8 app/templates/tracks.html:22
+#: app/templates/vehicles.html:32
 msgid "Mods"
 msgstr "Mods"
 
@@ -907,12 +1281,12 @@ msgstr "Fahrer"
 
 #: app/templates/base.html:158 app/templates/base.html:272
 #: app/templates/events_admin.html:2 app/templates/events_admin.html:8
-#: app/templates/server.html:656
+#: app/templates/server.html:646
 msgid "Événements"
 msgstr "Veranstaltungen"
 
 #: app/templates/base.html:159 app/templates/base.html:273
-#: app/templates/server.html:326 app/templates/server.html:680
+#: app/templates/server.html:326 app/templates/server.html:670
 #: app/templates/vehicles.html:2 app/templates/vehicles.html:8
 msgid "Véhicules"
 msgstr "Fahrzeuge"
@@ -1043,11 +1417,11 @@ msgstr ""
 "Inoffizielles Projekt, nicht mit Kunos Simulazioni oder Assetto Corsa EVO"
 " verbunden."
 
-#: app/templates/base.html:407 app/templates/event_form.html:326
-#: app/templates/pilot_dashboard.html:126 app/templates/server.html:36
-#: app/templates/server.html:63 app/templates/settings.html:455
-#: app/templates/settings.html:1087 app/templates/settings.html:1116
-#: app/templates/vehicles.html:94
+#: app/templates/_partials/server_row.html:19 app/templates/base.html:407
+#: app/templates/event_form.html:326 app/templates/pilot_dashboard.html:126
+#: app/templates/server.html:36 app/templates/server.html:63
+#: app/templates/settings.html:455 app/templates/settings.html:1087
+#: app/templates/settings.html:1116 app/templates/vehicles.html:94
 msgid "Annuler"
 msgstr "Abbrechen"
 
@@ -1061,7 +1435,8 @@ msgid ""
 "fonctionnement."
 msgstr "Diese Website verwendet nur technisch notwendige Cookies."
 
-#: app/templates/base.html:426 app/templates/server.html:314
+#: app/templates/_partials/server_row.html:28 app/templates/base.html:426
+#: app/templates/server.html:314
 msgid "En ligne"
 msgstr "Online"
 
@@ -1164,7 +1539,8 @@ msgstr "Auto-Neustart aktiviert"
 msgid "Auto-restart désactivé"
 msgstr "Auto-Neustart deaktiviert"
 
-#: app/templates/base.html:451 app/templates/server.html:320
+#: app/templates/_partials/server_row.html:30 app/templates/base.html:451
+#: app/templates/server.html:320
 msgid "joueur(s)"
 msgstr "Spieler"
 
@@ -1176,7 +1552,7 @@ msgstr "Keine Runde aufgezeichnet"
 msgid "Erreur de chargement"
 msgstr "Ladefehler"
 
-#: app/templates/base.html:454 app/templates/server.html:788
+#: app/templates/base.html:454 app/templates/server.html:778
 msgid "véhicule(s) sélectionné(s)"
 msgstr "Fahrzeug(e) ausgewählt"
 
@@ -1192,8 +1568,8 @@ msgstr "Server läuft mit Konfiguration"
 msgid "Remplacer par"
 msgstr "Ersetzen durch"
 
-#: app/templates/base.html:458 app/templates/events_admin.html:89
-#: app/templates/events_admin.html:174
+#: app/templates/_partials/event_row.html:15 app/templates/base.html:458
+#: app/templates/events_admin.html:89 app/templates/events_admin.html:174
 msgid "Terminé"
 msgstr "Beendet"
 
@@ -1201,7 +1577,8 @@ msgstr "Beendet"
 msgid "LEADER"
 msgstr "FÜHREND"
 
-#: app/templates/base.html:460 app/templates/result_detail.html:194
+#: app/templates/_partials/result_incidents.html:16 app/templates/base.html:460
+#: app/templates/result_detail.html:194
 msgid "Tour"
 msgstr "Runde"
 
@@ -1246,9 +1623,9 @@ msgstr "PI max"
 msgid "Réinitialiser"
 msgstr "Zurücksetzen"
 
-#: app/templates/event_detail.html:2 app/templates/events_admin.html:69
-#: app/templates/events_admin.html:96 app/templates/public.html:183
-#: app/templates/public.html:221
+#: app/templates/_partials/event_row.html:21 app/templates/event_detail.html:2
+#: app/templates/events_admin.html:69 app/templates/events_admin.html:96
+#: app/templates/public.html:183 app/templates/public.html:221
 msgid "Inscrits"
 msgstr "Angemeldet"
 
@@ -1256,6 +1633,7 @@ msgstr "Angemeldet"
 msgid "Générer entry list"
 msgstr "Entry-List generieren"
 
+#: app/templates/_partials/drivers_approved.html:24
 #: app/templates/event_detail.html:25 app/templates/event_detail.html:69
 #: app/templates/my_account.html:36 app/templates/pilot_dashboard.html:35
 #: app/templates/pilot_dashboard.html:119
@@ -1274,12 +1652,18 @@ msgstr "Ausstehend"
 msgid "Course privée"
 msgstr "Privates Rennen"
 
+#: app/templates/_partials/circuit_results_table.html:6
+#: app/templates/_partials/result_incidents.html:13
+#: app/templates/_partials/result_incidents.html:60
+#: app/templates/_partials/result_incidents.html:128
 #: app/templates/event_detail.html:36 app/templates/result_detail.html:61
 #: app/templates/results.html:248 app/templates/settings.html:995
 #: app/templates/settings.html:1031 app/templates/timing.html:66
 msgid "Pilote"
 msgstr "Fahrer"
 
+#: app/templates/_partials/drivers_approved.html:11
+#: app/templates/_partials/drivers_pending.html:11
 #: app/templates/event_detail.html:37
 msgid "Email"
 msgstr "E-Mail"
@@ -1288,6 +1672,8 @@ msgstr "E-Mail"
 msgid "Voiture assignée"
 msgstr "Zugewiesenes Fahrzeug"
 
+#: app/templates/_partials/drivers_approved.html:14
+#: app/templates/_partials/drivers_pending.html:13
 #: app/templates/event_detail.html:40 app/templates/events_admin.html:71
 #: app/templates/mods.html:61 app/templates/servers.html:20
 msgid "Actions"
@@ -1302,6 +1688,8 @@ msgstr "Nicht zugewiesen"
 msgid "Refusé"
 msgstr "Abgelehnt"
 
+#: app/templates/_partials/drivers_pending.html:32
+#: app/templates/_partials/drivers_pending.html:33
 #: app/templates/event_detail.html:86
 msgid "Refuser"
 msgstr "Ablehnen"
@@ -1357,7 +1745,7 @@ msgstr "Max. Fahrer"
 #: app/templates/event_form.html:75 app/templates/events_admin.html:67
 #: app/templates/public.html:191 app/templates/server.html:160
 #: app/templates/server.html:231 app/templates/server.html:322
-#: app/templates/server.html:443
+#: app/templates/server.html:435
 msgid "Circuit"
 msgstr "Strecke"
 
@@ -1368,12 +1756,12 @@ msgstr "Modus"
 
 #: app/templates/event_form.html:94 app/templates/event_form.html:115
 #: app/templates/event_form.html:131 app/templates/server.html:380
-#: app/templates/server.html:587
+#: app/templates/server.html:577
 msgid "Libre"
 msgstr "Freies Training"
 
 #: app/templates/event_form.html:99 app/templates/public.html:192
-#: app/templates/server.html:324 app/templates/server.html:395
+#: app/templates/server.html:324 app/templates/server.html:387
 msgid "Météo"
 msgstr "Wetter"
 
@@ -1381,15 +1769,15 @@ msgstr "Wetter"
 msgid "Durées de session"
 msgstr "Sitzungsdauer"
 
-#: app/templates/event_form.html:142 app/templates/server.html:588
+#: app/templates/event_form.html:142 app/templates/server.html:578
 msgid "Qualification"
 msgstr "Qualifikation"
 
-#: app/templates/event_form.html:155 app/templates/server.html:589
+#: app/templates/event_form.html:155 app/templates/server.html:579
 msgid "Chauffe"
 msgstr "Aufwärmen"
 
-#: app/templates/event_form.html:166 app/templates/server.html:590
+#: app/templates/event_form.html:166 app/templates/server.html:580
 msgid "Course"
 msgstr "Rennen"
 
@@ -1425,23 +1813,23 @@ msgstr "Server wurde für diese Veranstaltung automatisch gestartet."
 msgid "Véhicules autorisés"
 msgstr "Erlaubte Fahrzeuge"
 
-#: app/templates/event_form.html:229 app/templates/server.html:685
+#: app/templates/event_form.html:229 app/templates/server.html:675
 msgid "Rechercher..."
 msgstr "Suchen..."
 
-#: app/templates/event_form.html:233 app/templates/server.html:693
+#: app/templates/event_form.html:233 app/templates/server.html:683
 msgid "Véhicules officiels uniquement"
 msgstr "Nur offizielle Fahrzeuge"
 
-#: app/templates/event_form.html:238 app/templates/server.html:698
+#: app/templates/event_form.html:238 app/templates/server.html:688
 msgid "Mods uniquement"
 msgstr "Nur Mods"
 
-#: app/templates/event_form.html:240 app/templates/server.html:700
+#: app/templates/event_form.html:240 app/templates/server.html:690
 msgid "Tout sélectionner"
 msgstr "Alle auswählen"
 
-#: app/templates/event_form.html:241 app/templates/server.html:701
+#: app/templates/event_form.html:241 app/templates/server.html:691
 msgid "Tout désélectionner"
 msgstr "Alle abwählen"
 
@@ -1450,7 +1838,9 @@ msgstr "Alle abwählen"
 msgid "Tous"
 msgstr "Alle"
 
-#: app/templates/event_form.html:274 app/templates/server.html:731
+#: app/templates/_partials/circuit_results_table.html:7
+#: app/templates/_partials/pilot_circuit_results_table.html:6
+#: app/templates/event_form.html:274 app/templates/server.html:721
 msgid "Véhicule"
 msgstr "Fahrzeug"
 
@@ -1458,25 +1848,25 @@ msgstr "Fahrzeug"
 msgid "Catégories"
 msgstr "Kategorien"
 
-#: app/templates/event_form.html:277 app/templates/server.html:734
-#: app/templates/timing.html:138
+#: app/templates/event_form.html:277 app/templates/server.html:724
+#: app/templates/timing.html:137
 msgid "Ballast"
 msgstr "Ballast"
 
-#: app/templates/event_form.html:278 app/templates/server.html:735
+#: app/templates/event_form.html:278 app/templates/server.html:725
 msgid "Restrictor"
 msgstr "Drosselklappe"
 
-#: app/templates/event_form.html:303 app/templates/server.html:761
+#: app/templates/event_form.html:303 app/templates/server.html:751
 msgid "MOD"
 msgstr "MOD"
 
 #: app/templates/event_form.html:307 app/templates/mods.html:94
-#: app/templates/server.html:765
+#: app/templates/server.html:755
 msgid "Conflit avec"
 msgstr "Konflikt mit"
 
-#: app/templates/event_form.html:307 app/templates/server.html:765
+#: app/templates/event_form.html:307 app/templates/server.html:755
 msgid ""
 "un autre mod utilise le même identifiant, un seul des deux sera "
 "réellement sélectionnable en jeu."
@@ -1485,7 +1875,7 @@ msgstr ""
 "Spiel wirklich auswählbar."
 
 #: app/templates/event_form.html:328 app/templates/events_admin.html:18
-#: app/templates/server.html:37 app/templates/server.html:657
+#: app/templates/server.html:37 app/templates/server.html:647
 #: app/templates/settings.html:1088
 msgid "Créer"
 msgstr "Erstellen"
@@ -1538,7 +1928,10 @@ msgstr "So"
 msgid "Créer ce jour"
 msgstr "An diesem Tag erstellen"
 
-#: app/templates/events_admin.html:52 app/templates/server.html:101
+#: app/templates/_partials/drivers_oob.html:17
+#: app/templates/_partials/oob_toast.html:10
+#: app/templates/_partials/toast.html:9 app/templates/events_admin.html:52
+#: app/templates/server.html:101
 msgid "Fermer"
 msgstr "Schließen"
 
@@ -1546,36 +1939,43 @@ msgstr "Schließen"
 msgid "Date → Fin"
 msgstr "Datum → Ende"
 
-#: app/templates/events_admin.html:87 app/templates/events_admin.html:172
+#: app/templates/_partials/event_row.html:13 app/templates/events_admin.html:87
+#: app/templates/events_admin.html:172
 msgid "Brouillon"
 msgstr "Entwurf"
 
-#: app/templates/events_admin.html:88 app/templates/events_admin.html:173
+#: app/templates/_partials/event_row.html:14 app/templates/events_admin.html:88
+#: app/templates/events_admin.html:173
 msgid "Publié"
 msgstr "Veröffentlicht"
 
-#: app/templates/events_admin.html:99 app/templates/server.html:336
-#: app/templates/server.html:350 app/templates/server.html:668
-#: app/templates/settings.html:1015
+#: app/templates/_partials/event_row.html:23 app/templates/events_admin.html:99
+#: app/templates/server.html:336 app/templates/server.html:350
+#: app/templates/server.html:658 app/templates/settings.html:1015
 msgid "Modifier"
 msgstr "Bearbeiten"
 
+#: app/templates/_partials/event_row.html:28
 #: app/templates/events_admin.html:104
 msgid "Dépublier"
 msgstr "Zurückziehen"
 
+#: app/templates/_partials/event_row.html:28
 #: app/templates/events_admin.html:104
 msgid "Publier"
 msgstr "Veröffentlichen"
 
+#: app/templates/_partials/event_row.html:35
 #: app/templates/events_admin.html:111
 msgid "Marquer comme terminé ?"
 msgstr "Als beendet markieren?"
 
+#: app/templates/_partials/event_row.html:36
 #: app/templates/events_admin.html:112
 msgid "Terminer"
 msgstr "Beenden"
 
+#: app/templates/_partials/event_row.html:42
 #: app/templates/events_admin.html:118
 msgid "Supprimer cet événement ?"
 msgstr "Diese Veranstaltung löschen?"
@@ -1793,7 +2193,7 @@ msgstr ""
 msgid "Cliquer ou déposer un ou plusieurs fichiers .kspkg ici"
 msgstr "Klicken oder eine oder mehrere .kspkg-Dateien hier ablegen"
 
-#: app/templates/mods.html:44 app/templates/timing.html:155
+#: app/templates/mods.html:44 app/templates/timing.html:154
 msgid "Envoyer"
 msgstr "Senden"
 
@@ -1821,7 +2221,7 @@ msgstr "Größe"
 msgid "Changer"
 msgstr "Ändern"
 
-#: app/templates/mods.html:80 app/templates/server.html:631
+#: app/templates/mods.html:80 app/templates/server.html:621
 msgid "Ajouter"
 msgstr "Hinzufügen"
 
@@ -2035,7 +2435,7 @@ msgstr "Discord beitreten"
 msgid "Rejoindre le panel"
 msgstr "Dem Panel beitreten"
 
-#: app/templates/public.html:46 app/templates/timing.html:171
+#: app/templates/public.html:46 app/templates/timing.html:170
 msgid "En direct"
 msgstr "Live"
 
@@ -2067,15 +2467,16 @@ msgstr "Bevorstehende Veranstaltungen"
 msgid "Gérer"
 msgstr "Verwalten"
 
+#: app/templates/_partials/result_incidents.html:38
 #: app/templates/public.html:154 app/templates/settings.html:480
 msgid "En cours"
 msgstr "Laufend"
 
-#: app/templates/public.html:190 app/templates/server.html:732
+#: app/templates/public.html:190 app/templates/server.html:722
 msgid "Type"
 msgstr "Type"
 
-#: app/templates/public.html:193 app/templates/server.html:465
+#: app/templates/public.html:193 app/templates/server.html:455
 msgid "Durée"
 msgstr "Dauer"
 
@@ -2120,6 +2521,8 @@ msgstr "Min"
 msgid "Inscription pilote"
 msgstr "Fahreranmeldung"
 
+#: app/templates/_partials/drivers_approved.html:10
+#: app/templates/_partials/drivers_pending.html:10
 #: app/templates/register.html:29
 msgid "Nom in-game"
 msgstr "Spielername"
@@ -2178,6 +2581,8 @@ msgstr "Neues Passwort"
 msgid "Enregistrer le mot de passe"
 msgstr "Passwort speichern"
 
+#: app/templates/_partials/drivers_approved.html:3
+#: app/templates/_partials/drivers_pending.html:3
 #: app/templates/result_detail.html:28 app/templates/results.html:87
 #: app/templates/results.html:168 app/templates/timing.html:34
 msgid "pilote(s)"
@@ -2240,6 +2645,8 @@ msgstr "saubere Runde(n)"
 msgid "Écart-type"
 msgstr "Standardabweichung"
 
+#: app/templates/_partials/circuit_results_table.html:13
+#: app/templates/_partials/pilot_circuit_results_table.html:12
 #: app/templates/result_detail.html:195
 msgid "Temps"
 msgstr "Zeit"
@@ -2370,6 +2777,7 @@ msgstr ""
 "Ein Vorfall = ein Kontakt mit einem anderen Auto, einer Wand oder einem "
 "Objekt. Wertung ab %(n)s Runden."
 
+#: app/templates/_partials/result_incidents.html:61
 #: app/templates/results.html:250
 msgid "Contacts"
 msgstr "Kontakte"
@@ -2378,18 +2786,22 @@ msgstr "Kontakte"
 msgid "Murs / objets"
 msgstr "Wände / Objekte"
 
+#: app/templates/_partials/result_incidents.html:65
 #: app/templates/results.html:252
 msgid "Choc max"
 msgstr "Max. Aufprall"
 
+#: app/templates/_partials/result_incidents.html:7
 #: app/templates/results.html:253
 msgid "Sanctions"
 msgstr "Strafen"
 
+#: app/templates/_partials/result_incidents.html:66
 #: app/templates/results.html:254
 msgid "Incidents par tour : plus ce chiffre est bas, plus la conduite est propre"
 msgstr "Vorfälle pro Runde: je niedriger die Zahl, desto sauberer die Fahrweise"
 
+#: app/templates/_partials/result_incidents.html:66
 #: app/templates/results.html:254
 msgid "Par tour"
 msgstr "Pro Runde"
@@ -2410,7 +2822,8 @@ msgstr "Konfiguration umbenennen"
 msgid "Nouveau nom"
 msgstr "Neuer Name"
 
-#: app/templates/server.html:64 app/templates/server.html:337
+#: app/templates/_partials/server_row.html:9 app/templates/server.html:64
+#: app/templates/server.html:337
 msgid "Renommer"
 msgstr "Umbenennen"
 
@@ -2510,7 +2923,7 @@ msgstr "Aktuelle Strecke"
 msgid "Météo & Heure"
 msgstr "Wetter & Uhrzeit"
 
-#: app/templates/server.html:205 app/templates/server.html:486
+#: app/templates/server.html:205 app/templates/server.html:476
 msgid "Heure in-game"
 msgstr "Spielzeit"
 
@@ -2526,7 +2939,7 @@ msgstr "Deaktiviert"
 msgid "Redémarre en cas de crash"
 msgstr "Neustart bei Absturz"
 
-#: app/templates/server.html:225 app/templates/timing.html:185
+#: app/templates/server.html:225 app/templates/timing.html:184
 msgid "Session en cours"
 msgstr "Laufende Sitzung"
 
@@ -2614,200 +3027,175 @@ msgstr "Automatischer Neustart bei Absturz"
 msgid "Type de session"
 msgstr "Sitzungstyp"
 
-#: app/templates/server.html:382
-msgid "Autres modes"
-msgstr "Weitere Modi"
-
 #: app/templates/server.html:390
-msgid ""
-"Durée et heure de session imposées par le jeu pour ce mode : elles ne se "
-"règlent pas."
-msgstr ""
-"Sitzungsdauer und Uhrzeit sind für diesen Modus vom Spiel vorgegeben und "
-"nicht einstellbar."
-
-#: app/templates/server.html:398
 msgid "Nuages épars"
 msgstr "Aufgelockerte Bewölkung"
 
-#: app/templates/server.html:399
+#: app/templates/server.html:391
 msgid "Nuages fragmentés"
 msgstr "Aufgebrochene Bewölkung"
 
-#: app/templates/server.html:401
+#: app/templates/server.html:393
 msgid "Bruine"
 msgstr "Nieselregen"
 
-#: app/templates/server.html:403
+#: app/templates/server.html:395
 msgid "Pluie forte"
 msgstr "Starkregen"
 
-#: app/templates/server.html:404
+#: app/templates/server.html:396
 msgid "Humide"
 msgstr "Feucht"
 
-#: app/templates/server.html:408
+#: app/templates/server.html:400
 msgid "Comportement météo"
 msgstr "Wetterverhalten"
 
-#: app/templates/server.html:418
+#: app/templates/server.html:410
 msgid "Type de serveur"
 msgstr "Server-Typ"
 
-#: app/templates/server.html:420
+#: app/templates/server.html:412
 msgid "Non classé"
 msgstr "Nicht gewertet"
 
-#: app/templates/server.html:421
+#: app/templates/server.html:413
 msgid "Classé"
 msgstr "Gewertet"
 
-#: app/templates/server.html:425
+#: app/templates/server.html:417
 msgid "Réglages voiture"
 msgstr "Fahrzeug-Setup"
 
-#: app/templates/server.html:427
+#: app/templates/server.html:419
 msgid "Autorisés"
 msgstr "Erlaubt"
 
-#: app/templates/server.html:428
+#: app/templates/server.html:420
 msgid "Interdits"
 msgstr "Verboten"
 
-#: app/templates/server.html:434
+#: app/templates/server.html:426
 msgid "Adhérence initiale"
 msgstr "Anfangshaftung"
 
-#: app/templates/server.html:436
+#: app/templates/server.html:428
 msgid "Vert"
 msgstr "Grün"
 
-#: app/templates/server.html:437
+#: app/templates/server.html:429
 msgid "Rapide"
 msgstr "Schnell"
 
-#: app/templates/server.html:438
+#: app/templates/server.html:430
 msgid "Optimal"
 msgstr "Optimal"
 
-#: app/templates/server.html:453
-#, python-brace-format
-msgid ""
-"Ce circuit n'a que {pits} stands pour {max} joueurs maximum : les pilotes"
-" en trop ne pourront pas être placés."
-msgstr ""
-"Diese Strecke hat nur {pits} Boxenplätze für maximal {max} Spieler: "
-"überzählige Fahrer können nicht platziert werden."
-
-#: app/templates/server.html:465
+#: app/templates/server.html:455
 msgid "(0 = ignoré)"
 msgstr "(0 = ignoriert)"
 
-#: app/templates/server.html:476
+#: app/templates/server.html:466
 msgid "Sessions"
 msgstr "Sitzungen"
 
-#: app/templates/server.html:490
+#: app/templates/server.html:480
 msgid "Multiplicateur temps"
 msgstr "Zeitmultiplikator"
 
-#: app/templates/server.html:500
+#: app/templates/server.html:490
 msgid "Attente max box (s)"
 msgstr "Max. Box-Wartezeit (s)"
 
-#: app/templates/server.html:504
+#: app/templates/server.html:494
 msgid "Overtime (s)"
 msgstr "Overtime (s)"
 
-#: app/templates/server.html:511
+#: app/templates/server.html:501
 msgid "Min. joueurs en attente"
 msgstr "Min. wartende Spieler"
 
-#: app/templates/server.html:515
+#: app/templates/server.html:505
 msgid "Max. joueurs en attente"
 msgstr "Max. wartende Spieler"
 
-#: app/templates/server.html:520
+#: app/templates/server.html:510
 msgid "Options de course"
 msgstr "Rennoptionen"
 
-#: app/templates/server.html:521
+#: app/templates/server.html:511
 msgid ""
 "Toutes désactivées par défaut. Prises en compte au prochain démarrage du "
-"serveur. Valables pour une course (week-end ou course instantanée)."
-msgstr ""
-"Standardmäßig alle deaktiviert. Wirksam beim nächsten Serverstart. Gültig"
-" für ein Rennen (Wochenende oder schnelles Rennen)."
+"serveur."
+msgstr "Standardmäßig alle deaktiviert. Wirksam beim nächsten Serverstart."
 
-#: app/templates/server.html:526
+#: app/templates/server.html:516
 msgid "Course au nombre de tours"
 msgstr "Rennen nach Rundenzahl"
 
-#: app/templates/server.html:528
+#: app/templates/server.html:518
 msgid "Remplace la durée ci-dessus. Incompatible avec l'arrêt obligatoire."
 msgstr "Ersetzt die obige Dauer. Nicht kompatibel mit dem Pflichtboxenstopp."
 
-#: app/templates/server.html:531
+#: app/templates/server.html:521
 msgid "Nombre de tours"
 msgstr "Rundenzahl"
 
-#: app/templates/server.html:538
+#: app/templates/server.html:528
 msgid "Arrêt aux stands obligatoire"
 msgstr "Pflichtboxenstopp"
 
-#: app/templates/server.html:540
+#: app/templates/server.html:530
 msgid "Course au temps uniquement : fenêtre centrée au milieu de la course."
 msgstr "Nur bei Zeitrennen: Fenster in der Rennmitte."
 
-#: app/templates/server.html:546
+#: app/templates/server.html:536
 msgid "Changement de pneus exigé"
 msgstr "Reifenwechsel erforderlich"
 
-#: app/templates/server.html:552
+#: app/templates/server.html:542
 msgid "Ravitaillement exigé"
 msgstr "Nachtanken erforderlich"
 
-#: app/templates/server.html:557
+#: app/templates/server.html:547
 msgid "Largeur de la fenêtre d'arrêt (s)"
 msgstr "Breite des Boxenfensters (s)"
 
-#: app/templates/server.html:564
+#: app/templates/server.html:554
 msgid "Sanctions personnalisées"
 msgstr "Eigene Strafen"
 
-#: app/templates/server.html:566
+#: app/templates/server.html:556
 msgid ""
-"S'applique à la course uniquement (week-end ou course instantanée). "
-"Désactivé : règles d'usine du jeu."
-msgstr ""
-"Gilt nur für das Rennen (Wochenende oder schnelles Rennen). Aus: "
-"Werkseinstellungen des Spiels."
+"S'applique à toutes les sessions de la config. Désactivé : règles d'usine"
+" du jeu."
+msgstr "Gilt für alle Sitzungen der Konfiguration. Aus: Werksregeln des Spiels."
 
-#: app/templates/server.html:570
+#: app/templates/server.html:560
 msgid "Roues dehors pour une coupure"
 msgstr "Räder neben der Strecke für eine Abkürzung"
 
-#: app/templates/server.html:574
+#: app/templates/server.html:564
 msgid "Avertissements avant sanction"
 msgstr "Verwarnungen vor einer Strafe"
 
-#: app/templates/server.html:578
+#: app/templates/server.html:568
 msgid "Durée de la sanction (s)"
 msgstr "Dauer der Strafe (s)"
 
-#: app/templates/server.html:601
+#: app/templates/server.html:591
 msgid "Roulement de configs"
 msgstr "Config-Rotation"
 
-#: app/templates/server.html:609
+#: app/templates/server.html:599
 msgid "Lancer le cycle"
 msgstr "Zyklus starten"
 
-#: app/templates/server.html:612
+#: app/templates/server.html:602
 msgid "Arrêter le cycle"
 msgstr "Zyklus stoppen"
 
-#: app/templates/server.html:614
+#: app/templates/server.html:604
 msgid ""
 "Reprend automatiquement la config suivante au prochain arrêt du serveur "
 "(différent du cycle en cours, affiché ci-contre)."
@@ -2816,11 +3204,11 @@ msgstr ""
 "Konfiguration fort (unterscheidet sich vom aktuell laufenden Zyklus, der "
 "daneben angezeigt wird)."
 
-#: app/templates/server.html:616
+#: app/templates/server.html:606
 msgid "Reprise auto"
 msgstr "Automatische Wiederaufnahme"
 
-#: app/templates/server.html:621
+#: app/templates/server.html:611
 msgid ""
 "Quand le serveur s'arrête, il démarre la configuration suivante de la "
 "liste automatiquement."
@@ -2828,19 +3216,19 @@ msgstr ""
 "Wenn der Server stoppt, startet er automatisch die nächste Konfiguration "
 "in der Liste."
 
-#: app/templates/server.html:637
+#: app/templates/server.html:627
 msgid "Cycle — recommencer depuis le début après le dernier"
 msgstr "Zyklus — nach dem letzten von vorne beginnen"
 
-#: app/templates/server.html:642
+#: app/templates/server.html:632
 msgid "Passer à la configuration suivante après (minutes sans joueur)"
 msgstr "Zur nächsten Konfiguration wechseln nach (Minuten ohne Spieler)"
 
-#: app/templates/server.html:646
+#: app/templates/_partials/server_row.html:18 app/templates/server.html:636
 msgid "Valider"
 msgstr "Bestätigen"
 
-#: app/templates/server.html:648
+#: app/templates/server.html:638
 msgid ""
 "0 = désactivé. Avance automatiquement dans le roulement si aucun joueur "
 "n'est connecté pendant ce délai, indépendamment de toute session jouée."
@@ -2849,19 +3237,19 @@ msgstr ""
 " Dauer kein Spieler verbunden war, unabhängig von einer gespielten "
 "Session."
 
-#: app/templates/server.html:671
+#: app/templates/server.html:661
 msgid "Aucun événement programmé."
 msgstr "Kein geplantes Ereignis."
 
-#: app/templates/server.html:688
+#: app/templates/server.html:678
 msgid "Sélectionnés seulement"
 msgstr "Nur ausgewählte"
 
-#: app/templates/server.html:733
+#: app/templates/server.html:723
 msgid "Trier par PI"
 msgstr "Nach PI sortieren"
 
-#: app/templates/server.html:798
+#: app/templates/server.html:788
 msgid "Sauvegarder tout"
 msgstr "Alles speichern"
 
@@ -2955,14 +3343,6 @@ msgstr "Verwalten und konfigurieren Sie Ihre Spielumgebung und Dienste."
 #: app/templates/settings.html:69
 msgid "Panel"
 msgstr "Panel"
-
-#: app/templates/settings.html:71
-msgid "Notifications"
-msgstr "Benachrichtigungen"
-
-#: app/templates/settings.html:74 app/templates/settings.html:968
-msgid "Comptes"
-msgstr "Konten"
 
 #: app/templates/settings.html:79
 msgid "Statut global"
@@ -3546,11 +3926,13 @@ msgstr "Aktiv"
 msgid "Inactif"
 msgstr "Inaktiv"
 
-#: app/templates/settings.html:1018 app/templates/settings.html:1146
+#: app/templates/_partials/server_row.html:47 app/templates/settings.html:1018
+#: app/templates/settings.html:1146
 msgid "Désactiver"
 msgstr "Deaktivieren"
 
-#: app/templates/settings.html:1018 app/templates/settings.html:1146
+#: app/templates/_partials/server_row.html:47 app/templates/settings.html:1018
+#: app/templates/settings.html:1146
 msgid "Activer"
 msgstr "Aktivieren"
 
@@ -3603,7 +3985,7 @@ msgid "Mis à jour toutes les 15s"
 msgstr "Alle 15s aktualisiert"
 
 #: app/templates/timing.html:40 app/templates/timing.html:76
-#: app/templates/timing.html:172
+#: app/templates/timing.html:171
 msgid "Chargement…"
 msgstr "Laden…"
 
@@ -3619,7 +4001,7 @@ msgstr "Pos"
 msgid "Chat en direct"
 msgstr "Live-Chat"
 
-#: app/templates/timing.html:85 app/templates/timing.html:174
+#: app/templates/timing.html:85 app/templates/timing.html:173
 msgid "Aucun message récent"
 msgstr "Keine aktuellen Nachrichten"
 
@@ -3627,7 +4009,7 @@ msgstr "Keine aktuellen Nachrichten"
 msgid "Pour"
 msgstr "An"
 
-#: app/templates/timing.html:92 app/templates/timing.html:178
+#: app/templates/timing.html:92 app/templates/timing.html:177
 msgid "Tout le monde"
 msgstr "Alle"
 
@@ -3635,27 +4017,27 @@ msgstr "Alle"
 msgid "Réagir"
 msgstr "Reagieren"
 
-#: app/templates/timing.html:100 app/templates/timing.html:219
+#: app/templates/timing.html:100 app/templates/timing.html:218
 msgid "Beau tour !"
 msgstr "Schöne Runde!"
 
-#: app/templates/timing.html:101 app/templates/timing.html:220
+#: app/templates/timing.html:101 app/templates/timing.html:219
 msgid "Bien joué !"
 msgstr "Gut gemacht!"
 
-#: app/templates/timing.html:102 app/templates/timing.html:221
+#: app/templates/timing.html:102 app/templates/timing.html:220
 msgid "Courage !"
 msgstr "Weiter so!"
 
-#: app/templates/timing.html:103 app/templates/timing.html:222
+#: app/templates/timing.html:103 app/templates/timing.html:221
 msgid "En feu !"
 msgstr "Feuer!"
 
-#: app/templates/timing.html:104 app/templates/timing.html:223
+#: app/templates/timing.html:104 app/templates/timing.html:222
 msgid "Bravo !"
 msgstr "Bravo!"
 
-#: app/templates/timing.html:105 app/templates/timing.html:224
+#: app/templates/timing.html:105 app/templates/timing.html:223
 msgid "Allez !"
 msgstr "Los geht's!"
 
@@ -3688,103 +4070,99 @@ msgid "Expulser"
 msgstr "Rauswerfen"
 
 #: app/templates/timing.html:133
-msgid "Bannir"
-msgstr "Sperren"
-
-#: app/templates/timing.html:134
 msgid "Muet"
 msgstr "Stumm"
 
-#: app/templates/timing.html:135
+#: app/templates/timing.html:134
 msgid "Retirer le muet"
 msgstr "Stummschaltung aufheben"
 
-#: app/templates/timing.html:136
+#: app/templates/timing.html:135
 msgid "Envoyer aux stands"
 msgstr "In die Box schicken"
 
-#: app/templates/timing.html:137
+#: app/templates/timing.html:136
 msgid "Ajouter du temps"
 msgstr "Zeit hinzufügen"
 
-#: app/templates/timing.html:141
+#: app/templates/timing.html:140
 msgid "Pénalités"
 msgstr "Strafen"
 
-#: app/templates/timing.html:144
+#: app/templates/timing.html:143
 msgid "Stop &amp; Go"
 msgstr "Stop &amp; Go"
 
-#: app/templates/timing.html:145
+#: app/templates/timing.html:144
 msgid "Retirer disq"
 msgstr "Disq aufheben"
 
-#: app/templates/timing.html:146
+#: app/templates/timing.html:145
 msgid "Retirer drive-through"
 msgstr "Drive-through aufheben"
 
-#: app/templates/timing.html:147
+#: app/templates/timing.html:146
 msgid "Retirer stop &amp; go"
 msgstr "Stop &amp; go aufheben"
 
-#: app/templates/timing.html:151 app/templates/timing.html:519
+#: app/templates/timing.html:150 app/templates/timing.html:518
 msgid "Pilote…"
 msgstr "Fahrer…"
 
-#: app/templates/timing.html:154
+#: app/templates/timing.html:153
 msgid "Tapez un message ou commande…"
 msgstr "Nachricht oder Befehl eingeben…"
 
 # Result/Race page translations
-#: app/templates/timing.html:173
+#: app/templates/timing.html:172
 msgid "Aucun pilote connecté"
 msgstr "Kein Fahrer verbunden"
 
-#: app/templates/timing.html:176
+#: app/templates/timing.html:175
 msgid "Réaction envoyée !"
 msgstr "Reaktion gesendet!"
 
-#: app/templates/timing.html:177
+#: app/templates/timing.html:176
 msgid "Serveur non connecté"
 msgstr "Server nicht verbunden"
 
-#: app/templates/timing.html:179
+#: app/templates/timing.html:178
 msgid "Tour invalide"
 msgstr "Ungültige Runde"
 
-#: app/templates/timing.html:184
+#: app/templates/timing.html:183
 msgid "En attente de départ"
 msgstr "Warten auf den Start"
 
-#: app/templates/timing.html:186
+#: app/templates/timing.html:185
 msgid "Dernier tour"
 msgstr "Letzte Runde"
 
-#: app/templates/timing.html:187
+#: app/templates/timing.html:186
 msgid "Terminée"
 msgstr "Beendet"
 
-#: app/templates/timing.html:440
+#: app/templates/timing.html:439
 msgid "TCP connecté"
 msgstr "TCP verbunden"
 
-#: app/templates/timing.html:441
+#: app/templates/timing.html:440
 msgid "TCP déconnecté"
 msgstr "TCP getrennt"
 
-#: app/templates/timing.html:442
+#: app/templates/timing.html:441
 msgid "non connecté"
 msgstr "nicht verbunden"
 
-#: app/templates/timing.html:443
+#: app/templates/timing.html:442
 msgid "erreur réseau"
 msgstr "Netzwerkfehler"
 
-#: app/templates/timing.html:444
+#: app/templates/timing.html:443
 msgid "Bot élevé admin"
 msgstr "Bot zum Admin erhoben"
 
-#: app/templates/timing.html:445
+#: app/templates/timing.html:444
 msgid "Échec élévation admin"
 msgstr "Fehler bei Admin-Erhebung"
 
@@ -3792,7 +4170,7 @@ msgstr "Fehler bei Admin-Erhebung"
 msgid "track(s)"
 msgstr "track(s)"
 
-#: app/templates/tracks.html:48
+#: app/templates/_partials/vehicle_grid.html:34 app/templates/tracks.html:48
 msgid "Changer l'image"
 msgstr "Bild ändern"
 
@@ -3808,10 +4186,12 @@ msgstr "angezeigt"
 msgid "Rechercher…"
 msgstr "Suchen…"
 
-#: app/templates/vehicles.html:58
+#: app/templates/_partials/vehicle_grid.html:15 app/templates/vehicles.html:58
 msgid "Modifier les tags"
 msgstr "Tags bearbeiten"
 
+#: app/templates/_partials/circuit_results_table.html:8
+#: app/templates/_partials/pilot_circuit_results_table.html:7
 #: app/templates/vehicles.html:62
 msgid "Catégorie"
 msgstr "Kategorie"
@@ -3831,6 +4211,238 @@ msgstr "Optional"
 #: app/templates/vehicles.html:197
 msgid "Tags mis à jour"
 msgstr "Tags aktualisiert"
+
+#: app/templates/_partials/circuit_results_table.html:10
+#: app/templates/_partials/pilot_circuit_results_table.html:9
+msgid "Secteur 1"
+msgstr "Sektor 1"
+
+#: app/templates/_partials/circuit_results_table.html:11
+#: app/templates/_partials/pilot_circuit_results_table.html:10
+msgid "Secteur 2"
+msgstr "Sektor 2"
+
+#: app/templates/_partials/circuit_results_table.html:12
+#: app/templates/_partials/pilot_circuit_results_table.html:11
+msgid "Secteur 3"
+msgstr "Sektor 3"
+
+#: app/templates/_partials/circuit_results_table.html:33
+msgid "Aucun résultat pour ces filtres."
+msgstr "Keine Ergebnisse für diese Filter."
+
+#: app/templates/_partials/drivers_approved.html:2
+msgid "Pilotes approuvés"
+msgstr "Genehmigte Fahrer"
+
+#: app/templates/_partials/drivers_approved.html:12
+msgid "SteamID"
+msgstr "SteamID"
+
+#: app/templates/_partials/drivers_approved.html:13
+#: app/templates/_partials/drivers_pending.html:12
+msgid "Inscrit le"
+msgstr "Registriert am"
+
+#: app/templates/_partials/drivers_approved.html:35
+#: app/templates/_partials/drivers_approved.html:36
+#: app/templates/_partials/drivers_pending.html:38
+msgid "Supprimer définitivement"
+msgstr "Endgültig löschen"
+
+# Result/Race page translations
+#: app/templates/_partials/drivers_approved.html:47
+msgid "Aucun pilote approuvé."
+msgstr "Keine genehmigten Fahrer."
+
+#: app/templates/_partials/drivers_pending.html:2
+msgid "En attente de validation"
+msgstr "Wartet auf Genehmigung"
+
+#: app/templates/_partials/drivers_pending.html:27
+msgid "Approuver"
+msgstr "Genehmigen"
+
+#: app/templates/_partials/drivers_pending.html:50
+msgid "Aucun pilote en attente."
+msgstr "Keine Fahrer ausstehend."
+
+#: app/templates/_partials/pilot_circuit_results_table.html:13
+msgid "Date"
+msgstr "Datum"
+
+#: app/templates/_partials/pilot_circuit_results_table.html:33
+msgid "Aucun temps pour ces filtres."
+msgstr "Keine Zeiten für diese Filter."
+
+#: app/templates/_partials/result_incidents.html:8
+msgid "Sanctions infligées automatiquement par le serveur pendant la session."
+msgstr "Vom Server während der Sitzung automatisch verhängte Strafen."
+
+#: app/templates/_partials/result_incidents.html:14
+msgid "Sanction"
+msgstr "Strafe"
+
+#: app/templates/_partials/result_incidents.html:15
+msgid "Cause"
+msgstr "Grund"
+
+#: app/templates/_partials/result_incidents.html:17
+msgid "Moment"
+msgstr "Zeitpunkt"
+
+#: app/templates/_partials/result_incidents.html:31
+msgid "tour(s)"
+msgstr "Runde(n)"
+
+#: app/templates/_partials/result_incidents.html:40
+msgid "Levée"
+msgstr "Aufgehoben"
+
+#: app/templates/_partials/result_incidents.html:53
+msgid "Incidents"
+msgstr "Vorfälle"
+
+#: app/templates/_partials/result_incidents.html:54
+msgid ""
+"Chocs enregistrés par le serveur : contacts entre voitures, murs et "
+"objets."
+msgstr ""
+"Vom Server erfasste Kollisionen: Kontakte zwischen Autos, Wände und "
+"Objekte."
+
+#: app/templates/_partials/result_incidents.html:61
+msgid "Contacts avec une autre voiture"
+msgstr "Kontakte mit einem anderen Auto"
+
+#: app/templates/_partials/result_incidents.html:62
+msgid "Murs"
+msgstr "Wände"
+
+#: app/templates/_partials/result_incidents.html:63
+msgid "Objets"
+msgstr "Objekte"
+
+#: app/templates/_partials/result_incidents.html:64
+msgid "Chocs ayant causé des dégâts"
+msgstr "Kollisionen mit Schaden"
+
+#: app/templates/_partials/result_incidents.html:64
+#: app/templates/_partials/result_incidents.html:100
+#: app/templates/_partials/result_incidents.html:131
+msgid "Dégâts"
+msgstr "Schäden"
+
+#: app/templates/_partials/result_incidents.html:92
+msgid "Détail des contacts entre voitures"
+msgstr "Details der Kontakte zwischen Autos"
+
+#: app/templates/_partials/result_incidents.html:98
+msgid "Pilotes concernés"
+msgstr "Beteiligte Fahrer"
+
+#: app/templates/_partials/result_incidents.html:99
+#: app/templates/_partials/result_incidents.html:130
+msgid "Impact"
+msgstr "Aufprall"
+
+#: app/templates/_partials/result_incidents.html:109
+msgid "adversaire non identifié"
+msgstr "Gegner nicht identifiziert"
+
+#: app/templates/_partials/result_incidents.html:112
+#: app/templates/_partials/result_incidents.html:140
+msgid "Oui"
+msgstr "Ja"
+
+#: app/templates/_partials/result_incidents.html:123
+msgid "Gros chocs contre un mur ou un objet"
+msgstr "Schwere Einschläge in Wand oder Objekt"
+
+#: app/templates/_partials/result_incidents.html:129
+msgid "Obstacle"
+msgstr "Hindernis"
+
+#: app/templates/_partials/server_row.html:36
+msgid "Arrêté"
+msgstr "Gestoppt"
+
+#: app/templates/_partials/server_row.html:46
+msgid "Confirmer ?"
+msgstr "Bestätigen?"
+
+#: app/templates/_partials/server_row.html:52
+msgid "Supprimer ce serveur et son container Docker ?"
+msgstr "Diesen Server und seinen Docker-Container löschen?"
+
+#: app/templates/_partials/server_row.html:56
+msgid "Serveur principal"
+msgstr "Hauptserver"
+
+#: app/templates/_partials/vehicle_grid.html:67
+msgid "Aucun véhicule trouvé."
+msgstr "Kein Fahrzeug gefunden."
+
+msgid "Course instantanée"
+msgstr "Schnelles Rennen"
+
+msgid "Tour lancé"
+msgstr "Schnelle Runde"
+
+msgid "Rallye"
+msgstr "Rallye"
+
+msgid "A vers B"
+msgstr "A nach B"
+
+msgid "Test drive"
+msgstr "Testfahrt"
+
+msgid "Autres modes"
+msgstr "Weitere Modi"
+
+msgid "Bannir"
+msgstr "Sperren"
+
+msgid ""
+"Le contrôle d'accès est désactivé : les règles ci-dessous (bannissements,"
+" handicaps) ne sont pas appliquées au serveur de jeu. Un bannissement "
+"fait en direct avec la commande \\ban ne dure que jusqu'au redémarrage du"
+" serveur : activez le contrôle d'accès pour qu'il soit conservé."
+msgstr ""
+"Die Zugangskontrolle ist deaktiviert: Die folgenden Regeln (Sperren, "
+"Handicaps) werden nicht auf den Spielserver angewendet. Eine Live-Sperre "
+"mit dem Befehl \\ban gilt nur bis zum Neustart des Servers: Aktivieren "
+"Sie die Zugangskontrolle, um sie zu behalten."
+
+msgid ""
+"Durée et heure de session imposées par le jeu pour ce mode : elles ne se "
+"règlent pas."
+msgstr ""
+"Sitzungsdauer und Uhrzeit sind für diesen Modus vom Spiel vorgegeben und "
+"nicht einstellbar."
+
+#, python-brace-format
+msgid ""
+"Ce circuit n'a que {pits} stands pour {max} joueurs maximum : les pilotes"
+" en trop ne pourront pas être placés."
+msgstr ""
+"Diese Strecke hat nur {pits} Boxenplätze für maximal {max} Spieler: "
+"überzählige Fahrer können nicht platziert werden."
+
+msgid ""
+"Toutes désactivées par défaut. Prises en compte au prochain démarrage du "
+"serveur. Valables pour une course (week-end ou course instantanée)."
+msgstr ""
+"Standardmäßig alle deaktiviert. Wirksam beim nächsten Serverstart. Gültig"
+" für ein Rennen (Wochenende oder schnelles Rennen)."
+
+msgid ""
+"S'applique à la course uniquement (week-end ou course instantanée). "
+"Désactivé : règles d'usine du jeu."
+msgstr ""
+"Gilt nur für das Rennen (Wochenende oder schnelles Rennen). Aus: "
+"Werkseinstellungen des Spiels."
 
 #~ msgid "Administration serveur"
 #~ msgstr "Serververwaltung"
@@ -3923,31 +4535,28 @@ msgstr "Tags aktualisiert"
 #~ msgstr "E-Mail SMTP"
 
 #~ msgid "Nom de fichier dans media/banner/ (ex: banner.jpg)"
-#~ msgstr "Dateiname in media/banner/ (z. B. banner.jpg)"
+#~ msgstr "Dateiname in media/banner/ (z.B.: banner.jpg)"
 
 #~ msgid "Logo sur la bannière (ex: logo.png)"
-#~ msgstr "Logo auf dem Banner (z. B. logo.png)"
+#~ msgstr "Logo auf dem Banner (z.B.: logo.png)"
 
 #~ msgid "URL publique du panel (liens dans les emails)"
 #~ msgstr "Öffentliche Panel-URL (Links in E-Mails)"
 
 #~ msgid "Fuseau horaire (ex: Europe/Paris)"
-#~ msgstr "Zeitzone (z. B. Europe/Paris)"
+#~ msgstr "Zeitzone (z.B.: Europe/Paris)"
 
 #~ msgid ""
 #~ "Clé de session Flask — générer "
 #~ "avec python -c \"import secrets; "
 #~ "print(secrets.token_hex(32))\""
-#~ msgstr ""
-#~ "Flask-Session-Schlüssel — generieren mit"
-#~ " python -c \"import secrets; "
-#~ "print(secrets.token_hex(32))\""
+#~ msgstr "Flask Sitzungsschlüssel — generieren mit python -c"
 
 #~ msgid "true si HTTPS, false si HTTP local"
 #~ msgstr "true bei HTTPS, false bei lokalem HTTP"
 
 #~ msgid "Secret HMAC du webhook résultats (/api/results/ingest)"
-#~ msgstr "HMAC-Secret für den Ergebnis-Webhook (/api/results/ingest)"
+#~ msgstr "HMAC-Geheimnis für Ergebnis-Webhook (/api/results/ingest)"
 
 #~ msgid "Hôte TCP ACE EVO (défaut 127.0.0.1)"
 #~ msgstr "ACE EVO TCP-Host (Standard 127.0.0.1)"
@@ -3967,13 +4576,12 @@ msgstr "Tags aktualisiert"
 #~ "avec ce compte. Laisser vide pour "
 #~ "désactiver le bot."
 #~ msgstr ""
-#~ "64-Bit-Steam-ID des Bot-Kontos —"
-#~ " der Bot verbindet sich mit diesem"
-#~ " Konto zum Server. Leer lassen, um"
-#~ " den Bot zu deaktivieren."
+#~ "Bot-Konto 64-Bit Steam ID — der"
+#~ " Bot verbindet sich mit diesem Steam"
+#~ " ID mit dem Server."
 
 #~ msgid "Voiture utilisée par le bot pour rejoindre la session."
-#~ msgstr "Fahrzeug, das der Bot zum Beitreten der Session verwendet."
+#~ msgstr "Fahrzeug, das der Bot verwendet, um der Sitzung beizutreten."
 
 #~ msgid ""
 #~ "Activer les droits admin pour le "
@@ -3982,9 +4590,8 @@ msgstr "Tags aktualisiert"
 #~ " serveur active."
 #~ msgstr ""
 #~ "Admin-Rechte für den Bot aktivieren "
-#~ "(true/false). Das Passwort wird automatisch"
-#~ " aus der aktiven Serverkonfiguration "
-#~ "gelesen."
+#~ "(true/false). Das Passwort wird aus "
+#~ "BOT_ADMIN_PASSWORD gelesen."
 
 #~ msgid ""
 #~ "Message de bienvenue envoyé à chaque "
@@ -4000,19 +4607,17 @@ msgstr "Tags aktualisiert"
 #~ " est défini. Variables : {name}, "
 #~ "{discord_url}. Laisser vide pour désactiver."
 #~ msgstr ""
-#~ "Discord-Nachricht, gesendet wenn "
+#~ "Discord-Nachricht gesendet, wenn "
 #~ "DISCORD_INVITE_URL gesetzt ist. Variablen: "
-#~ "{name}, {discord_url}. Leer lassen zum "
-#~ "Deaktivieren."
+#~ "{name}, {discord_url}."
 
 #~ msgid ""
 #~ "Message site envoyé si PANEL_URL est "
 #~ "défini. Variables : {name}, {site_url}. "
 #~ "Laisser vide pour désactiver."
 #~ msgstr ""
-#~ "Website-Nachricht, gesendet wenn PANEL_URL "
+#~ "Site-Nachricht gesendet, wenn PANEL_URL "
 #~ "gesetzt ist. Variablen: {name}, {site_url}."
-#~ " Leer lassen zum Deaktivieren."
 
 #~ msgid ""
 #~ "Pré-remplit le formulaire de mise à "
@@ -4021,17 +4626,17 @@ msgstr "Tags aktualisiert"
 #~ " jamais stocké."
 #~ msgstr ""
 #~ "Füllt das Update-Formular vor. Das "
-#~ "Passwort wird zum Zeitpunkt des Updates"
-#~ " eingegeben, nie gespeichert."
+#~ "Passwort wird zum Zeitpunkt des Starts"
+#~ " eingegeben."
 
 #~ msgid "Lien d'invitation Discord affiché sur le panel"
-#~ msgstr "Discord-Einladungslink, angezeigt im Panel"
+#~ msgstr "Discord-Einladungslink auf dem Panel angezeigt"
 
 #~ msgid "Serveur SMTP (laisser vide pour désactiver les emails)"
 #~ msgstr "SMTP-Server (leer lassen, um E-Mails zu deaktivieren)"
 
 #~ msgid "Port SMTP (ex: 587 ou 465)"
-#~ msgstr "SMTP-Port (z. B. 587 oder 465)"
+#~ msgstr "SMTP-Port (z.B.: 587 oder 465)"
 
 #~ msgid "TLS : true ou false"
 #~ msgstr "TLS: true oder false"
@@ -4258,18 +4863,18 @@ msgstr "Tags aktualisiert"
 #~ msgstr "Embed-Titel im Rennen-Channel."
 
 #~ msgid "Webhook pilotes — connexions, déconnexions, changements de véhicule"
-#~ msgstr "Fahrer-Webhook — Verbindungen, Trennungen, Fahrzeugwechsel"
+#~ msgstr "Piloten-Webhook — Verbindungen, Trennungen, Fahrzeugwechsel"
 
 #~ msgid "Webhook course — meilleur tour, actions admin (kick, pénalités…)"
-#~ msgstr "Rennen-Webhook — Bestzeit, Admin-Aktionen (Kick, Strafen…)"
+#~ msgstr "Rennen-Webhook — beste Runde, Admin-Aktionen (Kick, Strafen…)"
 
 #~ msgid ""
 #~ "Mention envoyée avec les événements "
 #~ "serveur (ex: @here ou <@&123456789>). "
 #~ "Laisser vide pour désactiver."
 #~ msgstr ""
-#~ "Erwähnung bei Server-Ereignissen (z. B."
-#~ " @here oder <@&123456789>). Leer lassen "
+#~ "Erwähnung bei Server-Ereignissen (z.B. "
+#~ "@here oder <@&123456789>). Leer lassen "
 #~ "zum Deaktivieren."
 
 #~ msgid ""
@@ -4280,7 +4885,7 @@ msgstr "Tags aktualisiert"
 #~ msgid ""
 #~ "Mention envoyée avec les événements "
 #~ "course. Laisser vide pour désactiver."
-#~ msgstr "Erwähnung bei Renn-Ereignissen. Leer lassen zum Deaktivieren."
+#~ msgstr "Erwähnung bei Rennereignissen. Leer lassen zum Deaktivieren."
 
 #~ msgid "Titre embed — Serveur démarré. Variables : {config}, {mode}, {circuit}"
 #~ msgstr "Embed-Titel — Server gestartet. Variablen: {config}, {mode}, {circuit}"
@@ -4449,7 +5054,7 @@ msgstr "Tags aktualisiert"
 #~ msgstr "wartet auf Freigabe"
 
 #~ msgid "Aucun pilote en attente."
-#~ msgstr "Keine Fahrer ausstehend."
+#~ msgstr "Keine ausstehenden Fahrer."
 
 # Result/Race page translations
 #~ msgid "Aucun pilote"
@@ -4501,10 +5106,10 @@ msgstr "Tags aktualisiert"
 #~ msgstr "Live Admin"
 
 #~ msgid "En attente de validation"
-#~ msgstr "Wartet auf Genehmigung"
+#~ msgstr "Warten auf Bestätigung"
 
 #~ msgid "Inscrit le"
-#~ msgstr "Registriert am"
+#~ msgstr "Angemeldet am"
 
 #~ msgid "Approuver"
 #~ msgstr "Genehmigen"
@@ -4515,7 +5120,6 @@ msgstr "Tags aktualisiert"
 #~ msgid "Pilotes approuvés"
 #~ msgstr "Genehmigte Fahrer"
 
-# Result/Race page translations
 #~ msgid "Aucun pilote approuvé."
 #~ msgstr "Keine genehmigten Fahrer."
 
@@ -4795,279 +5399,4 @@ msgstr "Tags aktualisiert"
 
 #~ msgid "Fin de session"
 #~ msgstr "Sitzungsende"
-
-#~ msgid "Nom affiché dans la sidebar"
-#~ msgstr "Im Seitenmenü angezeigter Name"
-
-#~ msgid ""
-#~ "Exige que les pilotes confirment leur"
-#~ " email (lien envoyé à l'inscription) "
-#~ "avant de pouvoir s'inscrire à un "
-#~ "événement. Les comptes existants ne sont"
-#~ " pas affectés rétroactivement."
-#~ msgstr ""
-#~ "Verlangt von Fahrern, ihre E-Mail zu "
-#~ "bestätigen (Link bei der Registrierung "
-#~ "gesendet), bevor sie sich für eine "
-#~ "Veranstaltung anmelden können. Bestehende "
-#~ "Konten sind nicht rückwirkend betroffen."
-
-#~ msgid ""
-#~ "Nombre de mois de conservation détaillée"
-#~ " de l'historique des tours (temps, "
-#~ "voiture, circuit). Au-delà, archivé en"
-#~ " résumé mensuel compact plutôt que "
-#~ "supprimé."
-#~ msgstr ""
-#~ "Anzahl der Monate, für die die "
-#~ "detaillierte Rundenhistorie (Zeit, Auto, "
-#~ "Strecke) aufbewahrt wird. Danach wird "
-#~ "sie als kompakte monatliche Zusammenfassung"
-#~ " archiviert statt gelöscht."
-
-#~ msgid "Port HTTP de l'API du serveur (défaut 8081)"
-#~ msgstr "HTTP-Port der Server-API (Standard 8081)"
-
-#~ msgid ""
-#~ "Nom du serveur affiché dans la "
-#~ "liste des serveurs ACE EVO (commun "
-#~ "à toutes les configs)"
-#~ msgstr "Servername in der ACE-EVO-Serverliste (für alle Konfigurationen gleich)"
-
-#~ msgid "Nombre maximum de joueurs simultanés (1–128, défaut 8)"
-#~ msgstr "Maximale Anzahl gleichzeitiger Spieler (1–128, Standard 8)"
-
-#~ msgid ""
-#~ "Port TCP du serveur de jeu (défaut"
-#~ " 9700) — doit correspondre aux règles"
-#~ " firewall"
-#~ msgstr ""
-#~ "TCP-Port des Spielservers (Standard "
-#~ "9700) — muss mit den Firewall-"
-#~ "Regeln übereinstimmen"
-
-#~ msgid ""
-#~ "Port UDP du serveur de jeu (défaut"
-#~ " 9700) — généralement identique au "
-#~ "port TCP"
-#~ msgstr ""
-#~ "UDP-Port des Spielservers (Standard "
-#~ "9700) — normalerweise identisch mit dem"
-#~ " TCP-Port"
-
-#~ msgid ""
-#~ "Mot de passe d'accès au serveur "
-#~ "pour les pilotes. Laisser vide = "
-#~ "accès libre"
-#~ msgstr "Serverzugangspasswort für Fahrer. Leer lassen = freier Zugang"
-
-#~ msgid ""
-#~ "Mot de passe admin serveur (commandes"
-#~ " /kick, /next, etc.) — utilisé aussi"
-#~ " par le bot TCP"
-#~ msgstr ""
-#~ "Server-Admin-Passwort (/kick-, /next-"
-#~ "Befehle usw.) — wird auch vom "
-#~ "TCP-Bot verwendet"
-
-#~ msgid "Chemin vers le fichier entry_list.ini (laisser vide si non utilisé)"
-#~ msgstr "Pfad zur Datei entry_list.ini (leer lassen, falls nicht verwendet)"
-
-#~ msgid ""
-#~ "Dossier de sortie des résultats de "
-#~ "session (laisser vide = dossier par "
-#~ "défaut)"
-#~ msgstr "Ausgabeordner für Sitzungsergebnisse (leer lassen = Standardordner)"
-
-#~ msgid "Webhook principal — démarrage, arrêt, crash du serveur"
-#~ msgstr "Haupt-Webhook — Serverstart, -stopp, Absturz"
-
-#~ msgid ""
-#~ "Envoie sur le webhook course un "
-#~ "récapitulatif à la fin de chaque "
-#~ "session : podium, meilleur tour, "
-#~ "incidents et sanctions (true/false, désactivé"
-#~ " par défaut)."
-#~ msgstr ""
-#~ "Sendet am Ende jeder Sitzung eine "
-#~ "Zusammenfassung an den Rennen-Webhook: "
-#~ "Podium, schnellste Runde, Vorfälle und "
-#~ "Strafen (true/false, standardmäßig aus)."
-
-#~ msgid ""
-#~ "Titre embed — Meilleur tour serveur. "
-#~ "Variables : {name}, {lap}, {car}, "
-#~ "{circuit}"
-#~ msgstr ""
-#~ "Embed-Titel — Server-Bestzeit. "
-#~ "Variablen: {name}, {lap}, {car}, {circuit}"
-
-#~ msgid "Titre embed — Fin de session. Variables : {session}, {circuit}"
-#~ msgstr "Embed-Titel — Sitzungsende. Variablen: {session}, {circuit}"
-
-#~ msgid ""
-#~ "Contrôle d'accès au serveur de jeu "
-#~ "(liste blanche des pilotes approuvés, "
-#~ "bannissements, lest et restricteur par "
-#~ "SteamID) : se règle dans la page"
-#~ " Accès, désactivé par défaut."
-#~ msgstr ""
-#~ "Zugriffskontrolle für den Spielserver "
-#~ "(Whitelist freigegebener Fahrer, Sperren, "
-#~ "Ballast und Restriktor pro SteamID): "
-#~ "einzustellen auf der Seite Zugriff, "
-#~ "standardmäßig aus."
-
-#~ msgid ""
-#~ "Réserve le serveur aux pilotes approuvés"
-#~ " (page Accès, désactivé par défaut)."
-#~ msgstr ""
-#~ "Reserviert den Server für freigegebene "
-#~ "Fahrer (Seite Zugriff, standardmäßig aus)."
-
-#~ msgid ""
-#~ "Récapitulatif Discord à la fin de "
-#~ "chaque session (podium, meilleur tour, "
-#~ "incidents, sanctions) : interrupteur dans "
-#~ "Paramètres → Notifications, désactivé par "
-#~ "défaut."
-#~ msgstr ""
-#~ "Discord-Zusammenfassung am Ende jeder "
-#~ "Sitzung (Podium, schnellste Runde, Vorfälle,"
-#~ " Strafen): Schalter unter Einstellungen →"
-#~ " Benachrichtigungen, standardmäßig aus."
-
-#~ msgid ""
-#~ "Dossier de session Steam à monter "
-#~ "si le panel est lancé via systemd"
-#~ " ou sudo sans -E (sinon ça "
-#~ "reste vide et $HOME est utilisé, "
-#~ "comme avant)."
-#~ msgstr ""
-#~ "Zu bindender Steam-Sitzungsordner, falls "
-#~ "das Panel über systemd oder sudo "
-#~ "ohne -E gestartet wird (sonst bleibt "
-#~ "es leer und $HOME wird wie zuvor"
-#~ " verwendet)."
-
-#~ msgid "Email de test"
-#~ msgstr "Test-E-Mail"
-
-#~ msgid "Nouvelle inscription (notif. admin)"
-#~ msgstr "Neue Anmeldung (Admin-Benachrichtigung)"
-
-#~ msgid "Inscription reçue"
-#~ msgstr "Anmeldung erhalten"
-
-#~ msgid "Compte validé"
-#~ msgstr "Konto bestätigt"
-
-#~ msgid "Inscription refusée"
-#~ msgstr "Anmeldung abgelehnt"
-
-#~ msgid "Inscription événement confirmée"
-#~ msgstr "Veranstaltungsanmeldung bestätigt"
-
-#~ msgid "Inscription événement refusée"
-#~ msgstr "Veranstaltungsanmeldung abgelehnt"
-
-#~ msgid "Confirmation d'email"
-#~ msgstr "E-Mail-Bestätigung"
-
-#~ msgid "Réinitialisation mot de passe"
-#~ msgstr "Passwort zurücksetzen"
-
-#~ msgid "Rappel événement"
-#~ msgstr "Veranstaltungserinnerung"
-
-#~ msgid ""
-#~ "Toutes désactivées par défaut. Prises en"
-#~ " compte au prochain démarrage du "
-#~ "serveur."
-#~ msgstr "Standardmäßig alle deaktiviert. Wirksam beim nächsten Serverstart."
-
-#~ msgid ""
-#~ "S'applique à toutes les sessions de "
-#~ "la config. Désactivé : règles d'usine"
-#~ " du jeu."
-#~ msgstr "Gilt für alle Sitzungen der Konfiguration. Aus: Werksregeln des Spiels."
-
-#~ msgid "Secteur 1"
-#~ msgstr "Sektor 1"
-
-#~ msgid "Secteur 2"
-#~ msgstr "Sektor 2"
-
-#~ msgid "Secteur 3"
-#~ msgstr "Sektor 3"
-
-#~ msgid "Aucun résultat pour ces filtres."
-#~ msgstr "Keine Ergebnisse für diese Filter."
-
-#~ msgid "Aucun temps pour ces filtres."
-#~ msgstr "Keine Zeiten für diese Filter."
-
-#~ msgid "Sanctions infligées automatiquement par le serveur pendant la session."
-#~ msgstr "Vom Server während der Sitzung automatisch verhängte Strafen."
-
-#~ msgid "Sanction"
-#~ msgstr "Strafe"
-
-#~ msgid "Cause"
-#~ msgstr "Grund"
-
-#~ msgid "Moment"
-#~ msgstr "Zeitpunkt"
-
-#~ msgid "tour(s)"
-#~ msgstr "Runde(n)"
-
-#~ msgid "Levée"
-#~ msgstr "Aufgehoben"
-
-#~ msgid "Incidents"
-#~ msgstr "Vorfälle"
-
-#~ msgid ""
-#~ "Chocs enregistrés par le serveur : "
-#~ "contacts entre voitures, murs et objets."
-#~ msgstr ""
-#~ "Vom Server erfasste Kollisionen: Kontakte "
-#~ "zwischen Autos, Wände und Objekte."
-
-#~ msgid "Contacts avec une autre voiture"
-#~ msgstr "Kontakte mit einem anderen Auto"
-
-#~ msgid "Murs"
-#~ msgstr "Wände"
-
-#~ msgid "Objets"
-#~ msgstr "Objekte"
-
-#~ msgid "Chocs ayant causé des dégâts"
-#~ msgstr "Kollisionen mit Schaden"
-
-#~ msgid "Dégâts"
-#~ msgstr "Schäden"
-
-#~ msgid "Détail des contacts entre voitures"
-#~ msgstr "Details der Kontakte zwischen Autos"
-
-#~ msgid "Pilotes concernés"
-#~ msgstr "Beteiligte Fahrer"
-
-#~ msgid "Impact"
-#~ msgstr "Aufprall"
-
-#~ msgid "adversaire non identifié"
-#~ msgstr "Gegner nicht identifiziert"
-
-#~ msgid "Oui"
-#~ msgstr "Ja"
-
-#~ msgid "Gros chocs contre un mur ou un objet"
-#~ msgstr "Schwere Einschläge in Wand oder Objekt"
-
-#~ msgid "Obstacle"
-#~ msgstr "Hindernis"
 
