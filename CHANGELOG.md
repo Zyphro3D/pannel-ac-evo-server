@@ -1,5 +1,26 @@
 # Changelog
 
+### v2.5.0 — 14/10/2026
+
+**Ajout — page « Accès » : liste blanche des pilotes, bannissements, lest et restricteur par joueur (option, désactivée par défaut)**
+
+- Nouvelle page **Admin → Accès**. Trois outils, tous écrits dans le fichier d'engagés que le serveur de jeu lit à son démarrage :
+  - **Réserver le serveur aux pilotes approuvés** : seuls les pilotes approuvés ayant lié leur compte Steam, le bot du panel et les joueurs ayant une règle peuvent se connecter ; les autres reçoivent « User not allowed ».
+  - **Bannissement par SteamID** (même pour un joueur qui n'a jamais eu de compte sur le panel). La liste noire l'emporte sur tout, y compris sur un pilote approuvé.
+  - **Handicap par joueur** : lest (0–100 kg) et restricteur (0–0,2), bornes imposées par le serveur de jeu.
+- Activation par un interrupteur réservé au super-admin ; **désactivé par défaut** : le serveur de jeu ne reçoit alors aucun fichier d'engagés, comme avant. Prise en compte au prochain démarrage du serveur de jeu. Un chemin d'engagés défini à la main (`SERVER_ENTRY_LIST_PATH`) reste prioritaire.
+- Comportements vérifiés sur un vrai serveur de jeu : pilote approuvé accepté, inconnu refusé, banni refusé, bot du panel accepté, handicap appliqué. Piège évité : **le serveur ne filtre personne quand la liste blanche est vide, le fichier absent ou invalide** — le panel écrit donc un joueur « sentinelle » inexistant quand aucun pilote n'est approuvé, pour que « réservé aux pilotes approuvés » n'ouvre pas le serveur à tous par erreur.
+
+**Correction — la fonction « Entry list » des événements n'avait aucun effet**
+
+- Le fichier généré depuis la page d'inscriptions d'un événement était écrit dans un format d'un autre jeu (`entries` / `driverName` / `carModel`) que le serveur ACE EVO ignore sans erreur. Il est maintenant au format du serveur : liste blanche = pilotes confirmés de l'événement (avec SteamID) + bot du panel, plus les règles de la page Accès. Pour qu'il soit lu, renseigner `SERVER_ENTRY_LIST_PATH` avec le chemin de ce fichier.
+
+**Divers**
+
+- Le bandeau « nouvelles variables .env » mentionne désormais aussi `DISCORD_NOTIFY_SESSION_SUMMARY` (v2.3.0, oubliée) et les réglages d'accès.
+- Texte manquant traduit : « Chocs enregistrés par le serveur… » (page de résultat) et quelques libellés restés sans traduction.
+- 45 tests unitaires (`pytest tests/unit`).
+
 ### v2.4.0 — 14/10/2026
 
 **Ajout — options de course (page Serveur → configuration → Sessions → Course)**

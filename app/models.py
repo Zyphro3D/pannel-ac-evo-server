@@ -376,3 +376,20 @@ def load_user(user_id: str):
     if user_id in ("admin", "superadmin"):
         return AdminAccount.query.filter_by(role=user_id, is_active=True).first()
     return None
+
+
+class AccessRule(db.Model):
+    """Règle d'accès par SteamID : bannissement et/ou handicap (lest, restricteur).
+
+    Lue à chaque démarrage du serveur de jeu pour générer son fichier d'engagés
+    (voir services/access_control.py). Indépendante des comptes pilotes : on peut bannir
+    ou handicaper un joueur qui n'a jamais créé de compte sur le panel."""
+    __tablename__ = "access_rule"
+
+    id         = db.Column(db.Integer, primary_key=True)
+    steam_id   = db.Column(db.String(32), unique=True, nullable=False, index=True)
+    label      = db.Column(db.String(100), default="")          # pseudo / note de l'admin
+    banned     = db.Column(db.Boolean, default=False, nullable=False)
+    ballast    = db.Column(db.Integer, default=0, nullable=False)       # kg, 0–100
+    restrictor = db.Column(db.Float,   default=0.0, nullable=False)     # 0–0,2
+    created_at = db.Column(db.DateTime, default=_utcnow)

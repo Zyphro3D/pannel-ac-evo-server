@@ -7,11 +7,12 @@ from flask import Blueprint, render_template, redirect, url_for, request, flash,
 from flask_babel import _
 from sqlalchemy.orm import selectinload
 
-from app.models import Event, EventRegistration, Driver, EventStatus, DriverStatus, RegStatus
+from app.models import AccessRule, Event, EventRegistration, Driver, EventStatus, DriverStatus, RegStatus
 from app.services.database import db
 from app.services.server_config import load_events as load_tracks, load_cars, list_configs
 from app.services import mailer, entry_list
-from app.utils import admin_required as _admin_required, is_htmx, htmx_oob_toast
+from app.utils import (admin_required as _admin_required, superadmin_required as _superadmin_required,
+                       is_htmx, htmx_oob_toast)
 
 log = logging.getLogger(__name__)
 
@@ -269,3 +270,75 @@ def driver_delete(driver_id):
         return _drivers_oob("success", _("%(name)s supprimé.", name=name))
     flash(_("%(name)s supprimé.", name=name), "success")
     return redirect(url_for("events_admin.drivers_list"))
+
+
+# ── Contrôle d'accès (liste blanche, bannissements, handicaps par SteamID) ────
+
+@events_admin_bp.route("/access")
+@_admin_required
+def access_page():
+    import os
+    from app.services import access_control
+    rules = AccessRule.query.order_by(AccessRule.banned.desc(), AccessRule.label, AccessRule.steam_id).all()
+    names = {d.steam_id: d.ingame_name for d in Driver.query.filter(Driver.steam_id.isnot(None)).all()}
+    approved_count = Driver.query.filter(Driver.status == DriverStatus.APPROVED,
+                                         Driver.steam_id.isnot(None)).count()
+    return render_template("access.html", rules=rules, names=names, approved_count=approved_count,
+                           enabled=access_control.enabled(), approved_only=access_control.approved_only(),
+                           path_overridden=bool(os.environ.get("SERVER_ENTRY_LIST_PATH", "").strip()),
+                           max_ballast=access_control.MAX_BALLAST, max_restrictor=access_control.MAX_RESTRICTOR)
+
+
+@events_admin_bp.route("/access/settings", methods=["POST"])
+@_superadmin_required
+def access_settings():
+    """Active ou désactive le contrôle d'accès (réglage global du panel, comme Paramètres)."""
+    import os
+    from app.routes.admin import _write_env_file, _env_write_lock
+    new_vals = {
+        # champ caché « false » + case à cocher « true » : coché, le navigateur envoie les deux valeurs
+        "ACCESS_CONTROL_ENABLED": "true" if "true" in request.form.getlist("ACCESS_CONTROL_ENABLED") else "false",
+        "ACCESS_APPROVED_ONLY":   "true" if "true" in request.form.getlist("ACCESS_APPROVED_ONLY") else "false",
+    }
+    with _env_write_lock:
+        _write_env_file(new_vals)
+        for k, v in new_vals.items():
+            os.environ[k] = v
+            current_app.config[k] = (v == "true")
+    flash(_("Contrôle d'accès enregistré. Il s'applique au prochain démarrage du serveur de jeu."), "success")
+    return redirect(url_for("events_admin.access_page"))
+
+
+@events_admin_bp.route("/access/rules", methods=["POST"])
+@_admin_required
+def access_rule_save():
+    """Crée ou met à jour la règle d'un SteamID."""
+    from app.services import access_control
+    steam_id = request.form.get("steam_id", "").strip()
+    if not access_control.valid_steam_id(steam_id):
+        flash(_("SteamID invalide : 17 chiffres commençant par 7656119."), "error")
+        return redirect(url_for("events_admin.access_page"))
+    ballast, restrictor = access_control.clamp_rule(request.form.get("ballast", 0), request.form.get("restrictor", 0))
+    banned = "true" in request.form.getlist("banned")
+    label = request.form.get("label", "").strip()[:100]
+    rule = AccessRule.query.filter_by(steam_id=steam_id).first()
+    if rule is None:
+        rule = AccessRule(steam_id=steam_id)
+        db.session.add(rule)
+    if not label:
+        driver = Driver.query.filter_by(steam_id=steam_id).first()
+        label = driver.ingame_name if driver else (rule.label or "")
+    rule.label, rule.banned, rule.ballast, rule.restrictor = label, banned, ballast, restrictor
+    db.session.commit()
+    flash(_("Règle enregistrée. Elle s'applique au prochain démarrage du serveur de jeu."), "success")
+    return redirect(url_for("events_admin.access_page"))
+
+
+@events_admin_bp.route("/access/rules/<int:rule_id>/delete", methods=["POST"])
+@_admin_required
+def access_rule_delete(rule_id):
+    rule = db.get_or_404(AccessRule, rule_id)
+    db.session.delete(rule)
+    db.session.commit()
+    flash(_("Règle supprimée."), "success")
+    return redirect(url_for("events_admin.access_page"))

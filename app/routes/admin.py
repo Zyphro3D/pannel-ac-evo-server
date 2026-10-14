@@ -680,6 +680,13 @@ def _write_env_file(new_values: dict):
 # optionnelle — c'est ce qui alimente le bandeau affiché aux admins tant qu'ils
 # ne l'ont pas explicitement fermé (cf. dismiss_env_notice ci-dessous).
 NEW_ENV_VARS_BY_VERSION: dict[str, list[tuple[str, str]]] = {
+    "2.5.0": [
+        ("ACCESS_CONTROL_ENABLED", _l("Contrôle d'accès au serveur de jeu (liste blanche des pilotes approuvés, bannissements, lest et restricteur par SteamID) : se règle dans la page Accès, désactivé par défaut.")),
+        ("ACCESS_APPROVED_ONLY", _l("Réserve le serveur aux pilotes approuvés (page Accès, désactivé par défaut).")),
+    ],
+    "2.3.0": [
+        ("DISCORD_NOTIFY_SESSION_SUMMARY", _l("Récapitulatif Discord à la fin de chaque session (podium, meilleur tour, incidents, sanctions) : interrupteur dans Paramètres → Notifications, désactivé par défaut.")),
+    ],
     "1.9.2": [
         ("STEAM_HOME", _l("Dossier de session Steam à monter si le panel est lancé via systemd "
                           "ou sudo sans -E (sinon ça reste vide et $HOME est utilisé, comme avant).")),

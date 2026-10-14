@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Accès au serveur') }} — {{ panel_title }}{% endblock %}
+
+{% block content %}
+<div class="page-shell max-w-[1000px]">
+
+  <h1 class="text-2xl font-bold text-txt mb-1">{{ _('Accès au serveur') }}</h1>
+  <p class="text-sm text-dim mb-5">
+    {{ _('Réservez le serveur à vos pilotes approuvés, bannissez un joueur par son SteamID, ou handicapez-le avec du lest et un restricteur. Ces règles sont écrites dans un fichier lu par le serveur de jeu à son démarrage.') }}
+  </p>
+
+  {% if path_overridden %}
+  <div class="card mb-5" style="border-color: var(--yellow, #f0a500)">
+    <p class="text-sm">
+      {{ _('Un fichier d\'engagés est déjà défini à la main (SERVER_ENTRY_LIST_PATH) : il reste prioritaire et le contrôle d\'accès ci-dessous est ignoré tant qu\'il est renseigné.') }}
+    </p>
+  </div>
+  {% endif %}
+
+  {# ── Réglages ── #}
+  <div class="card mb-5">
+    <h2 class="text-lg font-bold text-txt mb-3">{{ _('Réglages') }}</h2>
+    {% if current_user.is_superadmin %}
+    <form method="post" action="{{ url_for('events_admin.access_settings') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="form-group">
+        <label class="toggle-label">
+          <input type="hidden" name="ACCESS_CONTROL_ENABLED" value="false">
+          <input type="checkbox" class="switch" name="ACCESS_CONTROL_ENABLED" value="true" {% if enabled %}checked{% endif %}>
+          {{ _('Activer le contrôle d\'accès') }}
+        </label>
+        <span class="hint text-xs text-dim block mt-1">{{ _('Désactivé : le serveur de jeu ne reçoit aucun fichier d\'engagés, comme avant.') }}</span>
+      </div>
+      <div class="form-group mt-3">
+        <label class="toggle-label">
+          <input type="hidden" name="ACCESS_APPROVED_ONLY" value="false">
+          <input type="checkbox" class="switch" name="ACCESS_APPROVED_ONLY" value="true" {% if approved_only %}checked{% endif %}>
+          {{ _('Réserver le serveur aux pilotes approuvés') }}
+        </label>
+        <span class="hint text-xs text-dim block mt-1">
+          {{ _('Seuls les pilotes approuvés ayant lié leur compte Steam (%(n)s actuellement), le bot du panel et les joueurs ayant une règle ci-dessous peuvent se connecter.', n=approved_count) }}
+        </span>
+      </div>
+      <button type="submit" class="btn btn-primary mt-4">{{ _('Enregistrer') }}</button>
+    </form>
+    {% else %}
+    <p class="text-sm text-dim">
+      {{ _('Contrôle d\'accès') }} : <strong>{% if enabled %}{{ _('activé') }}{% else %}{{ _('désactivé') }}{% endif %}</strong>
+      · {{ _('Pilotes approuvés seulement') }} : <strong>{% if approved_only %}{{ _('oui') }}{% else %}{{ _('non') }}{% endif %}</strong>
+      <br>{{ _('Seul un super-admin peut modifier ces réglages.') }}
+    </p>
+    {% endif %}
+  </div>
+
+  {# ── Règles ── #}
+  <div class="card mb-5">
+    <h2 class="text-lg font-bold text-txt mb-1">{{ _('Règles par SteamID') }}</h2>
+    <p class="text-xs text-dim mb-3">
+      {{ _('Lest : 0 à %(b)s kg. Restricteur : 0 à %(r)s. Un joueur banni ne peut plus se connecter, même s\'il est pilote approuvé.', b=max_ballast, r=max_restrictor) }}
+    </p>
+
+    <form method="post" action="{{ url_for('events_admin.access_rule_save') }}" class="mb-5">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="form-row">
+        <div class="form-group">
+          <label>{{ _('SteamID (17 chiffres)') }}</label>
+          <input type="text" name="steam_id" required pattern="7656119[0-9]{10}" maxlength="17" placeholder="7656119…">
+        </div>
+        <div class="form-group">
+          <label>{{ _('Note') }}</label>
+          <input type="text" name="label" maxlength="100" placeholder="{{ _('Pseudo ou raison') }}">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>{{ _('Lest (kg)') }}</label>
+          <input type="number" name="ballast" min="0" max="{{ max_ballast }}" value="0">
+        </div>
+        <div class="form-group">
+          <label>{{ _('Restricteur') }}</label>
+          <input type="number" name="restrictor" min="0" max="{{ max_restrictor }}" step="0.01" value="0">
+        </div>
+        <div class="form-group">
+          <label class="toggle-label">
+            <input type="checkbox" class="switch" name="banned" value="true">
+            {{ _('Banni') }}
+          </label>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary">{{ _('Ajouter / mettre à jour') }}</button>
+    </form>
+
+    {% if rules %}
+    <div class="table-wrapper">
+      <table class="table-base">
+        <thead>
+          <tr>
+            <th>{{ _('Joueur') }}</th>
+            <th class="mono">SteamID</th>
+            <th>{{ _('Statut') }}</th>
+            <th class="mono">{{ _('Lest') }}</th>
+            <th class="mono">{{ _('Restricteur') }}</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rules %}
+          <tr>
+            <td>{{ r.label or names.get(r.steam_id) or '—' }}</td>
+            <td class="mono">{{ r.steam_id }}</td>
+            <td>
+              {% if r.banned %}<span class="badge badge-error">{{ _('Banni') }}</span>
+              {% else %}<span class="badge badge-neutral">{{ _('Handicap') }}</span>{% endif %}
+            </td>
+            <td class="mono">{{ r.ballast if not r.banned else '—' }}</td>
+            <td class="mono">{{ r.restrictor if not r.banned else '—' }}</td>
+            <td>
+              <form method="post" action="{{ url_for('events_admin.access_rule_delete', rule_id=r.id) }}"
+                    onsubmit="return confirm('{{ _('Supprimer cette règle ?') }}')">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn-secondary btn-sm">{{ _('Supprimer') }}</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="text-sm text-dim">{{ _('Aucune règle pour le moment.') }}</p>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

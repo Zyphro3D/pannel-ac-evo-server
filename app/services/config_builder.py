@@ -2,7 +2,11 @@
 Build the exact -serverconfig and -seasondefinition args from server_launcher.json.
 Structures reverse-engineered by decoding working args from ServerLauncher.exe.
 """
+import logging
+
 from app.services.encoder import encode_serverconfig, encode_seasondefinition
+
+log = logging.getLogger(__name__)
 
 
 def _tod(sess: dict) -> dict:
@@ -78,6 +82,16 @@ def build_launch_args(config: dict,
         if c.get("IsSelected") or c.get("is_selected")
     ]
 
+    # Contrôle d'accès (option) : fichier d'engagés généré par le panel, sauf si l'admin a fixé
+    # lui-même un chemin (SERVER_ENTRY_LIST_PATH), qui reste prioritaire.
+    entry_list_path = server.get("EntryListPath", "")
+    try:
+        from app.services import access_control
+        if access_control.enabled() and not entry_list_path:
+            entry_list_path = access_control.prepare_file() or entry_list_path
+    except Exception as exc:          # ne jamais empêcher un démarrage de serveur
+        log.warning("contrôle d'accès ignoré : %s", exc)
+
     server_dict = {
         "server_tcp_listener_port": tcp_listener if tcp_listener else server["TcpPort"],
         "server_udp_listener_port": udp_listener if udp_listener else server["UdpPort"],
@@ -100,7 +114,7 @@ def build_launch_args(config: dict,
         "admin_password": server.get("AdminPassword", ""),
         "type": server.get("SelectedServerTypeValue", "MultiplayerServerListSessionType_RANKED"),
         "tuning_type": server.get("SelectedTuningTypeValue", "TuningAllowed"),
-        "entry_list_path": server.get("EntryListPath", ""),
+        "entry_list_path": entry_list_path,
         "results_path": server.get("ResultsPath", ""),
         "results_post_url": server.get("ResultsPostUrl", ""),
     }
