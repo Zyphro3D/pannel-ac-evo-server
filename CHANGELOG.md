@@ -15,6 +15,7 @@
 **Ajout — téléchargement du serveur de jeu proposé dès la première connexion**
 
 - Si le serveur ACE EVO n'est pas encore installé, le superadmin arrive directement sur la fenêtre **« Installer le serveur ACE EVO »** : il ne reste qu'à saisir son compte Steam. S'il la ferme, un bandeau reste affiché jusqu'à l'installation. Aucune session Steam n'est conservée.
+- L'installation et les mises à jour du serveur de jeu s'affichent dans une **fenêtre de progression** au-dessus de la page (étape en clair, pourcentage du téléchargement, sortie SteamCMD repliable) au lieu d'un terminal en bas de la page Paramètres. Une mise à jour en échec se termine désormais en erreur (elle finissait sur un « ✓ »), et une première installation ne patiente plus 90 s pour rien.
 
 **Amélioration — SteamCMD installé automatiquement**
 
