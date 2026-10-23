@@ -42,12 +42,11 @@ services:
       - ./media:/panel/media
       # Fichier de configuration .env — monté pour que la page Paramètres lise/écrive les vraies valeurs
       - ./.env:/panel/.env
-      # SteamCMD (mise à jour du serveur de jeu depuis le panel)
-      - /opt/steamcmd:/opt/steamcmd
-      # Session Steam authentifiée du host (pour accéder aux apps nécessitant un compte).
-      # ${HOME} est vide sous systemd ou sudo sans -E : définissez STEAM_HOME dans .env
-      # dans ce cas (le bind se ferait sinon sur /Steam, un dossier root vide).
-      - ${STEAM_HOME:-${HOME}}/Steam:/root/Steam
+      # SteamCMD : installé automatiquement par le panel dans ce volume au premier besoin
+      # (plus rien à installer sur l'hôte, ce qui rend l'installation identique sous Windows)
+      - steamcmd:/opt/steamcmd
+      # Session Steam (connexion SteamCMD) conservée entre les redémarrages du container
+      - steam_session:/root/Steam
       # HTTPS intégré (Let's Encrypt) — décommentez et adaptez SSL_CERTFILE/SSL_KEYFILE dans .env
       # - /etc/letsencrypt:/etc/letsencrypt:ro
       # Fichier override Docker Compose — le panel le régénère à chaque création/suppression de serveur
@@ -101,6 +100,8 @@ services:
 volumes:
   panel_data:
   wine_prefix:
+  steamcmd:
+  steam_session:
 
 networks:
   dockerproxy:

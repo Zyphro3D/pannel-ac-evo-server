@@ -4,16 +4,22 @@ resynchronisation véhicules/circuits), et vérification de version sans rien in
 Génère des messages SSE consommés par les routes container_mgmt.container_update() /
 container_check_update().
 """
+import io
 import json
 import os
 import re
 import signal
 import subprocess
+import tarfile
 import threading
 import time
+import urllib.request
 from pathlib import Path
 
 from app.services.process_manager import _atomic_write
+
+_STEAMCMD_URL = "https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz"
+_STEAMCMD_MAX_BYTES = 50 * 1024 * 1024   # l'archive officielle fait ~3 Mo ; garde-fou contre une réponse aberrante
 
 _WARMUP_TIMEOUT = 180   # 3 min — le tout premier lancement de SteamCMD se met à jour lui-même
 _RUN_TIMEOUT     = 900  # 15 min — généreux pour un téléchargement complet du jeu
@@ -24,6 +30,42 @@ _LAST_CHECK_PATH = Path(__file__).parent.parent.parent / "data" / "steamcmd_last
 
 def _steamcmd_env(steam_home: str) -> dict:
     return {**os.environ, "HOME": steam_home}
+
+
+def install_steamcmd(steamcmd: str) -> None:
+    """Installe SteamCMD (archive officielle Valve) dans le dossier de `steamcmd` s'il est absent.
+
+    Avant, SteamCMD devait être installé à la main sur l'hôte puis monté dans le container
+    (`/opt/steamcmd`) — étape impossible sous Windows (Docker Desktop) et source d'erreurs sous
+    Linux. Le dossier est désormais un volume Docker que le panel remplit lui-même au premier
+    besoin ; l'image contient déjà les bibliothèques i386 nécessaires. Lève une exception en cas
+    d'échec (réseau, archive invalide)."""
+    target = Path(steamcmd).parent
+    target.mkdir(parents=True, exist_ok=True)
+    with urllib.request.urlopen(_STEAMCMD_URL, timeout=60) as resp:
+        data = resp.read(_STEAMCMD_MAX_BYTES + 1)
+    if len(data) > _STEAMCMD_MAX_BYTES:
+        raise ValueError("archive SteamCMD anormalement grosse")
+    with tarfile.open(fileobj=io.BytesIO(data), mode="r:gz") as archive:
+        # filter="data" : refuse chemins absolus, « .. », liens hors du dossier, fichiers spéciaux
+        archive.extractall(target, filter="data")
+    if not os.path.exists(steamcmd):
+        raise FileNotFoundError(f"{steamcmd} absent de l'archive SteamCMD")
+
+
+def _ensure_steamcmd(steamcmd: str, _msg):
+    """Générateur de messages : installe SteamCMD s'il manque. Renvoie (via StopIteration) True
+    si SteamCMD est utilisable."""
+    if os.path.exists(steamcmd):
+        return True
+    yield _msg("⬇ SteamCMD absent : installation automatique (archive officielle Valve)...")
+    try:
+        install_steamcmd(steamcmd)
+    except Exception as e:
+        yield _msg(f"✗ Installation de SteamCMD impossible : {e}", error=True)
+        return False
+    yield _msg("✓ SteamCMD installé")
+    return os.path.exists(steamcmd)
 
 
 def load_last_check() -> dict:
@@ -206,7 +248,7 @@ def check_update(steamcmd: str, steam_user: str, steam_pass: str, steam_guard: s
         payload = {"msg": text, "done": done, "error": error, **extra}
         return f"data: {json.dumps(payload)}\n\n"
 
-    if not os.path.exists(steamcmd):
+    if not (yield from _ensure_steamcmd(steamcmd, _msg)):
         yield _msg(f"✗ SteamCMD introuvable : {steamcmd}", error=True, done=True)
         return
 
@@ -276,7 +318,8 @@ def run_update(steamcmd: str, aceserver_dir: str, steam_user: str, steam_pass: s
             yield _msg(f"✗ Impossible d'arrêter le serveur {sid} : {e}", error=True, done=True)
             return
 
-    # 2 — SteamCMD
+    # 2 — SteamCMD (installé automatiquement s'il manque)
+    yield from _ensure_steamcmd(steamcmd, _msg)
     if not os.path.exists(steamcmd):
         yield _msg(f"✗ SteamCMD introuvable : {steamcmd}", error=True)
     else:
