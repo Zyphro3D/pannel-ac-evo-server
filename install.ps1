@@ -35,11 +35,11 @@ function Get-RandomHex($chars) {
     (($bytes | ForEach-Object { $_.ToString('x2') }) -join '').Substring(0, $chars)
 }
 
-function Invoke-Native {
-    # Exécute docker sans que ses messages sur stderr (progression) soient pris pour des erreurs
-    param([Parameter(ValueFromRemainingArguments)] $Cmd)
+function Invoke-Native([scriptblock] $Command) {
+    # Exécute docker sans que ses messages sur stderr (progression) soient pris pour des erreurs.
+    # Bloc de script plutôt que liste d'arguments : PowerShell prendrait « -d » pour un de ses paramètres.
     $prev = $ErrorActionPreference; $ErrorActionPreference = 'Continue'
-    try { & $Cmd[0] $Cmd[1..($Cmd.Count - 1)] 2>&1 | ForEach-Object { "$_" } }
+    try { & $Command 2>&1 | ForEach-Object { "$_" } }
     finally { $ErrorActionPreference = $prev }
 }
 
@@ -67,7 +67,7 @@ if (-not (Test-Engine)) {
     while (-not (Test-Engine) -and $t -lt 240) { Start-Sleep 5; $t += 5 }
     if (-not (Test-Engine)) { Die "Docker Desktop ne répond pas. Ouvrez-le, attendez « Engine running », puis relancez." }
 }
-Ok ("Docker " + (Invoke-Native docker version --format '{{.Server.Version}}'))
+Ok ("Docker " + (Invoke-Native { docker version --format '{{.Server.Version}}' }))
 
 # ── 2. Récupération du panel ─────────────────────────────────────────────────
 $tmp = Join-Path ([IO.Path]::GetTempPath()) ("ace-panel-" + [guid]::NewGuid())
@@ -166,9 +166,16 @@ New-NetFirewallRule -Name 'ace-evo-panel-udp' -DisplayName 'AC EVO Panel (UDP)' 
 Ok "Pare-feu : TCP $port, 9700, 8081 et UDP 9700 ouverts (réseaux privés)"
 
 # ── 5. Construction et démarrage ─────────────────────────────────────────────
+# Serveurs de jeu en marche avant la mise à jour : seuls eux sont relancés ensuite (un serveur
+# arrêté ne doit pas se retrouver démarré, et inscrit dans la liste publique, par une mise à jour)
+$runningBefore = @(Invoke-Native { docker compose ps --services --status running })
+
 Say 'Construction et démarrage (premier lancement : environ 10 minutes)'
 $env:GIT_HASH = $tag
-$out = Invoke-Native docker compose up -d --build --remove-orphans
+$out = Invoke-Native { docker compose up --build --no-start --remove-orphans }
+if ($LASTEXITCODE -ne 0) { $out | Select-Object -Last 10 | ForEach-Object { "    $_" }; Die 'La construction a échoué (voir ci-dessus).' }
+$start = @('panel', 'dockerproxy') + @($runningBefore | Where-Object { $_ -and $_ -notin 'panel', 'dockerproxy' })
+$out = Invoke-Native { docker compose up -d @start }
 $out | Select-Object -Last 5 | ForEach-Object { "    $_" }
 if ($LASTEXITCODE -ne 0) { Die 'docker compose up a échoué (voir ci-dessus).' }
 

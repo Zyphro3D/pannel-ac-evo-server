@@ -146,8 +146,18 @@ else
 fi
 
 # ── 4. Construction et démarrage ─────────────────────────────────────────────
+# Serveurs de jeu en marche avant la mise à jour : seuls eux sont relancés ensuite (un serveur
+# arrêté ne doit pas se retrouver démarré, et inscrit dans la liste publique, par une mise à jour)
+RUNNING_BEFORE="$(docker compose ps --services --status running 2>/dev/null || true)"
+
 say "Construction et démarrage (premier lancement : environ 10 minutes)"
-GIT_HASH="$TAG" docker compose up -d --build --remove-orphans
+GIT_HASH="$TAG" docker compose up --build --no-start --remove-orphans
+START="panel dockerproxy"
+for service in $RUNNING_BEFORE; do
+    case "$service" in panel|dockerproxy) ;; *) START="$START $service" ;; esac
+done
+# shellcheck disable=SC2086
+docker compose up -d $START
 
 say "Attente du panel"
 for _ in $(seq 1 60); do
