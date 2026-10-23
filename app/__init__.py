@@ -548,6 +548,18 @@ def _register_request_hooks(app):
         return {"pending_env_notices": []}
 
     @app.context_processor
+    def _inject_game_server_missing():
+        # Première installation : le serveur de jeu n'est pas encore téléchargé → bandeau « Installer »
+        from flask_login import current_user
+        try:
+            if current_user.is_authenticated and current_user.is_superadmin:
+                from app.services.steam_updater import game_server_installed
+                return {"game_server_missing": not game_server_installed(app.config.get("ACESERVER_DIR", "/aceserver"))}
+        except Exception:
+            pass
+        return {"game_server_missing": False}
+
+    @app.context_processor
     def _inject_env_drift():
         from flask_login import current_user
         try:

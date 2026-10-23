@@ -32,6 +32,11 @@ def _steamcmd_env(steam_home: str) -> dict:
     return {**os.environ, "HOME": steam_home}
 
 
+def game_server_installed(aceserver_dir: str) -> bool:
+    """Vrai si les fichiers du serveur ACE EVO sont présents (dossier partagé par tous les serveurs)."""
+    return os.path.isfile(os.path.join(aceserver_dir, "AssettoCorsaEVOServer.exe"))
+
+
 def install_steamcmd(steamcmd: str) -> None:
     """Installe SteamCMD (archive officielle Valve) dans le dossier de `steamcmd` s'il est absent.
 

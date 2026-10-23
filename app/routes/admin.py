@@ -22,7 +22,7 @@ from app.services.server_config import (
     ConfigJsonError, default_config,
 )
 from app.services.process_manager import get_status, get_server_logs
-from app.services import mailer, discord_notifier
+from app.services import mailer, discord_notifier, steam_updater
 from app.services import audit as _audit
 from app.utils import (
     admin_required as _admin_required,
@@ -429,6 +429,12 @@ def _get_config_summary(name: str, active_config: str, running_config: str,
 @admin_bp.route("/server")
 @_admin_required
 def server():
+    if (current_user.is_superadmin and not session.get("install_prompted")
+            and not steam_updater.game_server_installed(current_app.config.get("ACESERVER_DIR", "/aceserver"))):
+        # Installation neuve : on propose tout de suite le téléchargement du serveur de jeu,
+        # l'utilisateur n'a qu'à saisir ses identifiants Steam (bandeau ensuite s'il ferme la fenêtre).
+        session["install_prompted"] = True
+        return redirect(url_for("admin.settings", tab="server", install=1))
     sid           = session.get("current_server_id", 1)
     configs       = list_configs()
     active_config = get_active_config_name()

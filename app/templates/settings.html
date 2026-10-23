@@ -431,9 +431,10 @@
       <div id="steam-modal" class="modal-overlay" style="display:none">
         <div class="modal-box">
           <div class="modal-head">
-            <h3 class="modal-title">🔐 {{ _('Connexion Steam') }}</h3>
+            <h3 class="modal-title" id="sm-title">🔐 {{ _('Connexion Steam') }}</h3>
           </div>
           <div class="modal-body space-y-3">
+            <p class="text-sm text-dim" id="sm-install-intro" style="display:none">{{ _('Le serveur ACE EVO n\'est pas encore installé. Le panel le télécharge avec SteamCMD (installé automatiquement) : saisissez simplement votre compte Steam.') }}</p>
             <p class="text-sm text-dim">{{ _('Entrez les identifiants du compte Steam qui possède ACE EVO. Ils ne sont pas sauvegardés.') }}</p>
             <div>
               <label class="form-label">{{ _('Nom d\'utilisateur') }}</label>
@@ -517,14 +518,22 @@
       let _steamModalAction = 'update';
       function ctrModalOpen(action) {
         _steamModalAction = action || 'update';
-        document.getElementById('sm-user').value = {{ env_values.get('STEAM_USERNAME', '')|tojson }};
+        const install = _steamModalAction === 'install';
+        // « anonymous » n'a pas accès au serveur ACE EVO : ne pas le pré-remplir
+        const defaultUser = {{ env_values.get('STEAM_USERNAME', '')|tojson }};
+        document.getElementById('sm-user').value = defaultUser === 'anonymous' ? '' : defaultUser;
         document.getElementById('sm-pass').value = '';
         document.getElementById('sm-guard').value = '';
+        document.getElementById('sm-title').textContent =
+          install ? '⬇ {{ _("Installer le serveur ACE EVO") }}' : '🔐 {{ _("Connexion Steam") }}';
+        document.getElementById('sm-install-intro').style.display = install ? '' : 'none';
         document.getElementById('sm-btn-ok').textContent =
-          _steamModalAction === 'check' ? '🔎 {{ _("Vérifier") }}' : '⬆ {{ _("Lancer la mise à jour") }}';
+          _steamModalAction === 'check' ? '🔎 {{ _("Vérifier") }}'
+          : install ? '⬇ {{ _("Installer") }}' : '⬆ {{ _("Lancer la mise à jour") }}';
         const modal = document.getElementById('steam-modal');
         modal.style.display = 'flex';
-        setTimeout(() => document.getElementById('sm-pass').focus(), 50);
+        const first = document.getElementById('sm-user').value ? 'sm-pass' : 'sm-user';
+        setTimeout(() => document.getElementById(first).focus(), 50);
       }
       function ctrModalClose() { document.getElementById('steam-modal').style.display = 'none'; }
       function ctrModalConfirm() {
@@ -639,6 +648,10 @@
                   if (ev.done) {
                     msg.textContent = ev.error ? '✗ {{ _("Mise à jour échouée") }}' : '✓ {{ _("Mise à jour terminée") }}';
                     setTimeout(ctrLoadInfo, 2000);
+                    if (!ev.error && _steamModalAction === 'install') {
+                      // Serveur installé : rechargement pour retirer le bandeau « pas encore installé »
+                      setTimeout(() => { location.href = {{ url_for('admin.settings', tab='server')|tojson }}; }, 4000);
+                    }
                   }
                 } catch(_) {}
               }
@@ -652,6 +665,9 @@
       }
       ctrLoadInfo();
       setInterval(ctrLoadInfo, 30000);
+      {% if game_server_missing and request.args.get('install') %}
+      ctrModalOpen('install');   // installation neuve : fenêtre ouverte d'office, il ne reste que les identifiants Steam
+      {% endif %}
       </script>
 
       {# ═══════════════════════════════════════════════════════════════════════ #}

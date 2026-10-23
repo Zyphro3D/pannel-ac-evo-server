@@ -326,6 +326,15 @@
         </div>
       </div>
     {% endif %}
+    {% if game_server_missing and not (request.endpoint == 'admin.settings' and request.args.get('tab') == 'server') %}
+      <div class="flash flash-warning mx-4 mt-4" id="game-server-missing-banner">
+        <strong>{{ _('Serveur ACE EVO pas encore installé') }}</strong>
+        — {{ _('le panel le télécharge pour vous : il suffit de saisir votre compte Steam.') }}
+        <div class="mt-2">
+          <a href="{{ url_for('admin.settings', tab='server', install=1) }}" class="btn-primary btn-sm">⬇ {{ _('Installer le serveur') }}</a>
+        </div>
+      </div>
+    {% endif %}
     {% if env_settings_drift %}
       <div class="flash flash-warning mx-4 mt-4" id="env-drift-banner">
         <strong>{{ _('Réglages .env ignorés') }}</strong>
