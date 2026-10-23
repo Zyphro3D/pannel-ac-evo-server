@@ -1,5 +1,35 @@
 # Changelog
 
+### À venir
+
+> Installation et mise à jour en **une commande**, sous Linux et désormais sous **Windows** (Docker Desktop). Toutes les étapes manuelles qui pouvaient être faites par le panel ont été retirées.
+
+**Ajout — scripts d'installation et de mise à jour**
+
+- **Linux** : `curl -fsSL https://raw.githubusercontent.com/Zyphro3D/pannel-ac-evo-server/master/install.sh | sudo bash`.
+- **Windows** : `irm https://raw.githubusercontent.com/Zyphro3D/pannel-ac-evo-server/master/install.ps1 | iex` dans Terminal (administrateur).
+- Ils font tout : Docker (proposé sous Linux, installé par winget sous Windows s'il manque), téléchargement de la dernière release **sans git**, avec vérification de son empreinte SHA-256, `.env` créé avec les clés et mots de passe générés, fichier `docker-compose.override.yml` créé, pare-feu Windows (ports du panel et du jeu, réseau privé), construction, démarrage, attente que le panel réponde, identifiants affichés à la fin.
+- **Relancer la même commande met le panel à jour** : `.env`, base, configurations et fichiers du jeu sont conservés. Les installations faites avec `git clone` peuvent continuer avec `git pull`.
+- Chaque release publie un fichier `SHA256SUMS`. L'archive « Windows natif » (ancien mode sans Docker) n'est plus produite : Windows passe par Docker Desktop.
+
+**Ajout — téléchargement du serveur de jeu proposé dès la première connexion**
+
+- Si le serveur ACE EVO n'est pas encore installé, le superadmin arrive directement sur la fenêtre **« Installer le serveur ACE EVO »** : il ne reste qu'à saisir son compte Steam. S'il la ferme, un bandeau reste affiché jusqu'à l'installation. Aucune session Steam n'est conservée.
+
+**Amélioration — SteamCMD installé automatiquement**
+
+- Plus besoin d'installer SteamCMD sur la machine (ni paquets i386) : le panel télécharge l'archive officielle de Valve dans un volume Docker au premier besoin.
+- Les montages de l'hôte `/opt/steamcmd` et `${STEAM_HOME:-$HOME}/Steam` sont remplacés par les volumes `steamcmd` et `steam_session` ; la variable `STEAM_HOME` ne sert plus. Après la mise à jour, le panel réinstalle SteamCMD de lui-même à la première mise à jour du jeu.
+
+**Correction — premier démarrage du serveur de jeu**
+
+- Le runtime **Visual C++ 2022** est installé automatiquement dans Wine (paquet livré par Steam, sinon Microsoft) et préféré à celui de Wine, incomplet : une installation neuve plantait au premier démarrage (« unimplemented function msvcp140.dll »).
+- La configuration créée au premier démarrage désignait le circuit par son identifiant (`brands_hatch`) au lieu de son nom (`Brands Hatch`) : le serveur plantait (« Trying to load a message with an empty path »).
+
+**Correction — mise à jour du serveur de jeu**
+
+- Un échec de téléchargement SteamCMD (« No subscription », etc.) était annoncé comme un succès : il est maintenant signalé clairement. Le compte « anonymous » n'est plus proposé par défaut : Steam lui refuse l'accès au serveur ACE EVO.
+
 ### v2.1.0 — 14/10/2026
 
 > Cette version regroupe plusieurs chantiers menés à partir de l'analyse du serveur de jeu. Toutes les nouvelles options sont **désactivées par défaut** : une configuration existante produit exactement les mêmes arguments qu'avant. Elle ajoute aussi les outils d'administration (journal d'audit, double authentification, sauvegarde, santé, exports CSV) et la compétition (ELO, championnats). Les nouvelles tables se créent toutes seules au démarrage.

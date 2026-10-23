@@ -18,7 +18,7 @@
 </p>
 
 <p align="center">
-  <a href="#-installation-docker-linux">🐧 Installation</a> •
+  <a href="#-installation">🚀 Installation</a> •
   <a href="#configuration">Configuration</a> •
   <a href="#mise-à-jour">Mise à jour</a> •
   <a href="#changelog">Changelog</a> •
@@ -170,77 +170,41 @@ Public ⊂ Pilote ⊂ Admin ⊂ Superadmin.
 
 ---
 
-## 🐧 Installation Docker (Linux)
+## 🚀 Installation
 
-**Prérequis** : Debian/Ubuntu (ou tout Linux), Docker + Docker Compose, compte Steam.
+Une seule commande installe le panel et son serveur de jeu (Docker, Wine compris) ; **la même commande le met à jour**. Rien à cloner, rien à configurer à la main : clés et mots de passe sont générés, et le panel installe lui-même SteamCMD puis vous propose de télécharger le serveur ACE EVO dès la première connexion — il suffit de saisir votre compte Steam.
 
-### 1. Télécharger le serveur ACE EVO via SteamCMD
+**Prérequis** : un compte Steam qui possède Assetto Corsa EVO (le compte anonyme de Steam n'a pas accès au serveur).
 
-```bash
-# Installation SteamCMD sur Debian/Ubuntu
-sudo dpkg --add-architecture i386
-sudo apt update
-sudo apt install -y lib32gcc-s1
-
-mkdir -p /opt/steamcmd && cd /opt/steamcmd
-curl -fsSL https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz | tar xz
-
-/opt/steamcmd/steamcmd.sh \
-  +@sSteamCmdForcePlatformType windows \
-  +login TON_COMPTE_STEAM \
-  +force_install_dir /opt/aceserver \
-  +app_update 4564210 validate \
-  +quit
-```
-
-### 2. Cloner le panel et copier les fichiers serveur
+### 🐧 Linux (Debian, Ubuntu…)
 
 ```bash
-git clone https://github.com/Zyphro3D/pannel-ac-evo-server.git /opt/pannel-ac-evo-server
-
-mkdir -p /opt/pannel-ac-evo-server/aceserver/configs
-cp -r /opt/aceserver/* /opt/pannel-ac-evo-server/aceserver/
+curl -fsSL https://raw.githubusercontent.com/Zyphro3D/pannel-ac-evo-server/master/install.sh | sudo bash
 ```
 
-### 3. Configurer
+Docker est proposé à l'installation s'il manque. Le panel s'installe dans `/opt/pannel-ac-evo-server` (option `--dir`).
 
-```bash
-cd /opt/pannel-ac-evo-server
-cp .env.example .env
-nano .env
+### 🪟 Windows 10 / 11
+
+Dans **Terminal (administrateur)** (clic droit sur Démarrer) :
+
+```powershell
+irm https://raw.githubusercontent.com/Zyphro3D/pannel-ac-evo-server/master/install.ps1 | iex
 ```
 
-Variables minimales à renseigner :
+Docker Desktop est installé (winget) s'il manque : redémarrez alors Windows, ouvrez Docker Desktop une fois, et relancez la commande. Le script ouvre aussi les ports du panel et du jeu dans le pare-feu Windows (réseau privé). Le panel s'installe dans `%USERPROFILE%\ace-evo-panel`.
 
-```env
-SECRET_KEY=           # python3 -c "import secrets; print(secrets.token_hex(32))"
-ADMIN_PASSWORD=
-SUPERADMIN_PASSWORD=
-PANEL_URL=            # https://votre-domaine.fr ou http://IP:4300
-SESSION_COOKIE_SECURE=true   # false si HTTP sans reverse proxy
-```
+> **Docker Desktop doit rester lancé** pour que le panel et le serveur tournent : activez *Settings → General → Start Docker Desktop when you sign in to your computer*.
 
-### 4. Builder et lancer
+### Ensuite
 
-```bash
-docker compose up -d --build
-```
+1. À la fin, le script affiche l'adresse du panel (`http://IP:4300`) et les identifiants générés (aussi dans le fichier `.env`) : **changez les mots de passe** dans le panel.
+2. Connectez-vous en **superadmin** : le panel propose de télécharger le serveur ACE EVO. Saisissez votre compte Steam (identifiant, mot de passe, code Steam Guard si demandé) — rien n'est conservé.
+3. Démarrez le serveur depuis la page **Serveur**. Au premier démarrage, le runtime Visual C++ nécessaire au serveur sous Wine s'installe tout seul (une à deux minutes).
 
-Deux containers sont construits puis démarrent :
-- **`ace-panel`** — Flask (Python), port 4300 — le build compile aussi le CSS Tailwind (Node.js embarqué dans l'image, aucune dépendance locale)
-- **`ace-server`** — Wine + AssettoCorsaEVOServer.exe, ports 9700 (TCP/UDP) + 8081 (HTTP)
+Premier lancement : environ 10 minutes (construction des images).
 
-Premier démarrage : ~5 min (build des images + initialisation Wine).
-
-```bash
-docker compose logs -f          # tous les logs
-docker compose logs -f panel    # panel uniquement
-docker compose logs -f aceserver # serveur de jeu uniquement
-```
-
-Le panel est accessible sur `http://IP:4300`.
-
-### 5. Ouvrir les ports (accès depuis internet)
+### Ouvrir les ports (accès depuis internet)
 
 Configurez une redirection de ports sur votre box/routeur vers l'IP locale de votre serveur.
 
@@ -253,7 +217,7 @@ Configurez une redirection de ports sur votre box/routeur vers l'IP locale de vo
 
 > **Multi-serveur** : chaque serveur supplémentaire utilise ses propres ports (ex. serveur 2 : 9701 TCP/UDP + 8082 HTTP). Ouvrez les ports correspondants.
 
-### 6. Accès HTTPS (optionnel)
+### Accès HTTPS (optionnel)
 
 **Mode 1 — HTTP direct** (défaut, aucune config supplémentaire)
 ```
@@ -302,13 +266,15 @@ Volumes persistants :
   ./aceserver      → /aceserver   (configs, résultats, binaires)
   ./media          → /panel/media (images circuits, véhicules, bannières)
   panel_data                      (base de données SQLite)
-  wine_prefix                     (prefix Wine du serveur principal)
+  wine_prefix                     (prefix Wine du serveur principal, runtime Visual C++ compris)
+  steamcmd                        (SteamCMD, installé automatiquement par le panel)
+  steam_session                   (fichiers de travail de SteamCMD)
 ```
 
 **Structure du dossier `aceserver/` :**
 ```
 aceserver/
-├── AssettoCorsaEVOServer.exe   ← installé via SteamCMD (non versionné)
+├── AssettoCorsaEVOServer.exe   ← téléchargé par le panel (SteamCMD), non versionné
 ├── cars.json                   ← liste des voitures disponibles
 ├── events_practice.json        ← modèles de sessions practice
 ├── events_race_weekend.json    ← modèles de sessions race weekend
@@ -408,24 +374,17 @@ Le bot TCP se connecte au serveur ACE EVO pour envoyer des messages de bienvenue
 
 ## Mise à jour
 
-```bash
-cd /opt/pannel-ac-evo-server
-git pull
+Relancez la commande d'installation (Linux : `curl … install.sh | sudo bash`, Windows : `irm … install.ps1 | iex`) : elle télécharge la dernière version, vérifie son empreinte SHA-256, remplace le code et reconstruit les containers.
 
-# Rebuild uniquement le panel (sans toucher au serveur de jeu)
-docker compose up -d --build panel
+Le `.env`, la base de données, les configurations et les fichiers du jeu ne sont jamais modifiés par une mise à jour. Les migrations de schéma s'appliquent automatiquement au démarrage.
 
-# Rebuild complet (panel + serveur de jeu + tous les serveurs additionnels)
-docker compose up -d --build
-```
-
-Le `.env` et la base de données ne sont jamais modifiés par une mise à jour. Les migrations de schéma s'appliquent automatiquement au démarrage.
+> **Installation faite avec `git clone`** : `git pull` puis `docker compose up -d --build` fonctionne toujours ; le script d'installation peut aussi être lancé dans le même dossier (`--dir`), vos réglages sont conservés.
 
 > **Rebuild complet et multi-serveur** : `docker-compose.override.yml` est auto-généré par le panel et référence tous vos serveurs additionnels. Un `docker compose up -d --build` reconstruit **tous** les containers (principal + additionnels) sans intervention manuelle.
 
-> **Personnalisations Docker locales** : ne modifiez pas `docker-compose.yml` directement — vos changements créeraient des conflits à chaque `git pull`. Utilisez `docker-compose.override.yml` à la place (Docker Compose le fusionne automatiquement). Notez que le panel régénère ce fichier pour la section `services` des serveurs additionnels ; ajoutez vos surcharges dans une section séparée.
+> **Personnalisations Docker locales** : ne modifiez pas `docker-compose.yml` directement — vos changements seraient écrasés à chaque mise à jour. Utilisez `docker-compose.override.yml` à la place (Docker Compose le fusionne automatiquement). Notez que le panel régénère ce fichier pour la section `services` des serveurs additionnels ; ajoutez vos surcharges dans une section séparée.
 
-> **Configs serveur** : les fichiers `aceserver/configs/*.json` sont créés et gérés par le panel, ils ne sont pas versionnés dans git. Un `git pull` ne les modifiera jamais.
+> **Configs serveur** : les fichiers `aceserver/configs/*.json` sont créés et gérés par le panel, ils ne sont pas versionnés. Une mise à jour ne les modifiera jamais.
 
 > **Ceci met à jour le panel, pas le serveur de jeu.** Pour mettre à jour ACE EVO Server lui-même (nouveau build Steam), utilisez le bouton de mise à jour dans l'interface (superadmin) — il lance SteamCMD avec suivi de progression, sans passer par la ligne de commande.
 
