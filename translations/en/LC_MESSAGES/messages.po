@@ -6251,3 +6251,61 @@ msgstr "Impacts"
 #~ msgid "Fin de session"
 #~ msgstr "Session ending"
 
+# Installation simple (première installation, progression SteamCMD)
+
+msgid "Serveur ACE EVO pas encore installé"
+msgstr "ACE EVO server not installed yet"
+
+msgid "le panel le télécharge pour vous : il suffit de saisir votre compte Steam."
+msgstr "the panel downloads it for you: just enter your Steam account."
+
+msgid "Installer le serveur"
+msgstr "Install the server"
+
+msgid "Le serveur ACE EVO n'est pas encore installé. Le panel le télécharge avec SteamCMD (installé automatiquement) : saisissez simplement votre compte Steam."
+msgstr "The ACE EVO server is not installed yet. The panel downloads it with SteamCMD (installed automatically): just enter your Steam account."
+
+msgid "Installation du serveur ACE EVO"
+msgstr "Installing the ACE EVO server"
+
+msgid "Le téléchargement peut prendre plusieurs minutes. Vous pouvez laisser cette fenêtre ouverte."
+msgstr "The download can take several minutes. You can leave this window open."
+
+msgid "Détails (sortie SteamCMD)"
+msgstr "Details (SteamCMD output)"
+
+msgid "Installer le serveur ACE EVO"
+msgstr "Install the ACE EVO server"
+
+msgid "Installer"
+msgstr "Install"
+
+msgid "Mise à jour du serveur ACE EVO"
+msgstr "Updating the ACE EVO server"
+
+msgid "Téléchargement du serveur..."
+msgstr "Downloading the server..."
+
+msgid "Installation de SteamCMD..."
+msgstr "Installing SteamCMD..."
+
+msgid "Préparation de SteamCMD..."
+msgstr "Preparing SteamCMD..."
+
+msgid "Connexion à Steam..."
+msgstr "Connecting to Steam..."
+
+msgid "Arrêt du serveur de jeu..."
+msgstr "Stopping the game server..."
+
+msgid "Finalisation (voitures et circuits)..."
+msgstr "Finishing (cars and tracks)..."
+
+msgid "Échec, voir les détails"
+msgstr "Failed, see details"
+
+msgid "Serveur ACE EVO installé : vous pouvez le démarrer depuis la page Serveur"
+msgstr "ACE EVO server installed: you can start it from the Server page"
+
+msgid "Aller à la page Serveur"
+msgstr "Go to the Server page"

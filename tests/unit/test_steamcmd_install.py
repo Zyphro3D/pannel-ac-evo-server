@@ -71,3 +71,36 @@ def test_echec_app_update_detecte_malgre_le_code_0():
     assert "compte anonyme" in steam_updater._install_failure(out, "anonymous")
     assert "« florian »" in steam_updater._install_failure(out, "florian")
     assert steam_updater._install_failure("Success! App '4564210' fully installed.", "florian") is None
+
+
+def _fake_run(monkeypatch, tmp_path, lines, rc=0):
+    exe = tmp_path / "steamcmd" / "steamcmd.sh"
+    exe.parent.mkdir(parents=True, exist_ok=True)
+    exe.write_text("#!/bin/sh\n")
+    monkeypatch.setattr(steam_updater, "_warmup", lambda *a, **k: iter(()))
+
+    def run(*a, **k):
+        for text in lines:
+            yield {"type": "line", "text": text}
+        yield {"type": "exit", "timed_out": False, "rc": rc}
+    monkeypatch.setattr(steam_updater, "_run_script", run)
+    return str(exe)
+
+
+def _events(gen):
+    import json as _json
+    return [_json.loads(m[len("data: "):]) for m in gen]
+
+
+def test_premiere_installation_se_termine_sans_attente_ni_faux_redemarrage(tmp_path, monkeypatch):
+    exe = _fake_run(monkeypatch, tmp_path, ["Success! App '4564210' fully installed."])
+    evs = _events(steam_updater.run_update(exe, str(tmp_path), "florian", "pw", "", "4564210", []))
+    assert evs[-1]["done"] and not evs[-1]["error"] and "installé" in evs[-1]["msg"]
+    assert not any("Synchronisation" in e["msg"] for e in evs)
+
+
+def test_echec_steamcmd_termine_en_erreur(tmp_path, monkeypatch):
+    exe = _fake_run(monkeypatch, tmp_path, ["ERROR! Failed to install app '4564210' (No subscription)"])
+    evs = _events(steam_updater.run_update(exe, str(tmp_path), "anonymous", "", "", "4564210", []))
+    assert evs[-1]["done"] and evs[-1]["error"]
+    assert any("compte anonyme" in e["msg"] for e in evs)

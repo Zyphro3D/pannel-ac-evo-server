@@ -337,6 +337,7 @@ def run_update(steamcmd: str, aceserver_dir: str, steam_user: str, steam_pass: s
             return
 
     # 2 — SteamCMD (installé automatiquement s'il manque)
+    steam_ok = False
     yield from _ensure_steamcmd(steamcmd, _msg)
     if not os.path.exists(steamcmd):
         yield _msg(f"✗ SteamCMD introuvable : {steamcmd}", error=True)
@@ -372,6 +373,7 @@ def run_update(steamcmd: str, aceserver_dir: str, steam_user: str, steam_pass: s
                     # le panel annonçait un succès alors que rien n'avait été téléchargé.
                     yield _msg(failure, error=True)
                 elif event["rc"] == 0:
+                    steam_ok = True
                     yield _msg("✓ SteamCMD terminé avec succès")
                     installed = _read_installed_buildid(aceserver_dir, appid)
                     if installed:
@@ -395,6 +397,15 @@ def run_update(steamcmd: str, aceserver_dir: str, steam_user: str, steam_pass: s
             yield _msg(f"✗ Erreur redémarrage du serveur {sid} : {e}", error=True)
     if restart_failed:
         yield _msg("✗ Au moins un serveur n'a pas pu redémarrer", error=True, done=True)
+        return
+    if not steam_ok:
+        # Fin explicite en erreur : sans elle, l'étape 4 se terminait sur un « ✓ » vert
+        yield _msg("✗ Le serveur de jeu n'a pas été installé ni mis à jour (voir ci-dessus)", error=True, done=True)
+        return
+    if not containers:
+        # Aucun serveur ne tournait (première installation) : rien à resynchroniser, les fichiers
+        # véhicules/circuits viennent du téléchargement lui-même
+        yield _msg("✓ Serveur ACE EVO installé et à jour", done=True)
         return
 
     # 4 — Attente de la régénération des données (cars.json, events). Le serveur de jeu

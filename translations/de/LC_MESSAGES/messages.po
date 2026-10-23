@@ -6316,3 +6316,61 @@ msgstr "Aufpralle"
 #~ msgid "Fin de session"
 #~ msgstr "Sitzungsende"
 
+# Installation simple (première installation, progression SteamCMD)
+
+msgid "Serveur ACE EVO pas encore installé"
+msgstr "ACE-EVO-Server noch nicht installiert"
+
+msgid "le panel le télécharge pour vous : il suffit de saisir votre compte Steam."
+msgstr "das Panel lädt ihn für Sie herunter: Geben Sie einfach Ihr Steam-Konto ein."
+
+msgid "Installer le serveur"
+msgstr "Server installieren"
+
+msgid "Le serveur ACE EVO n'est pas encore installé. Le panel le télécharge avec SteamCMD (installé automatiquement) : saisissez simplement votre compte Steam."
+msgstr "Der ACE-EVO-Server ist noch nicht installiert. Das Panel lädt ihn mit SteamCMD herunter (wird automatisch installiert): Geben Sie einfach Ihr Steam-Konto ein."
+
+msgid "Installation du serveur ACE EVO"
+msgstr "Installation des ACE-EVO-Servers"
+
+msgid "Le téléchargement peut prendre plusieurs minutes. Vous pouvez laisser cette fenêtre ouverte."
+msgstr "Der Download kann mehrere Minuten dauern. Sie können dieses Fenster offen lassen."
+
+msgid "Détails (sortie SteamCMD)"
+msgstr "Details (SteamCMD-Ausgabe)"
+
+msgid "Installer le serveur ACE EVO"
+msgstr "ACE-EVO-Server installieren"
+
+msgid "Installer"
+msgstr "Installieren"
+
+msgid "Mise à jour du serveur ACE EVO"
+msgstr "Aktualisierung des ACE-EVO-Servers"
+
+msgid "Téléchargement du serveur..."
+msgstr "Server wird heruntergeladen..."
+
+msgid "Installation de SteamCMD..."
+msgstr "SteamCMD wird installiert..."
+
+msgid "Préparation de SteamCMD..."
+msgstr "SteamCMD wird vorbereitet..."
+
+msgid "Connexion à Steam..."
+msgstr "Verbindung mit Steam..."
+
+msgid "Arrêt du serveur de jeu..."
+msgstr "Spielserver wird gestoppt..."
+
+msgid "Finalisation (voitures et circuits)..."
+msgstr "Abschluss (Fahrzeuge und Strecken)..."
+
+msgid "Échec, voir les détails"
+msgstr "Fehlgeschlagen, siehe Details"
+
+msgid "Serveur ACE EVO installé : vous pouvez le démarrer depuis la page Serveur"
+msgstr "ACE-EVO-Server installiert: Sie können ihn auf der Seite Server starten"
+
+msgid "Aller à la page Serveur"
+msgstr "Zur Seite Server"

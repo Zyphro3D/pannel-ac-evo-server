@@ -459,6 +459,29 @@
         </div>
       </div>
 
+      {# Fenêtre de progression : installation / mise à jour du serveur de jeu, visible où qu'on soit dans la page #}
+      <div id="steam-progress-modal" class="modal-overlay" style="display:none">
+        <div class="modal-box">
+          <div class="modal-head">
+            <h3 class="modal-title" id="sp-title">⬇ {{ _('Installation du serveur ACE EVO') }}</h3>
+          </div>
+          <div class="modal-body space-y-3">
+            <p class="text-sm" id="sp-step">{{ _('Connexion...') }}</p>
+            <div class="bg-surface2 rounded-full overflow-hidden" style="height:8px">
+              <div id="sp-bar" class="bg-accent" style="height:8px;width:0%;transition:width .4s"></div>
+            </div>
+            <p class="text-xs text-dim" id="sp-hint">{{ _('Le téléchargement peut prendre plusieurs minutes. Vous pouvez laisser cette fenêtre ouverte.') }}</p>
+            <details>
+              <summary class="text-xs text-dim cursor-pointer">{{ _('Détails (sortie SteamCMD)') }}</summary>
+              <pre id="sp-log" style="background:#0d1117;color:#e6edf3;border-radius:8px;padding:10px 12px;font-size:0.72rem;line-height:1.45;max-height:220px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;margin-top:8px"></pre>
+            </details>
+          </div>
+          <div class="modal-foot" id="sp-foot" style="display:none">
+            <button class="btn-primary btn-sm" type="button" id="sp-btn-close">{{ _('Fermer') }}</button>
+          </div>
+        </div>
+      </div>
+
       <script nonce="{{ csp_nonce }}">
       const _CSRF = document.querySelector('meta[name="csrf-token"]').content;
       function _fmtUptime(s) {
@@ -610,6 +633,45 @@
           btn.disabled = false; btn.textContent = '{{ _("Vérifier les mises à jour") }}';
         }
       }
+      const _sp = {
+        open(install) {
+          document.getElementById('sp-title').textContent = install
+            ? '⬇ {{ _("Installation du serveur ACE EVO") }}' : '⬆ {{ _("Mise à jour du serveur ACE EVO") }}';
+          document.getElementById('sp-step').textContent = '{{ _("Connexion...") }}';
+          document.getElementById('sp-bar').style.width = '0%';
+          document.getElementById('sp-log').textContent = '';
+          document.getElementById('sp-hint').style.display = '';
+          document.getElementById('sp-foot').style.display = 'none';
+          document.getElementById('steam-progress-modal').style.display = 'flex';
+        },
+        line(text) {
+          const log = document.getElementById('sp-log');
+          log.textContent += text + '\n';
+          log.scrollTop = log.scrollHeight;
+          // Étape lisible déduite de la sortie (la sortie brute reste dans « Détails »)
+          const step = document.getElementById('sp-step');
+          const pct = /progress:\s*([\d.]+)/.exec(text);
+          if (pct) {
+            const v = Math.min(100, parseFloat(pct[1]));
+            document.getElementById('sp-bar').style.width = v + '%';
+            step.textContent = '{{ _("Téléchargement du serveur...") }} ' + Math.floor(v) + ' %';
+          } else if (text.includes('SteamCMD absent')) step.textContent = '{{ _("Installation de SteamCMD...") }}';
+          else if (text.includes('Vérification de SteamCMD')) step.textContent = '{{ _("Préparation de SteamCMD...") }}';
+          else if (text.includes('Lancement de SteamCMD') || text.includes('Logging in')) step.textContent = '{{ _("Connexion à Steam...") }}';
+          else if (text.includes('Arrêt du serveur')) step.textContent = '{{ _("Arrêt du serveur de jeu...") }}';
+          else if (text.includes('Synchronisation')) step.textContent = '{{ _("Finalisation (voitures et circuits)...") }}';
+        },
+        done(error, text) {
+          document.getElementById('sp-step').textContent = error ? text : '✓ {{ _("Terminé") }}';
+          if (!error) document.getElementById('sp-bar').style.width = '100%';
+          document.getElementById('sp-hint').style.display = 'none';
+          document.getElementById('sp-foot').style.display = '';
+        },
+      };
+      document.getElementById('sp-btn-close').addEventListener('click', () => {
+        document.getElementById('steam-progress-modal').style.display = 'none';
+      });
+
       async function ctrUpdate(steamUser, steamPass, steamGuard) {
         const btn = document.getElementById('ctr-btn-update');
         const wrap = document.getElementById('ctr-terminal-wrap');
@@ -617,6 +679,9 @@
         const msg = document.getElementById('ctr-msg');
         btn.disabled = true; btn.textContent = '{{ _("Mise à jour en cours…") }}';
         wrap.style.display = ''; term.textContent = ''; msg.textContent = '';
+        const install = _steamModalAction === 'install';
+        let _lastError = '';
+        _sp.open(install);
         const body = {username: steamUser, password: steamPass};
         if (steamGuard) body.guard_code = steamGuard;
         try {
@@ -627,8 +692,10 @@
             body: JSON.stringify(body),
           });
           if (!resp.ok) {
-            term.textContent += `\n✗ {{ _("Erreur HTTP") }} ${resp.status}: ${await resp.text()}`;
+            const detail = `✗ {{ _("Erreur HTTP") }} ${resp.status}: ${await resp.text()}`;
+            term.textContent += '\n' + detail;
             msg.textContent = '✗ {{ _("Mise à jour échouée") }}';
+            _sp.line(detail); _sp.done(true, '✗ {{ _("Échec, voir les détails") }}');
             return;
           }
           const reader = resp.body.getReader();
@@ -645,12 +712,19 @@
                   const ev = JSON.parse(part.slice(6));
                   term.textContent += ev.msg + '\n';
                   term.scrollTop = term.scrollHeight;
+                  _sp.line(ev.msg);
+                  if (ev.error) _lastError = ev.msg;
                   if (ev.done) {
+                    _sp.done(ev.error, _lastError || '✗ {{ _("Échec, voir les détails") }}');
+                    if (!ev.error && install) {
+                      document.getElementById('sp-step').textContent = '✓ {{ _("Serveur ACE EVO installé : vous pouvez le démarrer depuis la page Serveur") }}';
+                    }
                     msg.textContent = ev.error ? '✗ {{ _("Mise à jour échouée") }}' : '✓ {{ _("Mise à jour terminée") }}';
                     setTimeout(ctrLoadInfo, 2000);
-                    if (!ev.error && _steamModalAction === 'install') {
-                      // Serveur installé : rechargement pour retirer le bandeau « pas encore installé »
-                      setTimeout(() => { location.href = {{ url_for('admin.settings', tab='server')|tojson }}; }, 4000);
+                    if (!ev.error && install) {
+                      // Serveur installé : « Fermer » mène à la page Serveur (le bandeau « pas encore installé » disparaît)
+                      document.getElementById('sp-btn-close').textContent = '{{ _("Aller à la page Serveur") }}';
+                      document.getElementById('sp-btn-close').onclick = () => { location.href = {{ url_for('admin.server')|tojson }}; };
                     }
                   }
                 } catch(_) {}
@@ -659,6 +733,7 @@
           }
         } catch(e) {
           term.textContent += `\n✗ ${e}`;
+          _sp.line(`✗ ${e}`); _sp.done(true, `✗ ${e}`);
         } finally {
           btn.disabled = false; btn.textContent = '{{ _("Mettre à jour") }}';
         }

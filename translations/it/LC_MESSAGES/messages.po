@@ -6313,3 +6313,61 @@ msgstr "Impatti"
 #~ msgid "Fin de session"
 #~ msgstr "Fine sessione"
 
+# Installation simple (première installation, progression SteamCMD)
+
+msgid "Serveur ACE EVO pas encore installé"
+msgstr "Server ACE EVO non ancora installato"
+
+msgid "le panel le télécharge pour vous : il suffit de saisir votre compte Steam."
+msgstr "il pannello lo scarica per te: basta inserire il tuo account Steam."
+
+msgid "Installer le serveur"
+msgstr "Installa il server"
+
+msgid "Le serveur ACE EVO n'est pas encore installé. Le panel le télécharge avec SteamCMD (installé automatiquement) : saisissez simplement votre compte Steam."
+msgstr "Il server ACE EVO non è ancora installato. Il pannello lo scarica con SteamCMD (installato automaticamente): basta inserire il tuo account Steam."
+
+msgid "Installation du serveur ACE EVO"
+msgstr "Installazione del server ACE EVO"
+
+msgid "Le téléchargement peut prendre plusieurs minutes. Vous pouvez laisser cette fenêtre ouverte."
+msgstr "Il download può richiedere diversi minuti. Puoi lasciare aperta questa finestra."
+
+msgid "Détails (sortie SteamCMD)"
+msgstr "Dettagli (output di SteamCMD)"
+
+msgid "Installer le serveur ACE EVO"
+msgstr "Installa il server ACE EVO"
+
+msgid "Installer"
+msgstr "Installa"
+
+msgid "Mise à jour du serveur ACE EVO"
+msgstr "Aggiornamento del server ACE EVO"
+
+msgid "Téléchargement du serveur..."
+msgstr "Download del server..."
+
+msgid "Installation de SteamCMD..."
+msgstr "Installazione di SteamCMD..."
+
+msgid "Préparation de SteamCMD..."
+msgstr "Preparazione di SteamCMD..."
+
+msgid "Connexion à Steam..."
+msgstr "Connessione a Steam..."
+
+msgid "Arrêt du serveur de jeu..."
+msgstr "Arresto del server di gioco..."
+
+msgid "Finalisation (voitures et circuits)..."
+msgstr "Completamento (auto e circuiti)..."
+
+msgid "Échec, voir les détails"
+msgstr "Non riuscito, vedi i dettagli"
+
+msgid "Serveur ACE EVO installé : vous pouvez le démarrer depuis la page Serveur"
+msgstr "Server ACE EVO installato: puoi avviarlo dalla pagina Server"
+
+msgid "Aller à la page Serveur"
+msgstr "Vai alla pagina Server"

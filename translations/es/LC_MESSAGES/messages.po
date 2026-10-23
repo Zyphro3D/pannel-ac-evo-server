@@ -6353,3 +6353,61 @@ msgstr "Impactos"
 #~ msgid "Fin de session"
 #~ msgstr "Fin de sesión"
 
+# Installation simple (première installation, progression SteamCMD)
+
+msgid "Serveur ACE EVO pas encore installé"
+msgstr "Servidor ACE EVO aún no instalado"
+
+msgid "le panel le télécharge pour vous : il suffit de saisir votre compte Steam."
+msgstr "el panel lo descarga por usted: solo tiene que introducir su cuenta de Steam."
+
+msgid "Installer le serveur"
+msgstr "Instalar el servidor"
+
+msgid "Le serveur ACE EVO n'est pas encore installé. Le panel le télécharge avec SteamCMD (installé automatiquement) : saisissez simplement votre compte Steam."
+msgstr "El servidor ACE EVO aún no está instalado. El panel lo descarga con SteamCMD (instalado automáticamente): solo tiene que introducir su cuenta de Steam."
+
+msgid "Installation du serveur ACE EVO"
+msgstr "Instalación del servidor ACE EVO"
+
+msgid "Le téléchargement peut prendre plusieurs minutes. Vous pouvez laisser cette fenêtre ouverte."
+msgstr "La descarga puede tardar varios minutos. Puede dejar esta ventana abierta."
+
+msgid "Détails (sortie SteamCMD)"
+msgstr "Detalles (salida de SteamCMD)"
+
+msgid "Installer le serveur ACE EVO"
+msgstr "Instalar el servidor ACE EVO"
+
+msgid "Installer"
+msgstr "Instalar"
+
+msgid "Mise à jour du serveur ACE EVO"
+msgstr "Actualización del servidor ACE EVO"
+
+msgid "Téléchargement du serveur..."
+msgstr "Descargando el servidor..."
+
+msgid "Installation de SteamCMD..."
+msgstr "Instalando SteamCMD..."
+
+msgid "Préparation de SteamCMD..."
+msgstr "Preparando SteamCMD..."
+
+msgid "Connexion à Steam..."
+msgstr "Conectando con Steam..."
+
+msgid "Arrêt du serveur de jeu..."
+msgstr "Deteniendo el servidor de juego..."
+
+msgid "Finalisation (voitures et circuits)..."
+msgstr "Finalizando (coches y circuitos)..."
+
+msgid "Échec, voir les détails"
+msgstr "Error, vea los detalles"
+
+msgid "Serveur ACE EVO installé : vous pouvez le démarrer depuis la page Serveur"
+msgstr "Servidor ACE EVO instalado: puede iniciarlo desde la página Servidor"
+
+msgid "Aller à la page Serveur"
+msgstr "Ir a la página Servidor"
