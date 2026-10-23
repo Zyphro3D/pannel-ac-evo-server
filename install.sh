@@ -91,7 +91,7 @@ else
     say "Téléchargement du panel $TAG"
     curl -fsSL -o "$TMP/panel.zip" "$BASE/pannel-ac-evo-docker-$TAG.zip" || die "Téléchargement impossible"
     if curl -fsSL -o "$TMP/SHA256SUMS" "$BASE/SHA256SUMS" 2>/dev/null; then
-        expected="$(grep " pannel-ac-evo-docker-$TAG.zip\$" "$TMP/SHA256SUMS" | cut -d' ' -f1)"
+        expected="$(grep " pannel-ac-evo-docker-$TAG.zip\$" "$TMP/SHA256SUMS" | cut -d' ' -f1 || true)"
         actual="$(sha256sum "$TMP/panel.zip" | cut -d' ' -f1)"
         [ -n "$expected" ] && [ "$expected" = "$actual" ] || die "Empreinte SHA-256 incorrecte : archive refusée"
         ok "Empreinte SHA-256 vérifiée"
@@ -123,9 +123,9 @@ mkdir -p aceserver/configs media
 
 ADMIN_PW=""
 SUPERADMIN_PW=""
-PANEL_PORT="$(grep -m1 '^PANEL_PORT=' .env 2>/dev/null | cut -d= -f2)"
+PANEL_PORT="$(grep -m1 '^PANEL_PORT=' .env 2>/dev/null | cut -d= -f2 || true)"   # pas de .env à la 1re installation
 PANEL_PORT="${PANEL_PORT:-4300}"
-IP="$(hostname -I 2>/dev/null | awk '{print $1}')"
+IP="$(hostname -I 2>/dev/null | awk '{print $1}' || true)"
 IP="${IP:-localhost}"
 
 if [ "$FIRST_INSTALL" -eq 1 ]; then
