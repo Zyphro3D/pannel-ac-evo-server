@@ -1,6 +1,6 @@
 # Changelog
 
-### À venir
+### v2.2.0 — 23/10/2026
 
 > Installation et mise à jour en **une commande**, sous Linux et désormais sous **Windows** (Docker Desktop). Toutes les étapes manuelles qui pouvaient être faites par le panel ont été retirées.
 
