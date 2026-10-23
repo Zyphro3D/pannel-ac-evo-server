@@ -64,3 +64,10 @@ def test_check_update_installe_steamcmd_s_il_manque(tmp_path, monkeypatch):
     assert calls == [str(target)]
     assert any("installation automatique" in m for m in msgs)
     assert "introuvable" in msgs[-1]      # le faux installateur n'a rien posé : erreur propre, pas de plantage
+
+
+def test_echec_app_update_detecte_malgre_le_code_0():
+    out = "Connecting anonymously to Steam Public...OK\nERROR! Failed to install app '4564210' (No subscription)\n"
+    assert "compte anonyme" in steam_updater._install_failure(out, "anonymous")
+    assert "« florian »" in steam_updater._install_failure(out, "florian")
+    assert steam_updater._install_failure("Success! App '4564210' fully installed.", "florian") is None

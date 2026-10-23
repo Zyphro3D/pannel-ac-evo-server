@@ -287,6 +287,19 @@ def check_update(steamcmd: str, steam_user: str, steam_pass: str, steam_guard: s
         yield _msg("⚠ Impossible de déterminer le dernier build depuis la réponse Steam", error=True, done=True)
 
 
+def _install_failure(output: str, steam_user: str) -> str | None:
+    """Message d'erreur lisible si la sortie de SteamCMD signale l'échec de `app_update`, sinon None."""
+    m = re.search(r"ERROR! Failed to install app '\d+' \(([^)]*)\)", output)
+    if not m:
+        return None
+    if m.group(1) == "No subscription":
+        if steam_user == "anonymous":
+            return ("✗ Le compte anonyme n'a pas accès au serveur ACE EVO : "
+                    "saisissez un compte Steam (identifiant, mot de passe, code Steam Guard si demandé)")
+        return f"✗ Le compte Steam « {steam_user} » n'a pas accès au serveur ACE EVO (No subscription)"
+    return f"✗ SteamCMD n'a pas pu installer le serveur : {m.group(1)}"
+
+
 def run_update(steamcmd: str, aceserver_dir: str, steam_user: str, steam_pass: str,
                steam_guard: str, appid: str, server_ids: list):
     """Générateur de messages SSE (format `data: {...}\\n\\n`) pour la mise à jour SteamCMD.
@@ -341,12 +354,18 @@ def run_update(steamcmd: str, aceserver_dir: str, steam_user: str, steam_pass: s
             f"app_update {appid}",
             "quit",
         ]
+        output = []
         try:
             for event in _run_script(steamcmd, steam_home, script_lines, timeout=_RUN_TIMEOUT):
                 if event["type"] == "line":
+                    output.append(event["text"])
                     yield _msg(event["text"])
                 elif event["timed_out"]:
                     yield _msg("✗ SteamCMD bloqué (Steam Guard ? identifiants ?) — arrêté après 15 min", error=True)
+                elif (failure := _install_failure("\n".join(output), steam_user)):
+                    # SteamCMD sort avec le code 0 même quand app_update échoue : sans ce contrôle,
+                    # le panel annonçait un succès alors que rien n'avait été téléchargé.
+                    yield _msg(failure, error=True)
                 elif event["rc"] == 0:
                     yield _msg("✓ SteamCMD terminé avec succès")
                     installed = _read_installed_buildid(aceserver_dir, appid)
