@@ -4,9 +4,11 @@ RUN apt-get update \
  && apt-get install -y --no-install-recommends xvfb xauth python3 \
  && rm -rf /var/lib/apt/lists/*
 
+# msvcp140/vcruntime140 = n,b : préférer le runtime Visual C++ de Microsoft (installé par
+# entrypoint.aceserver.sh) à celui de Wine, incomplet (le serveur plante dessus au démarrage)
 ENV WINEPREFIX=/root/.wine \
     WINEDEBUG=-all \
-    WINEDLLOVERRIDES="winemenubuilder.exe=d;setupapi=b;mscoree=d;mshtml=d" \
+    WINEDLLOVERRIDES="winemenubuilder.exe=d;setupapi=b;mscoree=d;mshtml=d;msvcp140,msvcp140_1,msvcp140_2,vcruntime140,vcruntime140_1,concrt140=n,b" \
     WINEARCH=win64 \
     DISPLAY=:99
 

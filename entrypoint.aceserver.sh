@@ -50,6 +50,31 @@ echo "[aceserver] Initializing Wine prefix..."
 wine wineboot 2>/dev/null || true
 echo "[aceserver] Wine ready."
 
+# Visual C++ 2022 runtime (msvcp140, vcruntime140...). Wine's own copy is incomplete and the server
+# aborts on it ("unimplemented function msvcp140.dll..."). Installed once into the Wine prefix
+# (wine_prefix volume): from the package Steam ships with the server when it is complete, otherwise
+# from Microsoft. WINEDLLOVERRIDES (Dockerfile) makes Wine use it instead of its builtin DLLs.
+VCDLL="$WINEPREFIX/drive_c/windows/system32/msvcp140.dll"
+if [ ! -f "$VCDLL" ] || grep -q "Wine builtin DLL" "$VCDLL"; then
+    VCREDIST=/aceserver/_CommonRedist/vcredist/2022/VC_redist.x64.exe
+    if [ ! -f "$VCREDIST" ]; then
+        VCREDIST=/tmp/vc_redist.x64.exe
+        echo "[aceserver] Downloading the Visual C++ 2022 runtime (Microsoft)..."
+        python3 -c "import sys, urllib.request; urllib.request.urlretrieve(sys.argv[1], sys.argv[2])" \
+            https://aka.ms/vs/17/release/vc_redist.x64.exe "$VCREDIST" || VCREDIST=""
+    fi
+    if [ -n "$VCREDIST" ]; then
+        echo "[aceserver] Installing the Visual C++ 2022 runtime into Wine..."
+        wine "$VCREDIST" /install /quiet /norestart 2>/dev/null || true
+        wineserver -w
+    fi
+    if grep -q "Wine builtin DLL" "$VCDLL" 2>/dev/null; then
+        echo "[aceserver] WARNING: Visual C++ runtime not installed, the server may crash at startup."
+    else
+        echo "[aceserver] Visual C++ 2022 runtime ready."
+    fi
+fi
+
 # If no launch config written by the panel, idle until the panel starts the server
 if [ ! -f "$LAUNCH_CONFIG" ]; then
     echo "[aceserver] No launch config found — idling. Use the panel to start the server."
