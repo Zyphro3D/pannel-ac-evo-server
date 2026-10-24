@@ -374,7 +374,9 @@ Le bot TCP se connecte au serveur ACE EVO pour envoyer des messages de bienvenue
 
 ## Mise à jour
 
-Relancez la commande d'installation (Linux : `curl … install.sh | sudo bash`, Windows : `irm … install.ps1 | iex`) : elle télécharge la dernière version, vérifie son empreinte SHA-256, remplace le code et reconstruit les containers.
+**Depuis le panel** : *Paramètres → Panel → Mise à jour du panel*, bouton « Mettre à jour » (superadmin). Chaque version est signée ; la machine vérifie signature et empreinte, reconstruit, redémarre et revient à la version précédente si le panel ne répond plus. Cette fonction s'active en lançant une fois la commande d'installation ci-dessous (elle installe l'agent de mise à jour : service systemd sous Linux, tâche planifiée à l'ouverture de session sous Windows).
+
+**À la main** : relancez la commande d'installation (Linux : `curl … install.sh | sudo bash`, Windows : `irm … install.ps1 | iex`) : elle télécharge la dernière version, vérifie son empreinte SHA-256, remplace le code et reconstruit les containers.
 
 Le `.env`, la base de données, les configurations et les fichiers du jeu ne sont jamais modifiés par une mise à jour. Les migrations de schéma s'appliquent automatiquement au démarrage.
 

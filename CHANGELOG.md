@@ -1,5 +1,18 @@
 # Changelog
 
+### À venir
+
+**Ajout — mise à jour du panel depuis le panel**
+
+- **Paramètres → Panel → Mise à jour du panel** (superadmin) : version installée, dernière version publiée avec ses notes, bouton **« Mettre à jour »** et fenêtre qui suit l'avancement (téléchargement, vérification, construction, redémarrage). Un bandeau signale aussi une nouvelle version (contrôle au plus toutes les 12 h).
+- **Chaque release est signée** (Ed25519, signature faite hors de la CI) : le panel vérifie le manifeste avec la clé publique qu'il embarque, puis la machine revérifie la signature **et** l'empreinte de l'archive avant d'installer. Une archive modifiée est refusée.
+- **Retour arrière automatique** : si la nouvelle version ne se construit pas ou si le panel ne répond plus après 5 minutes, le code et les images précédents sont rétablis. Valable aussi quand la mise à jour est lancée à la main.
+- Le panel n'obtient **aucun droit Docker de plus** : le bouton dépose seulement une demande dans le dossier `update/`, appliquée par un agent de la machine installé par le script d'installation (service systemd sous Linux, tâche planifiée à l'ouverture de session sous Windows). **Pour l'activer, relancez une fois la commande d'installation** ; ensuite, tout se fait depuis le panel.
+
+**Amélioration — reprise après un redémarrage de la machine**
+
+- Les serveurs de jeu qui tournaient avant une coupure ou un redémarrage de la machine repartent seuls au démarrage du panel. Un serveur arrêté volontairement ou qui a planté n'est pas relancé (comportement inchangé).
+
 ### v2.2.0 — 23/10/2026
 
 > Installation et mise à jour en **une commande**, sous Linux et désormais sous **Windows** (Docker Desktop). Toutes les étapes manuelles qui pouvaient être faites par le panel ont été retirées.
