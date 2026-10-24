@@ -6309,3 +6309,80 @@ msgstr "ACE EVO server installed: you can start it from the Server page"
 
 msgid "Aller à la page Serveur"
 msgstr "Go to the Server page"
+
+# Mise à jour du panel depuis le panel (manifeste signé)
+
+msgid "Agent de mise à jour absent : relancez une fois la commande d'installation sur la machine"
+msgstr "Update agent missing: run the install command once on the machine"
+
+msgid "Chaque version est signée : le panel et la machine vérifient la signature et l'empreinte avant d'installer, et reviennent à la version précédente si le panel ne redémarre pas. Réglages, base de données et fichiers du jeu sont conservés."
+msgstr "Every version is signed: the panel and the machine check the signature and the checksum before installing, and go back to the previous version if the panel does not restart. Settings, database and game files are kept."
+
+msgid "Construction de la nouvelle version (quelques minutes)..."
+msgstr "Building the new version (a few minutes)..."
+
+msgid "Demande transmise à la machine (prise en compte dans la minute)..."
+msgstr "Request sent to the machine (picked up within a minute)..."
+
+msgid "Le panel est à jour"
+msgstr "The panel is up to date"
+
+msgid "Le panel ne répondait pas : retour à la version précédente..."
+msgstr "The panel was not responding: going back to the previous version..."
+
+msgid "Le panel sera indisponible quelques instants pendant son redémarrage : laissez cette page ouverte."
+msgstr "The panel will be unavailable for a few moments while it restarts: keep this page open."
+
+msgid "Mettre à jour vers"
+msgstr "Update to"
+
+msgid "Mise à jour annulée, version précédente rétablie"
+msgstr "Update cancelled, previous version restored"
+
+msgid "Mise à jour du panel"
+msgstr "Panel update"
+
+msgid "Mise à jour du panel vers"
+msgstr "Updating the panel to"
+
+msgid "Nouvelle version disponible"
+msgstr "New version available"
+
+msgid "Nouvelle version du panel : v%(v)s"
+msgstr "New panel version: v%(v)s"
+
+msgid "Panel mis à jour en"
+msgstr "Panel updated to"
+
+msgid "Pour mettre à jour depuis le panel, relancez une fois la commande d'installation sur la machine : elle installe l'agent de mise à jour."
+msgstr "To update from the panel, run the install command once on the machine: it installs the update agent."
+
+msgid "Recharger la page"
+msgstr "Reload the page"
+
+msgid "Redémarrage du panel..."
+msgstr "Restarting the panel..."
+
+msgid "Téléchargement de la nouvelle version..."
+msgstr "Downloading the new version..."
+
+msgid "Une mise à jour est déjà demandée"
+msgstr "An update has already been requested"
+
+msgid "Version installée"
+msgstr "Installed version"
+
+msgid "Voir la mise à jour"
+msgstr "See the update"
+
+msgid "Vérification de la signature et de l'empreinte..."
+msgstr "Checking the signature and the checksum..."
+
+msgid "Vérification impossible"
+msgstr "Check failed"
+
+msgid "Vérifiez d'abord les mises à jour"
+msgstr "Check for updates first"
+
+msgid "Échec de la mise à jour"
+msgstr "Update failed"

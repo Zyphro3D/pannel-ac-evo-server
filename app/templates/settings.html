@@ -274,34 +274,34 @@
         const csrf = document.querySelector('meta[name="csrf-token"]').content;
         const $ = id => document.getElementById(id);
         const PHASES = {
-          requested: '{{ _("Demande transmise à la machine (prise en compte dans la minute)...") }}',
-          download:  '{{ _("Téléchargement de la nouvelle version...") }}',
-          verify:    '{{ _("Vérification de la signature et de l\'empreinte...") }}',
-          build:     '{{ _("Construction de la nouvelle version (quelques minutes)...") }}',
-          restart:   '{{ _("Redémarrage du panel...") }}',
-          rollback:  '{{ _("Le panel ne répondait pas : retour à la version précédente...") }}',
+          requested: {{ _("Demande transmise à la machine (prise en compte dans la minute)...")|tojson }},
+          download:  {{ _("Téléchargement de la nouvelle version...")|tojson }},
+          verify:    {{ _("Vérification de la signature et de l'empreinte...")|tojson }},
+          build:     {{ _("Construction de la nouvelle version (quelques minutes)...")|tojson }},
+          restart:   {{ _("Redémarrage du panel...")|tojson }},
+          rollback:  {{ _("Le panel ne répondait pas : retour à la version précédente...")|tojson }},
         };
         let target = null;
 
         async function check() {
-          $('pu-state').textContent = '{{ _("Vérification...") }}';
+          $('pu-state').textContent = {{ _("Vérification...")|tojson }};
           $('pu-go').style.display = 'none'; $('pu-notes').style.display = 'none';
           try {
             const r = await (await fetch('/api/panel-update/check', {method: 'POST', headers: {'X-CSRFToken': csrf}})).json();
             $('pu-agent').style.display = r.agent ? 'none' : '';
-            if (r.error) { $('pu-state').textContent = '✗ {{ _("Vérification impossible") }} : ' + r.error; return; }
-            if (!r.available) { $('pu-state').textContent = '✓ {{ _("Le panel est à jour") }} (v' + r.current + ')'; return; }
+            if (r.error) { $('pu-state').textContent = '✗ ' + {{ _("Vérification impossible")|tojson }} + ' : ' + r.error; return; }
+            if (!r.available) { $('pu-state').textContent = '✓ ' + {{ _("Le panel est à jour")|tojson }} + ' (v' + r.current + ')'; return; }
             target = r.latest;
-            $('pu-state').textContent = '{{ _("Nouvelle version disponible") }} : v' + r.latest;
+            $('pu-state').textContent = '' + {{ _("Nouvelle version disponible")|tojson }} + ' : v' + r.latest;
             const notes = (r.notes || {})[document.documentElement.lang] || (r.notes || {}).fr || '';
             if (notes) { $('pu-notes').textContent = notes; $('pu-notes').style.display = ''; }
-            if (r.agent) { $('pu-go').textContent = '⬆ {{ _("Mettre à jour vers") }} v' + r.latest; $('pu-go').style.display = ''; }
+            if (r.agent) { $('pu-go').textContent = '⬆ ' + {{ _("Mettre à jour vers")|tojson }} + ' v' + r.latest; $('pu-go').style.display = ''; }
           } catch (e) { $('pu-state').textContent = '✗ ' + e; }
         }
 
         function finish(ok, text) {
           $('pu-step').textContent = text; $('pu-hint').style.display = 'none'; $('pu-foot').style.display = '';
-          $('pu-close').textContent = ok ? '{{ _("Recharger la page") }}' : '{{ _("Fermer") }}';
+          $('pu-close').textContent = ok ? {{ _("Recharger la page")|tojson }} : {{ _("Fermer")|tojson }};
           $('pu-close').onclick = ok ? () => location.reload() : () => { $('pu-modal').style.display = 'none'; };
         }
 
@@ -309,15 +309,15 @@
           let st;
           try { st = await (await fetch('/api/panel-update/status', {cache: 'no-store'})).json(); }
           catch (e) { $('pu-step').textContent = PHASES.restart; return setTimeout(follow, 3000); }   // panel en redémarrage
-          if (st.phase === 'done' && st.current === target) return finish(true, '✓ {{ _("Panel mis à jour en") }} v' + target);
-          if (st.phase === 'rolled_back') return finish(false, '✗ {{ _("Mise à jour annulée, version précédente rétablie") }} : ' + (st.message || ''));
-          if (st.phase === 'error' && !st.pending) return finish(false, '✗ ' + (st.message || '{{ _("Échec de la mise à jour") }}'));
+          if (st.phase === 'done' && st.current === target) return finish(true, '✓ ' + {{ _("Panel mis à jour en")|tojson }} + ' v' + target);
+          if (st.phase === 'rolled_back') return finish(false, '✗ ' + {{ _("Mise à jour annulée, version précédente rétablie")|tojson }} + ' : ' + (st.message || ''));
+          if (st.phase === 'error' && !st.pending) return finish(false, '✗ ' + (st.message || {{ _("Échec de la mise à jour")|tojson }}));
           $('pu-step').textContent = st.pending ? PHASES.requested : (PHASES[st.phase] || PHASES.requested);
           setTimeout(follow, 3000);
         }
 
         async function start() {
-          $('pu-title').textContent = '⬆ {{ _("Mise à jour du panel vers") }} v' + target;
+          $('pu-title').textContent = '⬆ ' + {{ _("Mise à jour du panel vers")|tojson }} + ' v' + target;
           $('pu-step').textContent = PHASES.requested; $('pu-hint').style.display = ''; $('pu-foot').style.display = 'none';
           $('pu-modal').style.display = 'flex';
           const r = await fetch('/api/panel-update/start', {method: 'POST', headers: {'X-CSRFToken': csrf, 'Content-Type': 'application/json'},

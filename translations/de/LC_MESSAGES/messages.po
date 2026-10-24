@@ -6374,3 +6374,80 @@ msgstr "ACE-EVO-Server installiert: Sie können ihn auf der Seite Server starten
 
 msgid "Aller à la page Serveur"
 msgstr "Zur Seite Server"
+
+# Mise à jour du panel depuis le panel (manifeste signé)
+
+msgid "Agent de mise à jour absent : relancez une fois la commande d'installation sur la machine"
+msgstr "Update-Agent fehlt: Führen Sie den Installationsbefehl einmal auf dem Rechner aus"
+
+msgid "Chaque version est signée : le panel et la machine vérifient la signature et l'empreinte avant d'installer, et reviennent à la version précédente si le panel ne redémarre pas. Réglages, base de données et fichiers du jeu sont conservés."
+msgstr "Jede Version ist signiert: Panel und Rechner prüfen Signatur und Prüfsumme vor der Installation und kehren zur vorherigen Version zurück, wenn das Panel nicht neu startet. Einstellungen, Datenbank und Spieldateien bleiben erhalten."
+
+msgid "Construction de la nouvelle version (quelques minutes)..."
+msgstr "Neue Version wird gebaut (einige Minuten)..."
+
+msgid "Demande transmise à la machine (prise en compte dans la minute)..."
+msgstr "Anfrage an den Rechner übermittelt (wird innerhalb einer Minute übernommen)..."
+
+msgid "Le panel est à jour"
+msgstr "Das Panel ist aktuell"
+
+msgid "Le panel ne répondait pas : retour à la version précédente..."
+msgstr "Das Panel antwortete nicht: Rückkehr zur vorherigen Version..."
+
+msgid "Le panel sera indisponible quelques instants pendant son redémarrage : laissez cette page ouverte."
+msgstr "Das Panel ist während des Neustarts kurz nicht erreichbar: Lassen Sie diese Seite geöffnet."
+
+msgid "Mettre à jour vers"
+msgstr "Aktualisieren auf"
+
+msgid "Mise à jour annulée, version précédente rétablie"
+msgstr "Aktualisierung abgebrochen, vorherige Version wiederhergestellt"
+
+msgid "Mise à jour du panel"
+msgstr "Panel-Aktualisierung"
+
+msgid "Mise à jour du panel vers"
+msgstr "Panel wird aktualisiert auf"
+
+msgid "Nouvelle version disponible"
+msgstr "Neue Version verfügbar"
+
+msgid "Nouvelle version du panel : v%(v)s"
+msgstr "Neue Panel-Version: v%(v)s"
+
+msgid "Panel mis à jour en"
+msgstr "Panel aktualisiert auf"
+
+msgid "Pour mettre à jour depuis le panel, relancez une fois la commande d'installation sur la machine : elle installe l'agent de mise à jour."
+msgstr "Um aus dem Panel zu aktualisieren, führen Sie den Installationsbefehl einmal auf dem Rechner aus: Er installiert den Update-Agenten."
+
+msgid "Recharger la page"
+msgstr "Seite neu laden"
+
+msgid "Redémarrage du panel..."
+msgstr "Panel wird neu gestartet..."
+
+msgid "Téléchargement de la nouvelle version..."
+msgstr "Neue Version wird heruntergeladen..."
+
+msgid "Une mise à jour est déjà demandée"
+msgstr "Eine Aktualisierung wurde bereits angefordert"
+
+msgid "Version installée"
+msgstr "Installierte Version"
+
+msgid "Voir la mise à jour"
+msgstr "Aktualisierung ansehen"
+
+msgid "Vérification de la signature et de l'empreinte..."
+msgstr "Signatur und Prüfsumme werden geprüft..."
+
+msgid "Vérification impossible"
+msgstr "Prüfung nicht möglich"
+
+msgid "Vérifiez d'abord les mises à jour"
+msgstr "Suchen Sie zuerst nach Aktualisierungen"
+
+msgid "Échec de la mise à jour"
+msgstr "Aktualisierung fehlgeschlagen"
