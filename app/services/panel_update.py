@@ -29,7 +29,11 @@ except ImportError:          # chargé hors du paquet par release/verify_release
     import ed25519
 
 APP_ID = "ace-evo-panel"
-MANIFEST_URL = "https://github.com/Zyphro3D/pannel-ac-evo-server/releases/latest/download/latest-stable.json"
+# ACE_PANEL_RELEASE_BASE (.env) : autre dossier de releases, pour tester une mise à jour avant publication.
+# Sans danger : seul un manifeste signé par la clé ci-dessous est accepté.
+_RELEASE_BASE = os.environ.get("ACE_PANEL_RELEASE_BASE", "").rstrip("/")
+MANIFEST_URL = (f"{_RELEASE_BASE}/latest-stable.json" if _RELEASE_BASE else
+                "https://github.com/Zyphro3D/pannel-ac-evo-server/releases/latest/download/latest-stable.json")
 # Clé publique de publication (la clé privée ne quitte jamais la machine qui signe les releases)
 PUBLIC_KEY_B64 = "AKO3VutWivZTAxy1SMRZOHm9qQS1_Ee9vZ-_w2OoKhw"
 UPDATE_DIR = Path(os.environ.get("PANEL_UPDATE_DIR", "/panel/update"))
