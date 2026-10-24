@@ -9,6 +9,10 @@
 - **Retour arrière automatique** : si la nouvelle version ne se construit pas ou si le panel ne répond plus après 5 minutes, le code et les images précédents sont rétablis. Valable aussi quand la mise à jour est lancée à la main.
 - Le panel n'obtient **aucun droit Docker de plus** : le bouton dépose seulement une demande dans le dossier `update/`, appliquée par un agent de la machine installé par le script d'installation (service systemd sous Linux, tâche planifiée à l'ouverture de session sous Windows). **Pour l'activer, relancez une fois la commande d'installation** ; ensuite, tout se fait depuis le panel.
 
+**Correction — mise à jour avec des serveurs additionnels**
+
+- Le fichier `docker-compose.override.yml` (généré par le panel pour les serveurs additionnels) déclarait leurs volumes Wine sans leur vrai nom : une reconstruction complète (`docker compose up`, script d'installation) échouait avec « external volume "wine_prefix_2" not found ». Le panel écrit désormais le nom réel, et le script d'installation répare une fois l'ancien fichier avant la mise à jour.
+
 **Amélioration — reprise après un redémarrage de la machine**
 
 - Les serveurs de jeu qui tournaient avant une coupure ou un redémarrage de la machine repartent seuls au démarrage du panel. Un serveur arrêté volontairement ou qui a planté n'est pas relancé (comportement inchangé).

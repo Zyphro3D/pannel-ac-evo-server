@@ -217,6 +217,22 @@ mkdir -p aceserver/configs media update
 # Ce fichier doit exister avant le démarrage (sinon Docker crée un dossier à sa place)
 [ -d docker-compose.override.yml ] && rmdir docker-compose.override.yml 2>/dev/null || true
 [ -e docker-compose.override.yml ] || : > docker-compose.override.yml
+# Override écrit par une version antérieure à 2.3.0 : volumes Wine des serveurs additionnels déclarés
+# « external » sans leur vrai nom, compose refusait alors tout le projet. Le nouveau panel le régénère
+# correctement, mais seulement une fois démarré : on le répare ici, une fois, à partir du volume Wine
+# du serveur principal (ex. pannel-ac-evo-server_wine_prefix → …_wine_prefix_2).
+if grep -q '^    external: true$' docker-compose.override.yml && ! grep -q '^    name: ' docker-compose.override.yml; then
+    REF_VOL="$(docker inspect ace-server --format '{{range .Mounts}}{{if eq .Destination "/root/.wine"}}{{.Name}}{{end}}{{end}}' 2>/dev/null || true)"
+    if [ -n "$REF_VOL" ]; then
+        awk -v ref="$REF_VOL" '
+            /^  wine_prefix_[0-9]+:$/ { n = $1; sub(/^wine_prefix_/, "", n); sub(/:$/, "", n); print; next }
+            /^    external: true$/ && n != "" { print; print "    name: " ref "_" n; n = ""; next }
+            { print }' docker-compose.override.yml > docker-compose.override.yml.new
+        cat docker-compose.override.yml.new > docker-compose.override.yml   # même fichier (monté dans le panel)
+        rm -f docker-compose.override.yml.new
+        ok "Fichier override réparé (noms des volumes des serveurs additionnels)"
+    fi
+fi
 
 ADMIN_PW=""
 SUPERADMIN_PW=""

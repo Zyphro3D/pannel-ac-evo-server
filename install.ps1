@@ -211,6 +211,20 @@ New-Item -ItemType Directory -Force 'aceserver\configs', 'media', 'update' | Out
 # Ce fichier doit exister avant le démarrage (sinon Docker crée un dossier à sa place)
 if ((Test-Path 'docker-compose.override.yml' -PathType Container)) { Remove-Item 'docker-compose.override.yml' }
 if (-not (Test-Path 'docker-compose.override.yml')) { Write-Utf8NoBom (Join-Path $Dir 'docker-compose.override.yml') '' }
+# Override écrit par une version antérieure à 2.3.0 : volumes Wine des serveurs additionnels déclarés
+# « external » sans leur vrai nom, compose refusait alors tout le projet. Le nouveau panel le régénère
+# correctement, mais seulement une fois démarré : on le répare ici, une fois, à partir du volume Wine
+# du serveur principal (ex. ace-evo-panel_wine_prefix → …_wine_prefix_2).
+$overridePath = Join-Path $Dir 'docker-compose.override.yml'
+$override = [IO.File]::ReadAllText($overridePath)
+if ($override -match '(?m)^    external: true\r?$' -and $override -notmatch '(?m)^    name: ') {
+    $refVol = (Invoke-Native { docker inspect ace-server --format '{{range .Mounts}}{{if eq .Destination "/root/.wine"}}{{.Name}}{{end}}{{end}}' }) | Select-Object -First 1
+    if ($refVol -and $refVol -notmatch 'Error') {
+        $fixed = [regex]::Replace($override, '(?m)^  wine_prefix_(\d+):\r?\n    external: true\r?$', { param($m) $m.Value + "`n    name: $refVol" + '_' + $m.Groups[1].Value })
+        Write-Utf8NoBom $overridePath $fixed
+        Ok 'Fichier override réparé (noms des volumes des serveurs additionnels)'
+    }
+}
 
 $envText = if (Test-Path '.env') { [IO.File]::ReadAllText((Join-Path $Dir '.env')) } else { '' }
 $port = if ($envText -match '(?m)^PANEL_PORT=(\d+)') { $Matches[1] } else { '4300' }
