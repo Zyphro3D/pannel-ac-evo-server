@@ -24,3 +24,11 @@ def test_meme_nom_qu_a_la_creation_du_container():
 
 def test_aucun_serveur_additionnel():
     assert server_docker._compose_override_yaml([], "img").endswith("services: {}\nvolumes: {}\n")
+
+
+def test_serveur_additionnel_etiquete_comme_son_service_compose():
+    # Vécu en production (24/10) : sans étiquettes propres, le container héritait de celles de l'image
+    # (service « aceserver ») et compose refusait de créer server_2 (« name already in use »).
+    assert server_docker._compose_labels("pannel-ac-evo-server", 2) == {
+        "com.docker.compose.project": "pannel-ac-evo-server", "com.docker.compose.service": "server_2"}
+    assert server_docker._compose_labels("", 2) == {}

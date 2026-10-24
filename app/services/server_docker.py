@@ -48,8 +48,10 @@ def _inspect_reference_container() -> dict:
         env_vars[k] = v
 
     security_opt = attrs.get("HostConfig", {}).get("SecurityOpt") or []
+    compose_project = (attrs["Config"].get("Labels") or {}).get("com.docker.compose.project", "")
 
     return {
+        "compose_project":     compose_project,
         "aceserver_host_path": aceserver_host_path,
         "wine_volume_name":    wine_volume_name,
         "network_name":        network_name,
@@ -118,6 +120,7 @@ def create_server_container(server) -> dict:
             security_opt = info["security_opt"] or ["seccomp:unconfined"],
             network      = info["network_name"],
             restart_policy = {"Name": "no"},
+            labels       = _compose_labels(info["compose_project"], server.id),
             detach       = True,
         )
         log.info("Container '%s' créé (id=%s)", server.container_name, container.short_id)
@@ -163,6 +166,15 @@ def _reference_image() -> str:
         log.warning("_reference_image: inspection du container de référence impossible, "
                     "repli sur %s : %s", _ACESERVER_IMAGE, e)
         return _ACESERVER_IMAGE
+
+
+def _compose_labels(project: str, server_id: int) -> dict:
+    """Étiquettes compose du container d'un serveur additionnel. Sans elles, il héritait de celles de
+    l'image construite par compose (service « aceserver ») : compose le prenait pour une 2e copie du
+    serveur principal et refusait de créer le service server_N de l'override sous le même nom."""
+    if not project:
+        return {}
+    return {"com.docker.compose.project": project, "com.docker.compose.service": f"server_{server_id}"}
 
 
 def _wine_volume_name(reference_volume: str, server_id: int) -> str:

@@ -12,6 +12,7 @@
 **Correction — mise à jour avec des serveurs additionnels**
 
 - Le fichier `docker-compose.override.yml` (généré par le panel pour les serveurs additionnels) déclarait leurs volumes Wine sans leur vrai nom : une reconstruction complète (`docker compose up`, script d'installation) échouait avec « external volume "wine_prefix_2" not found ». Le panel écrit désormais le nom réel, et le script d'installation répare une fois l'ancien fichier avant la mise à jour.
+- Les containers des serveurs additionnels héritaient des étiquettes compose de l'image (service « aceserver ») : compose les prenait pour une copie du serveur principal et refusait de recréer le serveur additionnel (« container name … already in use »). Ils sont désormais créés avec leurs propres étiquettes ; le script d'installation reprend une fois les anciens (même volume Wine et mêmes fichiers, aucune perte) et relance ceux qui tournaient.
 
 **Amélioration — reprise après un redémarrage de la machine**
 

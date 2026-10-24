@@ -192,6 +192,7 @@ if [ "$FIRST_INSTALL" -eq 0 ] && [ -n "$PANEL_IMG" ]; then
     mkdir -p "$DIR/.rollback"
     tar -C "$DIR" --exclude=./aceserver --exclude=./media --exclude=./update --exclude=./.rollback \
         --exclude=./.env --exclude=./logs --exclude=./data --exclude=./.git --exclude=./update.log \
+        --exclude=./docker-compose.override.yml \
         -czf "$DIR/.rollback/code.tgz" .
     PANEL_NAME="$(docker inspect --format '{{.Config.Image}}' ace-panel)"
     SERVER_IMG="$(docker inspect --format '{{.Image}}' ace-server 2>/dev/null || true)"
@@ -264,8 +265,23 @@ fi
 RUNNING_BEFORE="$(docker compose ps --services --status running 2>/dev/null || true)"
 START="panel dockerproxy"
 for service in $RUNNING_BEFORE; do
-    case "$service" in panel|dockerproxy) ;; *) START="$START $service" ;; esac
+    case "$service" in panel|dockerproxy|server_*) ;; *) START="$START $service" ;; esac
 done
+
+# Serveurs additionnels créés par un panel antérieur à 2.3.0 : leur container porte les étiquettes
+# compose de l'image (service « aceserver ») au lieu de server_N, et compose refusait de créer
+# server_N sous le même nom. Ils sont retirés puis recréés par compose avec le même volume Wine et le
+# même dossier de jeu (rien n'est perdu) ; ceux qui tournaient sont relancés.
+while read -r svc name; do
+    [ -n "$name" ] || continue
+    label="$(docker inspect --format '{{index .Config.Labels "com.docker.compose.service"}}' "$name" 2>/dev/null || true)"
+    [ "$(docker inspect --format '{{.State.Running}}' "$name" 2>/dev/null || true)" = true ] && START="$START $svc"
+    if [ -n "$label" ] && [ "$label" != "$svc" ]; then
+        docker rm -f "$name" >/dev/null
+        ok "Serveur additionnel $name repris par docker compose"
+    fi
+done < <(awk '/^  server_[0-9]+:$/ { s = $1; sub(/:$/, "", s) }
+              /^    container_name: / && s != "" { print s, $2; s = "" }' docker-compose.override.yml)
 
 panel_up() {
     local deadline=$(( $(date +%s) + 300 ))
