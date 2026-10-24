@@ -64,10 +64,16 @@ function Invoke-Native([scriptblock] $Command) {
     finally { $ErrorActionPreference = $prev }
 }
 
+# Droits d'administration pour l'installation (pare-feu, profil réseau). Pas pour l'agent : un jeton
+# élevé lancé par une tâche planifiée a sa propre session de connexion, où le gestionnaire
+# d'identifiants Windows est absent et où Docker ne peut plus récupérer les images.
 $admin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-if (-not $admin) { Die 'Lancez cette commande dans « Terminal (administrateur) » (clic droit sur Démarrer).' }
+if (-not $admin -and -not $FromPanel) { Die 'Lancez cette commande dans « Terminal (administrateur) » (clic droit sur Démarrer).' }
 
 if ($FromPanel) {
+    # Une seule mise à jour à la fois, même si deux agents tournent (verrou système nommé)
+    $lock = New-Object Threading.Mutex($false, 'Local\AceEvoPanelUpdate')
+    if (-not $lock.WaitOne(0)) { Write-Host 'Mise à jour déjà en cours'; return }
     # Demande déposée par le panel : seule une version X.Y.Z est acceptée, et elle est consommée tout
     # de suite (l'agent ne la rejoue pas en boucle si quelque chose échoue)
     $reqFile = Join-Path $Dir 'update\request.json'
@@ -233,6 +239,7 @@ if ($firstInstall) {
 }
 
 # ── 5. Pare-feu Windows : panel et serveur de jeu joignables depuis le réseau ─
+# (installation à la main seulement : l'agent n'a pas les droits, et les règles existent déjà)
 if (-not $FromPanel) {
     $netProfile = Get-NetConnectionProfile | Where-Object { $_.IPv4Connectivity -ne 'Disconnected' } | Select-Object -First 1
     if ($netProfile -and $netProfile.NetworkCategory -eq 'Public') {
@@ -245,13 +252,13 @@ if (-not $FromPanel) {
             Warn 'Réseau laissé en Public : le panel ne sera joignable que depuis cette machine.'
         }
     }
+    Get-NetFirewallRule -Name 'ace-evo-panel-*' -ErrorAction SilentlyContinue | Remove-NetFirewallRule
+    New-NetFirewallRule -Name 'ace-evo-panel-tcp' -DisplayName 'AC EVO Panel (TCP)' -Direction Inbound -Protocol TCP `
+        -LocalPort $port, 9700, 8081 -Action Allow -Profile Private, Domain | Out-Null
+    New-NetFirewallRule -Name 'ace-evo-panel-udp' -DisplayName 'AC EVO Panel (UDP)' -Direction Inbound -Protocol UDP `
+        -LocalPort 9700 -Action Allow -Profile Private, Domain | Out-Null
+    Ok "Pare-feu : TCP $port, 9700, 8081 et UDP 9700 ouverts (réseaux privés)"
 }
-Get-NetFirewallRule -Name 'ace-evo-panel-*' -ErrorAction SilentlyContinue | Remove-NetFirewallRule
-New-NetFirewallRule -Name 'ace-evo-panel-tcp' -DisplayName 'AC EVO Panel (TCP)' -Direction Inbound -Protocol TCP `
-    -LocalPort $port, 9700, 8081 -Action Allow -Profile Private, Domain | Out-Null
-New-NetFirewallRule -Name 'ace-evo-panel-udp' -DisplayName 'AC EVO Panel (UDP)' -Direction Inbound -Protocol UDP `
-    -LocalPort 9700 -Action Allow -Profile Private, Domain | Out-Null
-Ok "Pare-feu : TCP $port, 9700, 8081 et UDP 9700 ouverts (réseaux privés)"
 
 # ── 6. Construction et démarrage ─────────────────────────────────────────────
 # Serveurs de jeu en marche avant la mise à jour : seuls eux sont relancés ensuite (un serveur
@@ -260,7 +267,8 @@ $runningBefore = @(Invoke-Native { docker compose ps --services --status running
 $start = @('panel', 'dockerproxy') + @($runningBefore | Where-Object { $_ -and $_ -notin 'panel', 'dockerproxy' })
 
 function Wait-Panel {
-    for ($i = 0; $i -lt 60; $i++) {
+    $deadline = (Get-Date).AddMinutes(5)
+    while ((Get-Date) -lt $deadline) {
         try { Invoke-WebRequest -UseBasicParsing "http://localhost:$port/login" -TimeoutSec 5 | Out-Null; return $true } catch { Start-Sleep 5 }
     }
     return $false
@@ -269,7 +277,8 @@ function Wait-Panel {
 function Undo-Update($reason) {
     Warn "$reason : retour à la version précédente"
     Set-Status 'rollback' $reason
-    robocopy (Join-Path $Dir '.rollback\code') $Dir /E /NFL /NDL /NJH /NJS /NP | Out-Null
+    # Copy-Item écrase toujours (robocopy saute un fichier de même taille et même date, même avec /IS)
+    Copy-Item -Recurse -Force (Join-Path $Dir '.rollback\code\*') $Dir
     Invoke-Native { docker tag ace-evo-panel-rollback:panel $panelName } | Out-Null
     if ($serverImg) { Invoke-Native { docker tag ace-evo-panel-rollback:server $serverName } | Out-Null }
     # --force-recreate : seul le contenu de l'image a changé, compose garderait le container cassé
@@ -302,8 +311,8 @@ if (-not (Wait-Panel)) {
 
 # ── 7. Agent de mise à jour : le bouton du panel relance ce script ───────────
 # Tâche planifiée à l'ouverture de session (Docker Desktop ne tourne que dans la session de
-# l'utilisateur), avec les droits d'administration (pare-feu) : une boucle discrète vérifie toutes
-# les 30 s si le panel a déposé une demande et lance alors ce script, dans un processus séparé.
+# l'utilisateur), avec ses droits normaux : une boucle discrète vérifie toutes les 30 s si le panel
+# a déposé une demande et lance alors ce script, dans un processus séparé.
 $agent = Join-Path $Dir 'update-agent.ps1'
 # install.ps1 est lu explicitement en UTF-8 : Windows PowerShell lirait un fichier sans BOM en ANSI
 # (accents des messages affichés par le panel). L'agent lui-même est écrit avec BOM pour la même raison.
@@ -327,8 +336,10 @@ while (`$true) {
 if (-not $FromPanel) {
     # Pas pendant une mise à jour demandée par le panel : arrêter la tâche tuerait ce script lui-même
     $action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$agent`""
-    $trigger = New-ScheduledTaskTrigger -AtLogOn -User "$env:USERDOMAIN\$env:USERNAME"
-    $principal = New-ScheduledTaskPrincipal -UserId "$env:USERDOMAIN\$env:USERNAME" -LogonType Interactive -RunLevel Highest
+    # Identité réelle (MACHINE\compte) : $env:USERDOMAIN vaut « WORKGROUP » dans certaines sessions
+    $me = [Security.Principal.WindowsIdentity]::GetCurrent().Name
+    $trigger = New-ScheduledTaskTrigger -AtLogOn -User $me
+    $principal = New-ScheduledTaskPrincipal -UserId $me -LogonType Interactive -RunLevel Limited
     $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit ([TimeSpan]::Zero) -MultipleInstances IgnoreNew
     Stop-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue
     Register-ScheduledTask -TaskName $TaskName -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force | Out-Null

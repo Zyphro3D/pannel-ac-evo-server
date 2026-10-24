@@ -252,8 +252,9 @@ for service in $RUNNING_BEFORE; do
 done
 
 panel_up() {
-    for _ in $(seq 1 60); do
-        curl -fsS -o /dev/null "http://localhost:$PANEL_PORT/login" 2>/dev/null && return 0
+    local deadline=$(( $(date +%s) + 300 ))
+    while [ "$(date +%s)" -lt "$deadline" ]; do
+        curl -fsS -m 5 -o /dev/null "http://localhost:$PANEL_PORT/login" 2>/dev/null && return 0
         sleep 5
     done
     return 1
