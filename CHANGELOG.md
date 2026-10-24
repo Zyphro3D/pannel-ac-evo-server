@@ -1,6 +1,6 @@
 # Changelog
 
-### À venir
+### v2.3.0 — 24/10/2026
 
 **Ajout — mise à jour du panel depuis le panel**
 
