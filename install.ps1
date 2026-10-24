@@ -280,16 +280,18 @@ if (-not $FromPanel) {
 $runningBefore = @(Invoke-Native { docker compose ps --services --status running })
 $start = @('panel', 'dockerproxy') + @($runningBefore | Where-Object { $_ -and $_ -notin 'panel', 'dockerproxy' -and $_ -notlike 'server_*' })
 
-# Serveurs additionnels créés par un panel antérieur à 2.3.0 : leur container porte les étiquettes
-# compose de l'image (service « aceserver ») au lieu de server_N, et compose refusait de créer
+# Serveurs additionnels créés par le panel (API Docker) plutôt que par compose : compose ne les
+# reconnaît pas comme les siens (étiquettes incomplètes, sans « config-hash ») et refuse de créer
 # server_N sous le même nom. Ils sont retirés puis recréés par compose avec le même volume Wine et le
 # même dossier de jeu (rien n'est perdu) ; ceux qui tournaient sont relancés.
 $overrideText = [IO.File]::ReadAllText((Join-Path $Dir 'docker-compose.override.yml'))
 foreach ($m in [regex]::Matches($overrideText, '(?m)^  (server_\d+):\r?\n    image: .*\r?\n    container_name: (\S+)')) {
     $svc = $m.Groups[1].Value; $name = $m.Groups[2].Value
+    if (-not ((Invoke-Native { docker inspect --format '{{.Name}}' $name }) -match '^/')) { continue }   # container absent
+    $hash = (Invoke-Native { docker inspect --format '{{index .Config.Labels "com.docker.compose.config-hash"}}' $name }) | Select-Object -First 1
     $label = (Invoke-Native { docker inspect --format '{{index .Config.Labels "com.docker.compose.service"}}' $name }) | Select-Object -First 1
     if ((Invoke-Native { docker inspect --format '{{.State.Running}}' $name }) -contains 'true') { $start += $svc }
-    if ($label -and $label -notmatch 'Error' -and $label -ne $svc) {
+    if (-not $hash -or $label -ne $svc) {
         Invoke-Native { docker rm -f $name } | Out-Null
         Ok "Serveur additionnel $name repris par docker compose"
     }

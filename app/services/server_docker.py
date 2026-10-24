@@ -174,7 +174,8 @@ def _compose_labels(project: str, server_id: int) -> dict:
     serveur principal et refusait de créer le service server_N de l'override sous le même nom."""
     if not project:
         return {}
-    return {"com.docker.compose.project": project, "com.docker.compose.service": f"server_{server_id}"}
+    return {"com.docker.compose.project": project, "com.docker.compose.service": f"server_{server_id}",
+            "com.docker.compose.oneoff": "False"}
 
 
 def _wine_volume_name(reference_volume: str, server_id: int) -> str:

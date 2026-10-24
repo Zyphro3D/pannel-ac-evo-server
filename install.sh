@@ -268,15 +268,17 @@ for service in $RUNNING_BEFORE; do
     case "$service" in panel|dockerproxy|server_*) ;; *) START="$START $service" ;; esac
 done
 
-# Serveurs additionnels créés par un panel antérieur à 2.3.0 : leur container porte les étiquettes
-# compose de l'image (service « aceserver ») au lieu de server_N, et compose refusait de créer
+# Serveurs additionnels créés par le panel (API Docker) plutôt que par compose : compose ne les
+# reconnaît pas comme les siens (étiquettes incomplètes, sans « config-hash ») et refuse de créer
 # server_N sous le même nom. Ils sont retirés puis recréés par compose avec le même volume Wine et le
 # même dossier de jeu (rien n'est perdu) ; ceux qui tournaient sont relancés.
 while read -r svc name; do
     [ -n "$name" ] || continue
+    docker inspect "$name" >/dev/null 2>&1 || continue
+    hash="$(docker inspect --format '{{index .Config.Labels "com.docker.compose.config-hash"}}' "$name" 2>/dev/null || true)"
     label="$(docker inspect --format '{{index .Config.Labels "com.docker.compose.service"}}' "$name" 2>/dev/null || true)"
     [ "$(docker inspect --format '{{.State.Running}}' "$name" 2>/dev/null || true)" = true ] && START="$START $svc"
-    if [ -n "$label" ] && [ "$label" != "$svc" ]; then
+    if [ -z "$hash" ] || [ "$label" != "$svc" ]; then
         docker rm -f "$name" >/dev/null
         ok "Serveur additionnel $name repris par docker compose"
     fi

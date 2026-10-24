@@ -30,5 +30,6 @@ def test_serveur_additionnel_etiquete_comme_son_service_compose():
     # Vécu en production (24/10) : sans étiquettes propres, le container héritait de celles de l'image
     # (service « aceserver ») et compose refusait de créer server_2 (« name already in use »).
     assert server_docker._compose_labels("pannel-ac-evo-server", 2) == {
-        "com.docker.compose.project": "pannel-ac-evo-server", "com.docker.compose.service": "server_2"}
+        "com.docker.compose.project": "pannel-ac-evo-server", "com.docker.compose.service": "server_2",
+        "com.docker.compose.oneoff": "False"}
     assert server_docker._compose_labels("", 2) == {}
