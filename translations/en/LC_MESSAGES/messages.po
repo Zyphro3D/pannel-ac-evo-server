@@ -1387,12 +1387,12 @@ msgid "Signaler un bug"
 msgstr "Report a bug"
 
 #: app/templates/base.html:386
-msgid "Licence MIT"
-msgstr "MIT License"
+msgid "Licence CC BY-NC 4.0"
+msgstr "CC BY-NC 4.0 License"
 
 #: app/templates/base.html:394
-msgid "Sous licence MIT"
-msgstr "MIT Licensed"
+msgid "Sous licence CC BY-NC 4.0"
+msgstr "Licensed under CC BY-NC 4.0"
 
 #: app/templates/base.html:396
 msgid ""
