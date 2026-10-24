@@ -239,6 +239,100 @@
         {% endif %}
       </section>
 
+      {% if current_user.is_superadmin %}
+      {# Mise à jour du panel : manifeste signé vérifié ici, appliquée par l'agent de la machine #}
+      <section class="settings-dashboard-grid mt-6" id="panel-update">
+        <div class="settings-card settings-card-full">
+          <div class="settings-card-head"><h2>{{ _('Mise à jour du panel') }}</h2></div>
+          <p class="text-sm">{{ _('Version installée') }} : <strong>v{{ app_version }}</strong></p>
+          <p class="text-sm mt-2" id="pu-state">{{ _('Vérification...') }}</p>
+          <div id="pu-notes" class="text-xs text-dim mt-2 bg-surface2 rounded-lg px-3 py-2" style="display:none;white-space:pre-wrap;max-height:240px;overflow-y:auto"></div>
+          <p id="pu-agent" class="text-xs text-dim mt-2" style="display:none">{{ _("Pour mettre à jour depuis le panel, relancez une fois la commande d'installation sur la machine : elle installe l'agent de mise à jour.") }}</p>
+          <div class="flex gap-3 flex-wrap mt-4">
+            <button id="pu-check" class="btn btn-secondary" type="button">{{ _('Vérifier les mises à jour') }}</button>
+            <button id="pu-go" class="btn btn-primary" type="button" style="display:none"></button>
+          </div>
+          <p class="text-xs text-dim mt-3">{{ _('Chaque version est signée : le panel et la machine vérifient la signature et l\'empreinte avant d\'installer, et reviennent à la version précédente si le panel ne redémarre pas. Réglages, base de données et fichiers du jeu sont conservés.') }}</p>
+        </div>
+      </section>
+
+      <div id="pu-modal" class="modal-overlay" style="display:none">
+        <div class="modal-box">
+          <div class="modal-head"><h3 class="modal-title" id="pu-title"></h3></div>
+          <div class="modal-body space-y-3">
+            <p class="text-sm" id="pu-step"></p>
+            <p class="text-xs text-dim" id="pu-hint">{{ _('Le panel sera indisponible quelques instants pendant son redémarrage : laissez cette page ouverte.') }}</p>
+          </div>
+          <div class="modal-foot" id="pu-foot" style="display:none">
+            <button class="btn-primary btn-sm" type="button" id="pu-close">{{ _('Fermer') }}</button>
+          </div>
+        </div>
+      </div>
+
+      <script nonce="{{ csp_nonce }}">
+      (function () {
+        const csrf = document.querySelector('meta[name="csrf-token"]').content;
+        const $ = id => document.getElementById(id);
+        const PHASES = {
+          requested: '{{ _("Demande transmise à la machine (prise en compte dans la minute)...") }}',
+          download:  '{{ _("Téléchargement de la nouvelle version...") }}',
+          verify:    '{{ _("Vérification de la signature et de l\'empreinte...") }}',
+          build:     '{{ _("Construction de la nouvelle version (quelques minutes)...") }}',
+          restart:   '{{ _("Redémarrage du panel...") }}',
+          rollback:  '{{ _("Le panel ne répondait pas : retour à la version précédente...") }}',
+        };
+        let target = null;
+
+        async function check() {
+          $('pu-state').textContent = '{{ _("Vérification...") }}';
+          $('pu-go').style.display = 'none'; $('pu-notes').style.display = 'none';
+          try {
+            const r = await (await fetch('/api/panel-update/check', {method: 'POST', headers: {'X-CSRFToken': csrf}})).json();
+            $('pu-agent').style.display = r.agent ? 'none' : '';
+            if (r.error) { $('pu-state').textContent = '✗ {{ _("Vérification impossible") }} : ' + r.error; return; }
+            if (!r.available) { $('pu-state').textContent = '✓ {{ _("Le panel est à jour") }} (v' + r.current + ')'; return; }
+            target = r.latest;
+            $('pu-state').textContent = '{{ _("Nouvelle version disponible") }} : v' + r.latest;
+            const notes = (r.notes || {})[document.documentElement.lang] || (r.notes || {}).fr || '';
+            if (notes) { $('pu-notes').textContent = notes; $('pu-notes').style.display = ''; }
+            if (r.agent) { $('pu-go').textContent = '⬆ {{ _("Mettre à jour vers") }} v' + r.latest; $('pu-go').style.display = ''; }
+          } catch (e) { $('pu-state').textContent = '✗ ' + e; }
+        }
+
+        function finish(ok, text) {
+          $('pu-step').textContent = text; $('pu-hint').style.display = 'none'; $('pu-foot').style.display = '';
+          $('pu-close').textContent = ok ? '{{ _("Recharger la page") }}' : '{{ _("Fermer") }}';
+          $('pu-close').onclick = ok ? () => location.reload() : () => { $('pu-modal').style.display = 'none'; };
+        }
+
+        async function follow() {
+          let st;
+          try { st = await (await fetch('/api/panel-update/status', {cache: 'no-store'})).json(); }
+          catch (e) { $('pu-step').textContent = PHASES.restart; return setTimeout(follow, 3000); }   // panel en redémarrage
+          if (st.phase === 'done' && st.current === target) return finish(true, '✓ {{ _("Panel mis à jour en") }} v' + target);
+          if (st.phase === 'rolled_back') return finish(false, '✗ {{ _("Mise à jour annulée, version précédente rétablie") }} : ' + (st.message || ''));
+          if (st.phase === 'error' && !st.pending) return finish(false, '✗ ' + (st.message || '{{ _("Échec de la mise à jour") }}'));
+          $('pu-step').textContent = st.pending ? PHASES.requested : (PHASES[st.phase] || PHASES.requested);
+          setTimeout(follow, 3000);
+        }
+
+        async function start() {
+          $('pu-title').textContent = '⬆ {{ _("Mise à jour du panel vers") }} v' + target;
+          $('pu-step').textContent = PHASES.requested; $('pu-hint').style.display = ''; $('pu-foot').style.display = 'none';
+          $('pu-modal').style.display = 'flex';
+          const r = await fetch('/api/panel-update/start', {method: 'POST', headers: {'X-CSRFToken': csrf, 'Content-Type': 'application/json'},
+                                                           body: JSON.stringify({version: target})});
+          if (!r.ok) return finish(false, '✗ ' + ((await r.json().catch(() => ({}))).error || r.status));
+          setTimeout(follow, 3000);
+        }
+
+        $('pu-check').addEventListener('click', check);
+        $('pu-go').addEventListener('click', start);
+        check();
+      })();
+      </script>
+      {% endif %}
+
       {# ═══════════════════════════════════════════════════════════════════════ #}
       {# ── SERVEUR ── Config jeu, infra ACE, mise à jour Steam ────────────── #}
       {# ═══════════════════════════════════════════════════════════════════════ #}

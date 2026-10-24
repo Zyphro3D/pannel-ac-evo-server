@@ -111,3 +111,6 @@ Thumbs.db
 desktop.ini
 slice_thumbnails.py
 tools/
+
+# Mise à jour depuis le panel (demande, avancement, sauvegarde de retour arrière)
+update/

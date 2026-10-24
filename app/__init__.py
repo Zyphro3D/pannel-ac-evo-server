@@ -560,6 +560,19 @@ def _register_request_hooks(app):
         return {"game_server_missing": False}
 
     @app.context_processor
+    def _inject_panel_update():
+        from flask_login import current_user
+        try:
+            if current_user.is_authenticated and current_user.is_superadmin:
+                from app.services import panel_update
+                panel_update.check_in_background(_APP_VERSION)
+                known = panel_update.cached()
+                return {"panel_update_latest": known.get("latest") if known.get("available") else None}
+        except Exception:
+            pass
+        return {"panel_update_latest": None}
+
+    @app.context_processor
     def _inject_env_drift():
         from flask_login import current_user
         try:

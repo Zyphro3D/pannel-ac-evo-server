@@ -335,6 +335,12 @@
         </div>
       </div>
     {% endif %}
+    {% if panel_update_latest and not (request.endpoint == 'admin.settings' and request.args.get('tab') == 'panel') %}
+      <div class="flash flash-info mx-4 mt-4" id="panel-update-banner">
+        <strong>{{ _('Nouvelle version du panel : v%(v)s', v=panel_update_latest) }}</strong>
+        <a href="{{ url_for('admin.settings', tab='panel') }}#panel-update" class="btn-secondary btn-sm ml-2">{{ _('Voir la mise à jour') }}</a>
+      </div>
+    {% endif %}
     {% if env_settings_drift %}
       <div class="flash flash-warning mx-4 mt-4" id="env-drift-banner">
         <strong>{{ _('Réglages .env ignorés') }}</strong>

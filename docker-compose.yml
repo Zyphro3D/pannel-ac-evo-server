@@ -42,6 +42,9 @@ services:
       - ./media:/panel/media
       # Fichier de configuration .env — monté pour que la page Paramètres lise/écrive les vraies valeurs
       - ./.env:/panel/.env
+      # Mise à jour du panel depuis le panel : demande déposée ici, appliquée par l'agent de la machine
+      # (install.sh / install.ps1), qui y écrit l'avancement — le panel n'a aucun droit Docker de plus
+      - ./update:/panel/update
       # SteamCMD : installé automatiquement par le panel dans ce volume au premier besoin
       # (plus rien à installer sur l'hôte, ce qui rend l'installation identique sous Windows)
       - steamcmd:/opt/steamcmd

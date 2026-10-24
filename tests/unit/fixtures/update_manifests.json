@@ -1,0 +1,39 @@
+{
+ "_about": "Manifestes de test sign\u00e9s avec une cl\u00e9 JETABLE (g\u00e9n\u00e9r\u00e9e pour ces tests, cl\u00e9 priv\u00e9e d\u00e9truite). Ne sert qu'\u00e0 tests/unit/test_panel_update.py.",
+ "public_key": "1eSZAqvJnYvMkFubnr9qE3U9zFdgRFMxSa1LAAO2his",
+ "archive": "contenu",
+ "valid": {
+  "body": "{\"app\":\"ace-evo-panel\",\"channel\":\"stable\",\"notes\":{\"fr\":\"notes\"},\"package\":{\"name\":\"pannel-ac-evo-docker-v9.9.9.zip\",\"sha256\":\"3016ef88e3166466281c563b984abed5412a2de823d37ed99c2af39be422fab1\",\"size\":7},\"version\":\"9.9.9\"}",
+  "sig": "gOpKWOsLvjJZx3_QHlp0aWZSf-N1n9mrq0ZQKqx7bqhgBFrzAK4g3m-MawNf24_XESaUTlO5JsvunQPnoYyuDg"
+ },
+ "tampered": {
+  "body": "{\"app\":\"ace-evo-panel\",\"channel\":\"stable\",\"notes\":{\"fr\":\"notes\"},\"package\":{\"name\":\"pannel-ac-evo-docker-v9.9.8.zip\",\"sha256\":\"3016ef88e3166466281c563b984abed5412a2de823d37ed99c2af39be422fab1\",\"size\":7},\"version\":\"9.9.8\"}",
+  "sig": "gOpKWOsLvjJZx3_QHlp0aWZSf-N1n9mrq0ZQKqx7bqhgBFrzAK4g3m-MawNf24_XESaUTlO5JsvunQPnoYyuDg"
+ },
+ "foreign_key": {
+  "body": "{\"app\":\"ace-evo-panel\",\"channel\":\"stable\",\"notes\":{\"fr\":\"notes\"},\"package\":{\"name\":\"pannel-ac-evo-docker-v9.9.9.zip\",\"sha256\":\"3016ef88e3166466281c563b984abed5412a2de823d37ed99c2af39be422fab1\",\"size\":7},\"version\":\"9.9.9\"}",
+  "sig": "0R1NsD6aOIqdK85-IwFfm-WvhBkm3Tef02krGJ48_3SlHpMJtdBxq6ABkt0vAa1rz34E0kfsrKBb30CglLGOAQ"
+ },
+ "incoherent": [
+  {
+   "body": "{\"app\":\"beammp-panel\",\"channel\":\"stable\",\"notes\":{\"fr\":\"notes\"},\"package\":{\"name\":\"pannel-ac-evo-docker-v9.9.9.zip\",\"sha256\":\"3016ef88e3166466281c563b984abed5412a2de823d37ed99c2af39be422fab1\",\"size\":7},\"version\":\"9.9.9\"}",
+   "sig": "2lXdo7Zx5pWaEFsVZaD6Pj7sxpfE3GR7Bx2LnBSZP919f-ApcfBpfZ_vQbEAIjdEVyf0bzYlA9iWWR7jAJVFAg"
+  },
+  {
+   "body": "{\"app\":\"ace-evo-panel\",\"channel\":\"beta\",\"notes\":{\"fr\":\"notes\"},\"package\":{\"name\":\"pannel-ac-evo-docker-v9.9.9.zip\",\"sha256\":\"3016ef88e3166466281c563b984abed5412a2de823d37ed99c2af39be422fab1\",\"size\":7},\"version\":\"9.9.9\"}",
+   "sig": "Ekbh0dXtPiXKLHt9LkOoUxJ9i3ahtisb2lDgw9rHO5cYquAWi8HHcBCSFfd2gKBL28STdeuioiodjUTSD0FuBw"
+  },
+  {
+   "body": "{\"app\":\"ace-evo-panel\",\"channel\":\"stable\",\"notes\":{\"fr\":\"notes\"},\"package\":{\"name\":\"pannel-ac-evo-docker-v2.3.zip\",\"sha256\":\"3016ef88e3166466281c563b984abed5412a2de823d37ed99c2af39be422fab1\",\"size\":7},\"version\":\"2.3\"}",
+   "sig": "YCr0z9VRzVPRx7GaZH6GwgOGphUq9Wy3DWgF3jbjU8wrh-OYL-Tt0HmIaYaLbMxmpJvznYi9UTKZi4bqipW0BQ"
+  },
+  {
+   "body": "{\"app\":\"ace-evo-panel\",\"channel\":\"stable\",\"notes\":{\"fr\":\"notes\"},\"package\":{\"name\":\"../evil.zip\",\"sha256\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"size\":3},\"version\":\"9.9.9\"}",
+   "sig": "L9m6YseOVkkD-A9K4Jna7ghc8OfSNXgSmM7gnrMiNSiu4zFoBrWQzaj5ayPgpCxJ0zSTdAGpkXctubRwgv4FBw"
+  },
+  {
+   "body": "{\"app\":\"ace-evo-panel\",\"channel\":\"stable\",\"notes\":{\"fr\":\"notes\"},\"package\":{\"name\":\"pannel-ac-evo-docker-v1.0.0.zip\",\"sha256\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"size\":3},\"version\":\"9.9.9\"}",
+   "sig": "rq-NGjnccliPKTZ87LU9kzANNWvq67OggzVSN6wVyE0Cx4KhdcXkLkC6GMgeoZoMolHe6BnkHJlJ5VgPbvuhDA"
+  }
+ ]
+}

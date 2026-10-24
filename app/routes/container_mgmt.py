@@ -203,3 +203,41 @@ def container_update():
         mimetype="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
+
+
+# ── Mise à jour du panel lui-même (manifeste signé, appliquée par l'agent de la machine) ──────
+
+@container_mgmt_bp.route("/api/panel-update/check", methods=["POST"])
+@superadmin_required
+def panel_update_check():
+    from app import _APP_VERSION
+    from app.services import panel_update
+    result = panel_update.check(_APP_VERSION)
+    result["agent"] = panel_update.agent_installed()
+    return jsonify(result)
+
+
+@container_mgmt_bp.route("/api/panel-update/start", methods=["POST"])
+@superadmin_required
+def panel_update_start():
+    from app.services import panel_update
+    version = str((request.get_json(silent=True) or {}).get("version", ""))
+    known = panel_update.cached()
+    # Seule la version annoncée par un manifeste vérifié peut être demandée (l'agent revérifie de son côté)
+    if not known.get("available") or known.get("latest") != version:
+        return jsonify({"error": _("Vérifiez d'abord les mises à jour")}), 409
+    if not panel_update.agent_installed():
+        return jsonify({"error": _("Agent de mise à jour absent : relancez une fois la commande d'installation sur la machine")}), 409
+    if panel_update.status().get("pending"):
+        return jsonify({"error": _("Une mise à jour est déjà demandée")}), 409
+    panel_update.request_update(version)
+    log.info("Mise à jour du panel demandée vers %s", version)
+    return jsonify({"ok": True})
+
+
+@container_mgmt_bp.route("/api/panel-update/status")
+@superadmin_required
+def panel_update_status():
+    from app import _APP_VERSION
+    from app.services import panel_update
+    return jsonify({**panel_update.status(), "current": _APP_VERSION})
