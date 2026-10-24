@@ -828,6 +828,54 @@ def _check_docker_restart_policy(server_id: int) -> None:
         log.debug("Impossible de vérifier la politique restart : %s", e)
 
 
+# Un container tué par un redémarrage de la machine est marqué « sorti » par Docker au moment où
+# le démon redémarre, donc juste APRÈS le démarrage de la machine : marge pour ce délai.
+_REBOOT_EXIT_MARGIN = 180
+
+
+def _host_boot_time() -> float | None:
+    """Heure de démarrage de la machine (les containers partagent le noyau de l'hôte)."""
+    try:
+        with open("/proc/uptime") as f:
+            return time.time() - float(f.read().split()[0])
+    except (OSError, ValueError, IndexError):
+        return None
+
+
+def _docker_time(value: str) -> float | None:
+    """Horodatage Docker (« 2026-10-23T18:54:56.123456789Z ») en secondes ; None si absent ou jamais."""
+    from datetime import datetime, timezone
+    try:
+        t = datetime.strptime(value[:19], "%Y-%m-%dT%H:%M:%S").replace(tzinfo=timezone.utc)
+    except (TypeError, ValueError):
+        return None
+    return t.timestamp() if t.year > 2000 else None   # « 0001-01-01 » = container jamais arrêté
+
+
+def _resume_after_host_reboot(server_id: int) -> bool:
+    """Relance un serveur de jeu arrêté par un redémarrage de la machine.
+
+    Le fichier d'état existe tant que le serveur doit tourner (un arrêt volontaire l'efface) et
+    les containers aceserver ont restart: "no" (le watchdog gère les redémarrages) : sans cette
+    reprise, une coupure de la machine laissait les serveurs arrêtés jusqu'à une action manuelle.
+    Un plantage ou un arrêt survenu après le démarrage de la machine n'est pas concerné."""
+    if not _read_state(server_id):
+        return False
+    container = _get_aceserver_container(server_id)
+    if not container:
+        return False
+    container.reload()
+    if container.status == "running":
+        return False
+    boot = _host_boot_time()
+    finished = _docker_time(container.attrs.get("State", {}).get("FinishedAt", ""))
+    if boot is None or finished is None or not (boot - 5 <= finished <= boot + _REBOOT_EXIT_MARGIN):
+        return False
+    log.warning("Reprise : serveur %d arrêté par le redémarrage de la machine, relance", server_id)
+    container.start()
+    return True
+
+
 def init_watchdog(exe_path: str, server_id: int = 1,
                   container_name: str = "", http_host: str = "", app=None):
     global _app
@@ -846,6 +894,10 @@ def init_watchdog(exe_path: str, server_id: int = 1,
         srv["wine_ready"].set()
     if _DEPLOY_MODE == "docker_split":
         _check_docker_restart_policy(server_id)
+        try:
+            _resume_after_host_reboot(server_id)
+        except Exception as e:
+            log.error("Reprise après redémarrage impossible (server=%d) : %s", server_id, e)
     _start_watchdog(server_id)
 
 
