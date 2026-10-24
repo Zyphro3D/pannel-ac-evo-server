@@ -144,7 +144,7 @@ try {
         if ($haveManifest -and $panelImg) {
             $out = Invoke-Native { docker run --rm --entrypoint python -v "${tmp}:/verify:ro" $panelImg /panel/release/verify_release.py /verify/latest-stable.json /verify/latest-stable.json.sig /verify/panel.zip $tag }
             if ($LASTEXITCODE -eq 0) { $signed = $true; Ok 'Signature et empreinte vérifiées' }
-            elseif (-not ($out -match 'No such file')) { Die "Release refusée : $($out -join ' ')" }
+            elseif (-not ($out -match 'No such file')) { Die ("Release refusée : " + (($out -join ' ') -replace '^refusé : ', '')) }
         }
         if (-not $signed) {
             # Première installation (aucun code de confiance en place) ou release sans manifeste signé
@@ -181,6 +181,12 @@ try {
         $panelName = (Invoke-Native { docker inspect --format '{{.Config.Image}}' ace-panel }) | Select-Object -First 1
         $serverImg = (Invoke-Native { docker inspect --format '{{.Image}}' ace-server }) | Where-Object { $_ -match '^sha256:' } | Select-Object -First 1
         $serverName = if ($serverImg) { (Invoke-Native { docker inspect --format '{{.Config.Image}}' ace-server }) | Select-Object -First 1 } else { '' }
+        # Un tag garde les images en place : sans lui, une image qui perd son nom à la construction
+        # est effacée dès qu'aucun container ne l'utilise (stockage containerd de Docker)
+        # (par le nom : avant la construction il désigne l'image en service ; l'identifiant renvoyé
+        # par « docker inspect » d'un container n'est pas accepté par « docker tag » avec containerd)
+        Invoke-Native { docker tag $panelName ace-evo-panel-rollback:panel } | Out-Null
+        if ($serverImg) { Invoke-Native { docker tag $serverName ace-evo-panel-rollback:server } | Out-Null }
         $rollback = $true
     }
 
@@ -264,9 +270,10 @@ function Undo-Update($reason) {
     Warn "$reason : retour à la version précédente"
     Set-Status 'rollback' $reason
     robocopy (Join-Path $Dir '.rollback\code') $Dir /E /NFL /NDL /NJH /NJS /NP | Out-Null
-    Invoke-Native { docker tag $panelImg $panelName } | Out-Null
-    if ($serverImg) { Invoke-Native { docker tag $serverImg $serverName } | Out-Null }
-    Invoke-Native { docker compose up -d --no-build @start } | Out-Null
+    Invoke-Native { docker tag ace-evo-panel-rollback:panel $panelName } | Out-Null
+    if ($serverImg) { Invoke-Native { docker tag ace-evo-panel-rollback:server $serverName } | Out-Null }
+    # --force-recreate : seul le contenu de l'image a changé, compose garderait le container cassé
+    Invoke-Native { docker compose up -d --no-build --force-recreate @start } | Out-Null
     Wait-Panel | Out-Null
     Set-Status 'rolled_back' $reason
     Write-Host " x  Mise à jour annulée ($reason) : version précédente rétablie" -ForegroundColor Red
@@ -332,6 +339,7 @@ if (-not $FromPanel) {
 }
 
 Remove-Item -Recurse -Force (Join-Path $Dir '.rollback') -ErrorAction SilentlyContinue
+Invoke-Native { docker rmi ace-evo-panel-rollback:panel ace-evo-panel-rollback:server } | Out-Null
 Set-Status 'done' "Panel $tag en ligne"
 Write-Host ''
 Ok "Panel AC EVO $tag en ligne : http://${ip}:$port"

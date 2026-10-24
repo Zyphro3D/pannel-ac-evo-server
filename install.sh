@@ -159,7 +159,7 @@ else
             signed=1
             ok "Signature et empreinte vérifiées"
         elif [ -n "$PANEL_IMG" ] && [ -s "$TMP/verify.err" ] && ! grep -q "No such file" "$TMP/verify.err"; then
-            die "Release refusée : $(cat "$TMP/verify.err")"
+            die "Release refusée : $(sed 's/^refusé : //' "$TMP/verify.err")"
         fi
     fi
     if [ "$signed" -eq 0 ]; then
@@ -196,6 +196,12 @@ if [ "$FIRST_INSTALL" -eq 0 ] && [ -n "$PANEL_IMG" ]; then
     PANEL_NAME="$(docker inspect --format '{{.Config.Image}}' ace-panel)"
     SERVER_IMG="$(docker inspect --format '{{.Image}}' ace-server 2>/dev/null || true)"
     SERVER_NAME="$(docker inspect --format '{{.Config.Image}}' ace-server 2>/dev/null || true)"
+    # Un tag garde les images en place : sans lui, une image qui perd son nom à la construction
+    # est effacée dès qu'aucun container ne l'utilise (stockage containerd de Docker)
+    # (par le nom : avant la construction il désigne l'image en service ; l'identifiant renvoyé
+    # par « docker inspect » d'un container n'est pas accepté par « docker tag » avec containerd)
+    docker tag "$PANEL_NAME" ace-evo-panel-rollback:panel
+    [ -z "$SERVER_IMG" ] || docker tag "$SERVER_NAME" ace-evo-panel-rollback:server
     ROLLBACK=1
 fi
 
@@ -254,14 +260,16 @@ panel_up() {
 }
 
 rollback() {
+    set +e    # aller au bout du retour arrière même si une étape échoue
     warn "$1 : retour à la version précédente"
     status rollback "$1"
     tar -C "$DIR" -xzf "$DIR/.rollback/code.tgz"
-    docker tag "$PANEL_IMG" "$PANEL_NAME"
-    [ -z "$SERVER_IMG" ] || docker tag "$SERVER_IMG" "$SERVER_NAME"
+    docker tag ace-evo-panel-rollback:panel "$PANEL_NAME"
+    [ -z "$SERVER_IMG" ] || docker tag ace-evo-panel-rollback:server "$SERVER_NAME"
+    # --force-recreate : seul le contenu de l'image a changé, compose garderait le container cassé
     # shellcheck disable=SC2086
-    docker compose up -d --no-build $START || true
-    panel_up || true
+    docker compose up -d --no-build --force-recreate $START
+    panel_up
     status rolled_back "$1"
     printf '\033[1;31m ✗\033[0m %s\n' "Mise à jour annulée ($1) : version précédente rétablie" >&2
     exit 1
@@ -314,6 +322,7 @@ else
 fi
 
 rm -rf "$DIR/.rollback"
+docker rmi ace-evo-panel-rollback:panel ace-evo-panel-rollback:server >/dev/null 2>&1 || true
 status "done" "Panel $TAG en ligne"
 echo
 ok "Panel AC EVO $TAG en ligne : http://$IP:$PANEL_PORT"
