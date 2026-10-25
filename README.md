@@ -24,19 +24,19 @@
   <a href="#mise-à-jour">Mise à jour</a> •
   <a href="#changelog">Changelog</a> •
   <a href="CONTRIBUTING.md">Contribuer</a> •
-  <a href="https://ko-fi.com/zyphro3d">☕ Soutenir</a>
+  <a href="https://patreon.com/Zyphro">Soutenir sur Patreon</a>
 </p>
 
 ---
 
 <p align="center">
   <strong>Le code source est public : utilisez-le et modifiez-le librement.</strong><br>
-  Si le panel tourne sur votre serveur et vous fait gagner du temps, un café est toujours apprécié ☕<br>
-  Chaque soutien encourage le développement de nouvelles fonctionnalités.
+  Si le panel tourne sur votre serveur et vous fait gagner du temps, vous pouvez soutenir Zyphro sur Patreon<br>
+  (versions en avance, et votre mot dans les prochaines fonctionnalités).
 </p>
 
 <p align="center">
-  <a href="https://ko-fi.com/zyphro3d"><img src="https://ko-fi.com/img/githubbutton_sm.svg" alt="Soutenir sur Ko-fi"></a>
+  <a href="https://patreon.com/Zyphro"><strong>Soutenir Zyphro sur Patreon</strong></a>
 </p>
 
 ---
@@ -405,9 +405,9 @@ Voir [CHANGELOG.md](CHANGELOG.md) pour l'historique complet des versions.
 ## Soutenir le projet
 
 Le panel est développé sur le temps libre, distribué gratuitement, et maintenu activement.
-Si vous l'utilisez pour vos courses ou votre club, un café aide à garder la motivation et à financer les prochaines fonctionnalités.
+Si vous l'utilisez pour vos courses ou votre club, le soutien sur Patreon aide à financer les prochaines fonctionnalités.
 
-<a href="https://ko-fi.com/zyphro3d"><img src="https://ko-fi.com/img/githubbutton_sm.svg" alt="Soutenir sur Ko-fi"></a>
+<a href="https://patreon.com/Zyphro"><strong>Soutenir Zyphro sur Patreon</strong></a>
 
 ---
 
