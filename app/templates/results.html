@@ -346,7 +346,7 @@
               </td>
               <td><span class="rd-nickname">{{ p.nickname }}</span>{% if p.provisional %} <span class="text-dim text-xs">({{ _('provisoire') }})</span>{% endif %}</td>
               <td class="mono"><strong>{{ p.rating }}</strong></td>
-              <td class="mono" style="color: {% if p.last_delta > 0 %}#2fbf71{% elif p.last_delta < 0 %}#e63946{% else %}inherit{% endif %}">{{ '%+.1f'|format(p.last_delta) }}</td>
+              <td class="mono" style="color: {% if p.last_delta > 0 %}var(--st-green){% elif p.last_delta < 0 %}var(--st-red){% else %}inherit{% endif %}">{{ '%+.1f'|format(p.last_delta) }}</td>
               <td class="mono">{{ p.races }}</td>
               <td class="mono">{{ p.wins }}</td>
               <td class="mono">{{ p.podiums }}</td>

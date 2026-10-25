@@ -104,7 +104,7 @@ pwd.addEventListener('input', () => {
   for (const [key, rule] of Object.entries(rules)) {
     const pass = rule.fn(v);
     rule.el.textContent = (pass ? '✓ ' : '✕ ') + labels[key];
-    rule.el.style.color = pass ? '#10b981' : '#8896a8';
+    rule.el.style.color = pass ? 'var(--st-green)' : 'var(--dim)';
   }
 });
 </script>

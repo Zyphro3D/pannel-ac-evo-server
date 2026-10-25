@@ -14,7 +14,7 @@
    Aussi appliqué aux zones posées sur une photo (bandeaux de circuit, cartes illustrées) :
    texte clair sur photo assombrie, quel que soit le thème choisi. */
 :root, .on-photo, .h-hero[style*="background-image"], .server-status-hero[style*="--banner"], .pub-srv-hero[style*="--srv-banner"],
-.h-result-card[style*="--srv-banner"], .ev-card-photo[style*="background-image"], .ev-card-single-right[style*="background-image"] {
+.h-result-card[style*="--srv-banner"], .result-card[style*="background-image"], .ev-card-photo[style*="background-image"], .ev-card-single-right[style*="background-image"] {
   color-scheme: dark;
   /* canaux RGB : couleurs avec transparence (Tailwind « bg-card/95 », main.css « rgb(var(--fg-rgb) / .05) ») */
   --fg-rgb: 255 255 255;       /* voile clair sur fond foncé ; s'inverse en thème clair */
@@ -52,6 +52,8 @@
   --accent2:      #f59e0b;
   --green:        #10b981;
   --blue:         #3b82f6;
+  /* texte d'état lisible sur le fond du thème (foncé : teintes claires ; clair : teintes profondes) */
+  --st-green: #34d399;  --st-amber: #fbbf24;  --st-purple: #c084fc;  --st-blue: #60a5fa;  --st-red: #f87171;
 
   --radius:       14px;
   --radius-sm:    9px;
@@ -72,6 +74,7 @@
     --tw-muted: 125 132 145;  --tw-accent: 200 50 58;  --tw-accent-dark: 168 38 43;
     --bg-hover: #e1e4e8;  --shadow: 0 18px 40px rgb(30 34 44 / .14);  --barbg: rgb(236 238 241 / .92);
     --border: rgb(var(--fg-rgb) / .12);  --border-light: rgb(var(--fg-rgb) / .24);
+    --st-green: #047857;  --st-amber: #b45309;  --st-purple: #7e22ce;  --st-blue: #1d4ed8;  --st-red: rgb(var(--tw-accent));
   }
 }
 :root[data-theme=light] {
@@ -82,6 +85,7 @@
   --tw-muted: 125 132 145;  --tw-accent: 200 50 58;  --tw-accent-dark: 168 38 43;
   --bg-hover: #e1e4e8;  --shadow: 0 18px 40px rgb(30 34 44 / .14);  --barbg: rgb(236 238 241 / .92);
   --border: rgb(var(--fg-rgb) / .12);  --border-light: rgb(var(--fg-rgb) / .24);
+  --st-green: #047857;  --st-amber: #b45309;  --st-purple: #7e22ce;  --st-blue: #1d4ed8;  --st-red: rgb(var(--tw-accent));
 }
 
 /* ── Typographie ──────────────────────────────────────────────── */
@@ -157,3 +161,48 @@ nav.fixed { background: var(--barbg) !important; border-bottom: 1px solid var(--
 .form-control, input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=hidden]):not([type=submit]):not([type=button]):not([type=file]), select, textarea {
   border-radius: 11px;
 }
+
+/* ── Couleurs d'état (données) : même teinte, intensité adaptée au thème ── */
+.badge-running, .t-sector-green, .veh-badge-ev, .veh-badge-road,
+.cal-event-chip.public, .cal-hour-event.public { color: var(--st-green); }
+.badge-deployed { color: var(--st-blue); }
+.t-sector-purple, .lb-time-purple, .veh-badge-yt, .circuit-top1-box-mine .circuit-top1-label { color: var(--st-purple); }
+.lb-time-gold, .veh-badge-vintage, .car-tag-collision, .config-dirty-icon { color: var(--st-amber); }
+.car-tag-race, .car-tag-mod { color: var(--st-red); }
+.badge-running, .badge-deployed { border-radius: 99px; }
+.text-red-400 { color: var(--st-red) !important; }
+.text-amber-400 { color: var(--st-amber) !important; }
+.bg-amber-900\/20 { background: rgb(245 158 11 / .1) !important; }
+.border-amber-900\/40 { border-color: rgb(245 158 11 / .35) !important; }
+
+/* Cartes de serveur de l'accueil sans photo : pas de voile sombre (il grisait le thème clair) */
+.pub-srv-hero:not([style*="--srv-banner"])::before { content: none; }
+.pub-srv-hero:not([style*="--srv-banner"]) * { text-shadow: none !important; }
+/* Étiquette posée sur une photo : fond sombre pour rester lisible */
+.result-card[style*="background-image"] .badge-info { background: rgb(13 14 17 / .6); }
+
+/* Bandeaux longs (liste + boutons) : le texte passe à la ligne au lieu de s'écraser en colonnes */
+.flash { flex-wrap: wrap; }
+.flash > ul, .flash > div, .flash > p { flex-basis: 100%; }
+.flash code { overflow-wrap: anywhere; }
+
+/* Grand bandeau d'accueil sans photo : simple surface du thème */
+.h-hero:not([style*="background-image"]) { background-color: var(--bg-card); border-bottom-color: var(--border); }
+.h-hero:not([style*="background-image"])::before { content: none; }
+
+/* Cartes de résultat sans photo de circuit : texte du thème, sans ombre portée */
+.result-card:not([style*="background-image"])::before { content: none; }
+.result-card:not([style*="background-image"]) .result-card-track { color: var(--text); text-shadow: none; }
+
+/* Icônes du menu latéral (Serveur, Paramètres) : tracé au trait, couleur du texte */
+.settings-side-icon { border: 0 !important; border-radius: 0 !important; width: 17px; height: 17px; flex-shrink: 0; background: currentColor;
+  -webkit-mask: var(--ico) center / contain no-repeat; mask: var(--ico) center / contain no-repeat; }
+.settings-side-icon:not([class*=" i-"]), .settings-side-icon.i- { display: none; }
+.settings-side-icon.i-status { --ico: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M3%2012h4l3-8%204%2016%203-8h4%22/%3E%3C/svg%3E"); }
+.settings-side-icon.i-config { --ico: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M4%206h10M18%206h2M4%2012h4M12%2012h8M4%2018h12M20%2018h0%22/%3E%3Ccircle%20cx%3D%2216%22%20cy%3D%226%22%20r%3D%222%22/%3E%3Ccircle%20cx%3D%2210%22%20cy%3D%2212%22%20r%3D%222%22/%3E%3Ccircle%20cx%3D%2218%22%20cy%3D%2218%22%20r%3D%222%22/%3E%3C/svg%3E"); }
+.settings-side-icon.i-calendar { --ico: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Crect%20x%3D%223.5%22%20y%3D%225%22%20width%3D%2217%22%20height%3D%2215%22%20rx%3D%222.5%22/%3E%3Cpath%20d%3D%22M3.5%2010h17M8%203v4M16%203v4%22/%3E%3C/svg%3E"); }
+.settings-side-icon.i-flag { --ico: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M5%2021V4%22/%3E%3Cpath%20d%3D%22M5%204h11l-2%204%202%204H5%22/%3E%3C/svg%3E"); }
+.settings-side-icon.i-panel { --ico: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Crect%20x%3D%223.5%22%20y%3D%224%22%20width%3D%2217%22%20height%3D%2216%22%20rx%3D%222.5%22/%3E%3Cpath%20d%3D%22M9%204v16%22/%3E%3C/svg%3E"); }
+.settings-side-icon.i-server { --ico: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Crect%20x%3D%223.5%22%20y%3D%224%22%20width%3D%2217%22%20height%3D%227%22%20rx%3D%222%22/%3E%3Crect%20x%3D%223.5%22%20y%3D%2213%22%20width%3D%2217%22%20height%3D%227%22%20rx%3D%222%22/%3E%3Cpath%20d%3D%22M7%207.5h.01M7%2016.5h.01%22/%3E%3C/svg%3E"); }
+.settings-side-icon.i-bell { --ico: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M6%2016V11a6%206%200%200%201%2012%200v5l1.5%202h-15z%22/%3E%3Cpath%20d%3D%22M10%2020.5a2%202%200%200%200%204%200%22/%3E%3C/svg%3E"); }
+.settings-side-icon.i-users { --ico: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Ccircle%20cx%3D%229%22%20cy%3D%228%22%20r%3D%223.2%22/%3E%3Cpath%20d%3D%22M3%2020a6%206%200%200%201%2012%200%22/%3E%3Cpath%20d%3D%22M16%204.6a3.2%203.2%200%200%201%200%206.3M18%2014.5a6%206%200%200%201%203%205.5%22/%3E%3C/svg%3E"); }

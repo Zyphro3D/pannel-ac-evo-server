@@ -105,12 +105,13 @@
 
   /* ─ Badges ─ */
   .badge {
-    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium;
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium;
   }
-  .badge-success { @apply bg-emerald-900/30 text-emerald-400 border border-emerald-900/40; }
-  .badge-error   { @apply bg-red-900/30    text-red-400    border border-red-900/40;   }
-  .badge-warning { @apply bg-amber-900/30  text-amber-400  border border-amber-900/40; }
-  .badge-info    { @apply bg-blue-900/30   text-blue-400   border border-blue-900/40;  }
+  .badge-success { color: var(--st-green); background: rgb(16 185 129 / .12); border: 1px solid rgb(16 185 129 / .3); }
+  .badge-error   { color: var(--st-red);   background: rgb(var(--red-rgb) / .1); border: 1px solid rgb(var(--red-rgb) / .3); }
+  .badge-warning { color: var(--st-amber); background: rgb(245 158 11 / .12); border: 1px solid rgb(245 158 11 / .3); }
+  /* étiquette neutre de la charte (type de session, catégorie) : verre, pas de couleur */
+  .badge-info    { color: var(--text); background: rgb(var(--fg-rgb) / .07); border: 1px solid var(--border-light); }
   .badge-neutral { @apply bg-surface       text-dim        border border-muted/30;      }
 
   /* ─ Tables ─ */

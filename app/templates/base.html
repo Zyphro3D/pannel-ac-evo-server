@@ -53,7 +53,7 @@
         <span class="w-2 h-2 rounded-full shrink-0
                      {% if cur_srv and cur_srv.id in server_running_ids %}bg-emerald-400{% else %}bg-muted{% endif %}">
         </span>
-        <span class="max-w-[140px] truncate">{{ cur_srv.name if cur_srv else _('Serveur') }}</span>
+        <span class="hidden sm:inline max-w-[140px] truncate">{{ cur_srv.name if cur_srv else _('Serveur') }}</span>
         {% if servers|length > 1 %}
         <svg class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 10 10" aria-hidden="true">
           <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
@@ -116,7 +116,7 @@
       {# ── Admin dropdown ── #}
       {% if current_user.is_authenticated and current_user.is_admin %}
       {% set _admin_eps = ('admin.server','events_admin.drivers_list','events_admin.events_list','live.live_page','admin.settings','admin.vehicles','admin.tracks','admin.mods','admin.servers_list','admin.my_account','events_admin.access_page','tools.health_page','tools.audit_page','tools.backup_page','championships.championships_admin','championships.championship_edit_page') %}
-      <div x-data="{ open: false }" class="relative" @click.outside="open = false">
+      <div x-data="{ open: false }" class="relative hidden sm:block" @click.outside="open = false">
         <button @click="open = !open"
                 class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm
                        transition-colors duration-150
@@ -228,12 +228,12 @@
         </a>
       {% else %}
         <a href="{{ url_for('auth.login') }}"
-           class="px-3 py-1.5 rounded-lg text-sm text-txt/80 hover:text-txt
+           class="hidden sm:flex px-3 py-1.5 rounded-lg text-sm text-txt/80 hover:text-txt
                   hover:bg-fg/5 transition-colors duration-150">
           {{ _('Connexion') }}
         </a>
         <a href="{{ url_for('public.register') }}"
-           class="px-3 py-1.5 rounded-lg text-sm bg-accent text-white
+           class="hidden sm:flex px-3 py-1.5 rounded-lg text-sm bg-accent text-white
                   hover:bg-accent-dark transition-colors duration-150">
           {{ _('Inscription') }}
         </a>

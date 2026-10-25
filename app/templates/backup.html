@@ -10,7 +10,7 @@
   </p>
 
   {% if restored %}
-  <div class="card mb-5" style="border-color: var(--yellow, #f0a500)">
+  <div class="card mb-5" style="border-color: var(--st-amber)">
     <p class="text-sm">
       <strong>{{ _('Restauration effectuée.') }}</strong>
       {{ _('Redémarrez le panel pour qu\'il utilise la base restaurée (docker compose restart panel). L\'état précédent a été sauvegardé dans %(n)s.', n=restored) }}
@@ -33,7 +33,7 @@
       {{ _('Le fichier avec réglages contient des secrets : gardez-le en lieu sûr. Les sauvegardes sont rangées sur le même disque que la base : téléchargez-en une régulièrement pour en avoir une copie ailleurs.') }}
     </p>
     <form method="post" action="{{ url_for('tools.backup_settings') }}" class="flex items-end gap-4 flex-wrap mt-4"
-          style="border-top:1px solid var(--border, rgba(255,255,255,.1)); padding-top:1rem">
+          style="border-top:1px solid var(--border, rgb(var(--fg-rgb) / .1)); padding-top:1rem">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <label class="toggle-label text-sm">
         <input type="hidden" name="BACKUP_AUTO" value="false">

@@ -33,7 +33,7 @@
       <div>
         <div class="text-xs text-dim mb-1">{{ label }}</div>
         {% if s.spark[key] %}
-        <svg viewBox="0 0 300 48" preserveAspectRatio="none" style="width:100%; height:56px; background:rgba(255,255,255,.03); border-radius:6px">
+        <svg viewBox="0 0 300 48" preserveAspectRatio="none" style="width:100%; height:56px; background:rgb(var(--fg-rgb) / .03); border-radius:6px">
           <polyline fill="none" stroke="{{ color }}" stroke-width="1.6" points="{{ s.spark[key] }}"/>
         </svg>
         {% else %}
@@ -60,13 +60,13 @@
     {% for d in snap.disks %}
     <div class="mt-4">
       <div class="flex justify-between text-xs text-dim mb-1"><span class="mono">{{ d.path }}</span><span>{{ d.free_gb }} Go {{ _('libres sur') }} {{ d.total_gb }} Go</span></div>
-      <div style="height:8px; background:rgba(255,255,255,.08); border-radius:4px; overflow:hidden">
+      <div style="height:8px; background:rgb(var(--fg-rgb) / .08); border-radius:4px; overflow:hidden">
         <div style="height:100%; width:{{ d.used_pct }}%; background:{% if d.used_pct > 90 %}#e63946{% elif d.used_pct > 75 %}#f0a500{% else %}#2fbf71{% endif %}"></div>
       </div>
     </div>
     {% endfor %}
     {% if not snap.last_backup_at %}
-    <p class="text-sm mt-4" style="color:#f0a500">{{ _('Aucune sauvegarde du panel n\'a encore été faite.') }}
+    <p class="text-sm mt-4" style="color:var(--st-amber)">{{ _('Aucune sauvegarde du panel n\'a encore été faite.') }}
       <a class="text-accent" href="{{ url_for('tools.backup_page') }}">{{ _('Sauvegarder maintenant') }}</a></p>
     {% endif %}
   </div>

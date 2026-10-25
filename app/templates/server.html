@@ -106,10 +106,10 @@
 
   <div class="server-layout">
     <aside class="server-sidebar settings-sidebar">
-      <a href="{{ url_for('admin.server', view='status') }}" class="settings-side-link {% if view == 'status' %}active{% endif %}"><span class="settings-side-icon"></span><span>{{ _('Statut') }}</span></a>
-      <a href="{{ url_for('admin.server', view='configuration') }}" class="settings-side-link {% if view in ['configuration', 'config_edit'] %}active{% endif %}"><span class="settings-side-icon"></span><span>{{ _('Configuration') }}</span></a>
-      <a href="{{ url_for('admin.server', view='rotation') }}" class="settings-side-link {% if view == 'rotation' %}active{% endif %}"><span class="settings-side-icon"></span><span>{{ _('Programmation') }}</span></a>
-      <a href="{{ url_for('admin.server', view='events') }}" class="settings-side-link {% if view == 'events' %}active{% endif %}"><span class="settings-side-icon"></span><span>{{ _('Événement') }}</span></a>
+      <a href="{{ url_for('admin.server', view='status') }}" class="settings-side-link {% if view == 'status' %}active{% endif %}"><span class="settings-side-icon i-status"></span><span>{{ _('Statut') }}</span></a>
+      <a href="{{ url_for('admin.server', view='configuration') }}" class="settings-side-link {% if view in ['configuration', 'config_edit'] %}active{% endif %}"><span class="settings-side-icon i-config"></span><span>{{ _('Configuration') }}</span></a>
+      <a href="{{ url_for('admin.server', view='rotation') }}" class="settings-side-link {% if view == 'rotation' %}active{% endif %}"><span class="settings-side-icon i-calendar"></span><span>{{ _('Programmation') }}</span></a>
+      <a href="{{ url_for('admin.server', view='events') }}" class="settings-side-link {% if view == 'events' %}active{% endif %}"><span class="settings-side-icon i-flag"></span><span>{{ _('Événement') }}</span></a>
       <div class="settings-global-status">
         <span>{{ _('Configuration active') }}</span>
         <strong>{{ active_config or _('Aucune') }}</strong>
@@ -449,7 +449,7 @@
             </option>
             {% endfor %}
           </select>
-          <span class="form-hint" id="pit-warning" style="display:none; color:var(--yellow,#f0a500)"
+          <span class="form-hint" id="pit-warning" style="display:none; color:var(--st-amber)"
                 data-msg="{{ _('Ce circuit n\'a que {pits} stands pour {max} joueurs maximum : les pilotes en trop ne pourront pas être placés.') }}"></span>
         </div>
 

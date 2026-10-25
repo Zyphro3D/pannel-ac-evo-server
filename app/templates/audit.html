@@ -51,7 +51,7 @@
       </thead>
       <tbody>
         {% for r in rows %}
-        <tr {% if not r.ok %}style="background: rgba(255, 80, 80, .08)"{% endif %}>
+        <tr {% if not r.ok %}style="background: rgb(var(--red-rgb) / .08)"{% endif %}>
           <td class="mono whitespace-nowrap">{{ r.ts.strftime('%Y-%m-%d %H:%M:%S') }}</td>
           <td>{{ r.actor or '—' }}{% if r.actor_role %} <span class="text-dim text-xs">({{ r.actor_role }})</span>{% endif %}</td>
           <td class="mono">{{ r.ip or '—' }}</td>
