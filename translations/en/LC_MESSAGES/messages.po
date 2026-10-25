@@ -1387,12 +1387,12 @@ msgid "Signaler un bug"
 msgstr "Report a bug"
 
 #: app/templates/base.html:386
-msgid "Licence CC BY-NC 4.0"
-msgstr "CC BY-NC 4.0 License"
+msgid "Licence Elastic 2.0"
+msgstr "Elastic License 2.0"
 
 #: app/templates/base.html:394
-msgid "Sous licence CC BY-NC 4.0"
-msgstr "Licensed under CC BY-NC 4.0"
+msgid "Sous licence Elastic 2.0"
+msgstr "Under Elastic License 2.0"
 
 #: app/templates/base.html:396
 msgid ""

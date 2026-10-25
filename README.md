@@ -5,7 +5,7 @@
 <h1 align="center">AC EVO Server Panel</h1>
 
 <p align="center">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/licence-CC%20BY--NC%204.0-lightgrey" alt="Licence"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/licence-Elastic%202.0-lightgrey" alt="Licence"></a>
   <img src="https://img.shields.io/github/v/release/Zyphro3D/pannel-ac-evo-server" alt="Dernière release">
   <img src="https://img.shields.io/github/last-commit/Zyphro3D/pannel-ac-evo-server" alt="Dernier commit">
   <img src="https://img.shields.io/github/issues/Zyphro3D/pannel-ac-evo-server" alt="Issues ouvertes">
@@ -29,7 +29,7 @@
 ---
 
 <p align="center">
-  <strong>Ce projet est gratuit et open source.</strong><br>
+  <strong>Le code source est public : utilisez-le et modifiez-le librement.</strong><br>
   Si le panel tourne sur votre serveur et vous fait gagner du temps, un café est toujours apprécié ☕<br>
   Chaque soutien encourage le développement de nouvelles fonctionnalités.
 </p>
@@ -409,6 +409,6 @@ Si vous l'utilisez pour vos courses ou votre club, un café aide à garder la mo
 
 ## Licence
 
-[CC BY-NC 4.0](LICENSE) — Usage personnel et communautaire libre, usage commercial interdit.
+[Elastic License 2.0](LICENSE) — vous pouvez utiliser, copier, modifier et redistribuer le panel, y compris pour un club ou une communauté qui encaisse des inscriptions. Il est interdit de le proposer à des tiers comme service hébergé ou géré (revendre l’accès au panel) et de retirer les mentions de licence. © 2026 Florian Praturlon. Les versions publiées jusqu’à la v2.3.0 restent sous CC BY-NC 4.0 pour celles et ceux qui les ont reçues.
 
 > **Crédits Wine** : approche Docker inspirée de [VandaLpr/acevo-docker-server](https://github.com/VandaLpr/acevo-docker-server).

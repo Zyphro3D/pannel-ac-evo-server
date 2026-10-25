@@ -1414,12 +1414,12 @@ msgid "Signaler un bug"
 msgstr "Signaler un bug"
 
 #: app/templates/base.html:386
-msgid "Licence CC BY-NC 4.0"
-msgstr "Licence CC BY-NC 4.0"
+msgid "Licence Elastic 2.0"
+msgstr "Licence Elastic 2.0"
 
 #: app/templates/base.html:394
-msgid "Sous licence CC BY-NC 4.0"
-msgstr "Sous licence CC BY-NC 4.0"
+msgid "Sous licence Elastic 2.0"
+msgstr "Sous licence Elastic 2.0"
 
 #: app/templates/base.html:396
 msgid ""

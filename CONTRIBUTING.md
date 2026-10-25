@@ -32,4 +32,4 @@ Le panel supporte 5 langues (FR / EN / ES / DE / IT). Si vous repérez une tradu
 
 ## Licence
 
-Ce projet est distribué sous licence [CC BY-NC 4.0](LICENSE) — usage personnel et communautaire libre, usage commercial interdit.
+Ce projet est distribué sous licence [Elastic License 2.0](LICENSE) : utilisation, modification et redistribution libres, sans revente comme service hébergé. En contribuant, vous acceptez que votre contribution soit distribuée sous cette licence.
