@@ -27,13 +27,15 @@ VOITURES = [
     ("preset_huracangt3_mech_1", "Lamborghini Huracán GT3 EVO2", 3.2), ("preset_amggt3_mech_1", "Mercedes-AMG GT3", 3.2),
 ]
 # circuit, tracé, tour de référence (ms), 3 secteurs (proportions)
-CIRCUITS = [
+CIRCUITS = [   # noms exacts du catalogue du jeu (events_*.json), sinon le classement ne les retrouve pas
     ("Brands Hatch", "GP", 86_500, (0.31, 0.37, 0.32)),
     ("Circuit de Spa Francorchamps", "GP", 138_200, (0.29, 0.44, 0.27)),
-    ("Autodromo Nazionale Monza", "GP", 108_400, (0.34, 0.33, 0.33)),
-    ("Autodromo Enzo e Dino Ferrari", "Imola", 101_300, (0.32, 0.36, 0.32)),
-    ("Nürburgring", "GP-Strecke", 115_900, (0.33, 0.35, 0.32)),
-    ("Suzuka Circuit", "GP", 121_700, (0.36, 0.33, 0.31)),
+    ("Monza", "GP", 108_400, (0.34, 0.33, 0.33)),
+    ("Imola", "GP", 101_300, (0.32, 0.36, 0.32)),
+    ("Nurburgring", "Gp Strecke", 115_900, (0.33, 0.35, 0.32)),
+    ("Suzuka", "GP", 121_700, (0.36, 0.33, 0.31)),
+    ("Red Bull Ring", "GP", 87_900, (0.30, 0.38, 0.32)),
+    ("Mount Panorama", "GP", 122_600, (0.33, 0.31, 0.36)),
 ]
 SESSIONS = ["Practice", "Qualify", "Race"]
 
