@@ -38,8 +38,10 @@
         <img src="{{ url_for('serve_media', filename='banner/' ~ panel_banner_img) }}"
              class="h-8 w-auto object-contain" alt="{{ panel_title }}">
       {% else %}
-        <span class="font-black text-accent tracking-tight text-lg leading-none">EVO</span>
-        <span class="font-semibold text-txt/80 text-sm leading-none">Panel</span>
+        <span class="zy-brand">
+          <span class="zy-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21V4"/><path d="M5 4h11l-2 4 2 4H5"/></svg></span>
+          <b>EVO Panel</b>
+        </span>
       {% endif %}
     </a>
 
@@ -176,6 +178,13 @@
         </div>
       </div>
       {% endif %}
+
+      {# ── Thème clair/foncé (charte : suit l'appareil, choix mémorisé) ── #}
+      <button type="button" class="theme-toggle" data-theme-toggle
+              aria-label="{{ _('Thème clair ou foncé') }}" title="{{ _('Thème clair ou foncé') }}">
+        <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.2M12 19.8V22M4.9 4.9l1.6 1.6M17.5 17.5l1.6 1.6M2 12h2.2M19.8 12H22M4.9 19.1l1.6-1.6M17.5 6.5l1.6-1.6"/></svg>
+      </button>
 
       {# ── Language dropdown ── #}
       <div x-data="{ open: false }" class="relative" @click.outside="open = false">

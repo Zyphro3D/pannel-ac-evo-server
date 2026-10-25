@@ -107,3 +107,52 @@ input, textarea, select { color-scheme: inherit; }
 body { background: var(--bg); }
 body::before { content: none; }
 .h-hero::after { content: none; }
+
+/* ═══ Composants (charte §4) ═══════════════════════════════════════════════ */
+
+/* Barre du haut : fond presque opaque + filet (le contenu qui défile dessous ne s'y mélange pas) */
+nav.fixed { background: var(--barbg) !important; border-bottom: 1px solid var(--border) !important;
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+.zy-brand { display: flex; align-items: center; gap: 10px; color: var(--text); }
+.zy-mark { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 10px; background: var(--accent); color: var(--on-red); }
+.zy-mark svg { width: 17px; height: 17px; }
+.zy-brand b { font: 600 17px/1 var(--display); letter-spacing: -.01em; }
+
+/* Bandeaux d'information : surface neutre, liseré et pastille de couleur seulement (pas de fond coloré) */
+.flash, .flash-success, .flash-error, .flash-warning, .flash-info {
+  background: var(--bg-card) !important; color: var(--text) !important;
+  border: 1px solid var(--border) !important; border-left: 3px solid var(--dim) !important;
+  border-radius: 14px; box-shadow: var(--shadow);
+}
+.flash-error, .flash-warning { border-left-color: var(--accent) !important; }
+.flash-success { border-left-color: var(--green) !important; }
+.flash strong, .flash b { color: var(--text); }
+.flash code { color: var(--accent); }
+
+/* Boutons : pilules, rouge plein pour l'action principale, verre pour le reste */
+.btn, .btn-primary, .btn-secondary, .btn-ghost, .btn-danger, .btn-success, .btn-start, .btn-stop, .cat-btn { border-radius: 99px !important; }
+.btn-primary { background: var(--accent) !important; color: var(--on-red) !important; border-color: transparent !important; box-shadow: none !important; }
+.btn-primary:hover { background: var(--accent-dark) !important; }
+.btn-secondary { background: rgb(var(--fg-rgb) / .055) !important; border: 1px solid var(--border-light) !important; color: var(--text) !important; }
+.btn-secondary:hover { background: rgb(var(--fg-rgb) / .1) !important; }
+.btn-danger { background: rgb(var(--red-rgb) / .1) !important; color: var(--accent) !important; border: 1px solid rgb(var(--red-rgb) / .35) !important; }
+
+/* Navigation latérale : élément actif en rouge plein, sans dégradé */
+.settings-side-link { border-radius: 12px; }
+.settings-side-link.active, .race-sidebar-link.active {
+  background: var(--accent) !important; color: var(--on-red) !important; box-shadow: none !important;
+}
+.race-sidebar-link.active::before { content: none; }
+
+/* Cartes : surface du thème, coins arrondis, ombre douce */
+.settings-card, .settings-sidebar, .card, .server-sidebar {
+  background: var(--bg-card) !important; border: 1px solid var(--border) !important;
+  border-radius: 18px !important; box-shadow: var(--shadow);
+}
+.settings-hero-mark { background: var(--accent) !important; border-radius: 14px !important; color: var(--on-red) !important; box-shadow: none !important; }
+.server-status-hero, .pub-srv-hero, .h-result-card, .h-hero { border-radius: 18px; overflow: hidden; }
+
+/* Champs */
+.form-control, input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=hidden]):not([type=submit]):not([type=button]):not([type=file]), select, textarea {
+  border-radius: 11px;
+}

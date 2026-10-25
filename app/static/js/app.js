@@ -981,3 +981,13 @@ document.addEventListener('pointerout', (e) => {
   const target = e.target.closest('[data-hover-tip]');
   if (target && !target.contains(e.relatedTarget)) _hideHoverTip();
 });
+
+// ── Thème clair/foncé (charte Zyphro) : bascule mémorisée, sinon le thème de l'appareil ──
+document.querySelectorAll('[data-theme-toggle]').forEach(btn => btn.addEventListener('click', () => {
+  const root = document.documentElement;
+  const current = root.getAttribute('data-theme')
+    || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+  const next = current === 'light' ? 'dark' : 'light';
+  root.setAttribute('data-theme', next);
+  try { localStorage.setItem('zy-theme', next); } catch (e) { /* stockage indisponible : choix non mémorisé */ }
+}));
