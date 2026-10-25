@@ -121,6 +121,8 @@ nav.fixed { background: var(--barbg) !important; border-bottom: 1px solid var(--
 .zy-brand { display: flex; align-items: center; gap: 10px; color: var(--text); }
 .zy-mark { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 10px; background: var(--accent); color: var(--on-red); }
 .zy-mark svg { width: 17px; height: 17px; }
+.zy-mark.zy { background: none; border-radius: 9px; overflow: hidden; box-shadow: 0 0 0 1px rgb(255 255 255 / .16); } /* logo Zyphro (~/dev/zyphro-brand/zyphro-icon.svg), 25/10/2026 */
+.zy-mark.zy svg { width: 100%; height: 100%; display: block; }
 .zy-brand b { font: 600 17px/1 var(--display); letter-spacing: -.01em; }
 
 /* Bandeaux d'information : surface neutre, liseré et pastille de couleur seulement (pas de fond coloré) */
