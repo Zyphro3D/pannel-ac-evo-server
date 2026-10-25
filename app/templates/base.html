@@ -34,9 +34,6 @@
       {% if panel_logo_img %}
         <img src="{{ url_for('serve_media', filename='banner/' ~ panel_logo_img) }}"
              class="h-8 w-auto object-contain" alt="{{ panel_title }}">
-      {% elif panel_banner_img %}
-        <img src="{{ url_for('serve_media', filename='banner/' ~ panel_banner_img) }}"
-             class="h-8 w-auto object-contain" alt="{{ panel_title }}">
       {% else %}
         <span class="zy-brand">
           <span class="zy-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21V4"/><path d="M5 4h11l-2 4 2 4H5"/></svg></span>

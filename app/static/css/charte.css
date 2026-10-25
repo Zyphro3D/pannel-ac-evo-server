@@ -13,7 +13,8 @@
 /* ── Thème foncé (par défaut) ───────────────────────────────────
    Aussi appliqué aux zones posées sur une photo (bandeaux de circuit, cartes illustrées) :
    texte clair sur photo assombrie, quel que soit le thème choisi. */
-:root, .on-photo, .h-hero, .server-status-hero, .pub-srv-hero, .h-result-card, .ev-card-photo, .ev-card-single-right {
+:root, .on-photo, .h-hero[style*="background-image"], .server-status-hero[style*="--banner"], .pub-srv-hero[style*="--srv-banner"],
+.h-result-card[style*="--srv-banner"], .ev-card-photo[style*="background-image"], .ev-card-single-right[style*="background-image"] {
   color-scheme: dark;
   /* canaux RGB : couleurs avec transparence (Tailwind « bg-card/95 », main.css « rgb(var(--fg-rgb) / .05) ») */
   --fg-rgb: 255 255 255;       /* voile clair sur fond foncé ; s'inverse en thème clair */
