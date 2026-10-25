@@ -45,7 +45,7 @@
 <table>
   <tr>
     <td><img src="docs/screenshots/home.png" alt="Page d'accueil" title="Page d'accueil publique"></td>
-    <td><img src="docs/screenshots/live-timing.png" alt="Timing en direct" title="Timing en direct"></td>
+    <td><img src="docs/screenshots/results-light.png" alt="Détail d'un résultat, thème clair" title="Le même panel en thème clair"></td>
   </tr>
   <tr>
     <td><img src="docs/screenshots/results-overview.png" alt="Résultats" title="Résultats de session"></td>
@@ -164,6 +164,7 @@ Public ⊂ Pilote ⊂ Admin ⊂ Superadmin.
 - **Récapitulatif de fin de session** (option) : podium, meilleur tour, incidents et sanctions regroupés par pilote ; notification des bannissements
 
 **🎨 Interface**
+- **Thème clair et thème foncé** (bouton soleil/lune ; suit le réglage de l'appareil par défaut), lisible sur téléphone
 - UI Tailwind CSS v3 + HTMX + Alpine.js — actions sans rechargement, toasts temps réel, transitions fluides
 - Fuseau horaire configurable, statut rafraîchi toutes les 5 s
 - Footer avec version, git hash et liens GitHub

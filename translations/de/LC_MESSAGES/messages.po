@@ -6451,3 +6451,7 @@ msgstr "Suchen Sie zuerst nach Aktualisierungen"
 
 msgid "Échec de la mise à jour"
 msgstr "Aktualisierung fehlgeschlagen"
+
+#: app/templates/base.html:180
+msgid "Thème clair ou foncé"
+msgstr "Helles oder dunkles Design"

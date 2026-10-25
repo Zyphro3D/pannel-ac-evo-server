@@ -6386,3 +6386,7 @@ msgstr "Check for updates first"
 
 msgid "Échec de la mise à jour"
 msgstr "Update failed"
+
+#: app/templates/base.html:180
+msgid "Thème clair ou foncé"
+msgstr "Light or dark theme"

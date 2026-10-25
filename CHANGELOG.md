@@ -1,5 +1,23 @@
 # Changelog
 
+### v2.4.0 — 25/10/2026
+
+**Nouvelle interface — thème clair et thème foncé**
+
+- Tout le panel adopte une nouvelle charte graphique : gris et rouge, polices auto-hébergées (aucun appel à un service tiers), cartes et boutons arrondis, sans décor de fond.
+- **Thème clair** en plus du thème foncé : bouton soleil/lune dans la barre du haut. Par défaut le panel suit le réglage de l'appareil ; le choix est mémorisé par le navigateur.
+- Les couleurs des données (secteurs violet/vert, meilleurs temps, états en ligne/arrêté, alertes) restent lisibles dans les deux thèmes ; le texte posé sur une photo de circuit reste clair dans les deux thèmes.
+- **Téléphone** : plus aucune page ne déborde en largeur (testé à 390 px). Le menu « Admin », la connexion et l'inscription passent dans le menu ☰ ; les longs bandeaux passent à la ligne.
+- Menus latéraux Serveur et Paramètres avec de vraies icônes ; étiquettes de type de session neutres.
+
+**Correction — serveurs additionnels créés par une ancienne version**
+
+- Le script d'installation reprend désormais **tout** container de serveur additionnel que compose n'a pas créé, pas seulement le premier (complète la correction de la v2.3.0).
+
+**Licence**
+
+- À partir de cette version, le panel est publié sous **Elastic License 2.0** (utilisation, modification et redistribution libres ; pas de revente comme service hébergé). Les versions jusqu'à v2.3.0 restent sous CC BY-NC 4.0.
+
 ### v2.3.0 — 24/10/2026
 
 **Ajout — mise à jour du panel depuis le panel**

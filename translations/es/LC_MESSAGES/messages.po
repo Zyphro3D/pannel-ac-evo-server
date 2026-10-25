@@ -6488,3 +6488,7 @@ msgstr "Compruebe primero las actualizaciones"
 
 msgid "Échec de la mise à jour"
 msgstr "Error en la actualización"
+
+#: app/templates/base.html:180
+msgid "Thème clair ou foncé"
+msgstr "Tema claro u oscuro"

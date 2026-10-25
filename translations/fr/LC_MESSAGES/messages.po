@@ -6331,3 +6331,7 @@ msgstr "Accrochages"
 #~ msgid "Fin de session"
 #~ msgstr "Fin de session"
 
+
+#: app/templates/base.html:180
+msgid "Thème clair ou foncé"
+msgstr "Thème clair ou foncé"
