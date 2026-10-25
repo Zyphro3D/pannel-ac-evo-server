@@ -18,6 +18,7 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/Zyphro3D/pannel-ac-evo-server/wiki/Getting-Started">📖 Getting started (EN)</a> •
   <a href="#-installation">🚀 Installation</a> •
   <a href="#configuration">Configuration</a> •
   <a href="#mise-à-jour">Mise à jour</a> •
@@ -172,6 +173,8 @@ Public ⊂ Pilote ⊂ Admin ⊂ Superadmin.
 ---
 
 ## 🚀 Installation
+
+> 📖 **Pas à pas avec captures / step-by-step guide with screenshots (English):** [Getting started](https://github.com/Zyphro3D/pannel-ac-evo-server/wiki/Getting-Started)
 
 Une seule commande installe le panel et son serveur de jeu (Docker, Wine compris) ; **la même commande le met à jour**. Rien à cloner, rien à configurer à la main : clés et mots de passe sont générés, et le panel installe lui-même SteamCMD puis vous propose de télécharger le serveur ACE EVO dès la première connexion — il suffit de saisir votre compte Steam.
 
