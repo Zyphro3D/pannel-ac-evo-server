@@ -1,0 +1,109 @@
+/* ═══════════════════════════════════════════════════════════════
+   Charte graphique Zyphro appliquée au panel (gris + rouge, clair/foncé).
+   Source de la charte : ~/dev/zyphro-brand (CHARTE.md, zyphro.css). Chargé après main.css :
+   redéfinit les jetons du panel ; main.css et Tailwind ne contiennent plus de couleur d'interface
+   en dur, seulement ces jetons. Les couleurs d'état et de télémétrie (vert, ambre, violet des
+   secteurs) restent réservées aux données, comme les écrans de produits de la charte (§13).
+   ═══════════════════════════════════════════════════════════════ */
+
+@font-face{font-family:"Bricolage Grotesque";src:url(../fonts/zyphro/bricolage-grotesque.woff2) format("woff2");font-weight:400 800;font-display:swap}
+@font-face{font-family:"Instrument Sans";src:url(../fonts/zyphro/instrument-sans.woff2) format("woff2");font-weight:400 700;font-display:swap}
+@font-face{font-family:"Martian Mono";src:url(../fonts/zyphro/martian-mono.woff2) format("woff2");font-weight:400 600;font-display:swap}
+
+/* ── Thème foncé (par défaut) ───────────────────────────────────
+   Aussi appliqué aux zones posées sur une photo (bandeaux de circuit, cartes illustrées) :
+   texte clair sur photo assombrie, quel que soit le thème choisi. */
+:root, .on-photo, .h-hero, .server-status-hero, .pub-srv-hero, .h-result-card, .ev-card-photo, .ev-card-single-right {
+  color-scheme: dark;
+  /* canaux RGB : couleurs avec transparence (Tailwind « bg-card/95 », main.css « rgb(var(--fg-rgb) / .05) ») */
+  --fg-rgb: 255 255 255;       /* voile clair sur fond foncé ; s'inverse en thème clair */
+  --bg-rgb: 19 20 23;
+  --red-rgb: 223 64 71;
+  --dim-rgb: 154 158 166;
+  --tw-bg: 19 20 23;  --tw-sidebar: 16 17 20;  --tw-card: 28 29 33;  --tw-surface: 31 32 36;
+  --tw-surface2: 37 38 43;  --tw-inp: 23 24 27;  --tw-txt: 238 239 241;  --tw-dim: 154 158 166;
+  --tw-muted: 108 113 123;  --tw-accent: 223 64 71;  --tw-accent-dark: 179 38 43;
+
+  --bg:           rgb(var(--tw-bg));
+  --bg-sidebar:   rgb(var(--tw-sidebar));
+  --bg-nav:       rgb(var(--tw-sidebar));
+  --bg-card:      rgb(var(--tw-card));
+  --bg-hover:     #2a2b30;
+  --bg-input:     rgb(var(--tw-inp));
+  --border:       rgb(var(--fg-rgb) / .1);
+  --border-light: rgb(var(--fg-rgb) / .2);
+  --accent:       rgb(var(--tw-accent));
+  --accent-dark:  rgb(var(--tw-accent-dark));
+  --accent-dim:   rgb(var(--red-rgb) / .12);
+  --red:          rgb(var(--tw-accent));
+  --text:         rgb(var(--tw-txt));
+  --dim:          rgb(var(--tw-dim));
+  --muted:        rgb(var(--tw-muted));
+  --text-muted:   var(--dim);
+  --text2:        var(--dim);
+  --surface:      rgb(var(--tw-surface));
+  --surface1:     rgb(var(--tw-surface));
+  --surface2:     rgb(var(--tw-surface2));
+  --on-red:       #fff;
+  --shadow:       0 18px 50px rgb(0 0 0 / .45);
+  --barbg:        rgb(19 20 23 / .92);
+  /* couleurs d'état (données seulement) */
+  --accent2:      #f59e0b;
+  --green:        #10b981;
+  --blue:         #3b82f6;
+
+  --radius:       14px;
+  --radius-sm:    9px;
+  --sans:         "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --display:      "Bricolage Grotesque", "Instrument Sans", system-ui, sans-serif;
+  --mono:         "Martian Mono", ui-monospace, Menlo, Consolas, monospace;
+  --condensed:    var(--display);
+  --spring:       linear(0,.27 3%,.66 7%,.93 11%,1.05 15%,1.08 18%,1.05 22%,.99 28%,.97 34%,1 44%,1);
+}
+
+/* ── Thème clair : suit l'appareil, sauf choix mémorisé (bouton soleil/lune) ── */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme=dark]) {
+    color-scheme: light;
+    --fg-rgb: 22 24 29;  --bg-rgb: 236 238 241;  --red-rgb: 200 50 58;  --dim-rgb: 87 94 107;
+    --tw-bg: 236 238 241;  --tw-sidebar: 230 232 236;  --tw-card: 248 249 250;  --tw-surface: 242 243 245;
+    --tw-surface2: 230 232 236;  --tw-inp: 255 255 255;  --tw-txt: 22 24 29;  --tw-dim: 87 94 107;
+    --tw-muted: 125 132 145;  --tw-accent: 200 50 58;  --tw-accent-dark: 168 38 43;
+    --bg-hover: #e1e4e8;  --shadow: 0 18px 40px rgb(30 34 44 / .14);  --barbg: rgb(236 238 241 / .92);
+    --border: rgb(var(--fg-rgb) / .12);  --border-light: rgb(var(--fg-rgb) / .24);
+  }
+}
+:root[data-theme=light] {
+  color-scheme: light;
+  --fg-rgb: 22 24 29;  --bg-rgb: 236 238 241;  --red-rgb: 200 50 58;  --dim-rgb: 87 94 107;
+  --tw-bg: 236 238 241;  --tw-sidebar: 230 232 236;  --tw-card: 248 249 250;  --tw-surface: 242 243 245;
+  --tw-surface2: 230 232 236;  --tw-inp: 255 255 255;  --tw-txt: 22 24 29;  --tw-dim: 87 94 107;
+  --tw-muted: 125 132 145;  --tw-accent: 200 50 58;  --tw-accent-dark: 168 38 43;
+  --bg-hover: #e1e4e8;  --shadow: 0 18px 40px rgb(30 34 44 / .14);  --barbg: rgb(236 238 241 / .92);
+  --border: rgb(var(--fg-rgb) / .12);  --border-light: rgb(var(--fg-rgb) / .24);
+}
+
+/* ── Typographie ──────────────────────────────────────────────── */
+body { font-family: var(--sans); line-height: 1.55; -webkit-font-smoothing: antialiased; }
+h1, h2, h3, h4 { font-family: var(--display); letter-spacing: -.02em; }
+.mono, code, kbd, pre { font-family: var(--mono); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+input, textarea, select { color-scheme: inherit; }
+
+/* ── Bouton soleil/lune (barre du haut) ───────────────────────── */
+.theme-toggle { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 99px;
+  border: 1px solid var(--border); background: rgb(var(--fg-rgb) / .05); color: var(--text); cursor: pointer; }
+.theme-toggle:hover { background: rgb(var(--fg-rgb) / .1); }
+.theme-toggle svg { width: 17px; height: 17px; }
+.theme-toggle .sun { display: none; }
+:root[data-theme=light] .theme-toggle .sun { display: block; }
+:root[data-theme=light] .theme-toggle .moon { display: none; }
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme=dark]) .theme-toggle .sun { display: block; }
+  :root:not([data-theme=dark]) .theme-toggle .moon { display: none; }
+}
+
+/* ── Pas de décoration de fond (charte : l'interface s'efface devant le contenu) ── */
+body { background: var(--bg); }
+body::before { content: none; }
+.h-hero::after { content: none; }

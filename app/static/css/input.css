@@ -4,9 +4,7 @@
 
 /* ── Base ──────────────────────────────────────────────────────────── */
 @layer base {
-  :root {
-    color-scheme: dark;
-  }
+  /* color-scheme et couleurs : app/static/css/charte.css (thème clair/foncé) */
   *, *::before, *::after { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
   body {
@@ -16,7 +14,7 @@
   }
   a { @apply text-txt no-underline; }
   input, textarea, select {
-    color-scheme: dark;
+    color-scheme: inherit;
   }
   /* Remove default number-input spinners */
   input[type=number]::-webkit-outer-spin-button,

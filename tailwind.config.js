@@ -6,29 +6,32 @@ module.exports = {
   ],
   theme: {
     extend: {
+      // Jetons de la charte Zyphro (app/static/css/charte.css) : suivent le thème clair/foncé
       colors: {
-        accent:        "#e03535",
-        "accent-dark": "#c62828",
-        bg:            "#06080c",
-        card:          "#0e1525",
-        sidebar:       "#040508",
-        surface:       "#111420",
-        inp:           "#0a0f1c",
-        dim:           "#8896a8",
-        muted:         "#3d4a5c",
-        txt:           "#e2e8f0",
-        surface2:      "#161926",
+        accent:        "rgb(var(--tw-accent) / <alpha-value>)",
+        "accent-dark": "rgb(var(--tw-accent-dark) / <alpha-value>)",
+        bg:            "rgb(var(--tw-bg) / <alpha-value>)",
+        card:          "rgb(var(--tw-card) / <alpha-value>)",
+        sidebar:       "rgb(var(--tw-sidebar) / <alpha-value>)",
+        surface:       "rgb(var(--tw-surface) / <alpha-value>)",
+        inp:           "rgb(var(--tw-inp) / <alpha-value>)",
+        dim:           "rgb(var(--tw-dim) / <alpha-value>)",
+        muted:         "rgb(var(--tw-muted) / <alpha-value>)",
+        txt:           "rgb(var(--tw-txt) / <alpha-value>)",
+        surface2:      "rgb(var(--tw-surface2) / <alpha-value>)",
+        fg:            "rgb(var(--fg-rgb) / <alpha-value>)",   // voile : clair sur foncé, foncé sur clair
         emerald: {
           DEFAULT: "#10b981",
           900:     "#064e3b",
         },
       },
       fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"],
-        mono: ["JetBrains Mono", "Fira Code", "monospace"],
+        sans:    ['"Instrument Sans"', "system-ui", "sans-serif"],
+        display: ['"Bricolage Grotesque"', '"Instrument Sans"', "system-ui", "sans-serif"],
+        mono:    ['"Martian Mono"', "ui-monospace", "monospace"],
       },
       borderColor: {
-        DEFAULT: "rgba(61,74,92,0.4)",
+        DEFAULT: "rgb(var(--fg-rgb) / 0.12)",
       },
     },
   },
