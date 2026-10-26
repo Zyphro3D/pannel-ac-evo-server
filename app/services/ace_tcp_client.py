@@ -178,8 +178,8 @@ def _wrap(name: str, payload: bytes) -> bytes:
 def _build_connection_request(c: dict, cfg: dict | None = None) -> bytes:
     payload = (
         _field_varint(1, 1) +
-        _field_varint(5, 8) +   # protocol version — inchangé depuis le build 23658359
-        _field_varint(6, 6) +   # server version — toujours 6 avec le build ACE EVO Server
+        _field_varint(5, c.get("protocol_version", 8)) +   # protocol version — inchangé depuis le build 23658359
+        _field_varint(6, c.get("server_version", 6)) +     # server version — toujours 6 avec le build ACE EVO Server
                                  # 24991735 (0.9.0) : testé en le passant à 7, le serveur a
                                  # explicitement rejeté avec "Current: (Server:6, Protocol:8)",
                                  # confirmant que 6 reste la bonne valeur. Pas la cause de
@@ -489,6 +489,10 @@ _RE_SECTOR_LOG  = re.compile(r'\[gameplay\] \[info\] (?:\[TimelineMessage\] )?Sp
 _RE_LAP_INVALID = re.compile(r'\[gameplay\] \[error\] Couldn\'t create lap from opensplits \(carId ([0-9a-f-]+)\)')
 _RE_PLAYERS_LOG = re.compile(r'\[server\] \[info\] Server updated: (\d+) players')
 _RE_CHAT_LOG    = re.compile(r'\[server\] \[info\] Chat from (.+?) \[(\d+)\]: (.+)')
+# Le serveur refuse une version de protocole qui n'est pas la sienne et l'écrit dans son journal
+# (« Network Version Mismatch. Current: (Server:6, Protocol:8), Requested: … ») : le bot reprend
+# ces valeurs à la connexion suivante, sans attendre une version du panel (mise à jour du jeu).
+_RE_VERSION_MISMATCH = re.compile(r'Network Version Mismatch\. Current: \(Server:(\d+), Protocol:(\d+)\)')
 
 
 def _get_active_config_name(server_id: int = 1) -> tuple[str, str]:
@@ -903,6 +907,19 @@ def _process_log_line(line: str, seen: set, server_id: int):
     m = _RE_PLAYERS_LOG.search(line)
     if m and m.group(1) == '0':
         _on_session_reset(c, seen)
+        return
+
+    m = _RE_VERSION_MISMATCH.search(line)
+    if m:
+        _on_version_mismatch(m, c)
+
+
+def _on_version_mismatch(m, c: dict):
+    server_v, proto_v = int(m.group(1)), int(m.group(2))
+    if (c.get("server_version", 6), c.get("protocol_version", 8)) != (server_v, proto_v):
+        log.warning("Serveur de jeu : version réseau Server:%d Protocol:%d (le bot envoyait Server:%d Protocol:%d) — reprise à la prochaine connexion",
+                    server_v, proto_v, c.get("server_version", 6), c.get("protocol_version", 8))
+        c["server_version"], c["protocol_version"] = server_v, proto_v
 
 
 def _log_tail_native(server_id: int):

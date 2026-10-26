@@ -1,5 +1,12 @@
 # Changelog
 
+### À venir (non publié)
+
+**Préparation de la mise à jour 0.10 d'Assetto Corsa EVO**
+
+- Si une mise à jour du jeu change la version réseau du serveur, le bot du panel reprend tout seul la version annoncée par le serveur à sa connexion suivante : le chat, le classement en direct et les commandes admin continuent de fonctionner sans attendre une nouvelle version du panel.
+- Nouveaux tests des formats de lignes du journal du serveur (connexions, tours, secteurs, sessions, collisions) : une ligne modifiée par une mise à jour du jeu est repérée tout de suite.
+
 ### v2.4.0 — 25/10/2026
 
 **Nouvelle interface — thème clair et thème foncé**
