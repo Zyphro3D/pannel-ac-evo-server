@@ -26,3 +26,23 @@ def test_rejected_driver_with_confirmed_registration_is_not_whitelisted(admin_cl
     doc = (Path(tmp_path) / "entry_list.json").read_text(encoding="utf-8")
     assert "76561190000000001" in doc
     assert "76561190000000002" not in doc
+
+
+def test_rejecting_a_driver_rejects_his_open_registrations(admin_client):
+    from app.models import Driver, DriverStatus, Event, EventRegistration, RegStatus
+    from app.services.database import db
+
+    app = admin_client.app
+    with app.app_context():
+        ev = Event(title="Course test refus", date=datetime.utcnow() + timedelta(days=1))
+        d = Driver(ingame_name="RejKo", email="rejko@example.test", status=DriverStatus.APPROVED)
+        d.set_password("RejKo-dummy1")
+        db.session.add_all([ev, d])
+        db.session.flush()
+        db.session.add(EventRegistration(event_id=ev.id, driver_id=d.id, status=RegStatus.CONFIRMED))
+        db.session.commit()
+        did = d.id
+    admin_client.post(f"/drivers/{did}/reject")
+    with app.app_context():
+        assert db.session.get(Driver, did).status == DriverStatus.REJECTED
+        assert {r.status for r in EventRegistration.query.filter_by(driver_id=did)} == {RegStatus.REJECTED}

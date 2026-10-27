@@ -13,7 +13,7 @@ def _loop(app):
             time.sleep(5)
         try:
             with app.app_context():
-                from app.models import Event, EventRegistration, EventStatus, RegStatus
+                from app.models import DriverStatus, Event, EventRegistration, EventStatus, RegStatus
                 from app.services.database import db
                 from app.services import mailer
 
@@ -32,6 +32,8 @@ def _loop(app):
                                 .options(_sl(EventRegistration.driver))
                                 .all())
                         for reg in regs:
+                            if reg.driver is None or reg.driver.status != DriverStatus.APPROVED:
+                                continue   # compte refusé ou supprimé depuis l'inscription
                             mailer.send_event_reminder(reg.driver, event, reg)
                             reg.notified = True
                         event.email_sent = True

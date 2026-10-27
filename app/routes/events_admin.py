@@ -251,6 +251,10 @@ def driver_approve(driver_id):
 def driver_reject(driver_id):
     driver = db.get_or_404(Driver, driver_id)
     driver.status = DriverStatus.REJECTED
+    # Ses inscriptions en cours tombent avec le compte (liste d'engagés, rappels, effectifs)
+    for reg in EventRegistration.query.filter(EventRegistration.driver_id == driver.id,
+                                              EventRegistration.status != RegStatus.REJECTED):
+        reg.status = RegStatus.REJECTED
     db.session.commit()
     mailer.send_registration_rejected(driver)
     if is_htmx():
