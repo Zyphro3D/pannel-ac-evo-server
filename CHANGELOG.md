@@ -7,6 +7,10 @@
 - Si une mise à jour du jeu change la version réseau du serveur, le bot du panel reprend tout seul la version annoncée par le serveur à sa connexion suivante : le chat, le classement en direct et les commandes admin continuent de fonctionner sans attendre une nouvelle version du panel.
 - Nouveaux tests des formats de lignes du journal du serveur (connexions, tours, secteurs, sessions, collisions) : une ligne modifiée par une mise à jour du jeu est repérée tout de suite.
 
+**Installation**
+
+- Les messages de fin de l'installation (adresse du panel, identifiants, étape suivante, ports à ouvrir) s'affichent en français et en anglais.
+
 **Sécurité — corrections issues d'un audit complet du panel**
 
 - Un pilote qui consultait les résultats effaçait les SteamID pour tout le panel (exports admin, championnats, ELO) jusqu'au redémarrage : corrigé.

@@ -368,16 +368,21 @@ rm -rf "$DIR/.rollback"
 docker rmi ace-evo-panel-rollback:panel ace-evo-panel-rollback:server >/dev/null 2>&1 || true
 status "done" "Panel $TAG en ligne"
 echo
-ok "Panel AC EVO $TAG en ligne : http://$IP:$PANEL_PORT"
+ok "Panel AC EVO $TAG en ligne / online : http://$IP:$PANEL_PORT"
 if [ "$FIRST_INSTALL" -eq 1 ]; then
     cat <<EOF
 
    Identifiants (à changer dans le panel, également dans $DIR/.env) :
+   Credentials (change them in the panel, also stored in $DIR/.env):
      superadmin : $(grep -m1 '^SUPERADMIN_USERNAME=' .env | cut -d= -f2) / $SUPERADMIN_PW
      admin      : $(grep -m1 '^ADMIN_USERNAME=' .env | cut -d= -f2) / $ADMIN_PW
 
    Étape suivante : connectez-vous en superadmin, le panel propose de télécharger le serveur
    ACE EVO (il suffit de votre compte Steam). Ports à ouvrir vers cette machine pour les
    joueurs : 9700 TCP+UDP et 8081 TCP.
+
+   Next step: log in as superadmin, the panel offers to download the ACE EVO server
+   (your Steam account is all you need). Ports to open to this machine for players:
+   9700 TCP+UDP and 8081 TCP.
 EOF
 fi

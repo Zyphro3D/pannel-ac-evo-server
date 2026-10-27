@@ -391,7 +391,7 @@ Remove-Item -Recurse -Force (Join-Path $Dir '.rollback') -ErrorAction SilentlyCo
 Invoke-Native { docker rmi ace-evo-panel-rollback:panel ace-evo-panel-rollback:server } | Out-Null
 Set-Status 'done' "Panel $tag en ligne"
 Write-Host ''
-Ok "Panel AC EVO $tag en ligne : http://${ip}:$port"
+Ok "Panel AC EVO $tag en ligne / online : http://${ip}:$port"
 if ($firstInstall) {
     $envNow = [IO.File]::ReadAllText((Join-Path $Dir '.env'))
     $superUser = if ($envNow -match '(?m)^SUPERADMIN_USERNAME=(.*)$') { $Matches[1].Trim() } else { 'superadmin' }
@@ -399,11 +399,16 @@ if ($firstInstall) {
     Write-Host @"
 
    Identifiants (à changer dans le panel, également dans $Dir\.env) :
+   Credentials (change them in the panel, also stored in $Dir\.env):
      superadmin : $superUser / $superPw
      admin      : $adminUser / $adminPw
 
    Étape suivante : connectez-vous en superadmin, le panel propose de télécharger le serveur
    ACE EVO (il suffit de votre compte Steam). Ports à rediriger sur la box vers cette machine
    pour les joueurs : 9700 TCP+UDP et 8081 TCP. Docker Desktop doit rester lancé.
+
+   Next step: log in as superadmin, the panel offers to download the ACE EVO server
+   (your Steam account is all you need). Ports to forward on your router to this machine
+   for players: 9700 TCP+UDP and 8081 TCP. Docker Desktop must keep running.
 "@
 }
