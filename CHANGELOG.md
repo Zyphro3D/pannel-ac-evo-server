@@ -17,6 +17,14 @@
 - Connexion à deux facteurs : le nombre d'essais de code est compté par le serveur (5 essais, puis 15 minutes d'attente).
 - Un pilote rejeté après s'être inscrit à un événement ne figure plus sur la liste d'engagés.
 - La restauration d'une sauvegarde ne reprend plus que les réglages connus du panel.
+- Pilotes : les identifiants du jeu (guid) sont remplacés par des étiquettes dans les résultats ; un pilote refusé voit ses inscriptions en cours refusées et ne reçoit plus de rappel.
+- Liaison Steam : le retour de Steam doit correspondre au lien demandé par la même session.
+- Le direct ne peut plus être trompé par un pseudo ou un message de chat imitant une ligne du journal du serveur ; les commandes serveur n'apparaissent plus dans l'historique du chat ; les mots de passe recopiés par le serveur dans son journal sont masqués dans la page Serveur.
+- Le conteneur du serveur de jeu ne reçoit plus le fichier `.env` du panel (secrets, webhooks, SMTP).
+- Taille des requêtes plafonnée (64 Mo, 16 Mo pour la réception des résultats), sauf pour l'envoi de mods et de sauvegardes.
+- Roulement : les noms de configuration sont revalidés et affichés comme du texte.
+- Restauration : seules les vraies images sont reprises.
+- Installation et mise à jour à la main : la signature de la release est exigée dès que le panel installé sait la vérifier.
 - Dépendances : Pillow 13.0.0 (failles corrigées, aucune n'était atteignable par le panel) ; l'image Docker construit le CSS à partir des versions verrouillées (`npm ci`), mises à jour sans faille connue.
 - Un résultat de session aux champs mal formés est refusé à la réception, au lieu d'être enregistré et de rendre l'accueil et les pages de résultats indisponibles.
 
