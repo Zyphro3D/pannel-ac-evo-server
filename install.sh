@@ -126,6 +126,12 @@ verify_signed() {
         /panel/release/verify_release.py /verify/latest-stable.json /verify/latest-stable.json.sig \
         /verify/panel.zip "$TAG" >/dev/null 2>"$TMP/verify.err"
 }
+# Le panel installé sait vérifier une signature (v2.3.0 et suivantes) : elle devient obligatoire,
+# même pour une mise à jour lancée à la main (sinon une release sans .sig passerait sur la seule
+# empreinte SHA256SUMS, publiée au même endroit que l'archive).
+has_verifier() {
+    [ -n "$PANEL_IMG" ] && docker run --rm --entrypoint test "$PANEL_IMG" -f /panel/release/verify_release.py >/dev/null 2>&1
+}
 
 if [ -n "$SOURCE" ]; then
     [ -f "$SOURCE" ] || die "Archive introuvable : $SOURCE"
@@ -147,6 +153,7 @@ else
         [ -n "$TAG" ] || die "Version de la release illisible"
         BASE="https://github.com/$REPO/releases/download/$TAG"
     fi
+    printf '%s' "$TAG" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+([.-][A-Za-z0-9]+)*$' || die "Nom de version inattendu : $TAG"
     VERSION="$TAG"
     say "Téléchargement du panel $TAG"
     curl -fsSL -o "$TMP/panel.zip" "$BASE/pannel-ac-evo-docker-$TAG.zip" || die "Téléchargement impossible"
@@ -165,6 +172,7 @@ else
     if [ "$signed" -eq 0 ]; then
         # Première installation (aucun code de confiance en place) ou release sans manifeste signé
         [ "$FROM_PANEL" -eq 0 ] || die "Release $TAG sans signature vérifiable : mise à jour refusée"
+        ! has_verifier || die "Release $TAG sans signature vérifiable alors que le panel installé sait la vérifier : mise à jour refusée"
         if curl -fsSL -o "$TMP/SHA256SUMS" "$BASE/SHA256SUMS" 2>/dev/null; then
             expected="$(grep " pannel-ac-evo-docker-$TAG.zip\$" "$TMP/SHA256SUMS" | cut -d' ' -f1 || true)"
             actual="$(sha256sum "$TMP/panel.zip" | cut -d' ' -f1)"

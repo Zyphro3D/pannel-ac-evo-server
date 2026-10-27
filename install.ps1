@@ -136,6 +136,7 @@ try {
             if (-not $tag) { Die 'Version de la release illisible' }
             $base = "https://github.com/$Repo/releases/download/$tag"
         }
+        if ($tag -notmatch '^v\d+\.\d+\.\d+([.-][A-Za-z0-9]+)*$') { Die "Nom de version inattendu : $tag" }
         $targetVersion = $tag
         Say "Téléchargement du panel $tag"
         Invoke-WebRequest -UseBasicParsing "$base/pannel-ac-evo-docker-$tag.zip" -OutFile $zip
@@ -155,6 +156,12 @@ try {
         if (-not $signed) {
             # Première installation (aucun code de confiance en place) ou release sans manifeste signé
             if ($FromPanel) { Die "Release $tag sans signature vérifiable : mise à jour refusée" }
+            # Le panel installé sait vérifier une signature (v2.3.0 et suivantes) : elle devient obligatoire,
+            # même pour une mise à jour lancée à la main (SHA256SUMS est publié au même endroit que l'archive).
+            if ($panelImg) {
+                $null = Invoke-Native { docker run --rm --entrypoint test $panelImg -f /panel/release/verify_release.py }
+                if ($LASTEXITCODE -eq 0) { Die "Release $tag sans signature vérifiable alors que le panel installé sait la vérifier : mise à jour refusée" }
+            }
             try {
                 $sums = (Invoke-WebRequest -UseBasicParsing "$base/SHA256SUMS").Content
                 if ($sums -is [byte[]]) { $sums = [Text.Encoding]::UTF8.GetString($sums) }
