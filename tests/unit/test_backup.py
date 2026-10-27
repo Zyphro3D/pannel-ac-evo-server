@@ -114,3 +114,25 @@ def test_restore_keeps_only_known_settings(app):
     assert kept == {"PANEL_TITLE": "Mon panel", "BACKUP_KEEP": "5", "__last_seen_version": "2.4.0"}
     with pytest.raises(backup.BackupError):
         backup._filtered_settings(b"[1, 2]")
+
+
+def test_restore_skips_media_that_are_not_real_images(app, tmp_path):
+    import shutil
+    with app.app_context():
+        src = backup.create_backup("manuelle")
+        evil = tmp_path / "avec-medias.zip"
+        shutil.copy(src, evil)
+        with zipfile.ZipFile(evil, "a") as z:
+            z.writestr("media/test-restore/faux.png", b"<svg onload=alert(1)>")
+            z.writestr("media/test-restore/vrai.png", b"\x89PNG\r\n\x1a\n" + b"\0" * 32)
+        media = backup._paths()["media"] / "test-restore"
+        try:
+            backup.restore(evil)
+            assert (media / "vrai.png").exists()
+            assert not (media / "faux.png").exists()
+        finally:
+            shutil.rmtree(media, ignore_errors=True)
+            src.unlink(missing_ok=True)
+        with pytest.raises(backup.BackupError):                      # SVG : type refusé
+            backup.validate(_zip_with(tmp_path, {"manifest.json": json.dumps({"format": 1, "panel_version": "1.0.0"}),
+                                                 "db/ace_evo.db": b"x", "media/logo.svg": b"<svg/>"}))

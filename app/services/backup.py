@@ -27,7 +27,11 @@ MAX_ENTRIES      = 5000
 MAX_MEMBER_BYTES = 200 * 1024 * 1024
 MAX_TOTAL_BYTES  = 1024 * 1024 * 1024
 MAX_MEDIA_FILE   = 50 * 1024 * 1024
-_MEDIA_EXT       = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg", ".ico"}
+# Les seuls types d'image que le panel accepte à l'envoi (admin._validate_image_upload) : un SVG
+# servi depuis /media pourrait porter du script.
+_MEDIA_EXT       = {".png", ".jpg", ".jpeg", ".webp", ".gif"}
+_MEDIA_MAGIC     = {".png": (b"\x89PNG\r\n\x1a\n",), ".jpg": (b"\xff\xd8\xff",), ".jpeg": (b"\xff\xd8\xff",),
+                    ".gif": (b"GIF87a", b"GIF89a"), ".webp": (b"RIFF",)}
 _SAFE_NAME       = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,120}\.zip$")
 _CONFIG_NAME     = re.compile(r"^[^\x00-\x1f\\/:*?\"<>|.][^\x00-\x1f\\/:*?\"<>|]{0,100}\.json$")
 _MEDIA_PART      = re.compile(r"^[^\x00-\x1f\\/:*?\"<>|.][^\x00-\x1f\\/:*?\"<>|]{0,150}$")   # accents, virgules… autorisés ; ni « .. » ni « / »
@@ -303,6 +307,11 @@ def restore(path: Path) -> dict:
                 if n.startswith("configs/") and not n.endswith("/"):
                     stage(n, p["configs"] / n.split("/", 1)[1])
                 elif n.startswith("media/") and not n.endswith("/"):
+                    with z.open(n) as m:
+                        head = m.read(16)
+                    if not head.startswith(_MEDIA_MAGIC.get(Path(n).suffix.lower(), (b"\0invalide",))):
+                        log.warning("Restauration : %s ignoré (ce n'est pas une image du type annoncé)", n)
+                        continue
                     stage(n, p["media"] / n.split("/", 1)[1])
         except Exception:
             for tmp, _t in staged:
