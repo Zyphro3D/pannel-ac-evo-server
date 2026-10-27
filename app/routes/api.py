@@ -422,16 +422,20 @@ def results_ingest():
     return jsonify({"ok": True, "imported": imported})
 
 
-def _strip_pii_for_pilot(parsed: dict, raw: dict | None = None) -> None:
+def _strip_pii_for_pilot(parsed: dict, raw: dict | None = None) -> dict:
     """Retire les identifiants Steam pour les pilotes non-admin, comme _TIMING_STRIP_FIELDS
     dans live.py. Sans ça, tout pilote connecté peut scripter /api/results/<id> sur toute la
-    plage d'ID et reconstituer la table SteamID → pseudo de la communauté."""
-    for row in parsed.get("standings", []):
-        row.pop("player_id", None)
+    plage d'ID et reconstituer la table SteamID → pseudo de la communauté.
+    Retourne une copie : `parsed` vient du cache partagé de get_parsed, le modifier en place
+    effacerait les SteamID pour les exports admin, les championnats et l'ELO."""
+    parsed = {**parsed, "standings": [
+        {k: v for k, v in row.items() if k != "player_id"} for row in parsed.get("standings", [])
+    ]}
     if raw is not None:
         for d in raw.get("drivers", []):
             d.pop("player_id", None)
             d.pop("guid", None)
+    return parsed
 
 
 @api_bp.route("/results")
@@ -449,7 +453,7 @@ def get_results():
             log.warning("Failed to parse result id=%s: %s", r.id, e)
             parsed = {}
         if not current_user.is_admin:
-            _strip_pii_for_pilot(parsed)
+            parsed = _strip_pii_for_pilot(parsed)
         out.append({
             "id":           r.id,
             "received_at":  r.received_at.isoformat(),
@@ -544,7 +548,7 @@ def get_result(result_id):
     parsed = get_parsed(r)
     raw = json.loads(r.raw_json)
     if not current_user.is_admin:
-        _strip_pii_for_pilot(parsed, raw)
+        parsed = _strip_pii_for_pilot(parsed, raw)
     return jsonify({
         "id":           r.id,
         "received_at":  r.received_at.isoformat(),
