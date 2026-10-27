@@ -103,3 +103,14 @@ def test_realistic_file_names_survive_roundtrip(app, tmp_path):
             media.rmdir()
         except OSError:
             pass
+
+
+def test_restore_keeps_only_known_settings(app):
+    raw = json.dumps({"PANEL_TITLE": "Mon panel", "BACKUP_KEEP": "5", "__last_seen_version": "2.4.0",
+                      "SECRET_KEY": "volee", "PYTHONPATH": "/tmp/x", "DATABASE_URL": "sqlite:////tmp/x.db",
+                      "MAIL_SERVER": {"pas": "une chaîne"}}).encode()
+    with app.app_context():
+        kept = json.loads(backup._filtered_settings(raw))
+    assert kept == {"PANEL_TITLE": "Mon panel", "BACKUP_KEEP": "5", "__last_seen_version": "2.4.0"}
+    with pytest.raises(backup.BackupError):
+        backup._filtered_settings(b"[1, 2]")

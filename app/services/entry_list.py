@@ -23,10 +23,13 @@ def generate(event) -> bool:
         return False
 
     import os
-    from app.models import AccessRule, EventRegistration, RegStatus
+    from app.models import AccessRule, DriverStatus, EventRegistration, RegStatus
     from app.services import access_control
     confirmed = EventRegistration.query.filter_by(event_id=event.id, status=RegStatus.CONFIRMED).all()
-    steam_ids = [reg.driver.steam_id for reg in confirmed if reg.driver and reg.driver.steam_id]
+    # Pilote rejeté après son inscription : l'inscription reste CONFIRMED, le compte ne l'est
+    # plus (même règle qu'access_control.current_document).
+    steam_ids = [reg.driver.steam_id for reg in confirmed
+                 if reg.driver and reg.driver.steam_id and reg.driver.status == DriverStatus.APPROVED]
     bot = os.environ.get("ACE_BOT_STEAM_ID", "").strip()
     out = access_control.build_document(AccessRule.query.all(), steam_ids, True,
                                         always_allow=[bot] if bot else [])

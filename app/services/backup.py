@@ -242,6 +242,39 @@ def validate(path: Path) -> dict:
 
 # ── Restauration ─────────────────────────────────────────────────────────────
 
+# Réglages écrits par les pages Sauvegarde et Accès (hors _ENV_SECTIONS de la page Paramètres).
+_EXTRA_SETTINGS_KEYS = {"BACKUP_AUTO", "BACKUP_KEEP", "ACCESS_CONTROL_ENABLED", "ACCESS_APPROVED_ONLY",
+                        "RATING_ENFORCE", "RATING_MIN_TO_JOIN", "RATING_MIN_RACES"}
+_INTERNAL_SETTINGS_KEY = re.compile(r"^__[a-z_]{1,60}$")   # marqueurs du panel (__last_seen_version…)
+
+
+def _filtered_settings(raw: bytes) -> bytes:
+    """Ne garde du settings.json d'une archive que les clés que le panel sait écrire lui-même.
+    _load_settings recopie chaque clé dans os.environ au démarrage : une archive modifiée pouvait
+    sinon poser n'importe quelle variable (DATABASE_URL, PYTHONPATH…) pour le panel et ses
+    sous-processus."""
+    from app import _SETTINGS_SKIP_KEYS
+    from app.routes.admin import _ENV_SECTIONS
+    allowed = ({k for _s, _l, keys in _ENV_SECTIONS for k in keys} | _EXTRA_SETTINGS_KEYS) - _SETTINGS_SKIP_KEYS
+    try:
+        data = json.loads(raw.decode("utf-8"))
+    except (UnicodeDecodeError, ValueError):
+        raise BackupError(_("Les réglages (settings.json) de la sauvegarde sont illisibles."))
+    if not isinstance(data, dict):
+        raise BackupError(_("Les réglages (settings.json) de la sauvegarde sont illisibles."))
+    kept, dropped = {}, []
+    for k, v in data.items():
+        if k in allowed and isinstance(v, (str, int, float, bool)):
+            kept[k] = v
+        elif isinstance(k, str) and _INTERNAL_SETTINGS_KEY.match(k):
+            kept[k] = v
+        else:
+            dropped.append(str(k)[:60])
+    if dropped:
+        log.warning("Restauration : %d réglage(s) inconnu(s) ignoré(s) : %s", len(dropped), ", ".join(dropped[:20]))
+    return json.dumps(kept, indent=2, ensure_ascii=False).encode("utf-8")
+
+
 def restore(path: Path) -> dict:
     """Valide puis applique une sauvegarde. Retourne {manifest, safety_backup}. Redémarrage du panel requis."""
     manifest = validate(path)
@@ -261,7 +294,11 @@ def restore(path: Path) -> dict:
             stage("db/ace_evo.db", p["db"])
             names = {i.filename for i in z.infolist()}
             if "settings.json" in names:
-                stage("settings.json", p["settings"])
+                target = p["settings"]
+                target.parent.mkdir(parents=True, exist_ok=True)
+                tmp = target.with_name(target.name + ".restore-tmp")
+                tmp.write_bytes(_filtered_settings(z.read("settings.json")))
+                staged.append((tmp, target))
             for n in sorted(names):
                 if n.startswith("configs/") and not n.endswith("/"):
                     stage(n, p["configs"] / n.split("/", 1)[1])
