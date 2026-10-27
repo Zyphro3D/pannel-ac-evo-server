@@ -426,19 +426,40 @@ def results_ingest():
     return jsonify({"ok": True, "imported": imported})
 
 
+_PILOT_OPAQUE_KEYS = ("guid", "driver_key", "car_key", "car_id")
+
+
 def _strip_pii_for_pilot(parsed: dict, raw: dict | None = None) -> dict:
-    """Retire les identifiants Steam pour les pilotes non-admin, comme _TIMING_STRIP_FIELDS
-    dans live.py. Sans ça, tout pilote connecté peut scripter /api/results/<id> sur toute la
-    plage d'ID et reconstituer la table SteamID → pseudo de la communauté.
+    """Retire les identifiants de joueur pour les pilotes non-admin, comme _TIMING_STRIP_FIELDS
+    dans live.py : le SteamID (player_id) et le guid du jeu, identifiant stable d'un joueur d'une
+    session à l'autre, présent aussi dans les tours, incidents et pénalités. Sans ça, tout pilote
+    connecté peut scripter /api/results/<id> sur toute la plage d'ID et reconstituer la table
+    identifiant → pseudo de la communauté. Les guid deviennent des étiquettes propres à la réponse
+    (« j1 », « j2 »…) : les liens entre tours, pilotes et incidents restent lisibles.
     Retourne une copie : `parsed` vient du cache partagé de get_parsed, le modifier en place
-    effacerait les SteamID pour les exports admin, les championnats et l'ELO."""
-    parsed = {**parsed, "standings": [
-        {k: v for k, v in row.items() if k != "player_id"} for row in parsed.get("standings", [])
-    ]}
+    effacerait les SteamID pour les exports admin, les championnats et l'ELO. `raw` (relu à
+    chaque requête) est modifié en place."""
+    labels: dict[str, str] = {}
+
+    def opaque(value):
+        key = json.dumps(value, sort_keys=True, default=str)
+        return labels.setdefault(key, f"j{len(labels) + 1}")
+
+    def clean(node):
+        if isinstance(node, dict) and node and set(node) <= {"a", "b"}:   # guid nu (driver_standings…)
+            return opaque(node)
+        if isinstance(node, dict):
+            return {k: (opaque(v) if k in _PILOT_OPAQUE_KEYS else clean(v))
+                    for k, v in node.items() if k != "player_id"}
+        if isinstance(node, (list, tuple)):
+            return [clean(v) for v in node]
+        return node
+
+    parsed = clean(parsed)
     if raw is not None:
-        for d in raw.get("drivers", []):
-            d.pop("player_id", None)
-            d.pop("guid", None)
+        cleaned = clean(raw)
+        raw.clear()
+        raw.update(cleaned)
     return parsed
 
 
