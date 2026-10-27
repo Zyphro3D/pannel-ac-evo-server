@@ -94,8 +94,9 @@ services:
       # Bibliothèque de mods partagée (même dossier que /aceserver/mods, vu par le panel)
       # posée sur le dossier Wine que ServerLauncher.exe scanne nativement
       - ./aceserver/mods:/root/.wine/drive_c/users/root/Saved Games/ACE-Server/mods
-    env_file:
-      - .env
+    # Pas d'env_file : le serveur de jeu ne lit que SERVER_ID (entrypoint.aceserver.sh) ; le .env
+    # du panel (SECRET_KEY, mots de passe, webhooks, SMTP) n'a rien à faire dans un processus
+    # exposé aux joueurs.
     security_opt:
       - seccomp:unconfined   # Wine a besoin de personality() syscall (PER_LINUX32) pour WoW64
     restart: "no"            # Cycle de vie géré par le panel (watchdog interne)

@@ -42,8 +42,15 @@ def _inspect_reference_container() -> dict:
     network_name = next(iter(attrs["NetworkSettings"]["Networks"].keys()), None)
     image        = attrs["Config"]["Image"]
 
+    # Variables de l'IMAGE, pas du container : celui-ci a pu recevoir le .env du panel (anciennes
+    # versions du compose), qui n'a rien à faire dans un serveur de jeu exposé aux joueurs.
+    try:
+        image_env = client.images.get(attrs["Image"]).attrs["Config"].get("Env") or []
+    except Exception as e:
+        log.warning("_inspect_reference_container: variables de l'image illisibles (%s)", e)
+        image_env = []
     env_vars: dict[str, str] = {}
-    for e in attrs["Config"].get("Env", []):
+    for e in image_env:
         k, _, v = e.partition("=")
         env_vars[k] = v
 
@@ -206,9 +213,7 @@ def _compose_override_yaml(servers: list, image: str, reference_volume: str = ""
             f"      - ./aceserver:/aceserver",
             f"      - {wine_vol}:/root/.wine",
             f"      - ./aceserver/mods:/root/.wine/drive_c/users/root/Saved Games/ACE-Server/mods",
-            f"    env_file:",
-            f"      - .env",
-            f"    environment:",
+            f"    environment:",       # pas d'env_file : voir le service aceserver de docker-compose.yml
             f'      SERVER_ID: "{srv.id}"',
             f"    security_opt:",
             f"      - seccomp:unconfined",

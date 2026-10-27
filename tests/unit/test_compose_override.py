@@ -33,3 +33,19 @@ def test_serveur_additionnel_etiquete_comme_son_service_compose():
         "com.docker.compose.project": "pannel-ac-evo-server", "com.docker.compose.service": "server_2",
         "com.docker.compose.oneoff": "False"}
     assert server_docker._compose_labels("", 2) == {}
+
+
+def test_serveurs_de_jeu_sans_le_env_du_panel(monkeypatch):
+    from pathlib import Path
+    compose = (Path(server_docker.__file__).parents[2] / "docker-compose.yml").read_text(encoding="utf-8")
+    aceserver = compose.split("\n  aceserver:\n", 1)[1].split("\nvolumes:", 1)[0]
+    assert "env_file:" not in aceserver
+    assert "env_file:" not in server_docker._compose_override_yaml([_srv(2)], "img")
+
+    # création par l'API Docker : variables de l'image, pas celles (héritées du .env) du container
+    ref = SimpleNamespace(attrs={"Image": "sha256:img", "Mounts": [], "NetworkSettings": {"Networks": {"n": {}}},
+                                 "Config": {"Image": "img", "Env": ["SECRET_KEY=fuite", "WINEPREFIX=/root/.wine"]}})
+    image = SimpleNamespace(attrs={"Config": {"Env": ["WINEPREFIX=/root/.wine", "DISPLAY=:99"]}})
+    client = SimpleNamespace(containers=SimpleNamespace(get=lambda name: ref), images=SimpleNamespace(get=lambda i: image))
+    monkeypatch.setattr(server_docker, "_get_docker_client", lambda: client)
+    assert server_docker._inspect_reference_container()["env_vars"] == {"WINEPREFIX": "/root/.wine", "DISPLAY": ":99"}
