@@ -15,6 +15,7 @@ import ipaddress
 import os
 
 from flask import current_app, request
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 # En-têtes ajoutés par un proxy : leur présence prouve que la requête n'est pas directe.
 _PROXY_HEADERS = ("CF-Connecting-IP", "CF-Ray", "X-Forwarded-For", "X-Real-IP", "Forwarded")
@@ -43,6 +44,22 @@ def _parse(addr: str):
 def is_trusted_proxy(addr: str) -> bool:
     ip = _parse(addr)
     return bool(ip) and any(ip in net for net in _networks())
+
+
+class TrustedProxyFix:
+    """ProxyFix (X-Forwarded-For/Proto/Host) seulement pour une requête venue d'un proxy déclaré dans
+    TRUSTED_PROXIES. Appliqué sans condition, il laissait tout visiteur direct choisir son adresse
+    en mode gunicorn (Waitress supprime ces en-têtes, gunicorn non) : anti-brute-force du login et
+    limite de débit contournés en changeant d'X-Forwarded-For à chaque essai."""
+
+    def __init__(self, wsgi_app):
+        self.wsgi_app = wsgi_app
+        self.fixed = ProxyFix(wsgi_app, x_for=1, x_proto=1, x_host=1)
+
+    def __call__(self, environ, start_response):
+        if is_trusted_proxy(environ.get("REMOTE_ADDR", "")):
+            return self.fixed(environ, start_response)
+        return self.wsgi_app(environ, start_response)
 
 
 def client_ip() -> str:

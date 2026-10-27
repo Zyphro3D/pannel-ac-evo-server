@@ -4,10 +4,9 @@ from pathlib import Path
 from flask import Flask, request, session
 from flask_babel import Babel
 from flask_limiter import Limiter
-from app.services.netutil import client_ip
+from app.services.netutil import TrustedProxyFix, client_ip
 from flask_login import LoginManager
 from flask_wtf.csrf import CSRFProtect
-from werkzeug.middleware.proxy_fix import ProxyFix
 from config import Config
 
 try:
@@ -663,7 +662,7 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
     _load_settings(app)   # surcharge avec les paramètres UI sauvegardés (settings.json)
-    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
+    app.wsgi_app = TrustedProxyFix(app.wsgi_app)
 
     _register_extensions(app)
 

@@ -56,3 +56,26 @@ def test_client_ip_uses_cloudflare_header_only_from_trusted_proxy(admin_client, 
     with app.test_request_context("/", environ_base={"REMOTE_ADDR": "93.184.216.34"},
                                   headers={"CF-Connecting-IP": "1.1.1.1"}):
         assert client_ip() == "93.184.216.34"              # en-tête usurpé par un visiteur direct
+
+
+def _seen_by_app(remote_addr, xff):
+    from werkzeug.test import Client
+    from werkzeug.wrappers import Response
+    from app.services.netutil import TrustedProxyFix
+
+    def echo(environ, start_response):
+        return Response(environ["REMOTE_ADDR"])(environ, start_response)
+
+    resp = Client(TrustedProxyFix(echo)).get("/", environ_base={"REMOTE_ADDR": remote_addr},
+                                             headers={"X-Forwarded-For": xff})
+    return resp.get_data(as_text=True)
+
+
+def test_forwarded_for_ignored_from_direct_visitor(monkeypatch):
+    monkeypatch.setenv("TRUSTED_PROXIES", "10.10.5.2")
+    assert _seen_by_app("203.0.113.9", "198.51.100.1") == "203.0.113.9"
+
+
+def test_forwarded_for_honoured_from_trusted_proxy(monkeypatch):
+    monkeypatch.setenv("TRUSTED_PROXIES", "10.10.5.2")
+    assert _seen_by_app("10.10.5.2", "198.51.100.1") == "198.51.100.1"
