@@ -474,25 +474,25 @@ def update_driver_info(steam_id: str, name: str | None = None,
 # ── Message de bienvenue automatique ─────────────────────────────────────────
 
 _RE_DRIVER_LOG = re.compile(
-    r'\[server\] \[info\] Car \[[^\]]+\] #(\d+) for driver (.+?) \[(\d+)\]'
+    r'^\[[^\]]*\] \[server\] \[info\] Car \[[^\]]+\] #(\d+) for driver (.+?) \[(\d+)\]'
 )
 _RE_CONNECT_LOG = re.compile(
-    r'\[gameplay\] \[info\] (\d+) connected \([^)]+\) on car ([^,\s]+)'
+    r'^\[[^\]]*\] \[gameplay\] \[info\] (\d+) connected \([^)]+\) on car ([^,\s]+)'
     r'(?:, with new carId ([0-9a-f-]+))?'
 )
-_RE_DISCONN_LOG = re.compile(r'\[gameplay\] \[info\] (\d+) [Dd]isconnected')
-_RE_DISCONN_CAR_LOG = re.compile(r'\[gameplay\] \[info\] Disconnected carId ([0-9a-f-]+)')
-_RE_NEWLAP_LOG  = re.compile(r'\[gameplay\] \[info\] New lap carId ([0-9a-f-]+): (\d+:\d+\.\d+)')
+_RE_DISCONN_LOG = re.compile(r'^\[[^\]]*\] \[gameplay\] \[info\] (\d+) [Dd]isconnected')
+_RE_DISCONN_CAR_LOG = re.compile(r'^\[[^\]]*\] \[gameplay\] \[info\] Disconnected carId ([0-9a-f-]+)')
+_RE_NEWLAP_LOG  = re.compile(r'^\[[^\]]*\] \[gameplay\] \[info\] New lap carId ([0-9a-f-]+): (\d+:\d+\.\d+)')
 # Le préfixe "[TimelineMessage] " est apparu avec la mise à jour 0.9.0 du serveur
 # (build 0.8.1 -> 0.9.0) — optionnel pour rester compatible avec les deux formats.
-_RE_SECTOR_LOG  = re.compile(r'\[gameplay\] \[info\] (?:\[TimelineMessage\] )?Split completed for car ([0-9a-f-]+): \((\d+) ms, splitindex (\d+)\)')
-_RE_LAP_INVALID = re.compile(r'\[gameplay\] \[error\] Couldn\'t create lap from opensplits \(carId ([0-9a-f-]+)\)')
-_RE_PLAYERS_LOG = re.compile(r'\[server\] \[info\] Server updated: (\d+) players')
-_RE_CHAT_LOG    = re.compile(r'\[server\] \[info\] Chat from (.+?) \[(\d+)\]: (.+)')
+_RE_SECTOR_LOG  = re.compile(r'^\[[^\]]*\] \[gameplay\] \[info\] (?:\[TimelineMessage\] )?Split completed for car ([0-9a-f-]+): \((\d+) ms, splitindex (\d+)\)')
+_RE_LAP_INVALID = re.compile(r'^\[[^\]]*\] \[gameplay\] \[error\] Couldn\'t create lap from opensplits \(carId ([0-9a-f-]+)\)')
+_RE_PLAYERS_LOG = re.compile(r'^\[[^\]]*\] \[server\] \[info\] Server updated: (\d+) players')
+_RE_CHAT_LOG    = re.compile(r'^\[[^\]]*\] \[server\] \[info\] Chat from (.+?) \[(\d+)\]: (.+)')
 # Le serveur refuse une version de protocole qui n'est pas la sienne et l'écrit dans son journal
 # (« Network Version Mismatch. Current: (Server:6, Protocol:8), Requested: … ») : le bot reprend
 # ces valeurs à la connexion suivante, sans attendre une version du panel (mise à jour du jeu).
-_RE_VERSION_MISMATCH = re.compile(r'Network Version Mismatch\. Current: \(Server:(\d+), Protocol:(\d+)\)')
+_RE_VERSION_MISMATCH = re.compile(r'^\[[^\]]*\] \[[a-z]+\] \[[a-z]+\] Network Version Mismatch\. Current: \(Server:(\d+), Protocol:(\d+)\)')
 
 
 def _get_active_config_name(server_id: int = 1) -> tuple[str, str]:
@@ -845,6 +845,8 @@ def _on_lap_invalid(m, c):
 def _on_chat_log(m, line, c):
     ts_m = re.match(r'^\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})', line)
     ts   = ts_m.group(1)[11:] if ts_m else ""
+    if m.group(3).lstrip().startswith("\\"):
+        return   # commande serveur (\admin <mot de passe>…) : jamais dans l'historique public, comme send_chat
     with c["lb_lock"]:
         c["chat_buffer"].append({"author": m.group(1), "text": m.group(3), "ts": ts, "source": "player"})
 

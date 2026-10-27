@@ -13,9 +13,9 @@ journalisées : elles restent disponibles après coup dans le fichier de résult
 """
 import re
 
-RE_CAR = re.compile(r"\[server\] \[info\] Car \[([0-9a-f]{16})-([0-9a-f]{16})\] #\d+ for driver (.+?) \[\d+\]")
+RE_CAR = re.compile(r"^\[[^\]]*\] \[server\] \[info\] Car \[([0-9a-f]{16})-([0-9a-f]{16})\] #\d+ for driver (.+?) \[\d+\]")
 RE_COLLISION = re.compile(
-    r"\[gameplay\] \[debug\] Collision between ([0-9a-f-]{36}) and "
+    r"^\[[^\]]*\] \[gameplay\] \[debug\] Collision between ([0-9a-f-]{36}) and "
     r"(?:([0-9a-f-]{36}), collider (\w+)|(\w+)), damage (true|false)")
 
 _DEDUP_S = 2.0        # chaque voiture impliquée rapporte le même contact

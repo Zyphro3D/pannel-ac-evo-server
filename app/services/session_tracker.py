@@ -20,11 +20,11 @@ from datetime import datetime
 _TS_FMT = "%Y-%m-%d %H:%M:%S.%f"
 _MIN_WAIT_EXTRA_S = 1.4        # écart constaté entre MinWaitingForPlayers et le début réel
 
-RE_CREATED = re.compile(r"\[gameplay\] \[info\] (?:TimeAttack|InstantRace)Remote (\w+) created")
-RE_LAST_LAP = re.compile(r"\[gameplay\] \[info\] WAIT_LAST_LAP")
-RE_END = re.compile(r"\[gameplay\] \[info\] END_SESSION")
-RE_RESET = re.compile(r"\[gameplay\] \[info\] (?:chaging|Changing) GameMode|\[server\] \[info\] OnExitGamemode"
-                      r"|\[server\] \[info\] Start Server ")
+RE_CREATED = re.compile(r"^\[[^\]]*\] \[gameplay\] \[info\] (?:TimeAttack|InstantRace)Remote (\w+) created")
+RE_LAST_LAP = re.compile(r"^\[[^\]]*\] \[gameplay\] \[info\] WAIT_LAST_LAP")
+RE_END = re.compile(r"^\[[^\]]*\] \[gameplay\] \[info\] END_SESSION")
+RE_RESET = re.compile(r"^\[[^\]]*\] (?:\[gameplay\] \[info\] (?:chaging|Changing) GameMode|\[server\] \[info\] OnExitGamemode"
+                      r"|\[server\] \[info\] Start Server )")
 
 # Nom de session dans le log → clé de la section de la config du panel
 _CONFIG_KEYS = {"practice": "PracticeSession", "qualifying": "QualifyingSession",

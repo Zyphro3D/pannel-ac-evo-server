@@ -21,21 +21,21 @@ _CONTAINER   = os.environ.get("ACESERVER_CONTAINER_NAME", "ace-server")
 _RE_TS      = re.compile(r'^\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3})\]')
 # connect : capture steam_id, car_model, car_id (optionnel)
 _RE_CONNECT = re.compile(
-    r'\[gameplay\] \[info\] (\d+) connected \([^)]+\) on car ([^,\s]+)'
+    r'^\[[^\]]*\] \[gameplay\] \[info\] (\d+) connected \([^)]+\) on car ([^,\s]+)'
     r'(?:, with new carId ([0-9a-f-]+))?'
 )
 # Capture car_id depuis Car [<uuid>] pour fallback si connect ne matche pas
-_RE_DRIVER  = re.compile(r'\[server\] \[info\] Car \[([0-9a-f-]+)\] #(\d+) for driver (.+?) \[(\d+)\]')
-_RE_PLAYERS = re.compile(r'\[server\] \[info\] Server updated: (\d+) players')
-_RE_DISCONN = re.compile(r'\[gameplay\] \[info\] (\d+) [Dd]isconnected')
+_RE_DRIVER  = re.compile(r'^\[[^\]]*\] \[server\] \[info\] Car \[([0-9a-f-]+)\] #(\d+) for driver (.+?) \[(\d+)\]')
+_RE_PLAYERS = re.compile(r'^\[[^\]]*\] \[server\] \[info\] Server updated: (\d+) players')
+_RE_DISCONN = re.compile(r'^\[[^\]]*\] \[gameplay\] \[info\] (\d+) [Dd]isconnected')
 # Format apparu en 0.9.0 : "Disconnected carId X", sans steam_id — résolu via car_to_steam.
-_RE_DISCONN_CAR = re.compile(r'\[gameplay\] \[info\] Disconnected carId ([0-9a-f-]+)')
-_RE_SPLIT   = re.compile(r'\[gameplay\] \[info\] Outplap split')
-_RE_NEWLAP  = re.compile(r'\[gameplay\] \[info\] New lap carId ([0-9a-f-]+): (\d+:\d+\.\d+)')
+_RE_DISCONN_CAR = re.compile(r'^\[[^\]]*\] \[gameplay\] \[info\] Disconnected carId ([0-9a-f-]+)')
+_RE_SPLIT   = re.compile(r'^\[[^\]]*\] \[gameplay\] \[info\] Outplap split')
+_RE_NEWLAP  = re.compile(r'^\[[^\]]*\] \[gameplay\] \[info\] New lap carId ([0-9a-f-]+): (\d+:\d+\.\d+)')
 # Le préfixe "[TimelineMessage] " est apparu avec la mise à jour 0.9.0 du serveur
 # (build 0.8.1 -> 0.9.0) — optionnel pour rester compatible avec les deux formats.
 _RE_SECTORC = re.compile(
-    r'\[gameplay\] \[info\] (?:\[TimelineMessage\] )?Split completed for car ([0-9a-f-]+): \((\d+) ms, splitindex (\d+)\)'
+    r'^\[[^\]]*\] \[gameplay\] \[info\] (?:\[TimelineMessage\] )?Split completed for car ([0-9a-f-]+): \((\d+) ms, splitindex (\d+)\)'
 )
 
 

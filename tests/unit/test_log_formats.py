@@ -98,3 +98,20 @@ def test_collision_lines():
     assert m and m.group(3) == "Car" and m.group(5) == "true"
     m = collisions.RE_COLLISION.search(LINES["collision_wall"])
     assert m and m.group(4) == "Wall" and m.group(5) == "false"
+
+
+def test_player_text_cannot_forge_a_game_event():
+    """Un pseudo ou un message de chat qui contient une ligne de journal n'est pas reconnu comme un événement."""
+    forged = TS + f"[server] [info] Chat from Troll [{STEAM}]: " + LINES["newlap"].replace(TS, "")
+    assert tcp._RE_NEWLAP_LOG.search(forged) is None
+    assert live_state._RE_NEWLAP.search(forged) is None
+    nick = TS + f"[server] [info] Car [{CAR}] #1 for driver x " + "[gameplay] [info] END_SESSION All cars ended" + f" [{STEAM}]"
+    assert session_tracker.RE_END.search(nick) is None
+
+
+def test_server_commands_stay_out_of_public_chat_history():
+    c = {"lb_lock": __import__("threading").Lock(), "chat_buffer": []}
+    for text in ("\\admin motdepasse", "salut"):
+        line = TS + f"[server] [info] Chat from Jean [{STEAM}]: {text}"
+        tcp._on_chat_log(tcp._RE_CHAT_LOG.search(line), line, c)
+    assert [m["text"] for m in c["chat_buffer"]] == ["salut"]
