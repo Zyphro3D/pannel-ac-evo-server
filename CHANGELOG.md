@@ -1,5 +1,9 @@
 # Changelog
 
+### À venir (non publié)
+
+- Mise à jour depuis le panel : si la nouvelle version demande de se reconnecter, la fenêtre de suivi l'indique au lieu de rester sur « Redémarrage du panel… ».
+
 ### v2.5.0 — 27/10/2026
 
 **Préparation de la mise à jour 0.10 d'Assetto Corsa EVO**

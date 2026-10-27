@@ -306,9 +306,14 @@
         }
 
         async function follow() {
-          let st;
-          try { st = await (await fetch('/api/panel-update/status', {cache: 'no-store'})).json(); }
+          let st, r;
+          try { r = await fetch('/api/panel-update/status', {cache: 'no-store'}); }
           catch (e) { $('pu-step').textContent = PHASES.restart; return setTimeout(follow, 3000); }   // panel en redémarrage
+          // Session refusée par la nouvelle version (redirection vers la connexion) : le panel répond, donc il a redémarré
+          if (r.redirected && new URL(r.url).pathname.startsWith('/login'))
+            return finish(true, '✓ ' + {{ _("Panel redémarré : reconnectez-vous pour vérifier la version")|tojson }});
+          try { st = await r.json(); }
+          catch (e) { $('pu-step').textContent = PHASES.restart; return setTimeout(follow, 3000); }
           if (st.phase === 'done' && st.current === target) return finish(true, '✓ ' + {{ _("Panel mis à jour en")|tojson }} + ' v' + target);
           if (st.phase === 'rolled_back') return finish(false, '✗ ' + {{ _("Mise à jour annulée, version précédente rétablie")|tojson }} + ' : ' + (st.message || ''));
           if (st.phase === 'error' && !st.pending) return finish(false, '✗ ' + (st.message || {{ _("Échec de la mise à jour")|tojson }}));
