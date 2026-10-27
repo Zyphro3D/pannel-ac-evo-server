@@ -308,6 +308,40 @@ def build_incidents(data: dict, driver_map: dict, car_map: dict) -> dict:
     return {"stats": dict(stats), "contacts": contacts, "big_hits": big_hits, "penalties": penalties, "hits": hits}
 
 
+# Champs du JSON du jeu recopiés tels quels puis utilisés comme clés (set, dict, tri) par les
+# pages publiques : une liste ou un objet à leur place y lève une erreur à chaque affichage.
+_RESULT_TEXT_KEYS   = {"session_type", "track_name", "track_layout_name", "server_name", "nickname",
+                       "first_name", "last_name", "player_id", "nation", "model_displayname", "collider"}
+_RESULT_NUMBER_KEYS = {"race_number", "starting_position", "time", "flags", "total_km",
+                       "relative_impact_kmh", "server_timestamp", "penalty_time_ms", "laps_for_clearing"}
+_RESULT_LIST_KEYS   = {"drivers", "cars", "car_standings", "driver_standings", "time_standings", "laps",
+                       "collisions", "split", "session_penalties", "pending_penalties", "cleared_penalties"}
+
+
+def result_type_error(data) -> str | None:
+    """Chemin du premier champ au mauvais type dans un résultat brut, None s'il est sain.
+    Appelée avant d'enregistrer un résultat : une ligne enregistrée casse sinon l'accueil et
+    les pages de résultats jusqu'à sa suppression."""
+    if not isinstance(data, dict):
+        return "$"
+    stack = [(data, "$")]
+    while stack:
+        node, path = stack.pop()
+        items = node.items() if isinstance(node, dict) else enumerate(node)
+        for k, v in items:
+            sub = f"{path}.{k}" if isinstance(node, dict) else f"{path}[{k}]"
+            if isinstance(node, dict):
+                if k in _RESULT_TEXT_KEYS and not (v is None or isinstance(v, (str, int, float))):
+                    return sub
+                if k in _RESULT_NUMBER_KEYS and not (v is None or isinstance(v, (int, float))):
+                    return sub
+                if k in _RESULT_LIST_KEYS and not (v is None or isinstance(v, list)):
+                    return sub
+            if isinstance(v, (dict, list)):
+                stack.append((v, sub))
+    return None
+
+
 def parse_result_file(data: dict) -> dict:
     """Transforme le JSON brut ACE EVO en dict structuré prêt à afficher."""
     session_type = data.get("session_type", "")
@@ -608,6 +642,10 @@ def import_result_file(path: Path, source: str = "file",
         data = json.loads(raw)
     except Exception as e:
         log.error("Impossible de parser %s : %s", path, e)
+        return False
+    bad_field = result_type_error(data)
+    if bad_field:
+        log.error("Résultat %s ignoré : champ %s au mauvais type", path, bad_field)
         return False
     parsed = parse_result_file(data)
 

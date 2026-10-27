@@ -27,7 +27,7 @@ from app.services import config_builder, discord_notifier
 from app.services.netutil import came_through_proxy, host_is_internal, ingest_token
 from app.models import SessionResult
 from app.services.database import db
-from app.services.results_parser import parse_result_file, scan_and_import, get_parsed
+from app.services.results_parser import parse_result_file, result_type_error, scan_and_import, get_parsed
 from app.utils import admin_required_json as _admin_required_json
 
 log = logging.getLogger(__name__)
@@ -368,6 +368,10 @@ def results_ingest():
     final_session_type = ""
 
     if data:
+        bad_field = result_type_error(data)
+        if bad_field:
+            log.warning("Ingest rejeté : champ %s au mauvais type (server=%d)", bad_field, sid)
+            return jsonify({"ok": False, "error": "invalid_result", "field": bad_field}), 400
         raw_str  = json.dumps(data)
         raw_hash = hashlib.sha256(raw_str.encode()).hexdigest()
         parsed   = parse_result_file(data)
