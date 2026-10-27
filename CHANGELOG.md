@@ -2,6 +2,7 @@
 
 ### À venir (non publié)
 
+- Plus d'avertissement « variables de l'image illisibles » dans le journal du panel au démarrage.
 - Mise à jour depuis le panel : si la nouvelle version demande de se reconnecter, la fenêtre de suivi l'indique au lieu de rester sur « Redémarrage du panel… ».
 
 ### v2.5.0 — 27/10/2026

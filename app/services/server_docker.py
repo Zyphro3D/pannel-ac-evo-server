@@ -42,17 +42,11 @@ def _inspect_reference_container() -> dict:
     network_name = next(iter(attrs["NetworkSettings"]["Networks"].keys()), None)
     image        = attrs["Config"]["Image"]
 
-    # Variables de l'IMAGE, pas du container : celui-ci a pu recevoir le .env du panel (anciennes
-    # versions du compose), qui n'a rien à faire dans un serveur de jeu exposé aux joueurs.
-    try:
-        image_env = client.images.get(attrs["Image"]).attrs["Config"].get("Env") or []
-    except Exception as e:
-        log.warning("_inspect_reference_container: variables de l'image illisibles (%s)", e)
-        image_env = []
+    # Aucune variable recopiée du container de référence : il a pu recevoir le .env du panel (anciennes
+    # versions du compose), qui n'a rien à faire dans un serveur de jeu exposé aux joueurs. Docker
+    # applique de lui-même les variables de l'image (ENV du Dockerfile) ; le proxy Docker refuse
+    # d'ailleurs la lecture des images.
     env_vars: dict[str, str] = {}
-    for e in image_env:
-        k, _, v = e.partition("=")
-        env_vars[k] = v
 
     security_opt = attrs.get("HostConfig", {}).get("SecurityOpt") or []
     compose_project = (attrs["Config"].get("Labels") or {}).get("com.docker.compose.project", "")

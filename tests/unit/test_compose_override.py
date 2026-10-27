@@ -42,10 +42,9 @@ def test_serveurs_de_jeu_sans_le_env_du_panel(monkeypatch):
     assert "env_file:" not in aceserver
     assert "env_file:" not in server_docker._compose_override_yaml([_srv(2)], "img")
 
-    # création par l'API Docker : variables de l'image, pas celles (héritées du .env) du container
+    # création par l'API Docker : rien n'est recopié du container (qui a pu hériter du .env)
     ref = SimpleNamespace(attrs={"Image": "sha256:img", "Mounts": [], "NetworkSettings": {"Networks": {"n": {}}},
                                  "Config": {"Image": "img", "Env": ["SECRET_KEY=fuite", "WINEPREFIX=/root/.wine"]}})
-    image = SimpleNamespace(attrs={"Config": {"Env": ["WINEPREFIX=/root/.wine", "DISPLAY=:99"]}})
-    client = SimpleNamespace(containers=SimpleNamespace(get=lambda name: ref), images=SimpleNamespace(get=lambda i: image))
+    client = SimpleNamespace(containers=SimpleNamespace(get=lambda name: ref))
     monkeypatch.setattr(server_docker, "_get_docker_client", lambda: client)
-    assert server_docker._inspect_reference_container()["env_vars"] == {"WINEPREFIX": "/root/.wine", "DISPLAY": ":99"}
+    assert server_docker._inspect_reference_container()["env_vars"] == {}
