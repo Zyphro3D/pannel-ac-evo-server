@@ -1,6 +1,6 @@
 # Changelog
 
-### À venir (non publié)
+### v2.5.0 — 27/10/2026
 
 **Préparation de la mise à jour 0.10 d'Assetto Corsa EVO**
 
