@@ -13,7 +13,7 @@ jobs:
   smoke-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
 
       - name: Prépare un .env minimal pour le smoke test
         run: |
@@ -42,7 +42,7 @@ jobs:
           done
           echo "panel n'a pas démarré à temps"; docker compose logs panel; exit 1
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4
         with:
           node-version: 20
 
@@ -70,9 +70,11 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
 
       - name: Build Docker zip
+        env:
+          TAG: ${{ github.ref_name }}   # variable d'environnement, pas d'interpolation dans le script
         run: |
           find . \
             -not \( \
@@ -92,13 +94,15 @@ jobs:
             \) \
             -type f \
           | sed 's|^\./||' \
-          | zip -@ "pannel-ac-evo-docker-${{ github.ref_name }}.zip"
+          | zip -@ "pannel-ac-evo-docker-${TAG}.zip"
 
       # Empreintes vérifiées par install.sh / install.ps1 avant d'utiliser l'archive
       - name: SHA256SUMS
-        run: sha256sum "pannel-ac-evo-docker-${{ github.ref_name }}.zip" > SHA256SUMS
+        env:
+          TAG: ${{ github.ref_name }}
+        run: sha256sum "pannel-ac-evo-docker-${TAG}.zip" > SHA256SUMS
 
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65  # v2
         with:
           files: |
             pannel-ac-evo-docker-${{ github.ref_name }}.zip

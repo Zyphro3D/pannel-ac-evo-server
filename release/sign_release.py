@@ -9,6 +9,7 @@ La clé privée ne quitte jamais cette machine : la signature se fait ici, jamai
 """
 import argparse
 import base64
+import fnmatch
 import hashlib
 import json
 import os
@@ -16,6 +17,7 @@ import re
 import subprocess
 import sys
 import tempfile
+import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -26,6 +28,32 @@ import panel_update  # noqa: E402
 
 def b64(raw: bytes) -> str:
     return base64.urlsafe_b64encode(raw).decode().rstrip("=")
+
+
+# Exclusions de l'étape « Build Docker zip » de .github/workflows/release.yml (à garder alignées)
+_CI_EXCLUDED = (".git*", ".venv*", "dist*", "logs*", "*/__pycache__/*", "__pycache__/*", "*.pyc", "*.db",
+                "*.server_state", "*.server_output.log", "*.env", ".env", "install.bat", "start.bat", "update.bat",
+                "*/install.bat", "*/start.bat", "*/update.bat")
+
+
+def check_against_tag(archive: Path, tag: str) -> None:
+    """Refuse de signer une archive de la CI qui diffère du tag local, fichier par fichier : la
+    signature atteste ainsi le code relu ici, pas seulement ce que la CI a produit."""
+    def git(*args) -> bytes:
+        return subprocess.run(["git", "-C", str(ROOT), *args], check=True, capture_output=True).stdout
+    tree = set(git("ls-tree", "-r", "--name-only", "-z", tag).decode().split("\0")) - {""}
+    with zipfile.ZipFile(archive) as z:
+        names = {n for n in z.namelist() if not n.endswith("/")}
+        extra = sorted(names - tree)
+        if extra:
+            sys.exit(f"archive refusée : fichiers absents du tag {tag} : {extra[:10]}")
+        for n in sorted(names):
+            if z.read(n) != git("cat-file", "blob", f"{tag}:{n}"):
+                sys.exit(f"archive refusée : {n} diffère du tag {tag}")
+    missing = sorted(n for n in tree - names if not any(fnmatch.fnmatch(n, pat) for pat in _CI_EXCLUDED))
+    if missing:
+        sys.exit(f"archive refusée : fichiers du tag {tag} absents de l'archive : {missing[:10]}")
+    print(f"archive identique au tag local {tag} ({len(names)} fichiers)")
 
 
 def changelog_notes(version: str) -> str:
@@ -57,6 +85,8 @@ def main() -> None:
         archive.unlink(missing_ok=True)
         subprocess.run(["gh", "release", "download", f"v{v}", "--repo", REPO, "--pattern", name,
                         "--dir", str(out)], check=True)
+    if not a.zip:
+        check_against_tag(archive, f"v{v}")
     data = archive.read_bytes()
 
     from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
