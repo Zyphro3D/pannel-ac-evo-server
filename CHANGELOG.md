@@ -7,6 +7,15 @@
 - Si une mise à jour du jeu change la version réseau du serveur, le bot du panel reprend tout seul la version annoncée par le serveur à sa connexion suivante : le chat, le classement en direct et les commandes admin continuent de fonctionner sans attendre une nouvelle version du panel.
 - Nouveaux tests des formats de lignes du journal du serveur (connexions, tours, secteurs, sessions, collisions) : une ligne modifiée par une mise à jour du jeu est repérée tout de suite.
 
+**Sécurité — corrections issues d'un audit complet du panel**
+
+- Un pilote qui consultait les résultats effaçait les SteamID pour tout le panel (exports admin, championnats, ELO) jusqu'au redémarrage : corrigé.
+- La rotation automatique relance désormais le serveur avec les mots de passe globaux (pilotes et admin) : un serveur privé ne redevient plus ouvert après une rotation.
+- Les mots de passe globaux du serveur de jeu ne sont plus recopiés dans les fichiers de configuration, où tout admin pouvait les lire : seule la page Paramètres (superadmin) les gère. Les anciennes copies sont ignorées automatiquement.
+- En mode HTTPS intégré (gunicorn), l'adresse transmise par un en-tête `X-Forwarded-For` n'est plus crue que si elle vient d'un proxy déclaré dans `TRUSTED_PROXIES` : l'anti-brute-force du login ne se contourne plus en changeant d'adresse factice.
+- Un pilote rejeté après s'être inscrit à un événement ne figure plus sur la liste d'engagés.
+- La restauration d'une sauvegarde ne reprend plus que les réglages connus du panel.
+
 ### v2.4.0 — 25/10/2026
 
 **Nouvelle interface — thème clair et thème foncé**
