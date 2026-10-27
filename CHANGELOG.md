@@ -17,6 +17,7 @@
 - Connexion à deux facteurs : le nombre d'essais de code est compté par le serveur (5 essais, puis 15 minutes d'attente).
 - Un pilote rejeté après s'être inscrit à un événement ne figure plus sur la liste d'engagés.
 - La restauration d'une sauvegarde ne reprend plus que les réglages connus du panel.
+- Dépendances : Pillow 13.0.0 (failles corrigées, aucune n'était atteignable par le panel) ; l'image Docker construit le CSS à partir des versions verrouillées (`npm ci`), mises à jour sans faille connue.
 - Un résultat de session aux champs mal formés est refusé à la réception, au lieu d'être enregistré et de rendre l'accueil et les pages de résultats indisponibles.
 
 ### v2.4.0 — 25/10/2026

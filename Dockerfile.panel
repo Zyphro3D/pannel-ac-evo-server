@@ -1,8 +1,8 @@
 # ── Stage 1 : Tailwind CSS build ──────────────────────────────────────
 FROM node:20-alpine AS css-builder
 WORKDIR /build
-COPY package.json ./
-RUN npm install
+COPY package.json package-lock.json ./
+RUN npm ci
 COPY tailwind.config.js ./
 COPY app/static/css/input.css ./
 COPY app/templates/ ./app/templates/
