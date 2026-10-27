@@ -224,8 +224,11 @@ def reset_password(token):
 @limiter.limit("10 per minute")
 def steam_link():
     from app.services.steam_openid import build_auth_url
+    # État aléatoire lié à cette session : le retour de Steam n'est accepté que s'il le porte.
+    state = secrets.token_urlsafe(24)
+    session["steam_link_state"] = state
     realm     = request.url_root
-    return_to = url_for("auth.steam_callback", _external=True)
+    return_to = url_for("auth.steam_callback", state=state, _external=True)
     return redirect(build_auth_url(return_to, realm))
 
 
@@ -234,7 +237,10 @@ def steam_link():
 @limiter.limit("10 per minute")
 def steam_callback():
     from app.services.steam_openid import verify_callback
-    steam_id = verify_callback(request.args)
+    state = session.pop("steam_link_state", None)
+    steam_id = None
+    if state and secrets.compare_digest(state, request.args.get("state", "")):
+        steam_id = verify_callback(request.args, url_for("auth.steam_callback", state=state, _external=True))
     if not steam_id:
         flash(_("Impossible de vérifier votre compte Steam. Réessayez."), "error")
         return redirect(_steam_owner_redirect())

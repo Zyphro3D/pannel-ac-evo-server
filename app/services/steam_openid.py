@@ -34,12 +34,19 @@ def build_auth_url(return_to: str, realm: str) -> str:
     return f"{_STEAM_OPENID_URL}?{urllib.parse.urlencode(params)}"
 
 
-def verify_callback(args) -> str | None:
+def verify_callback(args, expected_return_to: str) -> str | None:
     """Revérifie auprès de Steam les paramètres openid.* reçus sur le callback.
     Retourne le SteamID64 (str) si la signature est authentique, None sinon.
     `args` est le query string du callback (ex: request.args), doit contenir les
-    clés openid.* telles que renvoyées par Steam."""
+    clés openid.* telles que renvoyées par Steam. `expected_return_to` est l'URL de retour
+    construite par steam_link (avec l'état propre à la session) : une assertion émise pour un
+    autre site ou une autre session (lien de retour transmis à la victime) est refusée."""
     if args.get("openid.mode") != "id_res":
+        return None
+    if args.get("openid.op_endpoint") != _STEAM_OPENID_URL:
+        return None
+    if args.get("openid.return_to") != expected_return_to:
+        log.warning("steam_openid: return_to inattendu, refusé")
         return None
 
     claimed_id = args.get("openid.claimed_id", "")
