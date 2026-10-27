@@ -26,6 +26,9 @@ class Config:
     ADMIN_PASSWORD      = _required_env("ADMIN_PASSWORD")
     SUPERADMIN_USERNAME = os.environ.get("SUPERADMIN_USERNAME", "superadmin")
     SUPERADMIN_PASSWORD = _required_env("SUPERADMIN_PASSWORD")
+    # Plafond par défaut d'un corps de requête (Waitress accepte jusqu'à 3,2 Go pour les mods) :
+    # les routes d'envoi de mods et de sauvegardes le relèvent elles-mêmes (request.max_content_length).
+    MAX_CONTENT_LENGTH  = 64 * 1024 * 1024
 
     # Dossier contenant les fichiers de config JSON du panel
     CONFIGS_DIR = os.environ.get("CONFIGS_DIR", "/aceserver/configs")

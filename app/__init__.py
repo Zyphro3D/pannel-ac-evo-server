@@ -335,7 +335,21 @@ def _sync_track_meta(db):
         log.warning("_sync_track_meta ignoré : %s", e)
 
 
+# Routes qui reçoivent de gros fichiers : plafond relevé AVANT la lecture du formulaire par le
+# contrôle CSRF (before_request suivant), les autres gardent MAX_CONTENT_LENGTH (config.py).
+_BIG_BODY_ENDPOINTS = {
+    "admin.mods_upload":           3 * 1024 ** 3 + 64 * 1024 ** 2,   # mod (3 Go) + couverture
+    "tools.backup_restore_upload": 1024 ** 3 + 64 * 1024 ** 2,       # backup.MAX_TOTAL_BYTES + marge
+}
+
+
 def _register_extensions(app):
+    @app.before_request
+    def _big_body_limit():
+        limit = _BIG_BODY_ENDPOINTS.get(request.endpoint)
+        if limit:
+            request.max_content_length = limit
+
     babel.init_app(app, locale_selector=get_locale, default_translation_directories=_TRANSLATIONS_DIR)
     login_manager.init_app(app)
     login_manager.login_view    = "auth.login"

@@ -343,6 +343,7 @@ def results_ingest():
     # Vérifie la signature HMAC AVANT tout traitement : une requête non signée ne
     # doit déclencher aucune lecture d'état (fichier disque, appel Docker is_running,
     # requête HTTP de comptage joueurs). Refuser d'abord, agir ensuite.
+    request.max_content_length = 16 * 1024 * 1024   # un résultat réel pèse moins de 300 Ko ; avant authentification
     raw_body = request.get_data(cache=True) or b""
     if not _verify_ingest_signature(raw_body):
         return jsonify({"ok": False, "error": "invalid_signature"}), 403

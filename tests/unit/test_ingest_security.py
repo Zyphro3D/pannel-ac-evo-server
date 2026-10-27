@@ -79,3 +79,17 @@ def test_forwarded_for_ignored_from_direct_visitor(monkeypatch):
 def test_forwarded_for_honoured_from_trusted_proxy(monkeypatch):
     monkeypatch.setenv("TRUSTED_PROXIES", "10.10.5.2")
     assert _seen_by_app("10.10.5.2", "198.51.100.1") == "198.51.100.1"
+
+
+def test_oversized_ingest_body_is_refused_before_reading(admin_client):
+    app = admin_client.application
+    r = app.test_client().post(URL, data=b"x" * (16 * 1024 * 1024 + 1), content_type="application/json",
+                               headers={"Host": "panel:4300"}, environ_overrides={"REMOTE_ADDR": "172.19.0.5"})
+    assert r.status_code == 413
+
+
+@pytest.mark.parametrize("url, expected", [("/mods/upload", 400), ("/admin/backup/upload", 400), ("/settings", 413)])
+def test_large_upload_routes_keep_their_own_body_limit(admin_client, url, expected):
+    r = admin_client.post(url, data=b"--x--\r\n", content_type="multipart/form-data; boundary=x",
+                          environ_overrides={"CONTENT_LENGTH": str(200 * 1024 * 1024)})
+    assert r.status_code == expected
