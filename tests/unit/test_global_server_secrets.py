@@ -40,3 +40,13 @@ def test_default_config_carries_no_global_password(monkeypatch):
     monkeypatch.setenv("SERVER_DRIVER_PASSWORD", "glob-driver-pw")
     srv = default_config()["Server"]
     assert srv["AdminPassword"] == "" and srv["DriverPassword"] == ""
+
+
+def test_server_log_view_masks_passwords_echoed_by_the_game(monkeypatch):
+    from app.services import process_manager
+    line = '[2026-10-24 18:10:34.182] [server] [info]  "admin_password": "glob-admin-pw",'
+    empty = '[2026-10-24 18:10:34.182] [server] [info]  "spectator_password": "",'
+    monkeypatch.setattr(process_manager, "_read_server_logs", lambda lines, sid: line + "\n" + empty)
+    out = process_manager.get_server_logs()
+    assert "glob-admin-pw" not in out and '"admin_password": "***"' in out
+    assert '"spectator_password": ""' in out

@@ -11,6 +11,7 @@ import contextlib
 import json
 import logging
 import os
+import re
 import subprocess
 import threading
 import time
@@ -1082,7 +1083,16 @@ def set_auto_restart(enabled: bool, server_id: int = 1) -> dict:
     return {"ok": True, "auto_restart": enabled}
 
 
+# Au démarrage, le serveur de jeu recopie sa config dans son journal, mots de passe compris : la
+# page Serveur (admin) ne doit pas montrer ceux que seule la page Paramètres (superadmin) gère.
+_RE_LOG_PASSWORD = re.compile(r'("(?:admin|driver|spectator)_password"\s*:\s*)"[^"]+"')
+
+
 def get_server_logs(lines: int = 100, server_id: int = 1) -> str:
+    return _RE_LOG_PASSWORD.sub(r'\1"***"', _read_server_logs(lines, server_id))
+
+
+def _read_server_logs(lines: int, server_id: int) -> str:
     if _DEPLOY_MODE == "docker_split":
         try:
             container = _get_aceserver_container(server_id)
