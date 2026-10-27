@@ -1,3 +1,4 @@
+import os
 import time
 import threading
 import logging
@@ -92,6 +93,10 @@ def _launch_event(app, event, db):
 
         # Déploie la config dans server-{id}/ avec les bons ports/ResultsPostUrl
         deploy_config(config_name, server_id)
+
+        # Mot de passe admin global : seulement dans les arguments de lancement, après
+        # l'écriture de la config (il n'est jamais persisté dans les configs partagées).
+        cfg["Server"]["AdminPassword"] = os.environ.get("SERVER_ADMIN_PASSWORD", "").strip()
 
         sc_b64, sd_b64 = build_launch_args(
             cfg, tcp_listener=server.tcp_port, udp_listener=server.udp_port, server_name=server.name)

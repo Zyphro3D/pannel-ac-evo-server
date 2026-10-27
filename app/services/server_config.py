@@ -316,7 +316,22 @@ def load_config() -> dict:
             raw = json.load(f)
     except json.JSONDecodeError as e:
         raise ConfigJsonError(path.name, e.lineno, e.colno, e.msg) from e
-    return _deep_merge(_default_config(), raw)
+    return _deep_merge(_default_config(), _strip_global_secrets(raw))
+
+
+def _strip_global_secrets(raw: dict) -> dict:
+    """Retire des configs partagées les mots de passe globaux (page Paramètres, superadmin) que
+    les anciennes versions y recopiaient : l'API de config les servait à tout admin.
+    AdminPassword n'est jamais propre à une config ; DriverPassword peut l'être (événement),
+    on ne le retire que s'il vaut le mot de passe global. Les deux sont réinjectés au lancement
+    (inject_global_server_settings) et dans la copie déployée server-{id}/ que lit le bot."""
+    srv = raw.get("Server") if isinstance(raw, dict) else None
+    if isinstance(srv, dict):
+        srv.pop("AdminPassword", None)
+        glob_pw = os.environ.get("SERVER_DRIVER_PASSWORD", "").strip()
+        if glob_pw and srv.get("DriverPassword") == glob_pw:
+            srv["DriverPassword"] = ""
+    return raw
 
 
 def default_config() -> dict:
@@ -329,7 +344,7 @@ def load_config_by_name(name: str) -> dict | None:
     try:
         with open(path, "r", encoding="utf-8") as f:
             raw = json.load(f)
-        return _deep_merge(_default_config(), raw)
+        return _deep_merge(_default_config(), _strip_global_secrets(raw))
     except Exception:
         return None
 
@@ -767,9 +782,9 @@ def _default_config() -> dict:
             "UdpPort":        _env_int("SERVER_UDP_PORT",    9700),
             "HttpPort": 8081,
             "IsCycleEnabled": True,
-            "DriverPassword": _os.environ.get("SERVER_DRIVER_PASSWORD", ""),
+            "DriverPassword": "",   # global : injecté au lancement, jamais écrit dans les configs
             "SpectatorPassword": "",
-            "AdminPassword":  _os.environ.get("SERVER_ADMIN_PASSWORD",  ""),
+            "AdminPassword":  "",
             "EntryListUrl": "",
             "ResultsPostUrl": _results_post_url(1),
             "EntryListPath":  _os.environ.get("SERVER_ENTRY_LIST_PATH", ""),

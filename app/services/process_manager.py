@@ -446,6 +446,10 @@ def _rotation_load_and_build(next_cfg: str, configs_dir: Path, server_id: int):
         from app.models import Server as _Server
         from app.services.database import db as _db
         from app.services.server_config import deploy_config as _deploy_config
+        from app.services.server_config import inject_global_server_settings
+        # Comme _do_start et rotation_start : sans ça, le serveur relancé par la rotation
+        # perd les mots de passe globaux (un serveur privé redevient ouvert).
+        inject_global_server_settings(cfg_data)
         with _db_context():
             _srv = _db.session.get(_Server, server_id)
             _deploy_config(next_cfg, server_id)

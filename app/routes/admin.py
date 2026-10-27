@@ -966,8 +966,7 @@ def settings():
     except Exception:
         bot_cars = []
     try:
-        from app.services.server_config import load_config
-        bot_admin_password_set = bool(load_config().get("Server", {}).get("AdminPassword", ""))
+        bot_admin_password_set = bool(os.environ.get("SERVER_ADMIN_PASSWORD", "").strip())
     except Exception:
         bot_admin_password_set = False
 
