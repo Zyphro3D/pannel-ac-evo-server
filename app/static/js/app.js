@@ -803,12 +803,15 @@ function renderRotList() {
     item.className = 'rot-item' + (isActive ? ' rot-item-active' : '');
     item.innerHTML =
       `<span class="rot-item-pos">${idx + 1}</span>` +
-      `<span class="rot-item-name">${cfg}</span>` +
+      `<span class="rot-item-name"></span>` +
       `<div class="rot-item-actions">` +
         `<button class="rot-btn" onclick="rotMove(${idx},-1)" ${idx === 0 ? 'disabled' : ''}>↑</button>` +
         `<button class="rot-btn" onclick="rotMove(${idx},1)" ${idx === _rotConfigs.length - 1 ? 'disabled' : ''}>↓</button>` +
         `<button class="rot-btn rot-btn-del" onclick="rotRemove(${idx})"><span class="icon-trash"></span></button>` +
       `</div>`;
+    // textContent : .rotation.json vit dans le dossier partagé avec le conteneur du jeu, son contenu
+    // n'est pas une source de confiance pour du HTML
+    item.querySelector('.rot-item-name').textContent = cfg;
     list.appendChild(item);
   });
   updateRotationStatus();

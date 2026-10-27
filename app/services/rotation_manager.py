@@ -28,6 +28,10 @@ def get_rotation() -> dict:
     if p.exists():
         try:
             data = json.loads(p.read_text())
+            # Fichier du dossier partagé avec le conteneur du jeu : on revalide les noms à la
+            # lecture comme save_rotation le fait à l'écriture.
+            from app.services.server_config import _valid_config_name
+            data["configs"] = [c for c in data.get("configs", []) if isinstance(c, str) and _valid_config_name(c)]
             return {**_DEFAULT_ROTATION, **data}
         except Exception:
             pass
