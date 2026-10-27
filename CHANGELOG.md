@@ -13,6 +13,8 @@
 - La rotation automatique relance désormais le serveur avec les mots de passe globaux (pilotes et admin) : un serveur privé ne redevient plus ouvert après une rotation.
 - Les mots de passe globaux du serveur de jeu ne sont plus recopiés dans les fichiers de configuration, où tout admin pouvait les lire : seule la page Paramètres (superadmin) les gère. Les anciennes copies sont ignorées automatiquement.
 - En mode HTTPS intégré (gunicorn), l'adresse transmise par un en-tête `X-Forwarded-For` n'est plus crue que si elle vient d'un proxy déclaré dans `TRUSTED_PROXIES` : l'anti-brute-force du login ne se contourne plus en changeant d'adresse factice.
+- Sessions : la déconnexion et le changement de mot de passe ferment désormais toutes les sessions ouvertes du compte (autres appareils compris), et une session ne peut plus retomber sur un compte créé après la suppression d'un autre. **Après la mise à jour, chacun doit se reconnecter une fois.**
+- Connexion à deux facteurs : le nombre d'essais de code est compté par le serveur (5 essais, puis 15 minutes d'attente).
 - Un pilote rejeté après s'être inscrit à un événement ne figure plus sur la liste d'engagés.
 - La restauration d'une sauvegarde ne reprend plus que les réglages connus du panel.
 

@@ -10,7 +10,7 @@ _env_write_lock = threading.Lock()  # protects concurrent os.environ writes in s
 
 from flask import Blueprint, current_app, render_template, redirect, url_for, request, flash, jsonify, session, send_from_directory, abort
 from flask_babel import _, lazy_gettext as _l
-from flask_login import current_user, login_required
+from flask_login import current_user, login_required, login_user
 
 
 from app.models import AdminAccount, Driver, DriverStatus, Event, Server, CarMeta, TrackMeta
@@ -197,6 +197,7 @@ def _migrate_admin_account_extra(db):
         ("totp_enabled",           "BOOLEAN NOT NULL DEFAULT 0"),
         ("totp_recovery",          "TEXT"),
         ("totp_last_step",         "INTEGER DEFAULT 0"),
+        ("session_token",          "VARCHAR(32)"),
     ]
     with db.engine.connect() as conn:
         existing = [r[1] for r in conn.execute(sa.text("PRAGMA table_info(admin_account)"))]
@@ -234,6 +235,7 @@ def _migrate_driver_email_confirmation(db):
         ("email_confirmed_at",          "DATETIME"),
         ("email_confirm_token",         "VARCHAR(64)"),
         ("email_confirm_token_expires", "DATETIME"),
+        ("session_token",               "VARCHAR(32)"),
     ]
     with db.engine.connect() as conn:
         existing = [r[1] for r in conn.execute(sa.text("PRAGMA table_info(driver)"))]
@@ -1095,8 +1097,10 @@ def account_edit(account_id):
     acc.display_name = display_name
     acc.role = role
     if password:
-        acc.set_password(password)
+        acc.set_password(password)   # change le jeton de session : ses sessions ouvertes tombent
     db.session.commit()
+    if password and acc is current_user._get_current_object():
+        login_user(acc)              # son propre mot de passe : on garde la session en cours
     flash(_("Compte mis à jour."), "success")
     return redirect(url_for("admin.settings", tab="accounts"))
 
@@ -1112,7 +1116,7 @@ def account_toggle(account_id):
         remaining = AdminAccount.query.filter_by(role="superadmin", is_active=True).count()
         if remaining <= 1:
             return jsonify({"ok": False, "error": _("Dernier superadmin actif — impossible de désactiver")}), 400
-    if str(current_user.get_id()) == acc.get_id():
+    if current_user.is_admin and current_user.id == acc.id:
         return jsonify({"ok": False, "error": _("Impossible de vous désactiver vous-même")}), 400
     acc.is_active = not acc.is_active
     db.session.commit()
@@ -1127,7 +1131,7 @@ def account_delete(account_id):
     if not acc:
         flash(_("Compte introuvable."), "error")
         return redirect(url_for("admin.settings", tab="accounts"))
-    if str(current_user.get_id()) == acc.get_id():
+    if current_user.is_admin and current_user.id == acc.id:
         flash(_("Impossible de supprimer votre propre compte."), "error")
         return redirect(url_for("admin.settings", tab="accounts"))
     if acc.role == "superadmin":
@@ -1161,7 +1165,7 @@ def account_role_change():
         if not acc:
             return jsonify({"ok": False, "error": _("Compte introuvable")}), 404
         if new_role == "pilote":
-            if str(current_user.get_id()) == acc.get_id():
+            if current_user.is_admin and current_user.id == acc.id:
                 return jsonify({"ok": False, "error": _("Impossible de supprimer votre propre compte.")}), 400
             if acc.role == "superadmin":
                 remaining = AdminAccount.query.filter_by(role="superadmin", is_active=True).count()
@@ -1322,6 +1326,7 @@ def account_2fa_reset(account_id):
     acc.totp_secret = None
     acc.totp_recovery = None
     acc.totp_last_step = 0
+    acc.rotate_session()   # appareil perdu : les sessions ouvertes du compte tombent aussi
     db.session.commit()
     _audit.record("2fa.reset_by_superadmin", target=acc.username)
     flash(_("Authentification à deux facteurs désactivée pour %(u)s.", u=acc.username), "success")

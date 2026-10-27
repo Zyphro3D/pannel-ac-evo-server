@@ -57,6 +57,15 @@ def _bf_ok(ip: str) -> None:
     with _BF_LOCK:
         _bf_state.pop(ip, None)
 
+
+def _login(user) -> None:
+    """login_user après avoir enregistré le jeton de session : il doit être en base avant que le
+    cookie ne le porte (comptes antérieurs au jeton, compte promu pilote → admin)."""
+    if not user.session_token:
+        user.rotate_session()
+    db.session.commit()
+    login_user(user)
+
 _PWD_MIN_LEN = 10
 
 
@@ -104,8 +113,7 @@ def login():
                              role="superadmin" if account.is_superadmin else "admin")
                 return redirect(url_for("auth.login_2fa"))
             account.last_login = datetime.now(timezone.utc).replace(tzinfo=None)
-            db.session.commit()
-            login_user(account)
+            _login(account)
             audit.record("login.ok", target=account.username, actor=account.username,
                          role="superadmin" if account.is_superadmin else "admin")
             return redirect(url_for("admin.server"))
@@ -119,7 +127,7 @@ def login():
                 flash(_("Votre compte a été refusé."), "error")
             else:
                 _bf_ok(ip)
-                login_user(driver)
+                _login(driver)
                 return redirect(url_for("public.pilot_dashboard"))
             return render_template("login.html")
 
@@ -138,6 +146,9 @@ def login():
 @login_required
 def logout():
     audit.record("logout")
+    # Nouveau jeton : le cookie courant et toute copie (autre appareil, cookie volé) tombent.
+    current_user.rotate_session()
+    db.session.commit()
     logout_user()
     return redirect(url_for("public.index"))
 
@@ -288,6 +299,14 @@ def login_2fa():
         flash(_("Session de vérification expirée, reconnectez-vous."), "error")
         return redirect(url_for("auth.login"))
 
+    # Compteur d'essais côté serveur, par compte : celui du cookie (pend["tries"]) se remet à zéro
+    # en rejouant un ancien cookie.
+    bf_key = f"2fa:{account.id}"
+    if request.method == "POST" and _bf_check(bf_key):
+        _clear_pending()
+        flash(_("Trop d'essais. Réessayez dans quelques minutes."), "error")
+        return redirect(url_for("auth.login"))
+
     if request.method == "POST":
         code = request.form.get("code", "").strip()
         role = "superadmin" if account.is_superadmin else "admin"
@@ -305,15 +324,16 @@ def login_2fa():
                 ok = used_recovery = True
         if ok:
             account.last_login = datetime.now(timezone.utc).replace(tzinfo=None)
-            db.session.commit()
             _clear_pending()
-            login_user(account)
+            _bf_ok(bf_key)
+            _login(account)
             audit.record("login.ok", target=account.username, actor=account.username, role=role,
                          detail={"2fa": "recovery" if used_recovery else "totp"})
             if used_recovery:
                 left = totp.recovery_left(account.totp_recovery)
                 flash(_("Code de secours utilisé : il vous en reste %(n)s.", n=left), "warning")
             return redirect(url_for("admin.server"))
+        _bf_fail(bf_key)
         pend["tries"] = pend.get("tries", 0) + 1
         session["pending_2fa"] = pend
         audit.record("login.2fa_fail", target=account.username, ok=False, actor=account.username, role=role)

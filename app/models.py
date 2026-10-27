@@ -1,3 +1,5 @@
+import hmac
+import secrets
 from datetime import datetime, timezone
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -6,6 +8,23 @@ from app.services.database import db
 
 def _utcnow():
     return datetime.now(timezone.utc).replace(tzinfo=None)
+
+
+class SessionTokenMixin:
+    """Jeton aléatoire glissé dans l'identifiant de session (cookie) : changé à chaque mot de passe
+    et à la déconnexion, il révoque toutes les sessions ouvertes du compte. Il empêche aussi un
+    ancien cookie de retomber sur le compte créé plus tard avec le même id (SQLite réutilise les
+    id libérés par une suppression)."""
+    _ID_PREFIX = ""
+
+    def rotate_session(self):
+        self.session_token = secrets.token_hex(16)
+
+    def get_id(self) -> str:
+        return f"{self._ID_PREFIX}{self.id}.{self.session_token}"
+
+    def session_token_matches(self, token: str) -> bool:
+        return bool(self.session_token) and hmac.compare_digest(self.session_token, token)
 
 
 # ── Status constants ──────────────────────────────────────────────────────────
@@ -30,8 +49,9 @@ class RegStatus:
 
 # ── AdminAccount (admin/superadmin stockés en DB) ────────────────────────────
 
-class AdminAccount(UserMixin, db.Model):
+class AdminAccount(SessionTokenMixin, UserMixin, db.Model):
     __tablename__ = "admin_account"
+    _ID_PREFIX = "aa_"
 
     id           = db.Column(db.Integer, primary_key=True)
     username     = db.Column(db.String(50), unique=True, nullable=False)
@@ -52,12 +72,11 @@ class AdminAccount(UserMixin, db.Model):
     totp_enabled   = db.Column(db.Boolean, default=False, nullable=False, server_default="0")
     totp_recovery  = db.Column(db.Text, nullable=True)        # JSON : hachés des codes de secours restants
     totp_last_step = db.Column(db.Integer, default=0)         # dernier pas accepté (anti-rejeu)
-
-    def get_id(self) -> str:
-        return f"aa_{self.id}"
+    session_token  = db.Column(db.String(32), nullable=True)  # voir SessionTokenMixin
 
     def set_password(self, password: str):
         self._pw_hash = generate_password_hash(password)
+        self.rotate_session()
 
     def check_password(self, password: str) -> bool:
         return check_password_hash(self._pw_hash, password) if self._pw_hash else False
@@ -81,8 +100,9 @@ class AdminAccount(UserMixin, db.Model):
 
 # ── Driver (pilote, stocké en DB) ─────────────────────────────────────────────
 
-class Driver(UserMixin, db.Model):
+class Driver(SessionTokenMixin, UserMixin, db.Model):
     __tablename__ = "driver"
+    _ID_PREFIX = "d_"
 
     id          = db.Column(db.Integer, primary_key=True)
     ingame_name = db.Column(db.String(50),  unique=True, nullable=False)
@@ -103,14 +123,13 @@ class Driver(UserMixin, db.Model):
     steam_id             = db.Column(db.String(32), unique=True, nullable=True)
     steam_id_confirmed_at = db.Column(db.DateTime,  nullable=True)
 
-    registrations = db.relationship("EventRegistration", back_populates="driver", lazy="select")
+    session_token = db.Column(db.String(32), nullable=True)  # voir SessionTokenMixin
 
-    # Flask-Login: prefix "d_" pour distinguer des admins
-    def get_id(self) -> str:
-        return f"d_{self.id}"
+    registrations = db.relationship("EventRegistration", back_populates="driver", lazy="select")
 
     def set_password(self, password: str):
         self._pw_hash = generate_password_hash(password)
+        self.rotate_session()
 
     def check_password(self, password: str) -> bool:
         return check_password_hash(self._pw_hash, password)
@@ -372,15 +391,20 @@ from app import login_manager
 
 @login_manager.user_loader
 def load_user(user_id: str):
-    if user_id.startswith("aa_"):
-        acc = db.session.get(AdminAccount, int(user_id[3:]))
-        return acc if (acc and acc.is_active) else None
-    if user_id.startswith("d_"):
-        driver = db.session.get(Driver, int(user_id[2:]))
-        return driver if (driver and driver.status == DriverStatus.APPROVED) else None
-    # Sessions legacy (avant migration) — tente de retrouver par rôle
-    if user_id in ("admin", "superadmin"):
-        return AdminAccount.query.filter_by(role=user_id, is_active=True).first()
+    """« aa_<id>.<jeton> » ou « d_<id>.<jeton> ». Les cookies sans jeton (versions précédentes)
+    ne sont plus acceptés : reconnexion une fois après la mise à jour."""
+    for prefix, model in (("aa_", AdminAccount), ("d_", Driver)):
+        if not user_id.startswith(prefix):
+            continue
+        uid, _sep, token = user_id[len(prefix):].partition(".")
+        if not uid.isdigit() or not token:
+            return None
+        user = db.session.get(model, int(uid))
+        if user is None or not user.session_token_matches(token):
+            return None
+        if model is AdminAccount:
+            return user if user.is_active else None
+        return user if user.status == DriverStatus.APPROVED else None
     return None
 
 

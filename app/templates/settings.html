@@ -1183,7 +1183,7 @@
                 <td>
                   <select class="form-control role-select min-w-[9rem]"
                           data-kind="admin" data-id="{{ acc.id }}" data-previous="{{ acc.role }}"
-                          {% if acc.get_id() == current_user.get_id() %}disabled title="{{ _('Vous ne pouvez pas modifier votre propre rôle ici') }}"{% endif %}>
+                          {% if acc.id == current_user.id %}disabled title="{{ _('Vous ne pouvez pas modifier votre propre rôle ici') }}"{% endif %}>
                     <option value="pilote">{{ _('Pilote') }}</option>
                     <option value="admin" {% if acc.role == 'admin' %}selected{% endif %}>{{ _('Admin') }}</option>
                     <option value="superadmin" {% if acc.role == 'superadmin' %}selected{% endif %}>{{ _('Super Admin') }}</option>
@@ -1205,14 +1205,14 @@
                 <td class="w-px">
                   <div class="flex gap-1.5 justify-end whitespace-nowrap">
                     <button class="btn btn-secondary btn-sm" @click="openEdit({{ acc.id }}, {{ acc.username | tojson | forceescape }}, {{ (acc.display_name or '') | tojson | forceescape }})">{{ _('Modifier') }}</button>
-                    {% if acc.totp_enabled and acc.get_id() != current_user.get_id() %}
+                    {% if acc.totp_enabled and acc.id != current_user.id %}
                     <form method="post" action="{{ url_for('admin.account_2fa_reset', account_id=acc.id) }}" class="m-0 inline">
                       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                       <button class="btn btn-ghost btn-sm" type="submit" title="{{ _('Appareil perdu : désactive la double authentification de ce compte') }}"
                               data-confirm="{{ _('Désactiver la double authentification de ce compte ?') }}">{{ _('Réinit. 2FA') }}</button>
                     </form>
                     {% endif %}
-                    {% if acc.get_id() != current_user.get_id() %}
+                    {% if acc.id != current_user.id %}
                     <button class="btn btn-ghost btn-sm acc-toggle-btn" id="acc-toggle-{{ acc.id }}"
                             data-id="{{ acc.id }}" data-active="{{ 'true' if acc.is_active else 'false' }}">{{ _('Désactiver') if acc.is_active else _('Activer') }}</button>
                     {% endif %}
