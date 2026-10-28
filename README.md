@@ -18,6 +18,7 @@
 </p>
 
 <p align="center">
+  <a href="https://evopanel.zyphro.fr">🌐 Site evopanel.zyphro.fr</a> •
   <a href="https://github.com/Zyphro3D/pannel-ac-evo-server/wiki/Getting-Started">📖 Getting started (EN)</a> •
   <a href="#-installation">🚀 Installation</a> •
   <a href="#configuration">Configuration</a> •
