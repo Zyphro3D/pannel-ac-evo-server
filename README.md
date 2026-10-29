@@ -130,7 +130,7 @@ Public ⊂ Pilote ⊂ Admin ⊂ Superadmin.
 - Éditeur de config JSON complet : circuit, météo, sessions (Practice / Qualifying / Warmup / Race), voitures
 - Banque de véhicules (97 voitures, catégories Road/Race/Track, filtres, images) et banque de circuits (36 circuits, layout, longueur, images), upload des images véhicules/circuits
 - **Gestion des mods véhicules** : upload multiple par glisser-déposer (`.kspkg`), tags manuels (catégorie, PI), image de couverture auto-détectée ou personnalisée, détection et signalement des conflits d'identifiant entre mods
-- Roulement de configs avec file d'attente, glisser-déposer, option cycle
+- Roulement de configs avec file d'attente propre à chaque serveur, glisser-déposer, option cycle
 - Gestion complète des événements (création, publication, inscriptions, génération de l'`entry_list.json`) et des comptes pilotes (approbation/rejet)
 - Emails transactionnels (approbation, rejet, rappel)
 - Modération in-game depuis le panel : chat admin, kick, envoi aux stands, mute, pénalités, lest/restricteur, saut de session, **bannissement en direct** (`\ban`, enregistré dans la page Accès et signalé sur Discord)
@@ -163,6 +163,7 @@ Public ⊂ Pilote ⊂ Admin ⊂ Superadmin.
 
 **🔔 Notifications Discord**
 - Webhooks configurables par serveur : démarrage/arrêt/crash, connexions joueurs, meilleur tour, actions admin — avec fallback sur le webhook global
+- Messages lisibles : serveur en en-tête, heure affichée dans le fuseau de chaque lecteur, noms de voitures et de circuits en clair, pseudo cliquable vers Steam, record du serveur rappelé avec le meilleur tour, message de plantage qui passe au vert quand le serveur repart
 - **Récapitulatif de fin de session** (option) : podium, meilleur tour, incidents et sanctions regroupés par pilote ; notification des bannissements
 
 **🎨 Interface**
