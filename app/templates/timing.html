@@ -160,6 +160,7 @@
                placeholder="{{ _('Tapez un message ou commande…') }}" maxlength="200" disabled>
         <button class="btn btn-primary" id="admin-chat-send" disabled>{{ _('Envoyer') }}</button>
       </div>
+      <p id="admin-dup-hint" class="form-hint" hidden>{{ _('Plusieurs pilotes ont le même numéro de voiture (souvent 0 sur les voitures de route). Le jeu ne vise une voiture que par son numéro : ces pilotes ne peuvent pas recevoir de commande. Pour bannir l\'un d\'eux, passez par Accès et sanctions.') }}</p>
       <div id="admin-chat-log" class="timing-admin-log"></div>
     </div>
     {% endif %}
@@ -557,6 +558,8 @@ function _refreshCarSelect() {
   // tous à 0 en trackday) ne peuvent pas être visés sans risquer le mauvais.
   const count = {};
   for (const e of _lastLeaderboard) if (e.num) count[e.num] = (count[e.num] || 0) + 1;
+  const hint = document.getElementById('admin-dup-hint');
+  if (hint) hint.hidden = !Object.values(count).some(n => n > 1);
   for (const e of _lastLeaderboard) {
     if (!e.num) continue;
     const opt = document.createElement('option');

@@ -6768,3 +6768,6 @@ msgstr "Alle Server"
 
 msgid "numéro partagé, commande impossible"
 msgstr "geteilte Nummer, Befehl nicht möglich"
+
+msgid "Plusieurs pilotes ont le même numéro de voiture (souvent 0 sur les voitures de route). Le jeu ne vise une voiture que par son numéro : ces pilotes ne peuvent pas recevoir de commande. Pour bannir l'un d'eux, passez par Accès et sanctions."
+msgstr "Mehrere Fahrer haben dieselbe Fahrzeugnummer (oft 0 bei Straßenautos). Das Spiel spricht ein Auto nur über seine Nummer an: Diese Fahrer können keinen Befehl erhalten. Um einen von ihnen zu sperren, nutzen Sie Zugang und Strafen."

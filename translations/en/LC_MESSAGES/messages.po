@@ -6703,3 +6703,6 @@ msgstr "All servers"
 
 msgid "numéro partagé, commande impossible"
 msgstr "shared number, command not possible"
+
+msgid "Plusieurs pilotes ont le même numéro de voiture (souvent 0 sur les voitures de route). Le jeu ne vise une voiture que par son numéro : ces pilotes ne peuvent pas recevoir de commande. Pour bannir l'un d'eux, passez par Accès et sanctions."
+msgstr "Several drivers share the same car number (often 0 on road cars). The game only targets a car by its number: these drivers cannot receive a command. To ban one of them, use Access and penalties."
