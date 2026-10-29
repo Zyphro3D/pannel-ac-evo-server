@@ -33,7 +33,7 @@ if [ "$(id -u)" -eq 0 ] && id "$PANEL_USER" >/dev/null 2>&1 && [ "${PANEL_RUN_AS
         # Conversion complète une seule fois (le dossier racine appartient déjà au panel ensuite) ;
         # les fichiers ajoutés plus tard en root (résultats écrits par le serveur de jeu) restent
         # lisibles, le panel n'a pas besoin de les modifier.
-        if [ "$(stat -c %u "$p")" != "$uid" ]; then
+        if [ "$(stat -c %u:%g "$p")" != "$uid:$(id -g "$PANEL_USER")" ]; then
             echo "Droits : $p → $PANEL_USER"
             chown -R "$PANEL_USER:$PANEL_USER" "$p" 2>/dev/null || true
         fi
