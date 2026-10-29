@@ -25,6 +25,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 COPY --from=css-builder /build/tailwind.min.css /panel/app/static/css/tailwind.min.css
+# Code lisible par le compte panel quels que soient les droits de l'archive ou de l'extraction
+# (une extraction en umask 077 laisserait run.py lisible par root seul)
+RUN chmod -R a+rX /panel
 
 ARG GIT_HASH=unknown
 # Utilisateur sans droits qui fait tourner le panel (entrypoint.sh : le conteneur démarre en root
