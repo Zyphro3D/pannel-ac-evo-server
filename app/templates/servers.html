@@ -54,12 +54,12 @@
       <div class="flex gap-4 flex-wrap">
         <div class="flex-1 min-w-[180px]">
           <label class="form-label">{{ _('Port joueurs (TCP + UDP)') }}</label>
-          <input type="number" name="tcp_port" class="form-control" value="9701" min="1024" max="65535">
+          <input type="number" name="tcp_port" class="form-control" value="{{ next_tcp|default(9701) }}" min="1024" max="65535">
           <p class="form-hint">{{ _('Doit être différent du serveur #1 (9700).') }}</p>
         </div>
         <div class="flex-1 min-w-[180px]">
           <label class="form-label">{{ _('Port HTTP API') }}</label>
-          <input type="number" name="http_port" class="form-control" value="8081" min="1024" max="65535">
+          <input type="number" name="http_port" class="form-control" value="{{ next_http|default(8082) }}" min="1024" max="65535">
         </div>
       </div>
 

@@ -505,10 +505,11 @@ def notify_event_soon(event):
              f"Départ à **<t:{start_ts}:t>** (<t:{start_ts}:R>)"]
     if event.description:
         lines += [f"> {line}" if line.strip() else ">" for line in event.description.strip().splitlines()]
+    server_id = getattr(event, "server_id", None)
     _send_pilots(_with_mention("DISCORD_MENTION_PILOTS", [_embed(
-        _COLOR_ORANGE, _server_name_of(getattr(event, "server_id", None)),
+        _COLOR_ORANGE, _server_name_of(server_id),
         title=f"🏁 {event.title} · départ dans 30 min", description="\n".join(lines)[:4096],
-    )]))
+    )]), server_id=server_id)      # webhook pilotes du serveur de l'événement s'il en a un
 
 
 def _public_panel_url() -> str:

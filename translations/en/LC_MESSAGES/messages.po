@@ -6390,3 +6390,24 @@ msgstr "Update failed"
 #: app/templates/base.html:180
 msgid "Thème clair ou foncé"
 msgstr "Light or dark theme"
+
+msgid "Panel redémarré : reconnectez-vous pour vérifier la version"
+msgstr "Panel restarted: log in again to check the version"
+
+msgid "Première ligne du message — Connexion joueur. Variables : {pilot}, {name}, {num}, {car}, {steam_id}"
+msgstr "First line of the message — Player joined. Variables: {pilot}, {name}, {num}, {car}, {steam_id}"
+
+msgid "Première ligne du message — Déconnexion joueur. Variables : {pilot}, {name}, {duration}, {steam_id}"
+msgstr "First line of the message — Player left. Variables: {pilot}, {name}, {duration}, {steam_id}"
+
+msgid "Première ligne du message — Changement de véhicule. Variables : {pilot}, {name}, {num}, {old_car}, {new_car}"
+msgstr "First line of the message — Car change. Variables: {pilot}, {name}, {num}, {old_car}, {new_car}"
+
+msgid "Première ligne du message — Action admin. Variables : {icon}, {action}, {target}, {admin}, {detail}"
+msgstr "First line of the message — Admin action. Variables: {icon}, {action}, {target}, {admin}, {detail}"
+
+msgid "Titre embed — Meilleur tour de la session. Variables : {name}, {lap}, {car}, {circuit}"
+msgstr "Embed title — Session best lap. Variables: {name}, {lap}, {car}, {circuit}"
+
+msgid "Titre embed — Plantage. Variables : {config}"
+msgstr "Embed title — Crash. Variables: {config}"

@@ -6492,3 +6492,24 @@ msgstr "Error en la actualización"
 #: app/templates/base.html:180
 msgid "Thème clair ou foncé"
 msgstr "Tema claro u oscuro"
+
+msgid "Panel redémarré : reconnectez-vous pour vérifier la version"
+msgstr "Panel reiniciado: vuelva a iniciar sesión para comprobar la versión"
+
+msgid "Première ligne du message — Connexion joueur. Variables : {pilot}, {name}, {num}, {car}, {steam_id}"
+msgstr "Primera línea del mensaje — Conexión de jugador. Variables: {pilot}, {name}, {num}, {car}, {steam_id}"
+
+msgid "Première ligne du message — Déconnexion joueur. Variables : {pilot}, {name}, {duration}, {steam_id}"
+msgstr "Primera línea del mensaje — Desconexión de jugador. Variables: {pilot}, {name}, {duration}, {steam_id}"
+
+msgid "Première ligne du message — Changement de véhicule. Variables : {pilot}, {name}, {num}, {old_car}, {new_car}"
+msgstr "Primera línea del mensaje — Cambio de coche. Variables: {pilot}, {name}, {num}, {old_car}, {new_car}"
+
+msgid "Première ligne du message — Action admin. Variables : {icon}, {action}, {target}, {admin}, {detail}"
+msgstr "Primera línea del mensaje — Acción de admin. Variables: {icon}, {action}, {target}, {admin}, {detail}"
+
+msgid "Titre embed — Meilleur tour de la session. Variables : {name}, {lap}, {car}, {circuit}"
+msgstr "Título del embed — Mejor vuelta de la sesión. Variables: {name}, {lap}, {car}, {circuit}"
+
+msgid "Titre embed — Plantage. Variables : {config}"
+msgstr "Título del embed — Caída. Variables: {config}"

@@ -15,7 +15,13 @@
 - Meilleur tour : le chrono en grand, titré « meilleur tour de la session », avec le record du serveur sur ce tracé rappelé à côté ou signalé comme battu.
 - Plantage : le message passe au vert (« Relancé après plantage ») quand le serveur repart, avec le délai et le nombre de plantages du jour.
 - Fin de session : couleur or, contacts et chocs mur/objet séparés. Inscription d'un pilote : lien direct vers la page Pilotes si l'adresse publique du panel est renseignée.
-- Les textes personnalisés (Paramètres → Discord) restent appliqués ; un champ laissé vide reprend le texte par défaut.
+- Les textes personnalisés (Paramètres → Discord) restent appliqués ; un champ laissé vide reprend le texte par défaut. Nouvelles variables `{pilot}` (pseudo cliquable vers Steam) et `{icon}` (actions admin).
+- L'annonce « départ dans 30 min » d'un événement part sur le webhook pilotes de son serveur s'il en a un.
+
+**Divers**
+
+- Ajout d'un serveur : les ports proposés sont les suivants des ports déjà pris (8082 et non plus 8081, déjà utilisé par le serveur principal).
+- Message « Panel redémarré : reconnectez-vous… » traduit dans toutes les langues.
 
 ### v2.5.0 — 27/10/2026
 

@@ -6335,3 +6335,24 @@ msgstr "Accrochages"
 #: app/templates/base.html:180
 msgid "Thème clair ou foncé"
 msgstr "Thème clair ou foncé"
+
+msgid "Panel redémarré : reconnectez-vous pour vérifier la version"
+msgstr "Panel redémarré : reconnectez-vous pour vérifier la version"
+
+msgid "Première ligne du message — Connexion joueur. Variables : {pilot}, {name}, {num}, {car}, {steam_id}"
+msgstr "Première ligne du message — Connexion joueur. Variables : {pilot}, {name}, {num}, {car}, {steam_id}"
+
+msgid "Première ligne du message — Déconnexion joueur. Variables : {pilot}, {name}, {duration}, {steam_id}"
+msgstr "Première ligne du message — Déconnexion joueur. Variables : {pilot}, {name}, {duration}, {steam_id}"
+
+msgid "Première ligne du message — Changement de véhicule. Variables : {pilot}, {name}, {num}, {old_car}, {new_car}"
+msgstr "Première ligne du message — Changement de véhicule. Variables : {pilot}, {name}, {num}, {old_car}, {new_car}"
+
+msgid "Première ligne du message — Action admin. Variables : {icon}, {action}, {target}, {admin}, {detail}"
+msgstr "Première ligne du message — Action admin. Variables : {icon}, {action}, {target}, {admin}, {detail}"
+
+msgid "Titre embed — Meilleur tour de la session. Variables : {name}, {lap}, {car}, {circuit}"
+msgstr "Titre embed — Meilleur tour de la session. Variables : {name}, {lap}, {car}, {circuit}"
+
+msgid "Titre embed — Plantage. Variables : {config}"
+msgstr "Titre embed — Plantage. Variables : {config}"

@@ -639,12 +639,12 @@ _ENV_DESCS = {
     "DISCORD_MENTION_RACE":       _l("Mention envoyée avec les événements course. Laisser vide pour désactiver."),
     "DISCORD_MSG_SERVER_START":   _l("Titre embed — Serveur démarré. Variables : {config}, {mode}, {circuit}"),
     "DISCORD_MSG_SERVER_STOP":    _l("Titre embed — Serveur arrêté. Variables : {config}"),
-    "DISCORD_MSG_SERVER_CRASH":   _l("Titre embed — Crash détecté. Variables : {config}"),
-    "DISCORD_MSG_PLAYER_JOIN":    _l("Titre embed — Connexion joueur. Variables : {name}, {num}, {car}, {steam_id}"),
-    "DISCORD_MSG_PLAYER_DISCONNECT": _l("Titre embed — Déconnexion joueur. Variables : {name}, {duration}, {steam_id}"),
-    "DISCORD_MSG_VEHICLE_CHANGE": _l("Titre embed — Changement de véhicule. Variables : {name}, {num}, {old_car}, {new_car}"),
-    "DISCORD_MSG_BEST_LAP":       _l("Titre embed — Meilleur tour serveur. Variables : {name}, {lap}, {car}, {circuit}"),
-    "DISCORD_MSG_ADMIN_ACTION":   _l("Titre embed — Action admin. Variables : {action}, {target}, {admin}, {detail}"),
+    "DISCORD_MSG_SERVER_CRASH":   _l("Titre embed — Plantage. Variables : {config}"),
+    "DISCORD_MSG_PLAYER_JOIN":    _l("Première ligne du message — Connexion joueur. Variables : {pilot}, {name}, {num}, {car}, {steam_id}"),
+    "DISCORD_MSG_PLAYER_DISCONNECT": _l("Première ligne du message — Déconnexion joueur. Variables : {pilot}, {name}, {duration}, {steam_id}"),
+    "DISCORD_MSG_VEHICLE_CHANGE": _l("Première ligne du message — Changement de véhicule. Variables : {pilot}, {name}, {num}, {old_car}, {new_car}"),
+    "DISCORD_MSG_BEST_LAP":       _l("Titre embed — Meilleur tour de la session. Variables : {name}, {lap}, {car}, {circuit}"),
+    "DISCORD_MSG_ADMIN_ACTION":   _l("Première ligne du message — Action admin. Variables : {icon}, {action}, {target}, {admin}, {detail}"),
     "DISCORD_MSG_SESSION_SUMMARY": _l("Titre embed — Fin de session. Variables : {session}, {circuit}"),
     "MAIL_SERVER":      _l("Serveur SMTP (laisser vide pour désactiver les emails)"),
     "MAIL_PORT":        _l("Port SMTP (ex: 587 ou 465)"),
@@ -1374,7 +1374,12 @@ def servers_list():
             statuses[srv.id] = get_status(srv.id)
         except Exception:
             statuses[srv.id] = {"running": False}
-    return render_template("servers.html", servers=servers, statuses=statuses)
+    # Ports proposés pour un nouveau serveur : les suivants des ports déjà pris
+    # (le serveur 1 utilise 9700 et 8081, d'où ces planchers).
+    next_tcp  = max([s.tcp_port or 0 for s in servers] + [9700]) + 1
+    next_http = max([s.http_port or 0 for s in servers] + [8081]) + 1
+    return render_template("servers.html", servers=servers, statuses=statuses,
+                           next_tcp=next_tcp, next_http=next_http)
 
 
 @admin_bp.route("/servers/create", methods=["POST"])
