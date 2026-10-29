@@ -131,6 +131,7 @@ Public ⊂ Pilote ⊂ Admin ⊂ Superadmin.
 - Banque de véhicules (97 voitures, catégories Road/Race/Track, filtres, images) et banque de circuits (36 circuits, layout, longueur, images), upload des images véhicules/circuits
 - **Gestion des mods véhicules** : upload multiple par glisser-déposer (`.kspkg`), tags manuels (catégorie, PI), image de couverture auto-détectée ou personnalisée, détection et signalement des conflits d'identifiant entre mods
 - Roulement de configs avec file d'attente propre à chaque serveur, glisser-déposer, option cycle
+- Menu Admin en 4 groupes expliqués, recherche « Où régler… ? » (`Ctrl+K`) qui mène directement au bon réglage
 - Gestion complète des événements (création, publication, inscriptions, génération de l'`entry_list.json`) et des comptes pilotes (approbation/rejet)
 - Emails transactionnels (approbation, rejet, rappel)
 - Modération in-game depuis le panel : chat admin, kick, envoi aux stands, mute, pénalités, lest/restricteur, saut de session, **bannissement en direct** (`\ban`, enregistré dans la page Accès et signalé sur Discord)
@@ -380,7 +381,7 @@ Le bot TCP se connecte au serveur ACE EVO pour envoyer des messages de bienvenue
 
 ## Mise à jour
 
-**Depuis le panel** : *Paramètres → Panel → Mise à jour du panel*, bouton « Mettre à jour » (superadmin). Chaque version est signée ; la machine vérifie signature et empreinte, reconstruit, redémarre et revient à la version précédente si le panel ne répond plus. Cette fonction s'active en lançant une fois la commande d'installation ci-dessous (elle installe l'agent de mise à jour : service systemd sous Linux, tâche planifiée à l'ouverture de session sous Windows).
+**Depuis le panel** : *Admin → Mise à jour*, bouton « Mettre à jour » (superadmin). Chaque version est signée ; la machine vérifie signature et empreinte, reconstruit, redémarre et revient à la version précédente si le panel ne répond plus. Cette fonction s'active en lançant une fois la commande d'installation ci-dessous (elle installe l'agent de mise à jour : service systemd sous Linux, tâche planifiée à l'ouverture de session sous Windows).
 
 **À la main** : relancez la commande d'installation (Linux : `curl … install.sh | sudo bash`, Windows : `irm … install.ps1 | iex`) : elle télécharge la dernière version, vérifie son empreinte SHA-256, remplace le code et reconstruit les containers.
 
