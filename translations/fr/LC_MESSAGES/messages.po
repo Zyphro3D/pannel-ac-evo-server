@@ -6356,3 +6356,280 @@ msgstr "Titre embed — Meilleur tour de la session. Variables : {name}, {lap}, 
 
 msgid "Titre embed — Plantage. Variables : {config}"
 msgstr "Titre embed — Plantage. Variables : {config}"
+
+msgid "Tableau de bord"
+msgstr "Tableau de bord"
+
+msgid "état, démarrer, arrêter, journaux"
+msgstr "état, démarrer, arrêter, journaux"
+
+msgid "circuit, météo, sessions, voitures"
+msgstr "circuit, météo, sessions, voitures"
+
+msgid "Roulement"
+msgstr "Roulement"
+
+msgid "enchaîner les configs de ce serveur"
+msgstr "enchaîner les configs de ce serveur"
+
+msgid "Réglages du serveur"
+msgstr "Réglages du serveur"
+
+msgid "nom, ports, mots de passe, Discord"
+msgstr "nom, ports, mots de passe, Discord"
+
+msgid "Courses et pilotes"
+msgstr "Courses et pilotes"
+
+msgid "soirées, inscriptions, lancement auto"
+msgstr "soirées, inscriptions, lancement auto"
+
+msgid "manches, points, classement"
+msgstr "manches, points, classement"
+
+msgid "comptes à valider, profils"
+msgstr "comptes à valider, profils"
+
+msgid "Accès et sanctions"
+msgstr "Accès et sanctions"
+
+msgid "bannis, liste blanche, lest"
+msgstr "bannis, liste blanche, lest"
+
+msgid "Contenu du jeu"
+msgstr "Contenu du jeu"
+
+msgid "catalogue, images"
+msgstr "catalogue, images"
+
+msgid "tracés, images"
+msgstr "tracés, images"
+
+msgid "ajouter un serveur, ports"
+msgstr "ajouter un serveur, ports"
+
+msgid "Réglages généraux"
+msgstr "Réglages généraux"
+
+msgid "nom, logo, langue, sécurité"
+msgstr "nom, logo, langue, sécurité"
+
+msgid "Discord, e-mails, bot en jeu"
+msgstr "Discord, e-mails, bot en jeu"
+
+msgid "Comptes admin"
+msgstr "Comptes admin"
+
+msgid "organisateurs et droits"
+msgstr "organisateurs et droits"
+
+msgid "Mise à jour"
+msgstr "Mise à jour"
+
+msgid "version, mise à jour signée"
+msgstr "version, mise à jour signée"
+
+msgid "exporter, restaurer"
+msgstr "exporter, restaurer"
+
+msgid "Santé et journal"
+msgstr "Santé et journal"
+
+msgid "état du serveur, journal d'audit"
+msgstr "état du serveur, journal d'audit"
+
+msgid "Mot de passe du serveur (pilotes, admin)"
+msgstr "Mot de passe du serveur (pilotes, admin)"
+
+msgid "Réglages du serveur › Mots de passe"
+msgstr "Réglages du serveur › Mots de passe"
+
+msgid "Ports TCP / UDP / HTTP"
+msgstr "Ports TCP / UDP / HTTP"
+
+msgid "Réglages du serveur › Réseau"
+msgstr "Réglages du serveur › Réseau"
+
+msgid "Nom affiché dans la liste des serveurs"
+msgstr "Nom affiché dans la liste des serveurs"
+
+msgid "Réglages du serveur › Identité"
+msgstr "Réglages du serveur › Identité"
+
+msgid "Webhooks Discord de ce serveur"
+msgstr "Webhooks Discord de ce serveur"
+
+msgid "Réglages du serveur › Discord"
+msgstr "Réglages du serveur › Discord"
+
+msgid "Installer ou mettre à jour le serveur de jeu"
+msgstr "Installer ou mettre à jour le serveur de jeu"
+
+msgid "Réglages du serveur › Serveur de jeu"
+msgstr "Réglages du serveur › Serveur de jeu"
+
+msgid "Circuit, météo, heure"
+msgstr "Circuit, météo, heure"
+
+msgid "Configurations › Événement"
+msgstr "Configurations › Événement"
+
+msgid "Durées des sessions (practice, qualif, course)"
+msgstr "Durées des sessions (practice, qualif, course)"
+
+msgid "Configurations › Sessions"
+msgstr "Configurations › Sessions"
+
+msgid "Voitures autorisées"
+msgstr "Voitures autorisées"
+
+msgid "Configurations › Véhicules"
+msgstr "Configurations › Véhicules"
+
+msgid "Roulement et changement par inactivité"
+msgstr "Roulement et changement par inactivité"
+
+msgid "Démarrer, arrêter, relance automatique"
+msgstr "Démarrer, arrêter, relance automatique"
+
+msgid "Journaux du serveur de jeu"
+msgstr "Journaux du serveur de jeu"
+
+msgid "Tableau de bord › Logs"
+msgstr "Tableau de bord › Logs"
+
+msgid "Créer une soirée course"
+msgstr "Créer une soirée course"
+
+msgid "Événements › Nouvel événement"
+msgstr "Événements › Nouvel événement"
+
+msgid "Lancer le serveur à l'heure de l'événement"
+msgstr "Lancer le serveur à l'heure de l'événement"
+
+msgid "Événements › Lancement automatique"
+msgstr "Événements › Lancement automatique"
+
+msgid "Championnat et barème de points"
+msgstr "Championnat et barème de points"
+
+msgid "Valider les inscriptions de pilotes"
+msgstr "Valider les inscriptions de pilotes"
+
+msgid "Bannir un joueur"
+msgstr "Bannir un joueur"
+
+msgid "Liste blanche (serveur privé)"
+msgstr "Liste blanche (serveur privé)"
+
+msgid "Lest et restricteur par pilote"
+msgstr "Lest et restricteur par pilote"
+
+msgid "Image d'une voiture"
+msgstr "Image d'une voiture"
+
+msgid "Image d'un circuit"
+msgstr "Image d'un circuit"
+
+msgid "Ajouter un mod de voiture"
+msgstr "Ajouter un mod de voiture"
+
+msgid "Mods (barre du haut)"
+msgstr "Mods (barre du haut)"
+
+msgid "Nom, logo et bannière du panel"
+msgstr "Nom, logo et bannière du panel"
+
+msgid "Réglages généraux › Identité"
+msgstr "Réglages généraux › Identité"
+
+msgid "Langue et fuseau horaire"
+msgstr "Langue et fuseau horaire"
+
+msgid "Réglages généraux › Langue"
+msgstr "Réglages généraux › Langue"
+
+msgid "Adresse publique du panel"
+msgstr "Adresse publique du panel"
+
+msgid "Sécurité de connexion"
+msgstr "Sécurité de connexion"
+
+msgid "Réglages généraux › Sécurité"
+msgstr "Réglages généraux › Sécurité"
+
+msgid "Webhooks Discord (principal, pilotes, course)"
+msgstr "Webhooks Discord (principal, pilotes, course)"
+
+msgid "Notifications › Discord"
+msgstr "Notifications › Discord"
+
+msgid "Textes des messages Discord"
+msgstr "Textes des messages Discord"
+
+msgid "Notifications › Messages Discord"
+msgstr "Notifications › Messages Discord"
+
+msgid "Mention d'un rôle Discord"
+msgstr "Mention d'un rôle Discord"
+
+msgid "Notifications › Mentions"
+msgstr "Notifications › Mentions"
+
+msgid "E-mails (SMTP)"
+msgstr "E-mails (SMTP)"
+
+msgid "Notifications › E-mails"
+msgstr "Notifications › E-mails"
+
+msgid "Messages du bot en jeu"
+msgstr "Messages du bot en jeu"
+
+msgid "Notifications › Bot en jeu"
+msgstr "Notifications › Bot en jeu"
+
+msgid "Comptes organisateurs"
+msgstr "Comptes organisateurs"
+
+msgid "Mettre à jour le panel"
+msgstr "Mettre à jour le panel"
+
+msgid "Sauvegarder ou restaurer"
+msgstr "Sauvegarder ou restaurer"
+
+msgid "Journal d'audit (qui a fait quoi)"
+msgstr "Journal d'audit (qui a fait quoi)"
+
+msgid "Santé et journal › Journal d'audit"
+msgstr "Santé et journal › Journal d'audit"
+
+msgid "Ressources du serveur (CPU, mémoire, disque)"
+msgstr "Ressources du serveur (CPU, mémoire, disque)"
+
+msgid "Mon mot de passe, double authentification"
+msgstr "Mon mot de passe, double authentification"
+
+msgid "tous les serveurs"
+msgstr "tous les serveurs"
+
+msgid "tout le panel"
+msgstr "tout le panel"
+
+msgid "Où régler… ?"
+msgstr "Où régler… ?"
+
+msgid "changer"
+msgstr "changer"
+
+#, python-format
+msgid "Aucun réglage pour « %(q)s »."
+msgstr "Aucun réglage pour « %(q)s »."
+
+msgid "Chercher dans la documentation"
+msgstr "Chercher dans la documentation"
+
+msgid "Où régler… ? (webhook, mot de passe, port, logo…)"
+msgstr "Où régler… ? (webhook, mot de passe, port, logo…)"
+
+msgid "Mots de passe"
+msgstr "Mots de passe"

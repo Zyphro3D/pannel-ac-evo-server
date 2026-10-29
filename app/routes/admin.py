@@ -441,6 +441,8 @@ def server():
     configs       = list_configs()
     active_config = get_active_config_name()
     server_view   = request.args.get("view", "status")
+    if server_view == "events":          # onglet fusionné dans la page Événements (menu Admin, 29/10/2026)
+        return redirect(url_for("events_admin.events_list"))
     if not configs:
         flash(_("Aucun fichier de configuration trouvé dans CONFIGS_DIR. Créez-en un via le bouton ci-dessous."), "warning")
         return render_template("server.html", config=None, cars=[], events_practice=[], events_race=[],

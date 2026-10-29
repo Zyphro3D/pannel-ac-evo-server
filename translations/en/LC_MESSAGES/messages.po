@@ -6411,3 +6411,280 @@ msgstr "Embed title — Session best lap. Variables: {name}, {lap}, {car}, {circ
 
 msgid "Titre embed — Plantage. Variables : {config}"
 msgstr "Embed title — Crash. Variables: {config}"
+
+msgid "Tableau de bord"
+msgstr "Dashboard"
+
+msgid "état, démarrer, arrêter, journaux"
+msgstr "status, start, stop, logs"
+
+msgid "circuit, météo, sessions, voitures"
+msgstr "track, weather, sessions, cars"
+
+msgid "Roulement"
+msgstr "Rotation"
+
+msgid "enchaîner les configs de ce serveur"
+msgstr "chain this server's configs"
+
+msgid "Réglages du serveur"
+msgstr "Server settings"
+
+msgid "nom, ports, mots de passe, Discord"
+msgstr "name, ports, passwords, Discord"
+
+msgid "Courses et pilotes"
+msgstr "Races and drivers"
+
+msgid "soirées, inscriptions, lancement auto"
+msgstr "race nights, sign-ups, auto launch"
+
+msgid "manches, points, classement"
+msgstr "rounds, points, standings"
+
+msgid "comptes à valider, profils"
+msgstr "accounts to approve, profiles"
+
+msgid "Accès et sanctions"
+msgstr "Access and penalties"
+
+msgid "bannis, liste blanche, lest"
+msgstr "bans, allowlist, ballast"
+
+msgid "Contenu du jeu"
+msgstr "Game content"
+
+msgid "catalogue, images"
+msgstr "catalogue, pictures"
+
+msgid "tracés, images"
+msgstr "layouts, pictures"
+
+msgid "ajouter un serveur, ports"
+msgstr "add a server, ports"
+
+msgid "Réglages généraux"
+msgstr "General settings"
+
+msgid "nom, logo, langue, sécurité"
+msgstr "name, logo, language, security"
+
+msgid "Discord, e-mails, bot en jeu"
+msgstr "Discord, e-mails, in-game bot"
+
+msgid "Comptes admin"
+msgstr "Admin accounts"
+
+msgid "organisateurs et droits"
+msgstr "organisers and rights"
+
+msgid "Mise à jour"
+msgstr "Update"
+
+msgid "version, mise à jour signée"
+msgstr "version, signed update"
+
+msgid "exporter, restaurer"
+msgstr "export, restore"
+
+msgid "Santé et journal"
+msgstr "Health and log"
+
+msgid "état du serveur, journal d'audit"
+msgstr "server health, audit log"
+
+msgid "Mot de passe du serveur (pilotes, admin)"
+msgstr "Server password (drivers, admin)"
+
+msgid "Réglages du serveur › Mots de passe"
+msgstr "Server settings › Passwords"
+
+msgid "Ports TCP / UDP / HTTP"
+msgstr "TCP / UDP / HTTP ports"
+
+msgid "Réglages du serveur › Réseau"
+msgstr "Server settings › Network"
+
+msgid "Nom affiché dans la liste des serveurs"
+msgstr "Name shown in the server list"
+
+msgid "Réglages du serveur › Identité"
+msgstr "Server settings › Identity"
+
+msgid "Webhooks Discord de ce serveur"
+msgstr "This server's Discord webhooks"
+
+msgid "Réglages du serveur › Discord"
+msgstr "Server settings › Discord"
+
+msgid "Installer ou mettre à jour le serveur de jeu"
+msgstr "Install or update the game server"
+
+msgid "Réglages du serveur › Serveur de jeu"
+msgstr "Server settings › Game server"
+
+msgid "Circuit, météo, heure"
+msgstr "Track, weather, time of day"
+
+msgid "Configurations › Événement"
+msgstr "Configurations › Event"
+
+msgid "Durées des sessions (practice, qualif, course)"
+msgstr "Session lengths (practice, qualifying, race)"
+
+msgid "Configurations › Sessions"
+msgstr "Configurations › Sessions"
+
+msgid "Voitures autorisées"
+msgstr "Allowed cars"
+
+msgid "Configurations › Véhicules"
+msgstr "Configurations › Cars"
+
+msgid "Roulement et changement par inactivité"
+msgstr "Rotation and idle switch"
+
+msgid "Démarrer, arrêter, relance automatique"
+msgstr "Start, stop, auto restart"
+
+msgid "Journaux du serveur de jeu"
+msgstr "Game server logs"
+
+msgid "Tableau de bord › Logs"
+msgstr "Dashboard › Logs"
+
+msgid "Créer une soirée course"
+msgstr "Create a race night"
+
+msgid "Événements › Nouvel événement"
+msgstr "Events › New event"
+
+msgid "Lancer le serveur à l'heure de l'événement"
+msgstr "Start the server at event time"
+
+msgid "Événements › Lancement automatique"
+msgstr "Events › Automatic launch"
+
+msgid "Championnat et barème de points"
+msgstr "Championship and points scale"
+
+msgid "Valider les inscriptions de pilotes"
+msgstr "Approve driver sign-ups"
+
+msgid "Bannir un joueur"
+msgstr "Ban a player"
+
+msgid "Liste blanche (serveur privé)"
+msgstr "Allowlist (private server)"
+
+msgid "Lest et restricteur par pilote"
+msgstr "Ballast and restrictor per driver"
+
+msgid "Image d'une voiture"
+msgstr "Car picture"
+
+msgid "Image d'un circuit"
+msgstr "Track picture"
+
+msgid "Ajouter un mod de voiture"
+msgstr "Add a car mod"
+
+msgid "Mods (barre du haut)"
+msgstr "Mods (top bar)"
+
+msgid "Nom, logo et bannière du panel"
+msgstr "Panel name, logo and banner"
+
+msgid "Réglages généraux › Identité"
+msgstr "General settings › Identity"
+
+msgid "Langue et fuseau horaire"
+msgstr "Language and time zone"
+
+msgid "Réglages généraux › Langue"
+msgstr "General settings › Language"
+
+msgid "Adresse publique du panel"
+msgstr "Panel public address"
+
+msgid "Sécurité de connexion"
+msgstr "Login security"
+
+msgid "Réglages généraux › Sécurité"
+msgstr "General settings › Security"
+
+msgid "Webhooks Discord (principal, pilotes, course)"
+msgstr "Discord webhooks (main, drivers, race)"
+
+msgid "Notifications › Discord"
+msgstr "Notifications › Discord"
+
+msgid "Textes des messages Discord"
+msgstr "Discord message texts"
+
+msgid "Notifications › Messages Discord"
+msgstr "Notifications › Discord messages"
+
+msgid "Mention d'un rôle Discord"
+msgstr "Discord role mention"
+
+msgid "Notifications › Mentions"
+msgstr "Notifications › Mentions"
+
+msgid "E-mails (SMTP)"
+msgstr "E-mails (SMTP)"
+
+msgid "Notifications › E-mails"
+msgstr "Notifications › E-mails"
+
+msgid "Messages du bot en jeu"
+msgstr "In-game bot messages"
+
+msgid "Notifications › Bot en jeu"
+msgstr "Notifications › In-game bot"
+
+msgid "Comptes organisateurs"
+msgstr "Organiser accounts"
+
+msgid "Mettre à jour le panel"
+msgstr "Update the panel"
+
+msgid "Sauvegarder ou restaurer"
+msgstr "Back up or restore"
+
+msgid "Journal d'audit (qui a fait quoi)"
+msgstr "Audit log (who did what)"
+
+msgid "Santé et journal › Journal d'audit"
+msgstr "Health and log › Audit log"
+
+msgid "Ressources du serveur (CPU, mémoire, disque)"
+msgstr "Server resources (CPU, memory, disk)"
+
+msgid "Mon mot de passe, double authentification"
+msgstr "My password, two-factor authentication"
+
+msgid "tous les serveurs"
+msgstr "all servers"
+
+msgid "tout le panel"
+msgstr "whole panel"
+
+msgid "Où régler… ?"
+msgstr "Where to set…?"
+
+msgid "changer"
+msgstr "change"
+
+#, python-format
+msgid "Aucun réglage pour « %(q)s »."
+msgstr "No setting for “%(q)s”."
+
+msgid "Chercher dans la documentation"
+msgstr "Search the documentation"
+
+msgid "Où régler… ? (webhook, mot de passe, port, logo…)"
+msgstr "Where to set…? (webhook, password, port, logo…)"
+
+msgid "Mots de passe"
+msgstr "Passwords"

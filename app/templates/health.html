@@ -11,6 +11,10 @@
 {% block content %}
 <div class="page-shell max-w-[1100px]">
 
+  <nav class="page-tabs" aria-label="{{ _('Santé et journal') }}">
+    <a href="{{ url_for('tools.health_page') }}" class="{% if request.endpoint == 'tools.health_page' %}active{% endif %}">{{ _('Santé du serveur') }}</a>
+    {% if current_user.is_superadmin %}<a href="{{ url_for('tools.audit_page') }}" class="{% if request.endpoint == 'tools.audit_page' %}active{% endif %}">{{ _('Journal d\'audit') }}</a>{% endif %}
+  </nav>
   <h1 class="text-2xl font-bold text-txt mb-1">{{ _('Santé du serveur') }}</h1>
   <p class="text-sm text-dim mb-5">{{ _('Ressources, disponibilité et stockage. Une mesure est prise chaque minute et conservée 7 jours.') }}</p>
 

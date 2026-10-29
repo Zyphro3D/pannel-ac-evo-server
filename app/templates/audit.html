@@ -4,6 +4,10 @@
 {% block content %}
 <div class="page-shell max-w-[1200px]">
 
+  <nav class="page-tabs" aria-label="{{ _('Santé et journal') }}">
+    <a href="{{ url_for('tools.health_page') }}" class="{% if request.endpoint == 'tools.health_page' %}active{% endif %}">{{ _('Santé du serveur') }}</a>
+    {% if current_user.is_superadmin %}<a href="{{ url_for('tools.audit_page') }}" class="{% if request.endpoint == 'tools.audit_page' %}active{% endif %}">{{ _('Journal d\'audit') }}</a>{% endif %}
+  </nav>
   <div class="flex items-start justify-between gap-3 flex-wrap mb-1">
     <h1 class="text-2xl font-bold text-txt">{{ _('Journal d\'audit') }}</h1>
     <a class="btn btn-secondary btn-sm" href="{{ url_for('tools.audit_csv', **qargs) }}">{{ _('Exporter en CSV') }}</a>

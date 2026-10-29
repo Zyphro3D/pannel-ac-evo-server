@@ -6513,3 +6513,280 @@ msgstr "Título del embed — Mejor vuelta de la sesión. Variables: {name}, {la
 
 msgid "Titre embed — Plantage. Variables : {config}"
 msgstr "Título del embed — Caída. Variables: {config}"
+
+msgid "Tableau de bord"
+msgstr "Panel de control"
+
+msgid "état, démarrer, arrêter, journaux"
+msgstr "estado, iniciar, detener, registros"
+
+msgid "circuit, météo, sessions, voitures"
+msgstr "circuito, meteo, sesiones, coches"
+
+msgid "Roulement"
+msgstr "Rotación"
+
+msgid "enchaîner les configs de ce serveur"
+msgstr "encadenar las configs de este servidor"
+
+msgid "Réglages du serveur"
+msgstr "Ajustes del servidor"
+
+msgid "nom, ports, mots de passe, Discord"
+msgstr "nombre, puertos, contraseñas, Discord"
+
+msgid "Courses et pilotes"
+msgstr "Carreras y pilotos"
+
+msgid "soirées, inscriptions, lancement auto"
+msgstr "noches de carreras, inscripciones, inicio automático"
+
+msgid "manches, points, classement"
+msgstr "rondas, puntos, clasificación"
+
+msgid "comptes à valider, profils"
+msgstr "cuentas por validar, perfiles"
+
+msgid "Accès et sanctions"
+msgstr "Acceso y sanciones"
+
+msgid "bannis, liste blanche, lest"
+msgstr "baneos, lista blanca, lastre"
+
+msgid "Contenu du jeu"
+msgstr "Contenido del juego"
+
+msgid "catalogue, images"
+msgstr "catálogo, imágenes"
+
+msgid "tracés, images"
+msgstr "trazados, imágenes"
+
+msgid "ajouter un serveur, ports"
+msgstr "añadir un servidor, puertos"
+
+msgid "Réglages généraux"
+msgstr "Ajustes generales"
+
+msgid "nom, logo, langue, sécurité"
+msgstr "nombre, logo, idioma, seguridad"
+
+msgid "Discord, e-mails, bot en jeu"
+msgstr "Discord, correos, bot en el juego"
+
+msgid "Comptes admin"
+msgstr "Cuentas de admin"
+
+msgid "organisateurs et droits"
+msgstr "organizadores y permisos"
+
+msgid "Mise à jour"
+msgstr "Actualización"
+
+msgid "version, mise à jour signée"
+msgstr "versión, actualización firmada"
+
+msgid "exporter, restaurer"
+msgstr "exportar, restaurar"
+
+msgid "Santé et journal"
+msgstr "Salud y registro"
+
+msgid "état du serveur, journal d'audit"
+msgstr "estado del servidor, registro de auditoría"
+
+msgid "Mot de passe du serveur (pilotes, admin)"
+msgstr "Contraseña del servidor (pilotos, admin)"
+
+msgid "Réglages du serveur › Mots de passe"
+msgstr "Ajustes del servidor › Contraseñas"
+
+msgid "Ports TCP / UDP / HTTP"
+msgstr "Puertos TCP / UDP / HTTP"
+
+msgid "Réglages du serveur › Réseau"
+msgstr "Ajustes del servidor › Red"
+
+msgid "Nom affiché dans la liste des serveurs"
+msgstr "Nombre mostrado en la lista de servidores"
+
+msgid "Réglages du serveur › Identité"
+msgstr "Ajustes del servidor › Identidad"
+
+msgid "Webhooks Discord de ce serveur"
+msgstr "Webhooks de Discord de este servidor"
+
+msgid "Réglages du serveur › Discord"
+msgstr "Ajustes del servidor › Discord"
+
+msgid "Installer ou mettre à jour le serveur de jeu"
+msgstr "Instalar o actualizar el servidor de juego"
+
+msgid "Réglages du serveur › Serveur de jeu"
+msgstr "Ajustes del servidor › Servidor de juego"
+
+msgid "Circuit, météo, heure"
+msgstr "Circuito, meteo, hora"
+
+msgid "Configurations › Événement"
+msgstr "Configuraciones › Evento"
+
+msgid "Durées des sessions (practice, qualif, course)"
+msgstr "Duración de las sesiones (práctica, clasificación, carrera)"
+
+msgid "Configurations › Sessions"
+msgstr "Configuraciones › Sesiones"
+
+msgid "Voitures autorisées"
+msgstr "Coches permitidos"
+
+msgid "Configurations › Véhicules"
+msgstr "Configuraciones › Vehículos"
+
+msgid "Roulement et changement par inactivité"
+msgstr "Rotación y cambio por inactividad"
+
+msgid "Démarrer, arrêter, relance automatique"
+msgstr "Iniciar, detener, reinicio automático"
+
+msgid "Journaux du serveur de jeu"
+msgstr "Registros del servidor de juego"
+
+msgid "Tableau de bord › Logs"
+msgstr "Panel de control › Registros"
+
+msgid "Créer une soirée course"
+msgstr "Crear una noche de carreras"
+
+msgid "Événements › Nouvel événement"
+msgstr "Eventos › Nuevo evento"
+
+msgid "Lancer le serveur à l'heure de l'événement"
+msgstr "Iniciar el servidor a la hora del evento"
+
+msgid "Événements › Lancement automatique"
+msgstr "Eventos › Inicio automático"
+
+msgid "Championnat et barème de points"
+msgstr "Campeonato y sistema de puntos"
+
+msgid "Valider les inscriptions de pilotes"
+msgstr "Validar inscripciones de pilotos"
+
+msgid "Bannir un joueur"
+msgstr "Banear a un jugador"
+
+msgid "Liste blanche (serveur privé)"
+msgstr "Lista blanca (servidor privado)"
+
+msgid "Lest et restricteur par pilote"
+msgstr "Lastre y restrictor por piloto"
+
+msgid "Image d'une voiture"
+msgstr "Imagen de un coche"
+
+msgid "Image d'un circuit"
+msgstr "Imagen de un circuito"
+
+msgid "Ajouter un mod de voiture"
+msgstr "Añadir un mod de coche"
+
+msgid "Mods (barre du haut)"
+msgstr "Mods (barra superior)"
+
+msgid "Nom, logo et bannière du panel"
+msgstr "Nombre, logo y banner del panel"
+
+msgid "Réglages généraux › Identité"
+msgstr "Ajustes generales › Identidad"
+
+msgid "Langue et fuseau horaire"
+msgstr "Idioma y zona horaria"
+
+msgid "Réglages généraux › Langue"
+msgstr "Ajustes generales › Idioma"
+
+msgid "Adresse publique du panel"
+msgstr "Dirección pública del panel"
+
+msgid "Sécurité de connexion"
+msgstr "Seguridad de inicio de sesión"
+
+msgid "Réglages généraux › Sécurité"
+msgstr "Ajustes generales › Seguridad"
+
+msgid "Webhooks Discord (principal, pilotes, course)"
+msgstr "Webhooks de Discord (principal, pilotos, carrera)"
+
+msgid "Notifications › Discord"
+msgstr "Notificaciones › Discord"
+
+msgid "Textes des messages Discord"
+msgstr "Textos de los mensajes de Discord"
+
+msgid "Notifications › Messages Discord"
+msgstr "Notificaciones › Mensajes de Discord"
+
+msgid "Mention d'un rôle Discord"
+msgstr "Mención de un rol de Discord"
+
+msgid "Notifications › Mentions"
+msgstr "Notificaciones › Menciones"
+
+msgid "E-mails (SMTP)"
+msgstr "Correos (SMTP)"
+
+msgid "Notifications › E-mails"
+msgstr "Notificaciones › Correos"
+
+msgid "Messages du bot en jeu"
+msgstr "Mensajes del bot en el juego"
+
+msgid "Notifications › Bot en jeu"
+msgstr "Notificaciones › Bot en el juego"
+
+msgid "Comptes organisateurs"
+msgstr "Cuentas de organizadores"
+
+msgid "Mettre à jour le panel"
+msgstr "Actualizar el panel"
+
+msgid "Sauvegarder ou restaurer"
+msgstr "Copia de seguridad o restaurar"
+
+msgid "Journal d'audit (qui a fait quoi)"
+msgstr "Registro de auditoría (quién hizo qué)"
+
+msgid "Santé et journal › Journal d'audit"
+msgstr "Salud y registro › Registro de auditoría"
+
+msgid "Ressources du serveur (CPU, mémoire, disque)"
+msgstr "Recursos del servidor (CPU, memoria, disco)"
+
+msgid "Mon mot de passe, double authentification"
+msgstr "Mi contraseña, autenticación en dos pasos"
+
+msgid "tous les serveurs"
+msgstr "todos los servidores"
+
+msgid "tout le panel"
+msgstr "todo el panel"
+
+msgid "Où régler… ?"
+msgstr "¿Dónde ajustar…?"
+
+msgid "changer"
+msgstr "cambiar"
+
+#, python-format
+msgid "Aucun réglage pour « %(q)s »."
+msgstr "Ningún ajuste para «%(q)s»."
+
+msgid "Chercher dans la documentation"
+msgstr "Buscar en la documentación"
+
+msgid "Où régler… ? (webhook, mot de passe, port, logo…)"
+msgstr "¿Dónde ajustar…? (webhook, contraseña, puerto, logo…)"
+
+msgid "Mots de passe"
+msgstr "Contraseñas"

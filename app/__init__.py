@@ -495,8 +495,19 @@ def _register_request_hooks(app):
                 server_running_ids = {s.id for s in servers if is_running(s.id)}
         except Exception:
             pass
+        admin_menu, admin_index = [], []
+        try:
+            if current_user.is_authenticated and current_user.is_admin:
+                from app.services.admin_nav import admin_menu as _menu, settings_index as _index
+                cur = next((s for s in servers if s.id == current_server_id), None)
+                admin_menu  = _menu(current_user.is_superadmin, cur.name if cur else "", count)
+                admin_index = _index(current_user.is_superadmin)
+        except Exception:
+            __import__("logging").getLogger(__name__).exception("menu Admin indisponible")
         from datetime import datetime as _dt
         return {
+            "admin_menu":           admin_menu,
+            "admin_index":          admin_index,
             "pending_pilots_count": count,
             "discord_invite":       os.environ.get("DISCORD_INVITE_URL", ""),
             "servers":              servers,

@@ -1,5 +1,15 @@
 # Changelog
 
+### À venir (non publié)
+
+**Menu Admin rangé**
+
+- Le menu Admin devient un grand menu en 4 groupes : le serveur choisi (son nom en titre), courses et pilotes, contenu du jeu, panel. Chaque entrée a une ligne d'explication.
+- Recherche « Où régler… ? » (`Ctrl+K` ou en haut du menu) : on tape « webhook », « mot de passe », « port »… et on arrive directement sur la bonne section.
+- Sur téléphone et tablette, le bouton ☰ ouvre la recherche, le choix du serveur et les groupes en sections repliables.
+- Noms plus clairs : Tableau de bord, Roulement, Réglages du serveur, Réglages généraux, Comptes admin, Accès et sanctions, Voitures, Circuits, Santé et journal. L'onglet Événement de la page Serveur est fusionné dans Événements.
+- Mon compte et Déconnexion passent dans un menu 👤.
+
 ### v2.5.1 — 29/10/2026
 
 - Plus d'avertissement « variables de l'image illisibles » dans le journal du panel au démarrage.
