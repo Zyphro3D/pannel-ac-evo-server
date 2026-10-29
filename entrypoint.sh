@@ -27,22 +27,19 @@ WRITABLE=(/panel/data /panel/media /panel/update /panel/logs /opt/steamcmd /aces
           /panel/.env /panel/docker-compose.override.yml)
 
 if [ "$(id -u)" -eq 0 ] && id "$PANEL_USER" >/dev/null 2>&1 && [ "${PANEL_RUN_AS_ROOT:-}" != "1" ]; then
-    uid="$(id -u "$PANEL_USER")"
+    # À chaque démarrage, seuls les fichiers qui n'appartiennent pas au panel sont repris : une
+    # installation existante est convertie la première fois, et un retour à une version qui tournait
+    # en root (retour arrière automatique d'une mise à jour) ne laisse pas de fichier bloqué.
+    # Les résultats que le serveur de jeu (root) écrit dans /aceserver sont repris de la même façon.
     for p in "${WRITABLE[@]}"; do
         [ -e "$p" ] || continue
-        # Conversion complète une seule fois (le dossier racine appartient déjà au panel ensuite) ;
-        # les fichiers ajoutés plus tard en root (résultats écrits par le serveur de jeu) restent
-        # lisibles, le panel n'a pas besoin de les modifier.
-        if [ "$(stat -c %u:%g "$p")" != "$uid:$(id -g "$PANEL_USER")" ]; then
-            echo "Droits : $p → $PANEL_USER"
-            chown -R "$PANEL_USER:$PANEL_USER" "$p" 2>/dev/null || true
+        n="$(find "$p" \( ! -user "$PANEL_USER" -o ! -group "$PANEL_USER" \) -print 2>/dev/null | wc -l)"
+        if [ "$n" -gt 0 ]; then
+            echo "Droits : $p → $PANEL_USER ($n élément(s))"
+            find "$p" \( ! -user "$PANEL_USER" -o ! -group "$PANEL_USER" \) \
+                -exec chown -h "$PANEL_USER:$PANEL_USER" {} + 2>/dev/null || true
         fi
     done
-    # Dossiers du jeu que le panel modifie à chaque démarrage ou changement de config
-    for p in /aceserver/configs /aceserver/mods /aceserver/mods_disabled /aceserver/serverConfig; do
-        [ -d "$p" ] && chown -R "$PANEL_USER:$PANEL_USER" "$p" 2>/dev/null || true
-    done
-    find /aceserver -maxdepth 1 -type f -name '.*' ! -user "$PANEL_USER" -exec chown "$PANEL_USER:$PANEL_USER" {} + 2>/dev/null || true
 
     # Garde-fou : un montage où chown ne s'applique pas (certains partages Windows, NFS…) ou une clé
     # TLS lisible par root seulement (/etc/letsencrypt) casserait le panel. Dans ce cas il reste en
