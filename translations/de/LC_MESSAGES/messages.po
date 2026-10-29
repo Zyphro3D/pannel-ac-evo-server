@@ -6771,3 +6771,33 @@ msgstr "geteilte Nummer, Befehl nicht möglich"
 
 msgid "Plusieurs pilotes ont le même numéro de voiture (souvent 0 sur les voitures de route). Le jeu ne vise une voiture que par son numéro : ces pilotes ne peuvent pas recevoir de commande. Pour bannir l'un d'eux, passez par Accès et sanctions."
 msgstr "Mehrere Fahrer haben dieselbe Fahrzeugnummer (oft 0 bei Straßenautos). Das Spiel spricht ein Auto nur über seine Nummer an: Diese Fahrer können keinen Befehl erhalten. Um einen von ihnen zu sperren, nutzen Sie Zugang und Strafen."
+
+msgid "Visible par les admins seulement. Le jeu ne journalise ni la vitesse ni l'endroit d'un contact : ils figurent dans les résultats en fin de session."
+msgstr "Nur für Admins sichtbar. Das Spiel protokolliert weder Geschwindigkeit noch Ort eines Kontakts: Sie stehen am Ende der Session in den Ergebnissen."
+
+msgid "Par pilote"
+msgstr "Pro Fahrer"
+
+msgid "Tous les contacts"
+msgstr "Alle Kontakte"
+
+msgid "Fil des contacts"
+msgstr "Kontaktverlauf"
+
+msgid "T"
+msgstr "R"
+
+msgid "à surveiller"
+msgstr "beobachten"
+
+msgid "Aucun contact pour l’instant."
+msgstr "Noch kein Kontakt."
+
+msgid "Contacts sur Discord"
+msgstr "Kontakte auf Discord"
+
+msgid "Envoie sur le webhook course les contacts avec dégâts, regroupés une fois par minute. Demande « Contacts en direct » (true/false, désactivé par défaut)."
+msgstr "Sendet Kontakte mit Schaden an den Renn-Webhook, einmal pro Minute gebündelt. Erfordert „Kontakte live“ (true/false, standardmäßig aus)."
+
+msgid "Contacts avec dégâts sur Discord (salon course, regroupés par minute) : interrupteur dans Paramètres → Notifications, désactivé par défaut."
+msgstr "Kontakte mit Schaden auf Discord (Rennkanal, pro Minute gebündelt): Schalter unter Einstellungen → Benachrichtigungen, standardmäßig aus."

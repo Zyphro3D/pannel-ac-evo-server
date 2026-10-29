@@ -6706,3 +6706,33 @@ msgstr "shared number, command not possible"
 
 msgid "Plusieurs pilotes ont le même numéro de voiture (souvent 0 sur les voitures de route). Le jeu ne vise une voiture que par son numéro : ces pilotes ne peuvent pas recevoir de commande. Pour bannir l'un d'eux, passez par Accès et sanctions."
 msgstr "Several drivers share the same car number (often 0 on road cars). The game only targets a car by its number: these drivers cannot receive a command. To ban one of them, use Access and penalties."
+
+msgid "Visible par les admins seulement. Le jeu ne journalise ni la vitesse ni l'endroit d'un contact : ils figurent dans les résultats en fin de session."
+msgstr "Visible to admins only. The game does not log the speed or location of a contact: they appear in the results at the end of the session."
+
+msgid "Par pilote"
+msgstr "By driver"
+
+msgid "Tous les contacts"
+msgstr "All contacts"
+
+msgid "Fil des contacts"
+msgstr "Contact feed"
+
+msgid "T"
+msgstr "L"
+
+msgid "à surveiller"
+msgstr "watch"
+
+msgid "Aucun contact pour l’instant."
+msgstr "No contact yet."
+
+msgid "Contacts sur Discord"
+msgstr "Contacts on Discord"
+
+msgid "Envoie sur le webhook course les contacts avec dégâts, regroupés une fois par minute. Demande « Contacts en direct » (true/false, désactivé par défaut)."
+msgstr "Sends contacts with damage to the race webhook, grouped once a minute. Requires \"Live contacts\" (true/false, off by default)."
+
+msgid "Contacts avec dégâts sur Discord (salon course, regroupés par minute) : interrupteur dans Paramètres → Notifications, désactivé par défaut."
+msgstr "Contacts with damage on Discord (race channel, grouped by minute): switch in Settings → Notifications, off by default."

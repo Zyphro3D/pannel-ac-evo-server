@@ -132,6 +132,19 @@ def _contacts(state: dict) -> list[dict] | None:
                                     state.get("log_clock_offset_s", 0.0))
 
 
+def _race_control(state: dict) -> dict | None:
+    """Direction de course (admins, option LIVE_COLLISIONS) : tous les contacts de la session et le
+    bilan par pilote ; None pour les visiteurs ou si l'option est désactivée."""
+    import os
+    from flask_login import current_user
+    from app.services import collisions
+    if os.environ.get("LIVE_COLLISIONS", "false").lower() != "true":
+        return None
+    if not (current_user.is_authenticated and getattr(current_user, "is_admin", False)):
+        return None
+    return collisions.race_control(state.get("collisions_raw") or collisions.new_state())
+
+
 def _session_timing(server_id: int = 1) -> dict:
     """Retourne started_at et session_length_s depuis le state + config."""
     try:
@@ -197,7 +210,8 @@ def timing_state():
         {k: v for k, v in entry.items() if k not in _TIMING_STRIP_FIELDS}
         for entry in state["leaderboard"]
     ]
-    return jsonify({
+    race_control = _race_control(state)
+    resp = jsonify({
         "leaderboard":      safe_lb,
         "player_count":     state["player_count"],
         "started_at":       timing.get("started_at"),
@@ -209,7 +223,12 @@ def timing_state():
         "track_label":      track_label,
         "session":          _session_info(sid, state),
         "contacts":         _contacts(state),
+        "race_control":     race_control,
     })
+    if race_control is not None:
+        # Réponse propre à un admin : jamais servie depuis un cache partagé (proxy, CDN)
+        resp.headers["Cache-Control"] = "private, no-store"
+    return resp
 
 
 @live_bp.route("/api/live/bot/elevate-admin", methods=["POST"])

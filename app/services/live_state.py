@@ -301,6 +301,7 @@ def build_state(server_id: int = 1) -> dict:
                 lap_ms = _parse_lapstr(m.group(2))
                 if lap_ms > 0:
                     car_timeline.setdefault(car_id, []).append({"type": "lap", "ms": lap_ms})
+                    _collisions.note_lap(coll_state, car_id)
                 continue
 
             if m := _RE_SECTORC.search(line):

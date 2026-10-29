@@ -2,6 +2,11 @@
 
 ### À venir (non publié)
 
+**Direction de course (contacts en direct)**
+
+- Avec « Contacts en direct » activé, la page du direct affiche aux admins un bloc **Direction de course** : tous les contacts de la session avec l'heure et le tour, et un bilan par pilote (contacts, contre une voiture, avec dégâts) ; un pilote à 3 contacts ou plus est signalé « à surveiller ».
+- Nouvelle option **Contacts sur Discord** (Paramètres → Notifications, désactivée par défaut) : les contacts avec dégâts partent sur le salon course, regroupés en un message par minute.
+
 **Menu Admin rangé**
 
 - Le menu Admin devient un grand menu en 4 groupes : le serveur choisi (son nom en titre), courses et pilotes, contenu du jeu, panel. Chaque entrée a une ligne d'explication.

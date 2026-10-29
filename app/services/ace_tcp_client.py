@@ -73,6 +73,10 @@ def _get_client(server_id: int) -> dict:
                 "msg_site":              DEFAULT_BOT_MSG_SITE,
                 "track_cache":           {"track_value": "", "session_type": "", "circuit": "", "fetched_at": 0.0},
                 "manual_admin":          False,
+                # Contacts pour Discord (option DISCORD_NOTIFY_CONTACTS) : regroupés par minute
+                "contacts":              None,
+                "contacts_buffer":       [],
+                "contacts_since":        0.0,
             }
         return _clients[server_id]
 
@@ -880,8 +884,53 @@ def _on_session_reset(c, seen):
     seen.clear()
 
 
+_CONTACTS_WINDOW_S = 60     # un message Discord par minute au plus, même dans une mêlée
+
+
+def _contacts_enabled() -> bool:
+    return (os.environ.get("LIVE_COLLISIONS", "false").lower() == "true"
+            and os.environ.get("DISCORD_NOTIFY_CONTACTS", "false").lower() == "true")
+
+
+def _flush_contacts(c, server_id, force: bool = False):
+    """Envoie les contacts avec dégâts accumulés depuis une minute (ou tout de suite si force)."""
+    buf = c["contacts_buffer"]
+    if not buf or (not force and time.time() - c["contacts_since"] < _CONTACTS_WINDOW_S):
+        return
+    c["contacts_buffer"] = []
+    try:
+        from app.services import discord_notifier
+        discord_notifier.safe_notify(discord_notifier.notify_contacts, buf,
+                                     server_id=server_id, server_name=c.get("server_name", ""))
+    except Exception:
+        pass
+
+
+def _on_contact_line(line: str, c, server_id) -> bool:
+    """Lignes « Car … for driver » et « Collision between … » (journal gameplay en debug).
+    Retourne True si la ligne est une collision (rien d'autre à en tirer)."""
+    from app.services import collisions
+    ev = collisions.parse_line(line)
+    if ev is None:
+        return False
+    if c["contacts"] is None:
+        c["contacts"] = collisions.new_state()
+    ts = line[1:24] if line.startswith("[") else ""
+    from app.services.session_tracker import log_epoch
+    new = collisions.apply_event(c["contacts"], ev, ts, log_epoch(ts))
+    if new and new["damage"] and _contacts_enabled():
+        if not c["contacts_buffer"]:
+            c["contacts_since"] = time.time()
+        c["contacts_buffer"].append({k: new[k] for k in ("driver", "other", "collider", "lap")})
+    return ev["type"] == "collision"
+
+
 def _process_log_line(line: str, seen: set, server_id: int):
     c = _get_client(server_id)
+    _flush_contacts(c, server_id)
+    if "Collision between" in line or " for driver " in line:
+        if _on_contact_line(line, c, server_id):
+            return
 
     m = _RE_CONNECT_LOG.search(line)
     if m:
@@ -910,6 +959,9 @@ def _process_log_line(line: str, seen: set, server_id: int):
 
     m = _RE_NEWLAP_LOG.search(line)
     if m:
+        if c["contacts"] is not None:
+            from app.services import collisions
+            collisions.note_lap(c["contacts"], m.group(1))
         _on_newlap_log(m, c, server_id)
         return
 
@@ -925,6 +977,8 @@ def _process_log_line(line: str, seen: set, server_id: int):
 
     m = _RE_PLAYERS_LOG.search(line)
     if m and m.group(1) == '0':
+        _flush_contacts(c, server_id, force=True)
+        c["contacts"] = None
         _on_session_reset(c, seen)
         return
 

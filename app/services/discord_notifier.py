@@ -709,6 +709,26 @@ def notify_session_summary(parsed: dict, server_id: int | None = None, server_na
     _send_race(_with_mention("DISCORD_MENTION_RACE", [embed]), server_id=server_id)
 
 
+def notify_contacts(contacts: list[dict], server_id: int | None = None, server_name: str = ""):
+    """Contacts avec dégâts de la dernière minute, en un message (option DISCORD_NOTIFY_CONTACTS)."""
+    if not contacts:
+        return
+    lines = []
+    for ct in contacts[:15]:
+        who = f"**{_md(ct['driver'])}**"
+        if ct.get("other"):
+            what = f"{who} ↔ **{_md(ct['other'])}**"
+        else:
+            what = f"{who} → {'mur' if ct.get('collider') == 'Wall' else 'objet'}"
+        lines.append(what + (f" · tour {ct['lap']}" if ct.get("lap") else ""))
+    if len(contacts) > 15:
+        lines.append(f"-# … +{len(contacts) - 15}")
+    title = "💥 1 contact avec dégâts" if len(contacts) == 1 else f"💥 {len(contacts)} contacts avec dégâts"
+    _send_race(_with_mention("DISCORD_MENTION_RACE", [_embed(
+        _COLOR_ORANGE, server_name, "direction de course", title=title, description="\n".join(lines),
+    )]), server_id=server_id)
+
+
 def notify_access_ban(name: str, by_admin: str, banned: bool = True, server_id: int | None = None):
     """Annonce un bannissement (ou une levée) décidé dans la page Accès du panel.
     Les règles d'accès valent pour tous les serveurs."""

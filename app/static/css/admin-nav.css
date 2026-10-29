@@ -138,3 +138,27 @@
   color: var(--accent); background: var(--accent-dim);
 }
 .scope-chip.scope-all { color: var(--dim); background: var(--surface2); }
+
+/* ── Direction de course (direct, admins) ───────────────────────────────── */
+.race-control { margin-top: 18px; padding: 14px 16px; border: 1px solid var(--border); border-radius: 12px;
+  background: var(--bg-card); }
+.race-control-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; margin-bottom: 10px; }
+.race-control-head h3 { margin: 0; font-size: 1.05rem; }
+.race-control-note { color: var(--dim); font-size: 12px; max-width: 70ch; }
+.race-control-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 18px; }
+.race-control-col { min-width: 0; }
+.race-control-col h4 { margin: 0 0 6px; font-size: 12px; font-weight: 600; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--muted); }
+.race-control-tally { width: 100%; border-collapse: collapse; font-size: 13.5px; font-variant-numeric: tabular-nums; }
+.race-control-tally th, .race-control-tally td { padding: 6px 8px; border-bottom: 1px solid var(--border); text-align: right; }
+.race-control-tally th:first-child, .race-control-tally td:first-child { text-align: left; }
+.race-control-tally th { font-size: 11.5px; color: var(--dim); font-weight: 600; }
+.race-control-tally tr.rc-repeat td { background: rgb(var(--red-rgb, 223 64 71) / .08); }
+.rc-flag { display: inline-block; margin-left: 4px; padding: 0 6px; border-radius: 9px; font-size: 10.5px;
+  font-weight: 700; color: var(--st-amber); border: 1px solid currentColor; }
+.race-control-feed { list-style: none; margin: 0; padding: 0; max-height: 340px; overflow-y: auto; font-size: 13.5px; }
+.race-control-feed li { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline;
+  padding: 6px 2px; border-bottom: 1px solid var(--border); }
+.race-control-feed li.rc-dmg { border-left: 3px solid var(--accent); padding-left: 8px; }
+.rc-when { font-family: ui-monospace, monospace; font-size: 12px; color: var(--dim); min-width: 92px; }
+@media (max-width: 760px) { .race-control-grid { grid-template-columns: 1fr; } }

@@ -590,7 +590,7 @@ _ENV_SECTIONS = [
         "ACE_BOT_STEAM_ID", "ACE_BOT_CAR_MODEL", "ACE_BOT_IS_ADMIN",
         "ACE_BOT_MSG_WELCOME", "ACE_BOT_MSG_DISCORD", "ACE_BOT_MSG_SITE",
         "DISCORD_WEBHOOK_URL", "DISCORD_PILOTS_WEBHOOK_URL", "DISCORD_RACE_WEBHOOK_URL",
-        "DISCORD_NOTIFY_SESSION_SUMMARY", "LIVE_COLLISIONS", "DISCORD_INVITE_URL",
+        "DISCORD_NOTIFY_SESSION_SUMMARY", "LIVE_COLLISIONS", "DISCORD_NOTIFY_CONTACTS", "DISCORD_INVITE_URL",
         "DISCORD_MENTION_MAIN", "DISCORD_MENTION_PILOTS", "DISCORD_MENTION_RACE",
         "DISCORD_MSG_SERVER_START", "DISCORD_MSG_SERVER_STOP", "DISCORD_MSG_SERVER_CRASH",
         "DISCORD_MSG_PLAYER_JOIN", "DISCORD_MSG_PLAYER_DISCONNECT", "DISCORD_MSG_VEHICLE_CHANGE",
@@ -634,6 +634,7 @@ _ENV_DESCS = {
     "DISCORD_PILOTS_WEBHOOK_URL": _l("Webhook pilotes — connexions, déconnexions, changements de véhicule"),
     "DISCORD_RACE_WEBHOOK_URL":   _l("Webhook course — meilleur tour, actions admin (kick, pénalités…)"),
     "LIVE_COLLISIONS": _l("Affiche les derniers contacts (voiture, mur, objet) sur « Classement en direct ». Lance le serveur de jeu avec -log_debug gameplay (une douzaine de lignes de log par session) ; pris en compte au prochain démarrage du serveur de jeu (true/false, désactivé par défaut)."),
+    "DISCORD_NOTIFY_CONTACTS": _l("Envoie sur le webhook course les contacts avec dégâts, regroupés une fois par minute. Demande « Contacts en direct » (true/false, désactivé par défaut)."),
     "DISCORD_NOTIFY_SESSION_SUMMARY": _l("Envoie sur le webhook course un récapitulatif à la fin de chaque session : podium, meilleur tour, incidents et sanctions (true/false, désactivé par défaut)."),
     "DISCORD_INVITE_URL":         _l("Lien d'invitation Discord affiché sur le panel"),
     "DISCORD_MENTION_MAIN":       _l("Mention envoyée avec les événements serveur (ex: @here ou <@&123456789>). Laisser vide pour désactiver."),
@@ -664,7 +665,7 @@ _SENSITIVE = {"SECRET_KEY", "MAIL_PASSWORD", "MAIL_USERNAME",
               "SERVER_DRIVER_PASSWORD", "SERVER_ADMIN_PASSWORD"}
 _SKIP_IF_EMPTY = {"MAIL_PASSWORD"}
 _CHECKBOXES = {"ACE_BOT_IS_ADMIN", "SESSION_COOKIE_SECURE", "MAIL_USE_TLS", "REQUIRE_EMAIL_CONFIRMATION",
-               "DISCORD_NOTIFY_SESSION_SUMMARY", "LIVE_COLLISIONS"}
+               "DISCORD_NOTIFY_SESSION_SUMMARY", "LIVE_COLLISIONS", "DISCORD_NOTIFY_CONTACTS"}
 
 
 from app import _SETTINGS_PATH, _SETTINGS_SKIP_KEYS, _SETTINGS_BOOL_KEYS, _APPCONFIG_RESERVED_KEYS, _APP_VERSION
@@ -707,6 +708,9 @@ def _write_env_file(new_values: dict):
 # optionnelle — c'est ce qui alimente le bandeau affiché aux admins tant qu'ils
 # ne l'ont pas explicitement fermé (cf. dismiss_env_notice ci-dessous).
 NEW_ENV_VARS_BY_VERSION: dict[str, list[tuple[str, str]]] = {
+    "2.6.0": [
+        ("DISCORD_NOTIFY_CONTACTS", _l("Contacts avec dégâts sur Discord (salon course, regroupés par minute) : interrupteur dans Paramètres → Notifications, désactivé par défaut.")),
+    ],
     "2.1.0": [
         ("BACKUP_AUTO", _l("Sauvegarde automatique quotidienne du panel (base, réglages, configurations), activée par défaut ; nombre conservé : BACKUP_KEEP. Voir Admin → Sauvegarde.")),
         ("AUDIT_RETENTION_DAYS", _l("Durée de conservation du journal d'audit, en jours (365 par défaut).")),

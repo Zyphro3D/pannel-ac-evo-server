@@ -19,7 +19,8 @@ RE_COLLISION = re.compile(
     r"(?:([0-9a-f-]{36}), collider (\w+)|(\w+)), damage (true|false)")
 
 _DEDUP_S = 2.0        # chaque voiture impliquée rapporte le même contact
-_MAX_EVENTS = 50
+_MAX_EVENTS = 200     # toute une session pour la direction de course
+_REPEAT = 3           # contacts à partir desquels un pilote est signalé
 
 
 def _norm(guid: str) -> str:
@@ -38,28 +39,37 @@ def parse_line(line: str) -> dict | None:
 
 
 def new_state() -> dict:
-    return {"cars": {}, "events": []}
+    return {"cars": {}, "events": [], "laps": {}}
 
 
-def apply_event(state: dict, ev: dict, ts: str, epoch: float | None) -> None:
-    """Met à jour ``state`` (cars: guid → pilote ; events: contacts, du plus ancien au plus récent)."""
+def note_lap(state: dict, car_id: str) -> None:
+    """Un tour bouclé par cette voiture : les contacts suivants sont datés du tour d'après."""
+    guid = _norm(car_id)
+    state.setdefault("laps", {})[guid] = state["laps"].get(guid, 0) + 1
+
+
+def apply_event(state: dict, ev: dict, ts: str, epoch: float | None) -> dict | None:
+    """Met à jour ``state`` (cars: guid → pilote ; events: contacts, du plus ancien au plus récent).
+    Retourne le contact s'il est nouveau (pas un doublon rapporté par l'autre voiture)."""
     if ev["type"] == "car":
         state["cars"][ev["guid"]] = ev["name"]
-        return
+        return None
     driver = state["cars"].get(ev["guid"])
     other = state["cars"].get(ev["other"]) if ev["other"] else None
     if driver is None:
-        return                      # voiture inconnue (bot, ancien log) : rien à afficher
+        return None                 # voiture inconnue (bot, ancien log) : rien à afficher
     key = (frozenset((ev["guid"], ev["other"] or "")), ev["collider"])
-    last = state["events"][-1] if state["events"] else None
     for prev in reversed(state["events"][-6:]):
         if prev["_key"] == key and epoch is not None and prev["_epoch"] is not None \
                 and abs(epoch - prev["_epoch"]) <= _DEDUP_S:
             prev["damage"] = prev["damage"] or ev["damage"]
-            return
-    state["events"].append({"ts": ts, "driver": driver, "other": other, "collider": ev["collider"],
-                            "damage": ev["damage"], "_key": key, "_epoch": epoch})
+            return None
+    laps = state.get("laps", {})
+    event = {"ts": ts, "driver": driver, "other": other, "collider": ev["collider"],
+             "damage": ev["damage"], "lap": laps.get(ev["guid"], 0) + 1, "_key": key, "_epoch": epoch}
+    state["events"].append(event)
     del state["events"][:-_MAX_EVENTS]
+    return event
 
 
 def public_events(state: dict, now_utc: float, offset_s: float, limit: int = 15) -> list[dict]:
@@ -70,3 +80,23 @@ def public_events(state: dict, now_utc: float, offset_s: float, limit: int = 15)
         out.append({"driver": e["driver"], "other": e["other"], "collider": e["collider"],
                     "damage": e["damage"], "age_s": age})
     return out
+
+
+def race_control(state: dict, limit: int = 100) -> dict:
+    """Vue « direction de course » (admins) : tous les contacts de la session, du plus récent au
+    plus ancien, avec l'heure du journal et le tour, et le bilan par pilote (les plus impliqués
+    d'abord, signalés à partir de _REPEAT contacts)."""
+    events = [{"time": (e["ts"] or "")[11:19], "lap": e.get("lap"), "driver": e["driver"],
+               "other": e["other"], "collider": e["collider"], "damage": e["damage"]}
+              for e in reversed(state["events"][-limit:])]
+    tally: dict[str, dict] = {}
+    for e in state["events"]:
+        for who in filter(None, (e["driver"], e["other"])):
+            t = tally.setdefault(who, {"driver": who, "contacts": 0, "cars": 0, "damage": 0})
+            t["contacts"] += 1
+            t["cars"] += 1 if e["other"] else 0
+            t["damage"] += 1 if e["damage"] else 0
+    ranked = sorted(tally.values(), key=lambda t: (-t["contacts"], -t["damage"], t["driver"].lower()))
+    for t in ranked:
+        t["repeat"] = t["contacts"] >= _REPEAT
+    return {"events": events, "tally": ranked}
