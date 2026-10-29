@@ -360,10 +360,10 @@ def notify_rotation_start(configs: list, cycle: bool, server_id: int | None = No
     _send({"embeds": [_embed(_COLOR_GREEN, server_name, title=title, description=desc)]}, server_id=server_id)
 
 
-def _rotation_step(config_name: str) -> tuple[int, int] | None:
+def _rotation_step(config_name: str, server_id: int | None) -> tuple[int, int] | None:
     try:
         from app.services.rotation_manager import get_rotation
-        configs = get_rotation().get("configs", [])
+        configs = get_rotation(server_id or 1).get("configs", [])
         return (configs.index(config_name) + 1, len(configs)) if config_name in configs else None
     except Exception:
         return None
@@ -375,7 +375,7 @@ def notify_rotation_advance(from_cfg: str, next_cfg: str, next_config_data: dict
     lines = [f"~~{previous}~~ → **{circuit}** · {mode_lbl}" if previous else f"**{circuit}** · {mode_lbl}"]
     if programme:
         lines.append(_programme_inline(programme))
-    step = _rotation_step(next_cfg)
+    step = _rotation_step(next_cfg, server_id)
     lines.append("-# " + " · ".join(filter(None, [
         f"étape {step[0]}/{step[1]} du roulement" if step else "", next_cfg])))
     _send({"embeds": [_embed(_COLOR_GREEN, server_name, title=f"⏭️ Place à {circuit}",

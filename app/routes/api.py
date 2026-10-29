@@ -499,7 +499,7 @@ def get_results():
 def rotation_start():
     """Démarre le serveur sur le premier fichier du roulement."""
     sid = _current_server_id()
-    rot = get_rotation()
+    rot = get_rotation(sid)
     if not rot.get("enabled") or not rot.get("configs"):
         return jsonify({"ok": False, "error": "rotation_disabled_or_empty"}), 400
 
@@ -554,7 +554,7 @@ def rotation_start():
 @login_required
 @_admin_required_json
 def get_rotation_route():
-    return jsonify(get_rotation())
+    return jsonify(get_rotation(_current_server_id()))
 
 
 @api_bp.route("/rotation", methods=["POST"])
@@ -562,7 +562,7 @@ def get_rotation_route():
 @_admin_required_json
 def post_rotation_route():
     data = request.get_json(force=True) or {}
-    save_rotation(data)
+    save_rotation(data, _current_server_id())
     return jsonify({"ok": True})
 
 

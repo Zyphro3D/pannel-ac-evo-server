@@ -3,7 +3,12 @@ Config Rotation — séquence de fichiers de configuration à enchaîner
 automatiquement à chaque arrêt du serveur, ou après un délai d'inactivité
 (aucun joueur connecté) si idle_timeout_minutes est configuré.
 
-Format JSON (/aceserver/.rotation.json) :
+Une file par serveur : /aceserver/.rotation.json pour le serveur 1 (nom d'origine,
+gardé tel quel), /aceserver/.rotation_<id>.json pour les autres — même convention
+que .panel_state<_id>.json. Avant, une file unique servait à tous les serveurs : un
+serveur hors de la liste repartait sur la première config de la file d'un autre.
+
+Format JSON :
   {
     "enabled": true,
     "cycle":   false,
@@ -18,13 +23,14 @@ from pathlib import Path
 _DEFAULT_ROTATION = {"enabled": False, "cycle": False, "configs": [], "idle_timeout_minutes": 0}
 
 
-def _rotation_path() -> Path:
+def _rotation_path(server_id: int) -> Path:
     base = Path(os.environ.get("ACESERVER_DIR", "/aceserver"))
-    return base / ".rotation.json"
+    suffix = "" if int(server_id) == 1 else f"_{int(server_id)}"
+    return base / f".rotation{suffix}.json"
 
 
-def get_rotation() -> dict:
-    p = _rotation_path()
+def get_rotation(server_id: int) -> dict:
+    p = _rotation_path(server_id)
     if p.exists():
         try:
             data = json.loads(p.read_text())
@@ -38,7 +44,7 @@ def get_rotation() -> dict:
     return dict(_DEFAULT_ROTATION)
 
 
-def save_rotation(data: dict):
+def save_rotation(data: dict, server_id: int):
     from app.services.server_config import _valid_config_name
     configs = [str(c) for c in data.get("configs", [])]
     valid_configs = [c for c in configs if _valid_config_name(c)]
@@ -52,7 +58,7 @@ def save_rotation(data: dict):
         idle_timeout_minutes = max(0, int(data.get("idle_timeout_minutes", 0)))
     except (ValueError, TypeError):
         idle_timeout_minutes = 0
-    _rotation_path().write_text(json.dumps({
+    _rotation_path(server_id).write_text(json.dumps({
         "enabled": bool(data.get("enabled", False)),
         "cycle":   bool(data.get("cycle",   False)),
         "configs": valid_configs,
@@ -60,12 +66,18 @@ def save_rotation(data: dict):
     }))
 
 
-def get_next_config(current_config: str) -> str | None:
+def delete_rotation(server_id: int):
+    """Supprime la file d'un serveur supprimé (jamais celle du serveur 1)."""
+    if int(server_id) != 1:
+        _rotation_path(server_id).unlink(missing_ok=True)
+
+
+def get_next_config(current_config: str, server_id: int) -> str | None:
     """
     Retourne le nom du prochain fichier de config à démarrer, ou None si le
     roulement est terminé (fin de liste sans cycle, ou feature désactivée).
     """
-    rot = get_rotation()
+    rot = get_rotation(server_id)
     if not rot.get("enabled"):
         return None
     configs = rot.get("configs", [])

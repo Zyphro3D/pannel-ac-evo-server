@@ -1522,8 +1522,10 @@ def server_delete(server_id):
     from app.services.server_docker import remove_server_container, sync_compose_override
     remove_server_container(srv.container_name)
 
-    # Supprime le dossier de configs déployées pour ce serveur
+    # Supprime le dossier de configs déployées et la file de roulement de ce serveur
     delete_server_runtime_dir(server_id)
+    from app.services.rotation_manager import delete_rotation
+    delete_rotation(server_id)
 
     name = srv.name
     db.session.delete(srv)

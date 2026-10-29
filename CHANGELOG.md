@@ -4,6 +4,7 @@
 
 - Plus d'avertissement « variables de l'image illisibles » dans le journal du panel au démarrage.
 - Mise à jour depuis le panel : si la nouvelle version demande de se reconnecter, la fenêtre de suivi l'indique au lieu de rester sur « Redémarrage du panel… ».
+- **Roulement : une file par serveur.** Jusqu'ici, tous les serveurs partageaient la même file : un serveur absent de la liste (par exemple un trackday) repartait sur la première config du roulement d'un autre serveur. Après la mise à jour, le serveur principal garde sa file actuelle ; les serveurs additionnels démarrent sans roulement, à régler dans leur page Roulement si besoin.
 
 **Messages Discord revus**
 

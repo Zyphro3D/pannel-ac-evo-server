@@ -423,10 +423,10 @@ def _show_console() -> bool:
 
 # ── Rotation helpers ─────────────────────────────────────────────────────────
 
-def _rotation_next(config_name: str) -> str | None:
+def _rotation_next(config_name: str, server_id: int) -> str | None:
     try:
         from app.services.rotation_manager import get_next_config
-        return get_next_config(config_name)
+        return get_next_config(config_name, server_id)
     except Exception as e:
         log.error("rotation_manager error: %s", e)
         return None
@@ -550,11 +550,11 @@ def try_rotation_advance(session_type: str, config_name: str, server_id: int = 1
 
     try:
         from app.services.rotation_manager import get_rotation, get_next_config
-        rot = get_rotation()
+        rot = get_rotation(server_id)
         if not rot.get("enabled"):
             return
 
-        next_cfg = get_next_config(config_name)
+        next_cfg = get_next_config(config_name, server_id)
         if next_cfg is None:
             return
 
@@ -617,7 +617,7 @@ def _check_idle_rotation(server_id: int):
     personne ne joue jamais : sans ça, le serveur reste bloqué sur la même config
     indéfiniment puisqu'aucun résultat de session n'est jamais posté."""
     from app.services.rotation_manager import get_rotation, get_next_config
-    rot = get_rotation()
+    rot = get_rotation(server_id)
     idle_minutes = rot.get("idle_timeout_minutes", 0)
     if not rot.get("enabled") or not idle_minutes:
         return
@@ -636,7 +636,7 @@ def _check_idle_rotation(server_id: int):
 
     state       = _read_state(server_id)
     config_name = state.get("config", "")
-    next_cfg    = get_next_config(config_name)
+    next_cfg    = get_next_config(config_name, server_id)
     if next_cfg is None:
         srv["last_active_ts"] = now  # évite de re-tester en boucle en fin de roulement sans cycle
         return
@@ -694,7 +694,7 @@ def _watchdog_handle_docker(container, state, server_id: int):
     """Gère un container stoppé : rotation ou redémarrage. Retourne True si l'itération doit continuer."""
     auto_restart = state.get("auto_restart", False)
     config_name  = state.get("config", "")
-    next_cfg     = _rotation_next(config_name)
+    next_cfg     = _rotation_next(config_name, server_id)
 
     if not auto_restart and next_cfg is None:
         return True
@@ -727,7 +727,7 @@ def _watchdog_handle_native(srv, state, server_id: int):
     """Gère un processus natif stoppé : rotation ou redémarrage."""
     auto_restart = state.get("auto_restart", False)
     config_name  = state.get("config", "")
-    next_cfg     = _rotation_next(config_name)
+    next_cfg     = _rotation_next(config_name, server_id)
 
     if not auto_restart and next_cfg is None:
         return
@@ -1136,7 +1136,7 @@ def _rotation_countdown_seconds(server_id: int, players: int | None) -> int | No
         return None
     try:
         from app.services.rotation_manager import get_rotation
-        rot = get_rotation()
+        rot = get_rotation(server_id)
     except Exception:
         return None
     idle_minutes = rot.get("idle_timeout_minutes", 0)

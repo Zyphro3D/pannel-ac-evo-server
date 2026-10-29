@@ -143,7 +143,7 @@ def test_roulement_en_tableau(sent, monkeypatch):
 def test_changement_de_config(sent, monkeypatch):
     cfgs = {"a.json": _weekend("Imola|GP")}
     monkeypatch.setattr(dn, "_load_named_config", lambda name: cfgs.get(name))
-    monkeypatch.setattr(dn, "_rotation_step", lambda name: (2, 3))
+    monkeypatch.setattr(dn, "_rotation_step", lambda name, sid: (2, 3))
     dn.notify_rotation_advance("a.json", "b.json", _weekend("Monza|GP"))
     e = _embed(sent)
     assert e["title"] == "⏭️ Place à Monza — GP"
