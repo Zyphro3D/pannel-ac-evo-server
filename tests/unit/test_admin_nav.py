@@ -45,3 +45,9 @@ def test_admin_simple_ne_voit_pas_les_reglages_superadmin(admin_client):
 def test_ancien_onglet_evenement_redirige(admin_client):
     resp = admin_client.get("/server?view=events")
     assert resp.status_code == 302 and resp.headers["Location"].endswith("/events")
+
+
+def test_reglages_du_serveur_indiquent_leur_portee(admin_client):
+    page = admin_client.get("/settings?tab=server").get_data(as_text=True)
+    assert page.count('class="scope-chip"') == 1                  # la carte du serveur choisi
+    assert page.count('class="scope-chip scope-all"') == 3        # infrastructure, Steam, serveur de jeu

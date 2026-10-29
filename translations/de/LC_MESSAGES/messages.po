@@ -6753,3 +6753,18 @@ msgstr "Wo einstellen…? (Webhook, Passwort, Port, Logo…)"
 
 msgid "Mots de passe"
 msgstr "Passwörter"
+
+msgid "Cette file ne concerne que ce serveur : chaque serveur a la sienne."
+msgstr "Diese Warteschlange gilt nur für diesen Server: Jeder Server hat seine eigene."
+
+msgid "Aucune configuration dans le roulement de ce serveur. Ajoutez-en ci-dessous pour enchaîner plusieurs circuits."
+msgstr "Keine Konfiguration in der Rotation dieses Servers. Fügen Sie unten welche hinzu, um mehrere Strecken zu verketten."
+
+msgid "Ce serveur seulement"
+msgstr "Nur dieser Server"
+
+msgid "Tous les serveurs"
+msgstr "Alle Server"
+
+msgid "numéro partagé, commande impossible"
+msgstr "geteilte Nummer, Befehl nicht möglich"

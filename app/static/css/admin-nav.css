@@ -129,3 +129,12 @@
 @media (prefers-reduced-motion: reduce) {
   .admin-item, .admin-acc summary::after { transition: none; }
 }
+
+/* ── Portée d'un réglage (Réglages du serveur) ──────────────────────────── */
+.scope-chip {
+  display: inline-block; vertical-align: middle; margin-left: 6px;
+  padding: 1px 8px; border-radius: 10px;
+  font-size: 11px; font-weight: 600; letter-spacing: .02em; text-transform: none;
+  color: var(--accent); background: var(--accent-dim);
+}
+.scope-chip.scope-all { color: var(--dim); background: var(--surface2); }

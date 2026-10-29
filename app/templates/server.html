@@ -595,9 +595,10 @@
 
   <!-- ── Roulement de configurations ── -->
   {% if view == 'rotation' %}
+  {% set rot_srv = servers | selectattr('id', 'equalto', current_server_id) | list | first %}
   <section class="card mt-4" id="server-rotation">
     <div class="card-header justify-between flex-wrap !gap-3">
-      <h2>{{ _('Roulement de configs') }}</h2>
+      <h2>{{ _('Roulement de configs') }}{% if rot_srv %} · <span class="text-accent">{{ rot_srv.name }}</span>{% endif %}</h2>
       <div class="flex items-center gap-2.5 flex-wrap">
         <span id="rot-status-pill" class="rot-status-pill" style="display:none">
           <span class="dot online"></span>
@@ -617,7 +618,8 @@
       </div>
     </div>
     <div class="rotation-body panel-form">
-      <p class="rotation-hint">{{ _('Quand le serveur s\'arrête, il démarre la configuration suivante de la liste automatiquement.') }}</p>
+      <p class="rotation-hint">{{ _('Quand le serveur s\'arrête, il démarre la configuration suivante de la liste automatiquement.') }}
+        {% if servers|length > 1 %}{{ _('Cette file ne concerne que ce serveur : chaque serveur a la sienne.') }}{% endif %}</p>
 
       <div id="rot-list" class="rot-list"></div>
 

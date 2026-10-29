@@ -6750,3 +6750,18 @@ msgstr "Dove impostare…? (webhook, password, porta, logo…)"
 
 msgid "Mots de passe"
 msgstr "Password"
+
+msgid "Cette file ne concerne que ce serveur : chaque serveur a la sienne."
+msgstr "Questa coda riguarda solo questo server: ogni server ha la sua."
+
+msgid "Aucune configuration dans le roulement de ce serveur. Ajoutez-en ci-dessous pour enchaîner plusieurs circuits."
+msgstr "Nessuna configurazione nella rotazione di questo server. Aggiungine qui sotto per concatenare più circuiti."
+
+msgid "Ce serveur seulement"
+msgstr "Solo questo server"
+
+msgid "Tous les serveurs"
+msgstr "Tutti i server"
+
+msgid "numéro partagé, commande impossible"
+msgstr "numero condiviso, comando impossibile"

@@ -6688,3 +6688,18 @@ msgstr "Where to set…? (webhook, password, port, logo…)"
 
 msgid "Mots de passe"
 msgstr "Passwords"
+
+msgid "Cette file ne concerne que ce serveur : chaque serveur a la sienne."
+msgstr "This queue only applies to this server: each server has its own."
+
+msgid "Aucune configuration dans le roulement de ce serveur. Ajoutez-en ci-dessous pour enchaîner plusieurs circuits."
+msgstr "No configuration in this server's rotation. Add some below to chain several tracks."
+
+msgid "Ce serveur seulement"
+msgstr "This server only"
+
+msgid "Tous les serveurs"
+msgstr "All servers"
+
+msgid "numéro partagé, commande impossible"
+msgstr "shared number, command not possible"

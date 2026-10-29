@@ -476,6 +476,7 @@ const I18N_ADMIN = {
   tcpDisconnected: "{{ _('TCP déconnecté') }}",
   tcpNotConnected: "{{ _('non connecté') }}",
   errNetwork:      "{{ _('erreur réseau') }}",
+  dupNumber:       "{{ _('numéro partagé, commande impossible') }}",
   elevateOk:       "{{ _('Bot élevé admin') }}",
   elevateErr:      "{{ _('Échec élévation admin') }}",
 };
@@ -552,11 +553,21 @@ let _pendingCmd = '';
 function _refreshCarSelect() {
   const sel = document.getElementById('admin-car-select');
   sel.innerHTML = '<option value="">— {{ _("Pilote…") }} —</option>';
+  // Les commandes du jeu visent un numéro de voiture : deux pilotes au même numéro (souvent
+  // tous à 0 en trackday) ne peuvent pas être visés sans risquer le mauvais.
+  const count = {};
+  for (const e of _lastLeaderboard) if (e.num) count[e.num] = (count[e.num] || 0) + 1;
   for (const e of _lastLeaderboard) {
     if (!e.num) continue;
     const opt = document.createElement('option');
     opt.value = e.num;
-    opt.textContent = `#${e.num} — ${e.name || '?'}`;
+    const label = (String(e.num) !== '0' ? `#${e.num} — ` : '') + (e.name || '?');
+    if (count[e.num] > 1) {
+      opt.disabled = true;
+      opt.textContent = `${label} (${I18N_ADMIN.dupNumber})`;
+    } else {
+      opt.textContent = label;
+    }
     sel.appendChild(opt);
   }
 }

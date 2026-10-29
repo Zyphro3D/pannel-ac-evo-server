@@ -9,6 +9,9 @@
 - Sur téléphone et tablette, le bouton ☰ ouvre la recherche, le choix du serveur et les groupes en sections repliables.
 - Noms plus clairs : Tableau de bord, Roulement, Réglages du serveur, Réglages généraux, Comptes admin, Accès et sanctions, Voitures, Circuits, Santé et journal. L'onglet Événement de la page Serveur est fusionné dans Événements.
 - Mon compte et Déconnexion passent dans un menu 👤.
+- Roulement : le nom du serveur concerné s'affiche dans le titre, et une file vide est expliquée (chaque serveur a la sienne).
+- Réglages du serveur : chaque carte indique si elle vaut pour **ce serveur seulement** ou pour **tous les serveurs**.
+- Direct, commandes admin : le « #0 » n'est plus affiché devant le pseudo, et un pilote qui partage son numéro avec un autre n'est plus proposé (la commande pourrait viser le mauvais pilote).
 
 ### v2.5.1 — 29/10/2026
 

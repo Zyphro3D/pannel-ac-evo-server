@@ -354,7 +354,7 @@
           <input type="hidden" name="_tab" value="server">
           <input type="hidden" name="_server_form" value="db">
           <div class="settings-card-head">
-            <h2>{{ _('Serveur') }} — <span class="text-accent">{{ current_srv.name }}</span></h2>
+            <h2>{{ _('Serveur') }} — <span class="text-accent">{{ current_srv.name }}</span> <span class="scope-chip">{{ _('Ce serveur seulement') }}</span></h2>
           </div>
           <div class="settings-card-copy bg-surface2 rounded-lg px-4 py-3.5 mb-5 !text-[0.83rem] leading-[1.6]">
             {{ _('Ces paramètres sont propres au serveur sélectionné. Changez de serveur via le sélecteur en haut pour modifier un autre serveur.') }}
@@ -450,7 +450,7 @@
               class="settings-card settings-card-form">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="_tab" value="server">
-          <div class="settings-card-head settings-anchor" id="infra"><h2>{{ _('Infrastructure ACE EVO') }}</h2></div>
+          <div class="settings-card-head settings-anchor" id="infra"><h2>{{ _('Infrastructure ACE EVO') }} <span class="scope-chip scope-all">{{ _('Tous les serveurs') }}</span></h2></div>
           <div class="settings-fields">
             {% for k in ['ACESERVER_TCP_HOST', 'ACESERVER_TCP_PORT', 'ACESERVER_DIR', 'CONFIGS_DIR'] %}
             <label class="settings-field">
@@ -471,7 +471,7 @@
               class="settings-card settings-card-form">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="_tab" value="server">
-          <div class="settings-card-head settings-anchor" id="steam"><h2>{{ _('Compte Steam (SteamCMD)') }}</h2></div>
+          <div class="settings-card-head settings-anchor" id="steam"><h2>{{ _('Compte Steam (SteamCMD)') }} <span class="scope-chip scope-all">{{ _('Tous les serveurs') }}</span></h2></div>
           <div class="settings-card-copy bg-surface2 rounded-lg px-4 py-3.5 mb-2 !text-[0.83rem] leading-[1.6]">
             {{ _("Le mot de passe est saisi au moment de la mise à jour et n'est jamais stocké. Ce champ pré-remplit simplement le formulaire. Le compte doit posséder ACE EVO dans sa bibliothèque Steam.") }}
           </div>
@@ -492,7 +492,7 @@
       <section class="settings-dashboard-grid mt-6">
         <div class="settings-card settings-card-full">
           <div class="settings-card-head settings-anchor" id="serveur-de-jeu">
-            <h2>{{ _('Serveur de jeu') }}</h2>
+            <h2>{{ _('Serveur de jeu') }} <span class="scope-chip scope-all">{{ _('Tous les serveurs') }}</span></h2>
           </div>
           <div id="ctr-status-block" class="grid-2col mb-6">
             <div class="bg-surface2 rounded-lg px-4 py-3.5">

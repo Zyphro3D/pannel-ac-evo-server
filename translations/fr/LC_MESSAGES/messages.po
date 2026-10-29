@@ -6633,3 +6633,18 @@ msgstr "Où régler… ? (webhook, mot de passe, port, logo…)"
 
 msgid "Mots de passe"
 msgstr "Mots de passe"
+
+msgid "Cette file ne concerne que ce serveur : chaque serveur a la sienne."
+msgstr "Cette file ne concerne que ce serveur : chaque serveur a la sienne."
+
+msgid "Aucune configuration dans le roulement de ce serveur. Ajoutez-en ci-dessous pour enchaîner plusieurs circuits."
+msgstr "Aucune configuration dans le roulement de ce serveur. Ajoutez-en ci-dessous pour enchaîner plusieurs circuits."
+
+msgid "Ce serveur seulement"
+msgstr "Ce serveur seulement"
+
+msgid "Tous les serveurs"
+msgstr "Tous les serveurs"
+
+msgid "numéro partagé, commande impossible"
+msgstr "numéro partagé, commande impossible"

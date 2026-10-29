@@ -6790,3 +6790,18 @@ msgstr "¿Dónde ajustar…? (webhook, contraseña, puerto, logo…)"
 
 msgid "Mots de passe"
 msgstr "Contraseñas"
+
+msgid "Cette file ne concerne que ce serveur : chaque serveur a la sienne."
+msgstr "Esta cola solo afecta a este servidor: cada servidor tiene la suya."
+
+msgid "Aucune configuration dans le roulement de ce serveur. Ajoutez-en ci-dessous pour enchaîner plusieurs circuits."
+msgstr "Ninguna configuración en la rotación de este servidor. Añada algunas abajo para encadenar varios circuitos."
+
+msgid "Ce serveur seulement"
+msgstr "Solo este servidor"
+
+msgid "Tous les serveurs"
+msgstr "Todos los servidores"
+
+msgid "numéro partagé, commande impossible"
+msgstr "número compartido, comando imposible"
