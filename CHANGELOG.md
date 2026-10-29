@@ -5,6 +5,17 @@
 - Plus d'avertissement « variables de l'image illisibles » dans le journal du panel au démarrage.
 - Mise à jour depuis le panel : si la nouvelle version demande de se reconnecter, la fenêtre de suivi l'indique au lieu de rester sur « Redémarrage du panel… ».
 
+**Messages Discord revus**
+
+- Le nom du serveur passe en en-tête du message et l'heure est celle de Discord, affichée dans le fuseau de chaque lecteur.
+- Noms de voitures lisibles (« BMW M3 E30 Evo III » au lieu de « KS BMW M3 E30 EVO III ») et circuits à la place des noms de fichiers.
+- Arrivées, départs, changements de voiture et actions admin tiennent en une ligne ; le pseudo renvoie au profil Steam ; le nombre de pilotes en ligne est indiqué ; le n° 0 n'est plus affiché.
+- Démarrage et changement de config : programme des sessions sur une ligne, sessions ignorées masquées, étape du roulement. Lancement d'un roulement : tableau des configs avec la durée d'un tour complet.
+- Meilleur tour : le chrono en grand, titré « meilleur tour de la session », avec le record du serveur sur ce tracé rappelé à côté ou signalé comme battu.
+- Plantage : le message passe au vert (« Relancé après plantage ») quand le serveur repart, avec le délai et le nombre de plantages du jour.
+- Fin de session : couleur or, contacts et chocs mur/objet séparés. Inscription d'un pilote : lien direct vers la page Pilotes si l'adresse publique du panel est renseignée.
+- Les textes personnalisés (Paramètres → Discord) restent appliqués ; un champ laissé vide reprend le texte par défaut.
+
 ### v2.5.0 — 27/10/2026
 
 **Préparation de la mise à jour 0.10 d'Assetto Corsa EVO**

@@ -663,7 +663,7 @@ def _on_connect_log(m, c, seen, server_id):
             from app.services import discord_notifier
             discord_notifier.safe_notify(
                 discord_notifier.notify_player_join, name, num, car_raw, sid,
-                server_id=server_id, server_name=_srv_name,
+                server_id=server_id, server_name=_srv_name, online=len(seen),
             )
         except Exception:
             pass
@@ -697,7 +697,7 @@ def _disconnect_sid(sid, c, seen, server_id):
         from app.services import discord_notifier
         discord_notifier.safe_notify(
             discord_notifier.notify_player_disconnect, name, sid, duration_s,
-            server_id=server_id, server_name=c.get("server_name", ""),
+            server_id=server_id, server_name=c.get("server_name", ""), online=len(seen),
         )
     except Exception:
         pass
@@ -779,12 +779,13 @@ def _on_newlap_log(m, c, server_id):
 
     s1, s2, s3 = _pop_car_sectors(c, car_id, lap_ms)
     if notify:
-        circuit = _refresh_track_cache(c, server_id).get("circuit", "")
+        cache = _refresh_track_cache(c, server_id)
         try:
             from app.services import discord_notifier
             discord_notifier.safe_notify(
-                discord_notifier.notify_best_lap, name, lap_str, car_raw, circuit,
+                discord_notifier.notify_best_lap, name, lap_str, car_raw, cache.get("circuit", ""),
                 server_id=server_id, server_name=c.get("server_name", ""),
+                lap_ms=lap_ms, record=_server_record(server_id, cache.get("track_value", "")),
             )
         except Exception:
             pass
@@ -812,6 +813,22 @@ def _refresh_track_cache(c, server_id):
         except Exception:
             log.exception("Échec rafraîchissement track_cache (server_id=%s)", server_id)
     return cache
+
+
+def _server_record(server_id, track_value):
+    """Record du serveur sur ce tracé avant le tour en cours : (ms, pseudo, voiture) ou None.
+    Appelé avant _record_lap, donc sans le tour qu'on annonce."""
+    if _flask_app is None or not track_value:
+        return None
+    try:
+        with _flask_app.app_context():
+            from app.models import LapRecord
+            rec = (LapRecord.query.filter_by(server_id=server_id, track_value=track_value)
+                   .order_by(LapRecord.lap_time_ms.asc()).first())
+            return (rec.lap_time_ms, rec.nickname, rec.car) if rec else None
+    except Exception:
+        log.debug("record serveur illisible (server_id=%s)", server_id)
+        return None
 
 
 def _record_lap(c, server_id, sid, name, car_raw, lap_ms, s1_ms=None, s2_ms=None, s3_ms=None):

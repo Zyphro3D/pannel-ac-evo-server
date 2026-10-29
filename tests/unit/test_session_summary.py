@@ -16,12 +16,12 @@ def test_course_podium_incidents_et_sanctions():
                                         penalties=_penalties()))
     embed = dn.build_session_summary_embed(parsed, "Mon serveur",
                                            penalty_label=lambda r: "Drive-through", investigation_label=lambda r: "Excès de vitesse")
-    assert embed["title"].startswith("[Mon serveur] 🏁 Course terminée")
+    assert embed["title"].startswith("🏁 Course terminée") and embed["author"]["name"] == "Mon serveur"
     assert "🥇 **Alice**" in embed["description"] and "🥈 **Bob**" in embed["description"]
     names = {f["name"]: f["value"] for f in embed["fields"]}
     assert "Alice" in names["Meilleur tour"] or "Bob" in names["Meilleur tour"]
-    assert "contact(s)" in names["Incidents"]
-    assert names["Sanctions (1)"] == "• **Bob** — Drive-through (Excès de vitesse)"
+    assert names["Contacts"].isdigit() and names["Chocs mur/objet"].isdigit()
+    assert names["Sanctions (1)"] == "• **Bob** · Drive-through (Excès de vitesse)"
 
 
 def test_session_sans_incident_ni_sanction_reste_courte():
@@ -44,7 +44,7 @@ def test_sanctions_regroupees_par_pilote_les_lourdes_d_abord():
     assert field["name"] == "Sanctions (11)"
     lines = field["value"].split("\n")
     assert lines[0].startswith("• **Bob**") and "PenaltyType_Disqualification (InvestigationType_Racecar_Cut)" in lines[0]   # lourde d'abord
-    assert lines[1] == "• **Alice** — 9× PenaltyType_Warning"
+    assert lines[1] == "• **Alice** · 9× PenaltyType_Warning"
     assert len(field["value"]) < 1024                                   # limite Discord d'un champ
 
 

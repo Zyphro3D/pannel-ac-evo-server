@@ -3741,8 +3741,8 @@ msgstr ""
 "automáticamente al enviarse."
 
 #: app/templates/settings.html:779
-msgid "🏁 Serveur démarré"
-msgstr "🏁 Servidor iniciado"
+msgid "🏁 En ligne · {circuit}"
+msgstr "🏁 En línea · {circuit}"
 
 #: app/templates/settings.html:783
 msgid "⏹ Serveur arrêté"
@@ -3753,8 +3753,8 @@ msgid "Crash détecté"
 msgstr "Fallo detectado"
 
 #: app/templates/settings.html:787
-msgid "💥 Crash détecté — Relance auto"
-msgstr "💥 Caída detectada — Reinicio automático"
+msgid "💥 Plantage, redémarrage automatique"
+msgstr "💥 Caída, reinicio automático"
 
 #: app/templates/settings.html:793
 msgid "Connexion joueur"
@@ -3762,8 +3762,8 @@ msgstr "Conexión de jugador"
 
 #: app/templates/settings.html:794
 #, python-brace-format
-msgid "🟢 {num} — {name}"
-msgstr "🟢 {num} — {name}"
+msgid "🟢 **{pilot}** rejoint la piste"
+msgstr "🟢 **{pilot}** entra en pista"
 
 #: app/templates/settings.html:797
 msgid "Déconnexion joueur"
@@ -3771,8 +3771,8 @@ msgstr "Desconexión de jugador"
 
 #: app/templates/settings.html:798
 #, python-brace-format
-msgid "🔴 {name}"
-msgstr "🔴 {name}"
+msgid "🔴 **{pilot}** quitte la piste après **{duration}**"
+msgstr "🔴 **{pilot}** sale de pista tras **{duration}**"
 
 #: app/templates/settings.html:801
 msgid "Changement de véhicule"
@@ -3780,16 +3780,16 @@ msgstr "Cambio de vehículo"
 
 #: app/templates/settings.html:802
 #, python-brace-format
-msgid "🔄 {name} — Changement de véhicule"
-msgstr "🔄 {name} — Cambio de vehículo"
+msgid "🔄 **{pilot}** change de voiture"
+msgstr "🔄 **{pilot}** cambia de coche"
 
 #: app/templates/settings.html:808
 msgid "Meilleur tour du serveur"
 msgstr "Mejor vuelta del servidor"
 
 #: app/templates/settings.html:809
-msgid "⏱ Nouveau meilleur tour du serveur"
-msgstr "⏱ Nueva mejor vuelta del servidor"
+msgid "⏱ Meilleur tour de la session"
+msgstr "⏱ Mejor vuelta de la sesión"
 
 #: app/templates/settings.html:812
 msgid "Action admin"
@@ -3797,8 +3797,8 @@ msgstr "Acción de admin"
 
 #: app/templates/settings.html:813
 #, python-brace-format
-msgid "⚙️ {action} — {target}"
-msgstr "⚙️ {action} — {target}"
+msgid "{icon} **{action}** pour **{target}**"
+msgstr "{icon} **{action}** para **{target}**"
 
 #: app/templates/settings.html:817
 msgid "Enregistrer les messages"

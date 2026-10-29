@@ -681,6 +681,15 @@ def _watchdog_notify_crash(config_name: str, restarting: bool, server_id: int):
         pass
 
 
+def _watchdog_notify_recovered(server_id: int, ok: bool):
+    """Passe le message Discord du plantage au vert (serveur reparti) ou au rouge (échec)."""
+    try:
+        from app.services import discord_notifier
+        discord_notifier.notify_crash_recovered(server_id, ok=ok)
+    except Exception:
+        pass
+
+
 def _watchdog_handle_docker(container, state, server_id: int):
     """Gère un container stoppé : rotation ou redémarrage. Retourne True si l'itération doit continuer."""
     auto_restart = state.get("auto_restart", False)
@@ -707,8 +716,10 @@ def _watchdog_handle_docker(container, state, server_id: int):
         try:
             container.start()
             log.info("Watchdog: container aceserver redémarré")
+            _watchdog_notify_recovered(server_id, ok=True)
         except Exception as e:
             log.error("Watchdog: échec redémarrage container : %s", e)
+            _watchdog_notify_recovered(server_id, ok=False)
     return True
 
 
@@ -753,8 +764,10 @@ def _watchdog_handle_native(srv, state, server_id: int):
             _write_state(proc.pid, config_name, sc, sd, auto_restart,
                          run_id=run_id, server_id=server_id)
             log.info("Watchdog: restarted with PID %d", proc.pid)
+            _watchdog_notify_recovered(server_id, ok=True)
         else:
             log.error("Watchdog: restart failed")
+            _watchdog_notify_recovered(server_id, ok=False)
 
 
 def _watchdog_loop(server_id: int):
