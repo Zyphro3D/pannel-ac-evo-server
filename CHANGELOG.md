@@ -2,6 +2,11 @@
 
 ### À venir (non publié)
 
+**Sécurité : le panel ne tourne plus en root**
+
+- Dans son conteneur, le panel tourne désormais sous un compte sans droits (`panel`, uid 1000) : une faille éventuelle dans le panel ne donne plus les droits root du conteneur. Le conteneur démarre en root le temps de donner au panel ses dossiers (base, médias, fichiers du jeu, SteamCMD), puis s'efface.
+- Rien à faire à la mise à jour : les fichiers des installations existantes sont convertis au premier démarrage, sous Linux comme sous Windows. Si un dossier ne peut pas être converti (partage réseau particulier, certificat HTTPS lisible par root seulement), le panel reste en root comme avant et le signale dans son journal. `PANEL_RUN_AS_ROOT=1` force l'ancien fonctionnement.
+
 **Menu Admin rangé**
 
 - Le menu Admin devient un grand menu en 4 groupes : le serveur choisi (son nom en titre), courses et pilotes, contenu du jeu, panel. Chaque entrée a une ligne d'explication.
