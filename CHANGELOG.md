@@ -7,6 +7,11 @@
 - Dans son conteneur, le panel tourne désormais sous un compte sans droits (`panel`, uid 1000) : une faille éventuelle dans le panel ne donne plus les droits root du conteneur. Le conteneur démarre en root le temps de donner au panel ses dossiers (base, médias, fichiers du jeu, SteamCMD), puis s'efface.
 - Rien à faire à la mise à jour : les fichiers des installations existantes sont convertis au premier démarrage, sous Linux comme sous Windows. Si un dossier ne peut pas être converti (partage réseau particulier, certificat HTTPS lisible par root seulement), le panel reste en root comme avant et le signale dans son journal. `PANEL_RUN_AS_ROOT=1` force l'ancien fonctionnement.
 
+**Direction de course (contacts en direct)**
+
+- Avec « Contacts en direct » activé, la page du direct affiche aux admins un bloc **Direction de course** : tous les contacts de la session avec l'heure et le tour, et un bilan par pilote (contacts, contre une voiture, avec dégâts) ; un pilote à 3 contacts ou plus est signalé « à surveiller ».
+- Nouvelle option **Contacts sur Discord** (Paramètres → Notifications, désactivée par défaut) : les contacts avec dégâts partent sur le salon course, regroupés en un message par minute.
+
 **Menu Admin rangé**
 
 - Le menu Admin devient un grand menu en 4 groupes : le serveur choisi (son nom en titre), courses et pilotes, contenu du jeu, panel. Chaque entrée a une ligne d'explication.

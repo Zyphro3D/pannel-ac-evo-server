@@ -6808,3 +6808,33 @@ msgstr "número compartido, comando imposible"
 
 msgid "Plusieurs pilotes ont le même numéro de voiture (souvent 0 sur les voitures de route). Le jeu ne vise une voiture que par son numéro : ces pilotes ne peuvent pas recevoir de commande. Pour bannir l'un d'eux, passez par Accès et sanctions."
 msgstr "Varios pilotos tienen el mismo número de coche (a menudo 0 en coches de calle). El juego solo apunta a un coche por su número: estos pilotos no pueden recibir comandos. Para banear a uno de ellos, use Acceso y sanciones."
+
+msgid "Visible par les admins seulement. Le jeu ne journalise ni la vitesse ni l'endroit d'un contact : ils figurent dans les résultats en fin de session."
+msgstr "Visible solo para los admins. El juego no registra la velocidad ni el lugar de un contacto: aparecen en los resultados al final de la sesión."
+
+msgid "Par pilote"
+msgstr "Por piloto"
+
+msgid "Tous les contacts"
+msgstr "Todos los contactos"
+
+msgid "Fil des contacts"
+msgstr "Hilo de contactos"
+
+msgid "T"
+msgstr "V"
+
+msgid "à surveiller"
+msgstr "vigilar"
+
+msgid "Aucun contact pour l’instant."
+msgstr "Ningún contacto por ahora."
+
+msgid "Contacts sur Discord"
+msgstr "Contactos en Discord"
+
+msgid "Envoie sur le webhook course les contacts avec dégâts, regroupés une fois par minute. Demande « Contacts en direct » (true/false, désactivé par défaut)."
+msgstr "Envía al webhook de carrera los contactos con daños, agrupados una vez por minuto. Requiere «Contactos en directo» (true/false, desactivado por defecto)."
+
+msgid "Contacts avec dégâts sur Discord (salon course, regroupés par minute) : interrupteur dans Paramètres → Notifications, désactivé par défaut."
+msgstr "Contactos con daños en Discord (canal de carrera, agrupados por minuto): interruptor en Ajustes → Notificaciones, desactivado por defecto."

@@ -84,6 +84,29 @@
       <ul id="t-contacts-list"></ul>
     </div>
 
+    {% if current_user.is_authenticated and current_user.is_admin %}
+    <!-- Direction de course (admins, option LIVE_COLLISIONS) : tous les contacts et le bilan par pilote -->
+    <section class="race-control" id="t-rc" hidden aria-labelledby="t-rc-title">
+      <div class="race-control-head">
+        <h3 id="t-rc-title">{{ _('Direction de course') }}</h3>
+        <span class="race-control-note">{{ _('Visible par les admins seulement. Le jeu ne journalise ni la vitesse ni l\'endroit d\'un contact : ils figurent dans les résultats en fin de session.') }}</span>
+      </div>
+      <div class="race-control-grid">
+        <div class="race-control-col">
+          <h4>{{ _('Par pilote') }}</h4>
+          <table class="race-control-tally">
+            <thead><tr><th>{{ _('Pilote') }}</th><th title="{{ _('Tous les contacts') }}">{{ _('Contacts') }}</th><th>{{ _('Voitures') }}</th><th>{{ _('Dégâts') }}</th></tr></thead>
+            <tbody id="t-rc-tally"></tbody>
+          </table>
+        </div>
+        <div class="race-control-col">
+          <h4>{{ _('Fil des contacts') }}</h4>
+          <ol class="race-control-feed" id="t-rc-feed"></ol>
+        </div>
+      </div>
+    </section>
+    {% endif %}
+
     <!-- Chat en direct (lecture seule) + réactions -->
     <div class="timing-chat-wrap">
       <div class="timing-chat-title">{{ _('Chat en direct') }}</div>
@@ -199,6 +222,11 @@ const CONTACT_LABELS = {
   Object: "{{ _('{driver} a touché un objet') }}",
 };
 const CONTACT_DAMAGE = "{{ _('dégâts') }}";
+const RC_TEXT = {
+  lap:     "{{ _('T') }}",
+  repeat:  "{{ _('à surveiller') }}",
+  empty:   "{{ _('Aucun contact pour l’instant.') }}",
+};
 
 function _fmtAge(s) {
   if (s === null || s === undefined) return '';
@@ -219,6 +247,27 @@ function _renderContacts(list) {
     return `<li><span class="c-age">${_fmtAge(c.age_s)}</span><span>${txt}</span>`
          + (c.damage ? `<span class="c-dmg">${CONTACT_DAMAGE}</span>` : '') + '</li>';
   }).join('');
+}
+
+function _renderRaceControl(rc) {
+  const box = document.getElementById('t-rc');
+  if (!box) return;                                   // visiteur : bloc absent de la page
+  if (!rc) { box.hidden = true; return; }             // option désactivée
+  box.hidden = false;
+  const tally = document.getElementById('t-rc-tally');
+  tally.innerHTML = rc.tally.length ? rc.tally.map(t =>
+      `<tr class="${t.repeat ? 'rc-repeat' : ''}"><td><strong>${_esc(t.driver)}</strong>`
+    + (t.repeat ? ` <span class="rc-flag">${RC_TEXT.repeat}</span>` : '') + `</td>`
+    + `<td>${t.contacts}</td><td>${t.cars}</td><td>${t.damage}</td></tr>`).join('')
+    : `<tr><td colspan="4" class="timing-empty">${RC_TEXT.empty}</td></tr>`;
+  document.getElementById('t-rc-feed').innerHTML = rc.events.length ? rc.events.map(c => {
+    const tpl = CONTACT_LABELS[c.collider] || CONTACT_LABELS.Object;
+    const txt = _esc(tpl).replace('{driver}', '<strong>' + _esc(c.driver) + '</strong>')
+                         .replace('{other}', '<strong>' + _esc(c.other || '') + '</strong>');
+    return `<li class="${c.damage ? 'rc-dmg' : ''}"><span class="rc-when">${_esc(c.time)}`
+         + (c.lap ? ` · ${RC_TEXT.lap}${c.lap}` : '') + `</span><span>${txt}</span>`
+         + (c.damage ? `<span class="c-dmg">${CONTACT_DAMAGE}</span>` : '') + '</li>';
+  }).join('') : `<li class="timing-empty">${RC_TEXT.empty}</li>`;
 }
 
 let _sessionEndAt = null;   // instant local (ms) où la phase se termine ; null = pas de limite
@@ -409,6 +458,7 @@ async function refresh() {
     _renderLeaderboard(d);
     _renderSession(d.session);
     _renderContacts(d.contacts);
+    _renderRaceControl(d.race_control);
   } catch(e) {
     document.getElementById('t-dot').className    = 'dot offline';
     document.getElementById('t-label').textContent = I18N.error;
