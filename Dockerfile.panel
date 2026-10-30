@@ -25,9 +25,20 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 COPY --from=css-builder /build/tailwind.min.css /panel/app/static/css/tailwind.min.css
+# Code lisible par le compte panel quels que soient les droits de l'archive ou de l'extraction
+# (une extraction en umask 077 laisserait run.py lisible par root seul)
+RUN chmod -R a+rX /panel
 
 ARG GIT_HASH=unknown
-RUN mkdir -p /panel/data /panel/logs /aceserver/configs && \
+# Utilisateur sans droits qui fait tourner le panel (entrypoint.sh : le conteneur démarre en root
+# le temps de lui donner ses dossiers, puis le panel tourne sous ce compte). Le code reste à root.
+# uid et gid fixes à 1000 : un gid « système » attribué au hasard (999…) tombe sur un groupe de
+# l'hôte (systemd-journal sous Debian) pour les fichiers des dossiers montés.
+RUN groupadd --gid 1000 panel && \
+    useradd --uid 1000 --gid 1000 --home-dir /home/panel --create-home \
+        --shell /usr/sbin/nologin panel && \
+    mkdir -p /panel/data /panel/logs /aceserver/configs && \
+    chown panel:panel /panel/data /panel/logs && \
     echo "${GIT_HASH}" > /panel/.git_hash && \
     pybabel compile -d /panel/translations && \
     chmod +x /panel/entrypoint.sh
