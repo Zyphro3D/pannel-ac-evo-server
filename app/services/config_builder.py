@@ -77,14 +77,23 @@ def custom_penalties(race: dict) -> dict:
     }
 
 
+def _results_url_for(server_id: int) -> str:
+    from app.services.server_config import _results_post_url   # import local : évite une boucle
+    return _results_post_url(server_id)
+
+
 def build_launch_args(config: dict,
                       tcp_listener: int | None = None,
                       udp_listener: int | None = None,
-                      server_name:  str | None = None) -> tuple[str, str]:
+                      server_name:  str | None = None,
+                      server_id:    int | None = None) -> tuple[str, str]:
     """Build launch args from config.
     tcp_listener / udp_listener override the external port announced to Kunos
     while the internal bind port stays at TcpPort/UdpPort (always 9700 in Docker).
     server_name overrides the in-game server name for multi-server setups.
+    server_id : l'URL de résultats est refaite pour CE serveur. La config de la
+    bibliothèque peut porter un « ?server_id=1 » figé (configs créées avant le
+    multi-serveur) : sans ça, le serveur 2 envoyait ses résultats au nom du serveur 1.
     """
     server   = config["Server"]
     event    = config["Event"]
@@ -130,7 +139,7 @@ def build_launch_args(config: dict,
         "tuning_type": server.get("SelectedTuningTypeValue", "TuningAllowed"),
         "entry_list_path": entry_list_path,
         "results_path": server.get("ResultsPath", ""),
-        "results_post_url": server.get("ResultsPostUrl", ""),
+        "results_post_url": _results_url_for(server_id) if server_id else server.get("ResultsPostUrl", ""),
     }
 
     # ── seasondefinition ─────────────────────────────────────────────────────

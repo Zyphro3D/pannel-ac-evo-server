@@ -454,12 +454,14 @@ def _rotation_load_and_build(next_cfg: str, configs_dir: Path, server_id: int):
         with _db_context():
             _srv = _db.session.get(_Server, server_id)
             _deploy_config(next_cfg, server_id)
-        sc_b64, sd_b64 = config_builder.build_launch_args(
-            cfg_data,
-            tcp_listener=_srv.tcp_port if _srv else None,
-            udp_listener=_srv.udp_port if _srv else None,
-            server_name=_srv.name     if _srv else None,
-        )
+            # Dans le contexte de l'appli : l'URL de résultats y reçoit son jeton sig.
+            sc_b64, sd_b64 = config_builder.build_launch_args(
+                cfg_data,
+                tcp_listener=_srv.tcp_port if _srv else None,
+                udp_listener=_srv.udp_port if _srv else None,
+                server_name=_srv.name     if _srv else None,
+                server_id=server_id,
+            )
     except Exception as e:
         log.error("Rotation: build_launch_args failed for %r: %s", next_cfg, e)
         return None

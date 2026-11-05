@@ -101,7 +101,8 @@ def _launch_event(app, event, db):
         cfg["Server"]["AdminPassword"] = os.environ.get("SERVER_ADMIN_PASSWORD", "").strip()
 
         sc_b64, sd_b64 = build_launch_args(
-            cfg, tcp_listener=server.tcp_port, udp_listener=server.udp_port, server_name=server.name)
+            cfg, tcp_listener=server.tcp_port, udp_listener=server.udp_port, server_name=server.name,
+            server_id=server_id)
 
         result = start_server(sc_b64, sd_b64, config_name, auto_restart=True, server_id=server_id,
                               http_port=server.http_port)

@@ -151,7 +151,8 @@ def _do_start(auto_restart: bool = False, server_id: int = 1) -> dict:
     deploy_config(get_active_config_name(), server_id)
 
     serverconfig_b64, seasondefinition_b64 = config_builder.build_launch_args(
-        config, tcp_listener=tcp_port, udp_listener=udp_port, server_name=server_name)
+        config, tcp_listener=tcp_port, udp_listener=udp_port, server_name=server_name,
+        server_id=server_id)
     result = start_server(serverconfig_b64, seasondefinition_b64, get_active_config_name(),
                           auto_restart=auto_restart, server_id=server_id, http_port=server.http_port)
 
@@ -537,6 +538,7 @@ def rotation_start():
         tcp_listener=_rot_start_srv.tcp_port if _rot_start_srv else None,
         udp_listener=_rot_start_srv.udp_port if _rot_start_srv else None,
         server_name=_rot_start_srv.name     if _rot_start_srv else None,
+        server_id=sid,
     )
     result  = start_server(sc, sd, first_cfg, auto_restart=False, server_id=sid,
                            http_port=_rot_start_srv.http_port if _rot_start_srv else None)

@@ -24,6 +24,10 @@
 - Configurations : la config en ligne se repère d'un coup d'œil (badge vert avec un point qui clignote, liseré vert sur la carte) ; « Prêt » passe en contour discret.
 - Direct, commandes admin : le « #0 » n'est plus affiché devant le pseudo, et un pilote qui partage son numéro avec un autre n'est plus proposé (la commande pourrait viser le mauvais pilote). Une phrase explique pourquoi, et renvoie vers Accès et sanctions pour bannir.
 
+**Corrections**
+
+- Multi-serveur : un serveur autre que le n°1 pouvait envoyer ses résultats au nom du serveur 1 (config créée avant le multi-serveur). Ses résultats étaient rangés sous le mauvais serveur et pouvaient faire tourner le roulement du serveur 1. L'adresse de résultats est maintenant refaite pour le serveur lancé, à chaque démarrage.
+
 ### v2.5.1 — 29/10/2026
 
 - Plus d'avertissement « variables de l'image illisibles » dans le journal du panel au démarrage.
