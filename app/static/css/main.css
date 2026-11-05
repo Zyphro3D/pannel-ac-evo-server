@@ -2625,7 +2625,27 @@ body::before {
   font-size: 1rem;
   font-weight: 800;
   text-transform: uppercase;
+  white-space: nowrap;
 }
+/* Config en ligne : vert plein + point qui pulse + liseré vert sur la carte, pour la
+   repérer d'un coup d'œil ; « Prêt » passe en contour discret. #047857 garde un
+   contraste ≥ 4.5:1 avec le texte blanc dans les deux thèmes. */
+.srv-config-card.running { border-color: rgb(4 120 87 / 0.75); box-shadow: inset 3px 0 0 #047857; }
+.srv-config-title span.badge-running {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: #047857;
+}
+.srv-config-title span.badge-running::before {
+  content: ""; width: 8px; height: 8px; border-radius: 50%;
+  background: #fff; animation: srv-live-pulse 1.6s ease-in-out infinite;
+}
+.srv-config-title span.badge-deployed {
+  color: var(--dim);
+  background: transparent;
+  box-shadow: inset 0 0 0 1px rgb(var(--fg-rgb) / 0.28);
+}
+@keyframes srv-live-pulse { 50% { opacity: 0.35; } }
+@media (prefers-reduced-motion: reduce) { .srv-config-title span.badge-running::before { animation: none; } }
 .srv-config-body p {
   margin: 4px 0 14px;
   color: var(--dim);

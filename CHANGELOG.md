@@ -21,6 +21,7 @@
 - Mon compte et Déconnexion passent dans un menu 👤.
 - Roulement : le nom du serveur concerné s'affiche dans le titre, et une file vide est expliquée (chaque serveur a la sienne).
 - Réglages du serveur : chaque carte indique si elle vaut pour **ce serveur seulement** ou pour **tous les serveurs**.
+- Configurations : la config en ligne se repère d'un coup d'œil (badge vert avec un point qui clignote, liseré vert sur la carte) ; « Prêt » passe en contour discret.
 - Direct, commandes admin : le « #0 » n'est plus affiché devant le pseudo, et un pilote qui partage son numéro avec un autre n'est plus proposé (la commande pourrait viser le mauvais pilote). Une phrase explique pourquoi, et renvoie vers Accès et sanctions pour bannir.
 
 ### v2.5.1 — 29/10/2026
