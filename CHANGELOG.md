@@ -1,6 +1,6 @@
 # Changelog
 
-### À venir (non publié)
+### v2.6.0 — 12/11/2026
 
 **Sécurité : le panel ne tourne plus en root**
 

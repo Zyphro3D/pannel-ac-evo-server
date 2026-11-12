@@ -115,6 +115,7 @@ Public ⊂ Pilote ⊂ Admin ⊂ Superadmin.
 - **Championnats** : points cumulés sur plusieurs courses (barème libre, bonus pole / meilleur tour, pires manches retirées, participation minimale), publics ou privés
 - **Carte des accrochages** : le plan du circuit et une voiture en 3D, reliés — chaque impact (mur, voiture, objet) s'affiche à l'endroit de la piste et de la voiture où il a eu lieu, avec sa vitesse, ses dégâts et les pilotes concernés ; filtres, vue densité (37 circuits calés)
 - **Contacts en direct** sur le timing (option) : qui vient de toucher qui, un mur ou un objet
+- **Direction de course** (admins, avec « Contacts en direct ») : tous les contacts de la session avec l'heure et le tour, bilan par pilote, pilotes « à surveiller » à partir de 3 contacts ; résumé optionnel sur Discord, un message par minute
 - Exports CSV : classement d'une session, fair-play, championnats
 - Inscription pilote (validation manuelle ensuite par un admin), confirmation d'email optionnelle
 - Interface multilingue : FR / EN / ES / DE / IT
@@ -155,6 +156,7 @@ Public ⊂ Pilote ⊂ Admin ⊂ Superadmin.
 - Upload des images véhicules/circuits
 
 **🔒 Sécurité**
+- **Panel sans root** : dans son conteneur, le panel tourne sous un compte sans droits (uid 1000) ; les installations existantes sont converties au premier démarrage
 - CSRF, rate limiting, protection anti brute-force sur le login (blocage IP après 5 échecs), HSTS, CSP, X-Frame-Options
 - **Double authentification (TOTP)** pour les comptes administrateurs : Google Authenticator, Aegis, 2FAS, Bitwarden… avec QR code, 10 codes de secours à usage unique, codes non rejouables
 - **Journal d'audit** de toutes les actions d'administration
@@ -315,6 +317,7 @@ Référence complète des variables `.env` (voir aussi `.env.example`) :
 | `RESULTS_INGEST_SECRET` | Secret HMAC du webhook résultats (`/api/results/ingest`). Facultatif : le serveur de jeu s'authentifie déjà par le jeton `sig` de l'URL que le panel lui donne, ou par le réseau interne (Docker / localhost) ; toute requête passée par un reverse proxy est refusée | — |
 | `TRUSTED_PROXIES` | Reverse proxys autorisés à indiquer l'IP réelle du visiteur (adresses ou réseaux CIDR, séparés par des virgules). **Derrière Caddy/nginx/Cloudflare**, indiquer l'adresse du proxy vue par le panel : sans cela, limite de débit et anti-brute-force du login sont partagés par tous les visiteurs. Panel exposé directement : laisser vide | — |
 | `BACKUP_AUTO` / `BACKUP_KEEP` | Sauvegarde automatique quotidienne du panel (base, réglages, configurations, images) et nombre de sauvegardes automatiques conservées | `true` / `7` |
+| `PANEL_RUN_AS_ROOT` | `1` = le panel reste en root dans son conteneur, comme avant la 2.6.0 (à réserver aux montages que le compte `panel` ne peut pas lire) | — |
 | `AUDIT_RETENTION_DAYS` | Durée de conservation du journal d'audit, en jours | `365` |
 | `RATING_ENFORCE` / `RATING_MIN_TO_JOIN` / `RATING_MIN_RACES` | Refus des pilotes définitifs dont l'ELO est sous le seuil (liste noire du serveur de jeu, nécessite le contrôle d'accès) ; réglé depuis la page Accès | `false` / `0` / `5` |
 | `LIVE_COLLISIONS` | Affiche les derniers contacts sur le timing : lance le serveur de jeu avec `-log_debug gameplay` (une douzaine de lignes de log par session) ; pris en compte au prochain démarrage du serveur de jeu | `false` |
@@ -365,6 +368,7 @@ Le bot TCP se connecte au serveur ACE EVO pour envoyer des messages de bienvenue
 | `DISCORD_RACE_WEBHOOK_URL` | Webhook course — fallback sur le principal si vide |
 | `DISCORD_INVITE_URL` | Lien d'invitation affiché sur la page d'accueil |
 | `DISCORD_NOTIFY_SESSION_SUMMARY` | Récapitulatif de fin de session sur le webhook course (podium, meilleur tour, incidents, sanctions) | `false` |
+| `DISCORD_NOTIFY_CONTACTS` | Contacts avec dégâts sur le webhook course, regroupés en un message par minute (demande « Contacts en direct ») | `false` |
 
 ### Emails *(optionnel)*
 
