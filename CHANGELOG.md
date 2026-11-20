@@ -1,5 +1,11 @@
 # Changelog
 
+### À venir (non publié)
+
+**Corrections**
+
+- Multi-serveur : après un redémarrage de la machine, un serveur relancé automatiquement pouvait encore envoyer ses résultats au nom du serveur 1, tant qu'il n'avait pas été relancé depuis le panel. L'adresse de résultats est maintenant refaite aussi lors de cette reprise.
+
 ### v2.6.0 — 12/11/2026
 
 **Sécurité : le panel ne tourne plus en root**

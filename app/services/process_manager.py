@@ -872,6 +872,30 @@ def _docker_time(value: str) -> float | None:
     return t.timestamp() if t.year > 2000 else None   # « 0001-01-01 » = container jamais arrêté
 
 
+def _refresh_launch_results_url(server_id: int) -> bool:
+    """Refait l'URL de résultats du fichier de lancement pour CE serveur.
+
+    La reprise rejoue le fichier de lancement tel quel : écrit par une version d'avant le
+    correctif multi-serveur, il peut porter un « ?server_id=1 » figé ou une URL sans jeton,
+    et le serveur 2 enverrait ses résultats au nom du serveur 1 jusqu'à la prochaine relance
+    depuis le panel. Retourne True si le fichier a été réécrit."""
+    from app.services.encoder import decode_config, encode_serverconfig
+    from app.services.server_config import _results_post_url
+    lcp = _launch_config_path(server_id)
+    if not lcp.exists():
+        return False
+    launch = json.loads(lcp.read_text(encoding="utf-8"))
+    cfg = decode_config(launch["serverconfig"])
+    with _db_context():        # dans le contexte de l'appli, l'URL reçoit son jeton sig
+        url = _results_post_url(server_id)
+    if cfg.get("results_post_url") == url:
+        return False
+    cfg["results_post_url"] = url
+    launch["serverconfig"] = encode_serverconfig(cfg)
+    _atomic_write(lcp, json.dumps(launch))
+    return True
+
+
 def _resume_after_host_reboot(server_id: int) -> bool:
     """Relance un serveur de jeu arrêté par un redémarrage de la machine.
 
@@ -892,6 +916,10 @@ def _resume_after_host_reboot(server_id: int) -> bool:
     if boot is None or finished is None or not (boot - 5 <= finished <= boot + _REBOOT_EXIT_MARGIN):
         return False
     log.warning("Reprise : serveur %d arrêté par le redémarrage de la machine, relance", server_id)
+    try:
+        _refresh_launch_results_url(server_id)
+    except Exception as e:     # l'URL est un confort : la relance du serveur passe avant
+        log.warning("Reprise : URL de résultats non refaite (server=%d) : %s", server_id, e)
     container.start()
     return True
 
