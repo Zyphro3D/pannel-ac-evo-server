@@ -98,3 +98,30 @@ def test_url_deja_bonne_le_fichier_n_est_pas_reecrit(tmp_path, monkeypatch):
     lcp = _launch_file(tmp_path, monkeypatch, url)
     avant = lcp.read_text()
     assert not pm._refresh_launch_results_url(2) and lcp.read_text() == avant
+
+
+def test_reprise_dans_l_appli_l_url_refaite_porte_le_jeton(tmp_path, monkeypatch, admin_client):
+    """Sur une vraie config de lancement, dans l'appli : jeton présent, tout le reste intact."""
+    import copy
+    import json
+    from app.services import config_builder as cb
+    from app.services.encoder import decode_config
+    from app.services.netutil import ingest_token
+    from app.services.server_config import _default_config
+    app = admin_client.app
+    cfg = copy.deepcopy(_default_config())
+    cfg["Server"]["ResultsPostUrl"] = "http://panel:4300/api/results/ingest?server_id=1"
+    sc, sd = cb.build_launch_args(cfg)             # sans server_id : l'URL figée, comme avant la 2.6.0
+    monkeypatch.setenv("ACESERVER_DIR", str(tmp_path))
+    lcp = pm._launch_config_path(2)
+    lcp.write_text(json.dumps({"serverconfig": sc, "seasondefinition": sd}))
+    monkeypatch.setattr(pm, "_app", app)           # comme après init_watchdog(app=app)
+    assert pm._refresh_launch_results_url(2)
+    with app.app_context():
+        attendu = ingest_token(2)
+    avant, apres = decode_config(sc), _read_launch(lcp)[1]
+    assert apres["results_post_url"].endswith(f"server_id=2&sig={attendu}")
+    assert list(avant) == list(apres)
+    assert {k: v for k, v in avant.items() if k != "results_post_url"} == \
+           {k: v for k, v in apres.items() if k != "results_post_url"}
+    assert _read_launch(lcp)[0]["seasondefinition"] == sd

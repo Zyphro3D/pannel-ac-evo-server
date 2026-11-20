@@ -1,6 +1,6 @@
 # Changelog
 
-### À venir (non publié)
+### v2.6.1 — 20/11/2026
 
 **Corrections**
 
