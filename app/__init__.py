@@ -408,7 +408,10 @@ def _register_jinja(app):
 
     @app.route("/media/<path:filename>")
     def serve_media(filename):
-        return send_from_directory(str(_media_dir), filename)
+        # Médias du panneau (voitures, circuits) : fixes entre deux versions, gardés 7 jours par le navigateur et Cloudflare
+        # (Lighthouse 23/11/2026 : ~1 Mo rechargé à chaque visite avec les 4 h par défaut). Une image changée garde son ancien
+        # aspect au plus 7 jours : seulement cosmétique.
+        return send_from_directory(str(_media_dir), filename, max_age=7 * 24 * 3600)
 
     @app.route("/favicon.ico")
     def favicon():
