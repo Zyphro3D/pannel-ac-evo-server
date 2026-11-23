@@ -1,5 +1,11 @@
 # Changelog
 
+### v2.6.2 — 23/11/2026
+
+**Performances**
+
+- Pages plus légères : les photos des circuits sont recompressées (5,7 Mo → 2,7 Mo, même taille d'affichage) et les images du panel (voitures, circuits) restent désormais 7 jours dans le cache du navigateur au lieu d'être rechargées à chaque visite.
+
 ### v2.6.1 — 20/11/2026
 
 **Corrections**
