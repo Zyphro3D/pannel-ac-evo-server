@@ -1,5 +1,12 @@
 # Changelog
 
+### v2.7.2 — 24/11/2026
+
+**Corrections**
+
+- Avec un nom de bot réglé (ACE_BOT_NAME), le bot renvoyait son nom en boucle au serveur de jeu, une centaine de fois par seconde. Le nom part désormais une seule fois par connexion.
+- Les réglages du bot (nom, délai d'accueil, messages, liens Discord et site) s'appliquent dès l'enregistrement, sans redémarrer le panel. Un nouveau nom est pris en compte tout de suite ; un nom vidé, à la reconnexion suivante du bot.
+
 ### v2.7.1 — 24/11/2026
 
 **Corrections**

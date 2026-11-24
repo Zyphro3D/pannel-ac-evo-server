@@ -354,7 +354,13 @@ def _on_handshake(payload: bytes, server_id: int):
 
 
 def _on_udp_associated(server_id: int):
+    """Le serveur renvoie AssociateUDPSocketResponse en réponse à chaque RequestPlayerCar :
+    le nom ne part qu'une fois par connexion, sinon les deux messages tournent en boucle
+    (~100 par seconde, vu en prod le 24/11/2026 en v2.7.0/2.7.1)."""
     c = _get_client(server_id)
+    if c.get("assoc_gen") == c["conn_gen"]:
+        return
+    c["assoc_gen"] = c["conn_gen"]
     log.info("ace_tcp_client: canal UDP associé, direct actif (server=%d)", server_id)
     if c["bot_name"]:
         with c["lock"]:
@@ -1397,6 +1403,33 @@ def start_for_server(srv, cfg: dict):
         container_name = srv.container_name,
         server_id      = srv.id,
     )
+
+
+def apply_bot_settings(cfg) -> None:
+    """Applique aux bots en marche les réglages enregistrés dans Paramètres (messages, délai,
+    nom), sans redémarrer le panel. Un nouveau nom part tout de suite sur une connexion déjà
+    associée ; un nom vidé ne s'efface qu'à la reconnexion suivante (le serveur garde le dernier)."""
+    for server_id, c in list(_clients.items()):
+        if not c["running"]:
+            continue
+        c["welcome_discord"] = cfg.get("DISCORD_INVITE_URL", "")
+        c["welcome_site"]    = cfg.get("PANEL_URL", "")
+        c["msg_welcome"]     = cfg.get("ACE_BOT_MSG_WELCOME", DEFAULT_BOT_MSG_WELCOME)
+        c["msg_discord"]     = cfg.get("ACE_BOT_MSG_DISCORD", DEFAULT_BOT_MSG_DISCORD)
+        c["msg_site"]        = cfg.get("ACE_BOT_MSG_SITE",    DEFAULT_BOT_MSG_SITE)
+        c["welcome_delay"]   = _int_or(cfg.get("ACE_BOT_WELCOME_DELAY"), DEFAULT_BOT_WELCOME_DELAY)
+        name = (cfg.get("ACE_BOT_NAME", "") or "").strip()[:40]
+        if name == c["bot_name"]:
+            continue
+        c["bot_name"] = name
+        with c["lock"]:
+            sock = c["sock"]
+        if name and sock is not None and c.get("assoc_gen") == c["conn_gen"]:
+            try:
+                sock.sendall(_build_request_car(name))
+                log.info("ace_tcp_client: nouveau nom du bot envoyé (server=%d)", server_id)
+            except OSError as e:
+                log.warning("ace_tcp_client: envoi du nom du bot impossible : %s", e)
 
 
 def stop(server_id: int = 1):

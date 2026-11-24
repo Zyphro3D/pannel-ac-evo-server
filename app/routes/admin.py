@@ -956,6 +956,9 @@ def settings():
                 if _k not in _APPCONFIG_RESERVED_KEYS:
                     current_app.config[_k] = (_v.lower() == "true") if _k in _SETTINGS_BOOL_KEYS else _v
         _audit.record("settings.save", target=tab, detail={"changed": _changed})
+        if any(_k.startswith("ACE_BOT_") or _k in ("DISCORD_INVITE_URL", "PANEL_URL") for _k in _changed):
+            from app.services import ace_tcp_client
+            ace_tcp_client.apply_bot_settings(current_app.config)   # sans redémarrer le panel
         if is_htmx():
             return _toast("success", _("Paramètres sauvegardés"))
         flash(_("Paramètres sauvegardés"), "success")

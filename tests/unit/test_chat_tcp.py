@@ -121,3 +121,40 @@ def test_handshake_starts_udp_with_connection_id(client, monkeypatch):
     payload = tcp._field_varint(1, 1) + tcp._field_varint(4, 699)
     tcp._handle_message("ConnectToServerHandshakeResponse", payload, sid)
     assert started == [(sid, 699, c["conn_gen"])]
+
+
+def test_bot_name_sent_once_per_connection(client):
+    """Le serveur répond à chaque RequestPlayerCar par un AssociateUDPSocketResponse :
+    renvoyer le nom à chaque fois faisait tourner les deux messages en boucle."""
+    sid, c = client
+    sent = []
+
+    class FakeSock:
+        def sendall(self, data):
+            sent.append(data)
+
+    c["sock"], c["bot_name"], c["conn_gen"] = FakeSock(), "Zyphro", 5
+    for _ in range(3):
+        tcp._handle_message("AssociateUDPSocketResponse", tcp._field_varint(1, 1), sid)
+    assert len(sent) == 1
+    c["conn_gen"] = 7     # nouvelle connexion : le nom repart une fois
+    tcp._handle_message("AssociateUDPSocketResponse", tcp._field_varint(1, 1), sid)
+    assert len(sent) == 2
+
+
+def test_saved_settings_reach_running_bot(client):
+    sid, c = client
+    sent = []
+
+    class FakeSock:
+        def sendall(self, data):
+            sent.append(data)
+
+    c.update(running=True, sock=FakeSock(), conn_gen=3, assoc_gen=3)
+    cfg = {"ACE_BOT_NAME": "Zyphro - Admin", "ACE_BOT_WELCOME_DELAY": "30",
+           "ACE_BOT_MSG_WELCOME": "Welcome {name}!"}
+    tcp.apply_bot_settings(cfg)
+    assert (c["bot_name"], c["welcome_delay"], c["msg_welcome"]) == ("Zyphro - Admin", 30, "Welcome {name}!")
+    assert len(sent) == 1 and b"Zyphro - Admin" in sent[0]
+    tcp.apply_bot_settings(cfg)          # même nom : rien n'est renvoyé
+    assert len(sent) == 1
