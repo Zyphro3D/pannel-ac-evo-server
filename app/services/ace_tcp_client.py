@@ -4,9 +4,20 @@ Protocole : [uint16_LE: total_len-2][0x00][0x02][uint8: name_len][name][protobuf
 
 Messages pris en charge :
   C2S  ClientConnectionRequest  — handshake initial
+  C2S  RequestPlayerCar         — déclare le nom affiché du bot dans le tchat (driver_info)
   C2S  MultiplayerChatMessage   — envoi d'un message dans le tchat du jeu
+  S2C  ConnectToServerHandshakeResponse — champ 4 = numéro de connexion (sert à l'association UDP)
+  S2C  AssociateUDPSocketResponse — le canal UDP est associé : le direct commence
+  S2C  MultiplayerChatMessage   — tchat des joueurs et réponses du serveur aux commandes admin
   S2C  BroadcastStateMessage    — état courant (PlatformRaceLeaderboard, etc.)
   S2C  SplitFromRemoteMessage   — passage de secteur
+
+Depuis le serveur 0.9.0, le direct (tchat compris) n'est envoyé qu'aux clients qui ont associé
+un canal UDP à leur connexion TCP, comme le fait le jeu (relevé par capture réseau le 24/11/2026) :
+  C2S UDP  09 00 <numéro de connexion uint16 LE> + 14 zéros  — association
+  S2C UDP  03 00 <8 octets> …                                 — ping du serveur
+  C2S UDP  04 00 <les 8 octets reçus> <double : heure locale> — réponse au ping
+La connexion TCP est entretenue par des cadres vides (00 00), comme le jeu.
 """
 import collections
 import glob
@@ -19,7 +30,8 @@ import threading
 import time
 import logging
 
-from config import DEFAULT_BOT_MSG_WELCOME, DEFAULT_BOT_MSG_DISCORD, DEFAULT_BOT_MSG_SITE
+from config import (DEFAULT_BOT_MSG_WELCOME, DEFAULT_BOT_MSG_DISCORD, DEFAULT_BOT_MSG_SITE,
+                    DEFAULT_BOT_WELCOME_DELAY)
 
 log = logging.getLogger(__name__)
 
@@ -63,6 +75,12 @@ def _get_client(server_id: int) -> dict:
                 "recently_disconnected": {},
                 "race_state":            {"server_best_ms": None},
                 "chat_buffer":           collections.deque(maxlen=50),
+                "chat_seq":              0,       # numéro du dernier message (pour ?since=)
+                "chat_loaded":           False,   # historique rechargé depuis la base
+                "pending_chat":          collections.deque(maxlen=20),  # envois en attente de reconnexion
+                "bot_name":              "",
+                "welcome_delay":         DEFAULT_BOT_WELCOME_DELAY,
+                "conn_gen":              0,       # change à chaque connexion : arrête l'ancien fil UDP
                 "welcome_discord":       "",
                 "welcome_site":          "",
                 "deploy_mode":           "native",
@@ -195,6 +213,17 @@ def _build_connection_request(c: dict, cfg: dict | None = None) -> bytes:
     return _wrap('ClientConnectionRequest', payload)
 
 
+def _build_request_car(name: str) -> bytes:
+    """RequestPlayerCar réduit au nom du pilote (driver_info : 1 = prénom, 2 = nom).
+    Le serveur affiche ce nom comme expéditeur des messages du bot (sinon « LoadingPlayer »).
+    Testé le 24/11/2026 : aucune voiture visible en piste, mais le bot occupe une place de stand."""
+    return _wrap('RequestPlayerCar', _field_bytes(2, _field_str(1, name)))
+
+
+def _build_udp_associate(conn_id: int) -> bytes:
+    return b'\x09\x00' + struct.pack('<H', conn_id & 0xFFFF) + bytes(14)
+
+
 def _build_chat(text: str) -> bytes:
     ts_ns = int(time.time() * 1_000_000_000)
     payload = _field_varint(2, ts_ns) + _field_str(4, text)
@@ -294,46 +323,103 @@ def _parse_split(payload: bytes, server_id: int):
 
 
 def _handle_message(name: str, payload: bytes, server_id: int):
-    if name == 'BroadcastStateMessage':
+    if name == 'ConnectToServerHandshakeResponse':
+        _on_handshake(payload, server_id)
+    elif name == 'AssociateUDPSocketResponse':
+        _on_udp_associated(server_id)
+    elif name == 'MultiplayerChatMessage':
+        _on_chat_tcp(payload, server_id)
+    elif name == 'BroadcastStateMessage':
         _parse_broadcast(payload, server_id)
     elif name == 'SplitFromRemoteMessage':
         _parse_split(payload, server_id)
     else:
-        # Diagnostic : utile pour repérer un futur type de message non géré (ex. si
-        # le tchat repasse un jour par ce canal — voir CHANGELOG, plus aucune trace
-        # de tchat ni en log texte ni en TCP depuis la mise à jour 0.9.0 du serveur).
+        # Diagnostic : utile pour repérer un futur type de message non géré.
         log.debug("ace_tcp_client: message TCP non géré reçu : %r (server=%d, %d octets)",
                   name, server_id, len(payload))
 
 
 # ── Boucle de réception ───────────────────────────────────────────────────────
 
-def _recv_loop(sock: socket.socket, server_id: int, keepalive_payload: bytes | None = None):
-    """Boucle de réception. ACE EVO Server déconnecte le bot après ~60s sans trafic reçu
-    ("software timeout") — ce client minimal n'envoyant jamais rien après le handshake
-    initial. En l'absence de tout message serveur pendant KEEPALIVE_S secondes, on
-    renvoie la requête de connexion d'origine (message déjà accepté par le serveur,
-    sans effet de bord visible côté jeu) pour faire office de heartbeat et éviter la
-    coupure. Voir CHANGELOG v1.9.4."""
+def _on_handshake(payload: bytes, server_id: int):
+    """Réponse de connexion : champ 4 = numéro de connexion → association du canal UDP."""
+    c = _get_client(server_id)
+    conn_id = _parse_proto(payload).get(4, [None])[0]
+    if not isinstance(conn_id, int):
+        log.warning("ace_tcp_client: réponse de connexion sans numéro de connexion (server=%d)", server_id)
+        return
+    gen = c["conn_gen"]
+    threading.Thread(target=_udp_loop, args=(server_id, conn_id, gen), daemon=True,
+                     name=f"ace-udp-{server_id}").start()
+
+
+def _on_udp_associated(server_id: int):
+    c = _get_client(server_id)
+    log.info("ace_tcp_client: canal UDP associé, direct actif (server=%d)", server_id)
+    if c["bot_name"]:
+        with c["lock"]:
+            sock = c["sock"]
+        if sock is not None:
+            try:
+                sock.sendall(_build_request_car(c["bot_name"]))
+            except OSError as e:
+                log.warning("ace_tcp_client: envoi du nom du bot impossible : %s", e)
+
+
+def _udp_loop(server_id: int, conn_id: int, gen: int):
+    """Associe un canal UDP à la connexion et répond aux pings du serveur, tant que la
+    connexion TCP de la même génération vit. Sans ce canal, le serveur n'envoie ni tchat ni
+    état de course au bot."""
+    c = _get_client(server_id)
+    addr = (c["host"], c["port"])   # le jeu utilise le même port en TCP et en UDP
+    u = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    u.settimeout(1.0)
+    try:
+        u.sendto(_build_udp_associate(conn_id), addr)
+        last_assoc = time.time()
+        while c["running"] and c["conn_gen"] == gen:
+            try:
+                pkt, _ = u.recvfrom(4096)
+            except socket.timeout:
+                # Association perdue (paquet UDP égaré) : on la renvoie tant que rien n'arrive.
+                if time.time() - last_assoc > 5:
+                    u.sendto(_build_udp_associate(conn_id), addr)
+                    last_assoc = time.time()
+                continue
+            last_assoc = time.time()
+            if pkt[:2] == b'\x03\x00' and len(pkt) >= 10:
+                u.sendto(b'\x04\x00' + pkt[2:10] + struct.pack('<d', time.time()), addr)
+    except OSError as e:
+        log.debug("ace_tcp_client: canal UDP fermé (server=%d) : %s", server_id, e)
+    finally:
+        u.close()
+
+
+def _recv_loop(sock: socket.socket, server_id: int):
+    """Boucle de réception. Le serveur coupe un client silencieux (~60 s, « software
+    timeout ») : comme le jeu, on envoie un cadre vide (00 00) après chaque seconde sans
+    trafic reçu. L'ancien battement (renvoi du ClientConnectionRequest toutes les 20 s)
+    ouvrait une nouvelle connexion côté serveur à chaque fois et effaçait le statut admin."""
     c = _get_client(server_id)
     buf = b''
-    KEEPALIVE_S = 20.0
-    sock.settimeout(KEEPALIVE_S)
+    sock.settimeout(1.0)
     while c["running"]:
         try:
-            chunk = sock.recv(8192)
+            chunk = sock.recv(65536)
             if not chunk:
                 break
             buf += chunk
-            while len(buf) >= 5:
-                if len(buf) < 4:
-                    break
-                total_minus_2 = struct.unpack_from('<H', buf, 0)[0]
-                marker        = struct.unpack_from('<H', buf, 2)[0]
+            while len(buf) >= 2:
+                total_len = struct.unpack_from('<H', buf, 0)[0] + 2
+                if total_len < 5:            # cadre vide (battement)
+                    if len(buf) < total_len:
+                        break
+                    buf = buf[total_len:]
+                    continue
+                marker = struct.unpack_from('<H', buf, 2)[0]
                 if marker != 0x0002:
                     buf = buf[1:]  # resync
                     continue
-                total_len = total_minus_2 + 2
                 if len(buf) < total_len:
                     break
                 name_len = buf[4]
@@ -345,11 +431,8 @@ def _recv_loop(sock: socket.socket, server_id: int, keepalive_payload: bytes | N
                 except Exception as e:
                     log.debug("handle_message %s error: %s", name, e)
         except socket.timeout:
-            if keepalive_payload is None:
-                continue
             try:
-                sock.sendall(keepalive_payload)
-                log.debug("ace_tcp_client: keepalive envoyé (server=%d)", server_id)
+                sock.sendall(b'\x00\x00')
             except OSError:
                 break
         except OSError:
@@ -376,11 +459,10 @@ def _connect_loop(server_id: int):
             with c["lock"]:
                 c["sock"]      = sock
                 c["connected"] = True
+                c["conn_gen"] += 1
             # S'élève admin dès la connexion si configuré (même config déjà lue ci-dessus),
-            # ou si une élévation manuelle a déjà été demandée sur ce serveur — le serveur de
-            # jeu déconnecte le bot toutes les ~60s ("software timeout", aucun keepalive
-            # envoyé par ce client minimal), et chaque reconnexion repart sans droits admin :
-            # sans ce re-envoi automatique, l'élévation manuelle ne "tenait" qu'une minute.
+            # ou si une élévation manuelle a déjà été demandée sur ce serveur : chaque
+            # reconnexion repart sans droits admin.
             _pwd = _get_admin_password(_active_cfg)
             if not _pwd and c.get("manual_admin") and _active_cfg:
                 _pwd = _active_cfg.get("Server", {}).get("AdminPassword", "")
@@ -389,13 +471,15 @@ def _connect_loop(server_id: int):
                 send_chat(f"\\admin {_pwd}", server_id)
                 log.info("ace_tcp_client: élévation admin envoyée (server=%d)%s", server_id,
                           " [ré-élévation manuelle après reconnexion]" if c.get("manual_admin") else "")
-            _recv_loop(sock, server_id, keepalive_payload=_conn_req)
+            _flush_pending_chat(server_id)
+            _recv_loop(sock, server_id)
         except Exception as e:
             log.debug("ace_tcp_client: erreur connexion %s:%d — %s", c["host"], c["port"], e)
         finally:
             with c["lock"]:
                 c["sock"]      = None
                 c["connected"] = False
+                c["conn_gen"] += 1
             if sock:
                 try:
                     sock.close()
@@ -407,18 +491,137 @@ def _connect_loop(server_id: int):
 
 # ── API publique ──────────────────────────────────────────────────────────────
 
-def send_chat(text: str, server_id: int = 1) -> bool:
-    """Envoie un message dans le tchat du jeu. Retourne True si envoyé.
+# Le tchat du jeu n'a pas de police pour les emojis (carrés vides, testé le 24/11/2026) :
+# les plus courants deviennent un symbole qui s'affiche, les autres sont retirés.
+_EMOJI_TO_SYMBOL = {
+    "🏁": "★", "🏆": "★", "⭐": "★", "👍": "✓", "✅": "✓", "👏": "✓",
+    "❤": "♥", "💙": "♥", "💚": "♥", "🔥": "●", "💪": "♪", "🎉": "♪", "🎵": "♪", "⚡": "!!",
+}
+# Symboles hors Latin vérifiés en jeu ; ► et ☺ s'affichent en carrés.
+_SAFE_SYMBOLS = set("★✓♥●♪€…–—‘’“”•")
+
+
+def sanitize_game_text(text: str) -> str:
+    """Rend un texte affichable dans le tchat du jeu : emojis connus → symbole, reste retiré."""
+    out = []
+    for ch in text:
+        if ch in _EMOJI_TO_SYMBOL:
+            out.append(_EMOJI_TO_SYMBOL[ch])
+        elif ord(ch) < 0x2000 or ch in _SAFE_SYMBOLS:
+            out.append(ch)
+        # sinon : emoji, sélecteur de variante (U+FE0F), symbole sans glyphe → retiré
+    return re.sub(r" {2,}", " ", "".join(out)).strip()
+
+
+def _chat_add(c: dict, server_id: int, author: str, text: str, source: str, ts: str = "") -> None:
+    """Ajoute un message à l'historique (mémoire + base). source : player | panel | server.
+    Un même message reçu par deux voies (TCP et journal) en moins de 10 s n'est gardé qu'une fois."""
+    ts = ts or time.strftime("%H:%M:%S")
+    now = time.time()
+    with c["lb_lock"]:
+        for m in list(c["chat_buffer"])[-10:]:
+            if m["author"] == author and m["text"] == text and now - m.get("t", 0) < 10:
+                return
+        c["chat_seq"] = c.get("chat_seq", 0) + 1
+        c["chat_buffer"].append({"id": c["chat_seq"], "author": author, "text": text,
+                                 "ts": ts, "source": source, "t": now})
+    if _flask_app is None:
+        return
+    try:
+        with _flask_app.app_context():
+            from app.services.database import db
+            from app.models import ChatMessage
+            db.session.add(ChatMessage(server_id=server_id, author=author[:100],
+                                       text=text[:500], source=source, ts=ts))
+            db.session.commit()
+    except Exception:
+        log.exception("Échec persistance ChatMessage (server_id=%s)", server_id)
+
+
+def _load_chat_history(c: dict, server_id: int) -> None:
+    """Au premier appel après un redémarrage du panel, recharge les 50 derniers messages
+    de la base, et purge ceux de plus de 30 jours."""
+    if c.get("chat_loaded") or _flask_app is None:
+        return
+    c["chat_loaded"] = True
+    try:
+        import datetime as _dt
+        with _flask_app.app_context():
+            from app.services.database import db
+            from app.models import ChatMessage
+            limit = _dt.datetime.now(_dt.timezone.utc).replace(tzinfo=None) - _dt.timedelta(days=30)
+            ChatMessage.query.filter(ChatMessage.created_at < limit).delete()
+            db.session.commit()
+            rows = (ChatMessage.query.filter_by(server_id=server_id)
+                    .order_by(ChatMessage.id.desc()).limit(50).all())
+            with c["lb_lock"]:
+                old = list(c["chat_buffer"])
+                c["chat_buffer"].clear()
+                for r in reversed(rows):
+                    c["chat_seq"] = c.get("chat_seq", 0) + 1
+                    c["chat_buffer"].append({"id": c["chat_seq"], "author": r.author, "text": r.text,
+                                             "ts": r.ts or "", "source": r.source, "t": 0})
+                for m in old:     # messages arrivés avant le chargement
+                    c["chat_seq"] += 1
+                    c["chat_buffer"].append({**m, "id": c["chat_seq"]})
+    except Exception:
+        log.exception("Échec chargement de l'historique du tchat (server_id=%s)", server_id)
+
+
+def _on_chat_tcp(payload: bytes, server_id: int) -> None:
+    """Message de tchat relayé par le serveur (champ 3 = expéditeur, 4 = texte). Les réponses
+    du serveur aux commandes admin arrivent sous l'expéditeur « >> Server » : réservées aux admins."""
+    f = _parse_proto(payload)
+    author = f.get(3, [b""])[0]
+    text   = f.get(4, [b""])[0]
+    if not isinstance(author, bytes) or not isinstance(text, bytes):
+        return
+    author = author.decode("utf-8", errors="replace").strip()
+    text   = text.decode("utf-8", errors="replace").strip()
+    if not text:
+        return
+    c = _get_client(server_id)
+    if author.startswith(">>"):
+        _chat_add(c, server_id, author.lstrip("> ").strip() or "Server", text, "server")
+        return
+    if text.startswith("\\"):
+        return   # commande d'un joueur (\admin <mot de passe>…) : jamais dans l'historique public
+    _chat_add(c, server_id, author, text, "player")
+
+
+def _flush_pending_chat(server_id: int) -> None:
+    """Renvoie, juste après une reconnexion, les messages qui n'avaient pas pu partir
+    (au plus 2 minutes de retard ; au-delà, ils n'ont plus de sens dans le tchat)."""
+    c = _get_client(server_id)
+    while c["pending_chat"]:
+        text, queued_at = c["pending_chat"].popleft()
+        if time.time() - queued_at <= 120:
+            send_chat(text, server_id, queue=False)
+
+
+def send_chat(text: str, server_id: int = 1, queue: bool = True) -> bool:
+    """Envoie un message dans le tchat du jeu. Retourne True si envoyé (ou mis en attente).
 
     Les commandes serveur (préfixe « \\ », ex. \\admin, \\kick) ne sont jamais
     journalisées en clair ni ajoutées à l'historique de chat : ce dernier est
     exposé publiquement via /api/live/chat-history, et \\admin contient le mot
-    de passe admin du serveur de jeu."""
+    de passe admin du serveur de jeu. Elles ne sont jamais mises en attente non plus.
+
+    Un message ordinaire envoyé pendant une reconnexion du bot est mis en attente et
+    part dès la connexion suivante (queue=False pour l'interdire)."""
     c = _get_client(server_id)
     is_command = text.lstrip().startswith("\\")
+    if not is_command:
+        text = sanitize_game_text(text)
+        if not text:
+            return False
     with c["lock"]:
         sock = c["sock"]
     if sock is None:
+        if queue and not is_command:
+            c["pending_chat"].append((text, time.time()))
+            log.info("ace_tcp_client: bot déconnecté, message mis en attente : %r", text)
+            return True
         return False
     try:
         sock.sendall(_build_chat(text))
@@ -429,17 +632,19 @@ def send_chat(text: str, server_id: int = 1) -> bool:
         log.warning("ace_tcp_client: erreur envoi chat : %s", e)
         sent = False
     if sent and not is_command:
-        ts = time.strftime("%H:%M:%S")
-        with c["lb_lock"]:
-            c["chat_buffer"].append({"author": "Panel", "text": text, "ts": ts, "source": "panel"})
+        _chat_add(c, server_id, "Panel", text, "panel")
     return sent
 
 
-def get_chat_history(server_id: int = 1) -> list:
-    """Retourne l'historique récent du chat (messages joueurs + panel)."""
+def get_chat_history(server_id: int = 1, include_server: bool = False) -> list:
+    """Historique récent du tchat (joueurs + panel), du plus ancien au plus récent. Les réponses
+    du serveur aux commandes admin (source « server ») ne sont incluses que pour un admin."""
     c = _get_client(server_id)
+    _load_chat_history(c, server_id)
     with c["lb_lock"]:
-        return list(c["chat_buffer"])
+        msgs = list(c["chat_buffer"])
+    return [{k: v for k, v in m.items() if k != "t"} for m in msgs
+            if include_server or m["source"] != "server"]
 
 
 def is_connected(server_id: int = 1) -> bool:
@@ -571,7 +776,9 @@ def _get_admin_password(cfg: dict | None = None) -> str:
 
 def _send_welcome(name: str, server_id: int):
     c    = _get_client(server_id)
-    time.sleep(2)   # laisser le temps au joueur de charger
+    # Laisser au joueur le temps de charger et de sortir des menus : envoyé trop tôt,
+    # l'accueil défile avant qu'il ait le tchat sous les yeux (réglage ACE_BOT_WELCOME_DELAY).
+    time.sleep(max(0, c["welcome_delay"]))
     _fmt = {"name": name, "discord_url": c["welcome_discord"], "site_url": c["welcome_site"]}
     if c["msg_welcome"]:
         send_chat(c["msg_welcome"].format_map(_fmt), server_id)
@@ -863,13 +1070,14 @@ def _on_lap_invalid(m, c):
             c["leaderboard"][sid]["lap_invalid"] = True
 
 
-def _on_chat_log(m, line, c):
+def _on_chat_log(m, line, c, server_id: int = 1):
+    """Tchat lu dans le journal du serveur (formats d'avant 0.9.0) ; la voie normale est
+    désormais le TCP (_on_chat_tcp), les doublons entre les deux sont écartés par _chat_add."""
     ts_m = re.match(r'^\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})', line)
     ts   = ts_m.group(1)[11:] if ts_m else ""
     if m.group(3).lstrip().startswith("\\"):
         return   # commande serveur (\admin <mot de passe>…) : jamais dans l'historique public, comme send_chat
-    with c["lb_lock"]:
-        c["chat_buffer"].append({"author": m.group(1), "text": m.group(3), "ts": ts, "source": "player"})
+    _chat_add(c, server_id, m.group(1), m.group(3), "player", ts)
 
 
 def _on_session_reset(c, seen):
@@ -972,7 +1180,7 @@ def _process_log_line(line: str, seen: set, server_id: int):
 
     m = _RE_CHAT_LOG.search(line)
     if m:
-        _on_chat_log(m, line, c)
+        _on_chat_log(m, line, c, server_id)
         return
 
     m = _RE_PLAYERS_LOG.search(line)
@@ -1052,7 +1260,9 @@ def start(host: str, port: int, steam_id: str,
           container_name: str = "ace-server",
           on_event=None,
           server_id: int      = 1,
-          server_name: str    = ""):
+          server_name: str    = "",
+          bot_name: str       = "",
+          welcome_delay: int  = DEFAULT_BOT_WELCOME_DELAY):
     """Démarre le client TCP (+ tail de logs : tours, chat, connexions, bienvenue) en arrière-plan."""
     c = _get_client(server_id)
     c["host"]            = host
@@ -1069,6 +1279,8 @@ def start(host: str, port: int, steam_id: str,
     c["log_file"]        = log_file
     c["container_name"]  = container_name
     c["on_event"]        = on_event
+    c["bot_name"]        = bot_name.strip()[:40]
+    c["welcome_delay"]   = welcome_delay
     c["running"]         = True
 
     threading.Thread(target=_connect_loop, args=(server_id,),
@@ -1119,11 +1331,9 @@ def elevate_admin(server_id: int = 1) -> str | None:
 def send_admin_command(text: str, server_id: int = 1) -> tuple[bool, str | None]:
     """Envoie une commande admin in-game (« \\kick 12 »…) en ré-élevant le bot juste avant.
 
-    Pourquoi : le battement toutes les 20 s renvoie un ClientConnectionRequest, seul message
-    qui remet à zéro le délai d'inactivité du serveur (testé : ni le tchat ni les mises à jour
-    de voiture ne suffisent) ; or chaque ClientConnectionRequest efface le statut admin de la
-    connexion. Sans ré-élévation, une commande envoyée plus de ~20 s après la connexion était
-    refusée en silence. TCP garde l'ordre : le serveur traite \\admin avant la commande.
+    Pourquoi : le statut admin est perdu à chaque reconnexion du bot ; la ré-élévation juste
+    avant la commande garantit qu'elle passe. TCP garde l'ordre : le serveur traite \\admin
+    avant la commande.
 
     Retourne (envoyé, erreur). Sans mot de passe admin configuré, la commande part quand même
     (cas où le bot est déjà admin autrement) : le serveur tranchera."""
@@ -1135,6 +1345,13 @@ def send_admin_command(text: str, server_id: int = 1) -> tuple[bool, str | None]
     else:
         time.sleep(0.2)
     return send_chat(text, server_id), None
+
+
+def _int_or(value, default: int) -> int:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return default
 
 
 def start_for_server(srv, cfg: dict):
@@ -1162,6 +1379,8 @@ def start_for_server(srv, cfg: dict):
         msg_welcome    = cfg.get("ACE_BOT_MSG_WELCOME", DEFAULT_BOT_MSG_WELCOME),
         msg_discord    = cfg.get("ACE_BOT_MSG_DISCORD", DEFAULT_BOT_MSG_DISCORD),
         msg_site       = cfg.get("ACE_BOT_MSG_SITE",    DEFAULT_BOT_MSG_SITE),
+        bot_name       = cfg.get("ACE_BOT_NAME", ""),
+        welcome_delay  = _int_or(cfg.get("ACE_BOT_WELCOME_DELAY"), DEFAULT_BOT_WELCOME_DELAY),
         deploy_mode    = _DEPLOY_MODE,
         log_file       = str(_log_file(srv.id)),
         container_name = srv.container_name,

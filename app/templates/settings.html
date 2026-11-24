@@ -1129,6 +1129,14 @@
                 </script>
               </div>
             </label>
+            <label class="settings-field">
+              <span><strong>ACE_BOT_NAME</strong><em>{{ env_descs.get('ACE_BOT_NAME', '') }}</em></span>
+              <input class="form-control" type="text" name="ACE_BOT_NAME" maxlength="40" value="{{ env_values.get('ACE_BOT_NAME', '') }}" placeholder="{{ _('Laisser vide : LoadingPlayer') }}">
+            </label>
+            <label class="settings-field">
+              <span><strong>ACE_BOT_WELCOME_DELAY</strong><em>{{ env_descs.get('ACE_BOT_WELCOME_DELAY', '') }}</em></span>
+              <input class="form-control" type="number" min="0" max="300" name="ACE_BOT_WELCOME_DELAY" value="{{ env_values.get('ACE_BOT_WELCOME_DELAY', '20') }}">
+            </label>
             <label class="settings-field settings-field--stack">
               <span><strong>ACE_BOT_MSG_WELCOME</strong><em>{{ env_descs.get('ACE_BOT_MSG_WELCOME', '') }}</em></span>
               <input class="form-control" type="text" name="ACE_BOT_MSG_WELCOME" value="{{ env_values.get('ACE_BOT_MSG_WELCOME', _('Bienvenue {name} !')) }}" placeholder="{{ _('Bienvenue {name} !') }}">

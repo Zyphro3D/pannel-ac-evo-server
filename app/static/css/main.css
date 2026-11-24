@@ -2058,6 +2058,8 @@ body::before {
 }
 .timing-chat-row:last-child { border-bottom: none; }
 .timing-chat-panel .timing-chat-author { color: var(--accent); }
+.timing-chat-server .timing-chat-author { color: var(--st-amber); }
+.timing-chat-server .timing-chat-text { font-style: italic; }
 .timing-chat-ts     { font-family: var(--mono); font-size: 0.78rem; color: var(--dim); flex-shrink: 0; }
 .timing-chat-author { font-weight: 700; flex-shrink: 0; }
 .timing-chat-text   { color: var(--text); word-break: break-word; }

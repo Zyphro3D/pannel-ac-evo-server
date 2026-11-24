@@ -18,6 +18,7 @@ def _required_env(name: str) -> str:
 DEFAULT_BOT_MSG_WELCOME = "Bienvenue {name} !"
 DEFAULT_BOT_MSG_DISCORD = "Rejoins le discord : {discord_url}"
 DEFAULT_BOT_MSG_SITE    = "Retrouve tes resultats et evenements sur : {site_url}"
+DEFAULT_BOT_WELCOME_DELAY = 20   # secondes entre la connexion du joueur et l'accueil
 
 
 class Config:
@@ -70,6 +71,8 @@ class Config:
     ACE_BOT_MSG_WELCOME    = os.environ.get("ACE_BOT_MSG_WELCOME",    DEFAULT_BOT_MSG_WELCOME)
     ACE_BOT_MSG_DISCORD    = os.environ.get("ACE_BOT_MSG_DISCORD",    DEFAULT_BOT_MSG_DISCORD)
     ACE_BOT_MSG_SITE       = os.environ.get("ACE_BOT_MSG_SITE",       DEFAULT_BOT_MSG_SITE)
+    ACE_BOT_NAME           = os.environ.get("ACE_BOT_NAME", "")
+    ACE_BOT_WELCOME_DELAY  = os.environ.get("ACE_BOT_WELCOME_DELAY", str(DEFAULT_BOT_WELCOME_DELAY))
     DISCORD_WEBHOOK_URL        = os.environ.get("DISCORD_WEBHOOK_URL", "")
     DISCORD_PILOTS_WEBHOOK_URL = os.environ.get("DISCORD_PILOTS_WEBHOOK_URL", "")
     DISCORD_RACE_WEBHOOK_URL   = os.environ.get("DISCORD_RACE_WEBHOOK_URL", "")

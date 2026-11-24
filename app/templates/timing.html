@@ -435,8 +435,9 @@ function _renderChat(msgs) {
     return;
   }
   log.innerHTML = msgs.map(m => {
-    const isPanel = m.source === 'panel';
-    return `<div class="timing-chat-row ${isPanel ? 'timing-chat-panel' : ''}">
+    const isPanel  = m.source === 'panel';
+    const isServer = m.source === 'server';   // réponse du serveur à une commande admin (admins seulement)
+    return `<div class="timing-chat-row ${isPanel ? 'timing-chat-panel' : ''} ${isServer ? 'timing-chat-server' : ''}">
       <span class="timing-chat-ts">${m.ts || ''}</span>
       <span class="timing-chat-author">${isPanel ? T.panelLabel : _esc(m.author)}</span>
       <span class="timing-chat-text">${_esc(m.text)}</span>
@@ -467,13 +468,20 @@ async function refresh() {
   }
 }
 
+// Seuls les messages nouveaux sont demandés (?since=) ; le serveur renvoie tout (full) après
+// un redémarrage du panel.
+let _chatMsgs = [], _chatLastId = 0;
 async function refreshChat() {
   try {
-    const r = await fetch(`/api/live/chat-history?server=${SERVER_ID}`);
+    const r = await fetch(`/api/live/chat-history?server=${SERVER_ID}&since=${_chatLastId}`);
     if (!r.ok) return;
     const d = await r.json();
-    try { localStorage.setItem(_CACHE_CHT, JSON.stringify(d)); } catch(e) {}
-    _renderChat(d.messages || []);
+    const fresh = d.messages || [];
+    if (!d.full && !fresh.length) return;
+    _chatMsgs   = d.full ? fresh : _chatMsgs.concat(fresh).slice(-50);
+    _chatLastId = d.last_id || 0;
+    try { localStorage.setItem(_CACHE_CHT, JSON.stringify({messages: _chatMsgs})); } catch(e) {}
+    _renderChat(_chatMsgs);
   } catch(e) {}
 }
 
@@ -518,7 +526,7 @@ try {
 refresh();
 refreshChat();
 setInterval(refresh, 10000);
-setInterval(refreshChat, 5000);
+setInterval(refreshChat, 3000);   // requête légère : seulement les nouveaux messages
 
 {% if current_user.is_authenticated and current_user.is_admin %}
 // ── Administration in-game (admin uniquement) ─────────────────────────────────

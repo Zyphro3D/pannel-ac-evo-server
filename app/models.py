@@ -295,6 +295,20 @@ class LapRecord(db.Model):
     recorded_at  = db.Column(db.DateTime, default=_utcnow, index=True)
 
 
+class ChatMessage(db.Model):
+    """Tchat en jeu (joueurs, panel, réponses du serveur aux commandes admin), conservé
+    30 jours pour que la page Live retrouve l'historique après un redémarrage du panel."""
+    __tablename__ = "chat_message"
+
+    id         = db.Column(db.Integer, primary_key=True)
+    server_id  = db.Column(db.Integer, nullable=False, index=True)
+    author     = db.Column(db.String(100), default="")
+    text       = db.Column(db.String(500), default="")
+    source     = db.Column(db.String(10),  default="player")   # player | panel | server
+    ts         = db.Column(db.String(8),   default="")         # heure affichée (HH:MM:SS)
+    created_at = db.Column(db.DateTime, default=_utcnow, index=True)
+
+
 class LapArchive(db.Model):
     __tablename__ = "lap_archive"
 

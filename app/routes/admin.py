@@ -588,6 +588,7 @@ _ENV_SECTIONS = [
     ]),
     ("notifications", _l("Notifications"), [
         "ACE_BOT_STEAM_ID", "ACE_BOT_CAR_MODEL", "ACE_BOT_IS_ADMIN",
+        "ACE_BOT_NAME", "ACE_BOT_WELCOME_DELAY",
         "ACE_BOT_MSG_WELCOME", "ACE_BOT_MSG_DISCORD", "ACE_BOT_MSG_SITE",
         "DISCORD_WEBHOOK_URL", "DISCORD_PILOTS_WEBHOOK_URL", "DISCORD_RACE_WEBHOOK_URL",
         "DISCORD_NOTIFY_SESSION_SUMMARY", "LIVE_COLLISIONS", "DISCORD_NOTIFY_CONTACTS", "DISCORD_INVITE_URL",
@@ -626,6 +627,8 @@ _ENV_DESCS = {
     "ACE_BOT_STEAM_ID":       _l("Steam ID 64-bit du compte bot — le bot se connecte au serveur avec ce compte. Laisser vide pour désactiver le bot."),
     "ACE_BOT_CAR_MODEL":      _l("Voiture utilisée par le bot pour rejoindre la session."),
     "ACE_BOT_IS_ADMIN":       _l("Activer les droits admin pour le bot (true/false). Le mot de passe est lu automatiquement depuis la config serveur active."),
+    "ACE_BOT_NAME":           _l("Nom affiché comme expéditeur des messages du bot dans le tchat du jeu. Le bot occupe alors une place de stand (aucune voiture visible en piste). Laisser vide : le jeu affiche « LoadingPlayer »."),
+    "ACE_BOT_WELCOME_DELAY":  _l("Délai en secondes entre l'arrivée d'un joueur et les messages d'accueil, le temps qu'il sorte des menus (défaut 20)."),
     "ACE_BOT_MSG_WELCOME":    _l("Message de bienvenue envoyé à chaque connexion. Variable : {name}. Laisser vide pour désactiver."),
     "ACE_BOT_MSG_DISCORD":    _l("Message Discord envoyé si DISCORD_INVITE_URL est défini. Variables : {name}, {discord_url}. Laisser vide pour désactiver."),
     "ACE_BOT_MSG_SITE":       _l("Message site envoyé si PANEL_URL est défini. Variables : {name}, {site_url}. Laisser vide pour désactiver."),

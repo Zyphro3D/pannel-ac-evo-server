@@ -1,5 +1,21 @@
 # Changelog
 
+### À venir
+
+**Le tchat du jeu revient sur la page Live**
+
+- Depuis la mise à jour 0.9.0 du jeu, les messages des joueurs n'apparaissaient plus dans le tchat de la page Live : le serveur ne les écrit plus dans son journal et ne les envoie qu'aux clients qui ouvrent aussi un canal UDP, comme le jeu. Le bot du panel le fait désormais : il reçoit le tchat des joueurs en direct, ainsi que l'état de la session.
+- Le bot reste connecté en permanence, sans les reconnexions qu'il faisait toutes les 20 secondes, et garde ses droits admin.
+- Les réponses du serveur aux commandes admin (« You are now an admin », « 0 has been forcefully sent to pits »…) s'affichent dans le tchat de la page Live, pour les admins seulement.
+- L'historique du tchat est conservé 30 jours et retrouvé après un redémarrage du panel ; la page ne télécharge plus que les nouveaux messages.
+- Un message envoyé pendant une reconnexion du bot part dès son retour, au lieu d'être perdu.
+
+**Réglages du bot**
+
+- Nouveau réglage **ACE_BOT_NAME** : le nom affiché comme expéditeur des messages du bot dans le jeu (au lieu de « LoadingPlayer »).
+- Nouveau réglage **ACE_BOT_WELCOME_DELAY** : délai avant les messages d'accueil (20 s par défaut), le temps que le joueur sorte des menus.
+- Le jeu n'affiche pas les emojis : les réactions des spectateurs partent avec un symbole qui s'affiche (★ ✓ ♥…), et les emojis des autres messages sont remplacés ou retirés.
+
 ### v2.6.2 — 23/11/2026
 
 **Performances**

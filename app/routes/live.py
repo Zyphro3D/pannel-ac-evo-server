@@ -27,6 +27,8 @@ _REACTION_MSGIDS = {
     "⚡": "Allez !",
 }
 _ALLOWED_REACTIONS  = set(_REACTION_MSGIDS.keys())
+# Le tchat du jeu n'affiche pas les emojis : chaque réaction part avec un symbole qui passe.
+_REACTION_SYMBOLS = {"🏁": "★", "👍": "✓", "❤️": "♥", "🔥": "●", "💪": "♪", "⚡": "!!"}
 _RE_DRIVER_SAFE     = re.compile(r'[^\w\s\-\'\.]', re.UNICODE)
 # Champs internes non exposés sur l'API publique /api/timing
 _TIMING_STRIP_FIELDS = {"steam_id", "car_id", "joined_ts"}
@@ -246,11 +248,23 @@ def bot_elevate_admin():
 @live_bp.route("/api/live/chat-history")
 @limiter.limit("60 per minute")
 def live_chat_history():
-    """API publique — historique récent du chat in-game."""
+    """API publique — historique récent du chat in-game. ?since=<id> : seulement les messages
+    plus récents. Les réponses du serveur aux commandes admin ne sont montrées qu'aux admins."""
     try:
         from app.services.ace_tcp_client import get_chat_history
         sid = _get_public_server_id()
-        return jsonify({"messages": get_chat_history(sid)})
+        try:
+            since = max(0, int(request.args.get("since", 0)))
+        except ValueError:
+            since = 0
+        is_admin = bool(current_user.is_authenticated and getattr(current_user, "is_admin", False))
+        msgs = get_chat_history(sid, include_server=is_admin)
+        last_id = msgs[-1]["id"] if msgs else 0
+        # last_id < since : le panel a redémarré (numérotation repartie de zéro) → tout renvoyer.
+        if since and last_id >= since:
+            msgs = [m for m in msgs if m["id"] > since]
+            return jsonify({"messages": msgs, "last_id": last_id, "full": False})
+        return jsonify({"messages": msgs, "last_id": last_id, "full": True})
     except Exception as e:
         log.warning("live_chat_history error: %s", e)
         return jsonify({"messages": []})
@@ -268,7 +282,7 @@ def timing_react():
     from app.services.ace_tcp_client import send_chat, is_connected
     if not is_connected(sid):
         return jsonify({"ok": False, "error": "not_connected"}), 503
-    msg_text   = _(_REACTION_MSGIDS[reaction])   # traduit selon Accept-Language du spectateur
+    msg_text   = f"{_REACTION_SYMBOLS[reaction]} {_(_REACTION_MSGIDS[reaction])}"   # traduit selon Accept-Language du spectateur
     driver_raw = str(data.get("driver", "")).strip()
     if driver_raw:
         driver = _RE_DRIVER_SAFE.sub("", driver_raw)[:30].strip()
