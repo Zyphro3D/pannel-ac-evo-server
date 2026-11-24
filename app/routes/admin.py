@@ -711,6 +711,10 @@ def _write_env_file(new_values: dict):
 # optionnelle — c'est ce qui alimente le bandeau affiché aux admins tant qu'ils
 # ne l'ont pas explicitement fermé (cf. dismiss_env_notice ci-dessous).
 NEW_ENV_VARS_BY_VERSION: dict[str, list[tuple[str, str]]] = {
+    "2.7.0": [
+        ("ACE_BOT_NAME", _l("Nom affiché comme expéditeur des messages du bot dans le tchat du jeu (sinon « LoadingPlayer ») : Paramètres → Notifications.")),
+        ("ACE_BOT_WELCOME_DELAY", _l("Délai avant les messages d'accueil du bot (20 s par défaut) : Paramètres → Notifications.")),
+    ],
     "2.6.0": [
         ("DISCORD_NOTIFY_CONTACTS", _l("Contacts avec dégâts sur Discord (salon course, regroupés par minute) : interrupteur dans Paramètres → Notifications, désactivé par défaut.")),
     ],

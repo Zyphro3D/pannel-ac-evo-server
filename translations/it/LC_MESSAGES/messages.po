@@ -6798,3 +6798,18 @@ msgstr "Invia al webhook gara i contatti con danni, raggruppati una volta al min
 
 msgid "Contacts avec dégâts sur Discord (salon course, regroupés par minute) : interrupteur dans Paramètres → Notifications, désactivé par défaut."
 msgstr "Contatti con danni su Discord (canale gara, raggruppati per minuto): interruttore in Impostazioni → Notifiche, disattivato di default."
+
+msgid "Nom affiché comme expéditeur des messages du bot dans le tchat du jeu. Le bot occupe alors une place de stand (aucune voiture visible en piste). Laisser vide : le jeu affiche « LoadingPlayer »."
+msgstr "Nome mostrato come mittente dei messaggi del bot nella chat di gioco. Il bot occupa allora un box (nessuna auto visibile in pista). Lasciare vuoto: il gioco mostra «LoadingPlayer»."
+
+msgid "Délai en secondes entre l'arrivée d'un joueur et les messages d'accueil, le temps qu'il sorte des menus (défaut 20)."
+msgstr "Ritardo in secondi tra l'arrivo di un giocatore e i messaggi di benvenuto, il tempo di uscire dai menu (predefinito 20)."
+
+msgid "Laisser vide : LoadingPlayer"
+msgstr "Lasciare vuoto: LoadingPlayer"
+
+msgid "Nom affiché comme expéditeur des messages du bot dans le tchat du jeu (sinon « LoadingPlayer ») : Paramètres → Notifications."
+msgstr "Nome mostrato come mittente dei messaggi del bot nella chat di gioco (altrimenti «LoadingPlayer»): Impostazioni → Notifiche."
+
+msgid "Délai avant les messages d'accueil du bot (20 s par défaut) : Paramètres → Notifications."
+msgstr "Ritardo prima dei messaggi di benvenuto del bot (20 s predefiniti): Impostazioni → Notifiche."

@@ -1,6 +1,6 @@
 # Changelog
 
-### À venir
+### v2.7.0 — 24/11/2026
 
 **Le tchat du jeu revient sur la page Live**
 

@@ -105,7 +105,8 @@ Public ⊂ Pilote ⊂ Admin ⊂ Superadmin.
 **🌍 Public — aucun compte requis**
 - Page d'accueil : serveurs en direct (joueurs connectés, circuit en cours), calendrier des prochains événements, derniers résultats
 - Timing en direct par serveur, tours invalides signalés en temps réel (track limits, split manqué)
-- Réactions emoji vers le chat in-game depuis la page timing
+- Chat in-game en direct sur la page timing (messages des joueurs, historique conservé 30 jours, réponses du serveur aux commandes admin visibles par les admins)
+- Réactions emoji vers le chat in-game depuis la page timing (envoyées avec un symbole que le jeu sait afficher)
 - Résultats de session détaillés : drapeaux, meilleurs tours, secteurs color-codés, gap au leader
 - Classement par circuit avec filtres (véhicule, catégorie, plage de performance/PI) et meilleur temps mis en avant
 - **Session en cours** sur le timing : nom de la session, phase (attente de départ, en cours, dernier tour, terminée) et temps restant estimé
@@ -344,6 +345,8 @@ Le bot TCP se connecte au serveur ACE EVO pour envoyer des messages de bienvenue
 | `ACE_BOT_STEAM_ID` | Steam ID du compte bot — **laisser vide pour désactiver** | — |
 | `ACE_BOT_CAR_MODEL` | Modèle de voiture utilisé par le bot pour la connexion | `preset_190_evo_ii` |
 | `ACE_BOT_IS_ADMIN` | `true` pour envoyer automatiquement `\admin <password>` à la connexion | `false` |
+| `ACE_BOT_NAME` | Nom affiché comme expéditeur des messages du bot dans le chat du jeu (le bot occupe alors une place de stand) | — (« LoadingPlayer ») |
+| `ACE_BOT_WELCOME_DELAY` | Délai en secondes avant les messages d'accueil | `20` |
 | `ACE_BOT_MSG_WELCOME` | Message de bienvenue (variables : `{name}`, `{discord_url}`, `{site_url}`) | — |
 | `ACE_BOT_MSG_DISCORD` | Message Discord envoyé si `DISCORD_INVITE_URL` est défini | — |
 | `ACE_BOT_MSG_SITE` | Message site envoyé si `PANEL_URL` est défini | — |

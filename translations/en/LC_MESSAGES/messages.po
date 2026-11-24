@@ -6736,3 +6736,18 @@ msgstr "Sends contacts with damage to the race webhook, grouped once a minute. R
 
 msgid "Contacts avec dégâts sur Discord (salon course, regroupés par minute) : interrupteur dans Paramètres → Notifications, désactivé par défaut."
 msgstr "Contacts with damage on Discord (race channel, grouped by minute): switch in Settings → Notifications, off by default."
+
+msgid "Nom affiché comme expéditeur des messages du bot dans le tchat du jeu. Le bot occupe alors une place de stand (aucune voiture visible en piste). Laisser vide : le jeu affiche « LoadingPlayer »."
+msgstr "Name shown as the sender of the bot's messages in the in-game chat. The bot then takes a pit slot (no car visible on track). Leave empty: the game shows “LoadingPlayer”."
+
+msgid "Délai en secondes entre l'arrivée d'un joueur et les messages d'accueil, le temps qu'il sorte des menus (défaut 20)."
+msgstr "Delay in seconds between a player joining and the welcome messages, so they are out of the menus (default 20)."
+
+msgid "Laisser vide : LoadingPlayer"
+msgstr "Leave empty: LoadingPlayer"
+
+msgid "Nom affiché comme expéditeur des messages du bot dans le tchat du jeu (sinon « LoadingPlayer ») : Paramètres → Notifications."
+msgstr "Name shown as the sender of the bot's messages in the in-game chat (otherwise “LoadingPlayer”): Settings → Notifications."
+
+msgid "Délai avant les messages d'accueil du bot (20 s par défaut) : Paramètres → Notifications."
+msgstr "Delay before the bot's welcome messages (20 s by default): Settings → Notifications."
