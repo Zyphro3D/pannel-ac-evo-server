@@ -6751,3 +6751,6 @@ msgstr "Name shown as the sender of the bot's messages in the in-game chat (othe
 
 msgid "Délai avant les messages d'accueil du bot (20 s par défaut) : Paramètres → Notifications."
 msgstr "Delay before the bot's welcome messages (20 s by default): Settings → Notifications."
+
+msgid "trop de requêtes, réessaie dans une minute"
+msgstr "too many requests, try again in a minute"

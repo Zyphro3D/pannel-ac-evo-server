@@ -6853,3 +6853,6 @@ msgstr "Nombre mostrado como remitente de los mensajes del bot en el chat del ju
 
 msgid "Délai avant les messages d'accueil du bot (20 s par défaut) : Paramètres → Notifications."
 msgstr "Retraso antes de los mensajes de bienvenida del bot (20 s por defecto): Ajustes → Notificaciones."
+
+msgid "trop de requêtes, réessaie dans une minute"
+msgstr "demasiadas solicitudes, vuelve a intentarlo en un minuto"

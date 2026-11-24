@@ -513,10 +513,21 @@ def sanitize_game_text(text: str) -> str:
     return re.sub(r" {2,}", " ", "".join(out)).strip()
 
 
+def _now_hms() -> str:
+    """Heure affichée dans le tchat, dans le fuseau du panel (le conteneur tourne en UTC)."""
+    try:
+        from zoneinfo import ZoneInfo
+        import datetime as _dt
+        tz = (_flask_app.config.get("PANEL_TIMEZONE") if _flask_app else None) or "Europe/Paris"
+        return _dt.datetime.now(ZoneInfo(tz)).strftime("%H:%M:%S")
+    except Exception:
+        return time.strftime("%H:%M:%S")
+
+
 def _chat_add(c: dict, server_id: int, author: str, text: str, source: str, ts: str = "") -> None:
     """Ajoute un message à l'historique (mémoire + base). source : player | panel | server.
     Un même message reçu par deux voies (TCP et journal) en moins de 10 s n'est gardé qu'une fois."""
-    ts = ts or time.strftime("%H:%M:%S")
+    ts = _now_hms()   # le message arrive en direct ; l'heure du journal du jeu est en UTC
     now = time.time()
     with c["lb_lock"]:
         for m in list(c["chat_buffer"])[-10:]:

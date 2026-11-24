@@ -526,7 +526,9 @@ try {
 refresh();
 refreshChat();
 setInterval(refresh, 10000);
-setInterval(refreshChat, 3000);   // requête légère : seulement les nouveaux messages
+// Caddy limite /api* à 30 requêtes par minute et par IP : avec le classement (6/min) et le
+// statut du bot pour les admins (6/min), le tchat reste à 12/min pour garder de la marge.
+setInterval(refreshChat, 5000);
 
 {% if current_user.is_authenticated and current_user.is_admin %}
 // ── Administration in-game (admin uniquement) ─────────────────────────────────
@@ -535,6 +537,7 @@ const I18N_ADMIN = {
   tcpDisconnected: "{{ _('TCP déconnecté') }}",
   tcpNotConnected: "{{ _('non connecté') }}",
   errNetwork:      "{{ _('erreur réseau') }}",
+  errBusy:         "{{ _('trop de requêtes, réessaie dans une minute') }}",
   dupNumber:       "{{ _('numéro partagé, commande impossible') }}",
   elevateOk:       "{{ _('Bot élevé admin') }}",
   elevateErr:      "{{ _('Échec élévation admin') }}",
@@ -597,12 +600,13 @@ async function sendAdminChat() {
       headers: _csrfHeaders(),
       body: JSON.stringify({ message: text })
     });
+    if (r.status === 429) throw new Error('busy');
     const d = await r.json();
     row.className = d.ok ? 'timing-admin-row sent' : 'timing-admin-row error';
     if (!d.ok) row.textContent += ` ✗ ${d.error || ''}`;
   } catch(e) {
     row.className = 'timing-admin-row error';
-    row.textContent += ` ✗ ${I18N_ADMIN.errNetwork}`;
+    row.textContent += ` ✗ ${e.message === 'busy' ? I18N_ADMIN.errBusy : I18N_ADMIN.errNetwork}`;
   }
   while (log.children.length > 20) log.firstChild.remove();
 }
@@ -701,7 +705,7 @@ async function elevateAdmin() {
 document.getElementById('btn-elevate-admin').addEventListener('click', elevateAdmin);
 
 pollTcpStatus();
-setInterval(pollTcpStatus, 5000);
+setInterval(pollTcpStatus, 10000);
 {% endif %}
 </script>
 {% endblock %}

@@ -1,5 +1,12 @@
 # Changelog
 
+### v2.7.1 — 24/11/2026
+
+**Corrections**
+
+- Sur la page Live, l'envoi d'un message ou d'une commande admin pouvait échouer avec « erreur réseau » : la page interrogeait le panel trop souvent et dépassait la limite de requêtes d'un reverse proxy (30 par minute). Le tchat se rafraîchit de nouveau toutes les 5 secondes et le statut du bot toutes les 10 ; un refus pour trop de requêtes s'affiche désormais comme tel.
+- L'heure des messages du tchat suit le fuseau horaire du panel (elle était en UTC).
+
 ### v2.7.0 — 24/11/2026
 
 **Le tchat du jeu revient sur la page Live**

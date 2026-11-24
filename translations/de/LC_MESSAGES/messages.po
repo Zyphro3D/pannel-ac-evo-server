@@ -6816,3 +6816,6 @@ msgstr "Name, der im Spiel-Chat als Absender der Bot-Nachrichten angezeigt wird 
 
 msgid "Délai avant les messages d'accueil du bot (20 s par défaut) : Paramètres → Notifications."
 msgstr "Verzögerung vor den Willkommensnachrichten des Bots (standardmäßig 20 s): Einstellungen → Benachrichtigungen."
+
+msgid "trop de requêtes, réessaie dans une minute"
+msgstr "zu viele Anfragen, versuche es in einer Minute erneut"

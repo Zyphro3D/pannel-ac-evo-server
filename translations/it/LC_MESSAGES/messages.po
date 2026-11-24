@@ -6813,3 +6813,6 @@ msgstr "Nome mostrato come mittente dei messaggi del bot nella chat di gioco (al
 
 msgid "Délai avant les messages d'accueil du bot (20 s par défaut) : Paramètres → Notifications."
 msgstr "Ritardo prima dei messaggi di benvenuto del bot (20 s predefiniti): Impostazioni → Notifiche."
+
+msgid "trop de requêtes, réessaie dans une minute"
+msgstr "troppe richieste, riprova tra un minuto"
