@@ -86,3 +86,16 @@ def test_evenement_rattache_au_serveur_choisi(admin_client):
         ev = Event.query.filter_by(title="RG choix serveur").first()
         assert ev is not None and ev.server_id == 1
         assert admin_client.get(f"/events/{ev.id}/edit").status_code == 200
+
+
+def test_admin_jamais_expulse(admin_client):
+    from app.models import AdminAccount
+    from app.services.database import db
+    app = admin_client.application
+    with app.app_context():
+        adm = AdminAccount.query.first()
+        adm.steam_id = "76561190000000777"
+        db.session.commit()
+        assert rg.is_registered("76561190000000777", 2)
+        adm.steam_id = None
+        db.session.commit()

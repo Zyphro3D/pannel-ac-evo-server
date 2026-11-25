@@ -1,7 +1,7 @@
 """Serveur réservé aux inscrits (championnat) : un pilote non inscrit est prévenu par le bot,
 puis expulsé s'il est toujours là à la fin du délai.
 
-Inscrit = compte pilote validé portant ce SteamID, avec une inscription confirmée à un événement
+Inscrit = admin du panel dont le compte porte ce SteamID, ou compte pilote validé portant ce SteamID, avec une inscription confirmée à un événement
 publié de ce serveur, à venir ou commencé depuis moins de 24 h. Un événement public (sans
 inscription) de ce serveur dans la même fenêtre laisse entrer tout le monde.
 
@@ -41,6 +41,10 @@ def is_registered(steam_id: str, server_id: int) -> bool:
         return True
     if not steam_id:
         return False
+    # Un admin du panel (Steam lié à son compte admin) n'est jamais expulsé de ses serveurs
+    from app.models import AdminAccount
+    if AdminAccount.query.filter_by(steam_id=str(steam_id), is_active=True).first() is not None:
+        return True
     driver = Driver.query.filter_by(steam_id=str(steam_id), status=DriverStatus.APPROVED).first()
     if driver is None:
         return False
