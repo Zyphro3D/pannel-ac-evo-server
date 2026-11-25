@@ -68,6 +68,16 @@
           <input type="number" name="max_drivers" class="form-control" min="1" max="100"
                  value="{{ event.max_drivers if event else 20 }}">
         </div>
+        {% if servers and servers|length > 1 %}
+        <div>
+          <label class="form-label" for="event-server">{{ _('Serveur') }}</label>
+          <select id="event-server" name="server_id" class="form-control">
+            {% for srv in servers %}
+            <option value="{{ srv.id }}" {% if (event.server_id if event else 1) == srv.id %}selected{% endif %}>#{{ srv.id }} {{ srv.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        {% endif %}
       </div>
 
       {# ── Circuit + mode ── #}

@@ -7,7 +7,7 @@ from flask import Blueprint, render_template, redirect, url_for, request, flash,
 from flask_babel import _
 from sqlalchemy.orm import selectinload
 
-from app.models import AccessRule, Event, EventRegistration, Driver, EventStatus, DriverStatus, RegStatus
+from app.models import AccessRule, Event, EventRegistration, Driver, EventStatus, DriverStatus, RegStatus, Server
 from app.services.database import db
 from app.services.server_config import load_events as load_tracks, load_cars, list_configs
 from app.services import mailer, entry_list
@@ -27,6 +27,14 @@ def _event_from_form(event, form):
     event.mode          = form.get("mode", "GameModeType_PRACTICE")
     event.weather       = form.get("weather", "GameModeSelectionWeatherType_CLEAR")
     event.max_drivers   = max(1, int(form.get("max_drivers", 20) or 20))
+    # Serveur de l'événement (lancement automatique, serveur réservé aux inscrits) : seulement un
+    # serveur actif ; absent du formulaire (un seul serveur) = inchangé, 1 à la création.
+    try:
+        sid = int(form.get("server_id") or 0)
+    except ValueError:
+        sid = 0
+    if sid and Server.query.filter_by(id=sid, is_enabled=True).first():
+        event.server_id = sid
     event.password      = form.get("password", "").strip()
     event.notify_before = max(0, int(form.get("notify_before", 60) or 60))
     date_str = form.get("date", "")
@@ -64,6 +72,10 @@ def _event_from_form(event, form):
     return event
 
 
+def _servers():
+    return Server.query.filter_by(is_enabled=True).order_by(Server.sort_order, Server.id).all()
+
+
 # ── Events CRUD ──────────────────────────────────────────────────────────────
 
 @events_admin_bp.route("/events")
@@ -91,7 +103,7 @@ def event_create():
     return render_template("event_form.html", event=None, action="create",
                            tracks=tracks, cars=cars,
                            car_categories=car_categories, pi_min=pi_min, pi_max=pi_max,
-                           configs=list_configs())
+                           configs=list_configs(), servers=_servers())
 
 
 @events_admin_bp.route("/events/<int:event_id>/edit", methods=["GET", "POST"])
@@ -109,7 +121,7 @@ def event_edit(event_id):
     return render_template("event_form.html", event=event, action="edit",
                            tracks=tracks, cars=cars,
                            car_categories=car_categories, pi_min=pi_min, pi_max=pi_max,
-                           configs=list_configs())
+                           configs=list_configs(), servers=_servers())
 
 
 @events_admin_bp.route("/events/<int:event_id>/delete", methods=["POST"])

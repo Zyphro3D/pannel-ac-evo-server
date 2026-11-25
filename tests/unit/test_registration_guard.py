@@ -74,3 +74,15 @@ def test_reglage_par_serveur(admin_client):
     admin_client.post("/servers/1/registration", data={"grace_s": "120"})
     with app.app_context():
         assert rg.server_settings(1) == (False, 120)
+
+
+def test_evenement_rattache_au_serveur_choisi(admin_client):
+    # Sans ce choix, tout événement restait sur le serveur 1 : le serveur réservé n'en trouvait aucun.
+    from app.models import Event
+    r = admin_client.post("/events/create", data={"title": "RG choix serveur", "date": "2030-01-01T20:00",
+                                                    "server_id": "1"})
+    assert r.status_code in (200, 302)
+    with admin_client.application.app_context():
+        ev = Event.query.filter_by(title="RG choix serveur").first()
+        assert ev is not None and ev.server_id == 1
+        assert admin_client.get(f"/events/{ev.id}/edit").status_code == 200
