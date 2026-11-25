@@ -1,5 +1,11 @@
 # Changelog
 
+### À venir
+
+**Corrections**
+
+- Page Serveurs plus lisible : tableau élargi (la colonne Actions n'est plus coupée), réglage « Réservé aux inscrits » dans sa propre colonne Accès, délai d'expulsion affiché seulement quand l'option est active.
+
 ### v2.8.1 — 25/11/2026
 
 **Corrections**

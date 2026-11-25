@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{{ _('Gestion des serveurs') }}{% endblock %}
 {% block content %}
-<div class="page-shell max-w-4xl space-y-5">
+<div class="page-shell max-w-6xl space-y-5">
 
   {# ── Liste des serveurs ── #}
   <div class="card">
@@ -17,6 +17,7 @@
             <th>{{ _('Container') }}</th>
             <th>{{ _('Ports') }}</th>
             <th>{{ _('État') }}</th>
+            <th>{{ _('Accès') }}</th>
             <th>{{ _('Actions') }}</th>
           </tr>
         </thead>

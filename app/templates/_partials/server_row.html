@@ -1,6 +1,6 @@
 <tr id="srv-row-{{ srv.id }}" class="{% if not srv.is_enabled %}opacity-40{% endif %}">
   <td class="text-dim">#{{ srv.id }}</td>
-  <td x-data="{ renaming: false }">
+  <td x-data="{ renaming: false }" class="min-w-[14rem]">
     <div x-show="!renaming" class="flex items-center gap-2">
       <span class="font-medium">{{ srv.name }}</span>
       {% if not srv.is_enabled %}
@@ -17,22 +17,6 @@
              class="form-control" style="width: 15rem;">
       <button type="submit" class="btn-primary btn-xs">{{ _('Valider') }}</button>
       <button type="button" class="btn-secondary btn-xs" @click="renaming = false">{{ _('Annuler') }}</button>
-    </form>
-    <form hx-post="{{ url_for('admin.server_registration', server_id=srv.id) }}"
-          hx-target="#srv-row-{{ srv.id }}" hx-swap="outerHTML" hx-trigger="change"
-          class="flex flex-wrap items-center gap-2 mt-1 text-xs text-dim"
-          title="{{ _('Un pilote sans inscription confirmée à un événement publié de ce serveur est prévenu par le bot (en anglais), puis expulsé à la fin du délai. Le bot doit pouvoir passer admin (mot de passe admin du serveur).') }}">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <label class="flex items-center gap-1.5">
-        <input type="checkbox" name="required" value="1" {% if srv.registration_required %}checked{% endif %}>
-        {{ _('Réservé aux inscrits') }}
-      </label>
-      <label class="flex items-center gap-1.5">
-        {{ _('expulsion après') }}
-        <input type="number" name="grace_s" min="30" max="3600" step="30" value="{{ srv.registration_grace_s or 180 }}"
-               class="form-control" style="width: 5.5rem;" aria-label="{{ _('Délai avant expulsion (secondes)') }}">
-        s
-      </label>
     </form>
   </td>
   <td><code class="text-xs text-dim">{{ srv.container_name }}</code></td>
@@ -52,6 +36,24 @@
       <span class="text-dim text-sm">{{ _('Arrêté') }}</span>
     </span>
     {% endif %}
+  </td>
+  <td>
+    <form hx-post="{{ url_for('admin.server_registration', server_id=srv.id) }}"
+          hx-target="#srv-row-{{ srv.id }}" hx-swap="outerHTML" hx-trigger="change"
+          x-data="{ on: {{ 'true' if srv.registration_required else 'false' }} }"
+          class="flex items-center gap-2 text-xs text-dim whitespace-nowrap"
+          title="{{ _('Un pilote sans inscription confirmée à un événement publié de ce serveur est prévenu par le bot (en anglais), puis expulsé à la fin du délai. Le bot doit pouvoir passer admin (mot de passe admin du serveur).') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label class="flex items-center gap-1.5">
+        <input type="checkbox" name="required" value="1" x-model="on" {% if srv.registration_required %}checked{% endif %}>
+        {{ _('Réservé aux inscrits') }}
+      </label>
+      <label class="flex items-center gap-1" x-show="on" {% if not srv.registration_required %}style="display:none"{% endif %}>
+        <input type="number" name="grace_s" min="30" max="3600" step="30" value="{{ srv.registration_grace_s or 180 }}"
+               class="form-control !py-0.5 !px-1.5 text-xs" style="width: 4.5rem;" aria-label="{{ _('Délai avant expulsion (secondes)') }}">
+        s
+      </label>
+    </form>
   </td>
   <td>
     <div class="flex items-center gap-1.5 justify-end">
