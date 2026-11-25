@@ -129,6 +129,8 @@ def _migrate_server_discord(db):
         ("discord_webhook_main",   "TEXT DEFAULT ''"),
         ("discord_webhook_pilots", "TEXT DEFAULT ''"),
         ("discord_webhook_race",   "TEXT DEFAULT ''"),
+        ("registration_required",  "BOOLEAN DEFAULT 0"),
+        ("registration_grace_s",   "INTEGER DEFAULT 180"),
     ]
     with db.engine.connect() as conn:
         existing = [r[1] for r in conn.execute(sa.text("PRAGMA table_info(server)"))]
@@ -1491,6 +1493,32 @@ def server_toggle(server_id):
     return redirect(url_for("admin.servers_list"))
 
 
+@admin_bp.route("/servers/<int:server_id>/registration", methods=["POST"])
+@_admin_required
+@_superadmin_required
+def server_registration(server_id):
+    """Serveur réservé aux pilotes inscrits (registration_guard)."""
+    srv = db.session.get(Server, server_id)
+    if not srv:
+        return flash_or_toast("error", _("Serveur introuvable."), "admin.servers_list")
+    srv.registration_required = request.form.get("required") == "1"
+    try:
+        srv.registration_grace_s = max(30, min(3600, int(request.form.get("grace_s") or 180)))
+    except ValueError:
+        srv.registration_grace_s = 180
+    db.session.commit()
+    msg = (_("Serveur réservé aux inscrits : expulsion après %(s)d s.", s=srv.registration_grace_s)
+           if srv.registration_required else _("Serveur ouvert à tous."))
+    if is_htmx():
+        try:
+            st = get_status(srv.id)
+        except Exception:
+            st = {"running": False}
+        return render_template("_partials/server_row.html", srv=srv, st=st, toast_msg=msg, toast_type="success")
+    flash(msg, "success")
+    return redirect(url_for("admin.servers_list"))
+
+
 @admin_bp.route("/servers/<int:server_id>/rename", methods=["POST"])
 @_admin_required
 @_superadmin_required
@@ -1682,7 +1710,8 @@ def mods():
         p = mod_assign.get_pack(s.id)
         if p is not None:
             packs[s.id] = {"filename": p.name, "sizeBytes": p.stat().st_size}
-    return render_template("mods.html", mods=list_mods(), servers=servers, mod_servers=mod_servers, packs=packs)
+    links = {s.id: mod_assign.get_pack_url(s.id) for s in servers}
+    return render_template("mods.html", mods=list_mods(), servers=servers, mod_servers=mod_servers, packs=packs, links=links)
 
 
 @admin_bp.route("/mods/packs/<int:server_id>/upload", methods=["POST"])
@@ -1702,6 +1731,18 @@ def mods_pack_upload(server_id):
     if not result["ok"]:
         return jsonify({"ok": False, "error": _("Archive attendue : .zip, .7z ou .rar")}), 400
     return jsonify(result)
+
+
+@admin_bp.route("/mods/packs/<int:server_id>/link", methods=["POST"])
+@_admin_required
+def mods_pack_link(server_id):
+    """Lien externe vers le pack de l'auteur (vide = retiré)."""
+    from app.services import mod_assign
+    if server_id not in mod_assign.enabled_server_ids():
+        return jsonify({"ok": False, "error": _("Serveur invalide")}), 404
+    if not mod_assign.set_pack_url(server_id, request.form.get("url", "")):
+        return jsonify({"ok": False, "error": _("Lien invalide : adresse https:// attendue")}), 400
+    return jsonify({"ok": True})
 
 
 @admin_bp.route("/mods/packs/<int:server_id>/delete", methods=["POST"])

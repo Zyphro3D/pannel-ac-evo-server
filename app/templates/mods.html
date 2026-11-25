@@ -151,6 +151,7 @@
   <div x-show="modTab === 'tracks'" style="display:none">
     <div class="card p-6 mb-4">
       <h2 class="text-lg font-semibold text-txt mb-1">{{ _('Pack client par serveur') }}</h2>
+      <p class="text-dim text-sm mb-2">{{ _("Si la licence de l'auteur ne permet pas de redistribuer ses fichiers, donne plutôt le lien de sa page de téléchargement : la page publique renverra vers lui et ne servira aucun de ses fichiers.") }}</p>
       <p class="text-dim text-sm">{{ _("Un circuit moddé s'installe côté serveur avec l'installeur de son auteur. Ici, tu déposes l'archive que les joueurs doivent installer (circuit et voitures) : elle est proposée à tous sur la page publique Mods, avec les .kspkg affectés au serveur.") }}</p>
       <p class="text-sm mt-2"><a class="text-accent underline" href="{{ url_for('public.downloads') }}">{{ _('Voir la page publique') }}</a></p>
     </div>
@@ -173,6 +174,12 @@
             <button type="button" class="btn btn-secondary btn-sm text-red-400 pack-delete-btn" data-server="{{ srv.id }}">{{ _('Supprimer') }}</button>
             {% endif %}
           </div>
+          <form class="pack-link-form flex flex-wrap items-center gap-2 w-full" data-server="{{ srv.id }}">
+            <label class="text-xs text-dim" for="pack-link-{{ srv.id }}">{{ _("Ou lien vers la page de l'auteur") }}</label>
+            <input id="pack-link-{{ srv.id }}" type="url" name="url" value="{{ links.get(srv.id, '') }}" placeholder="https://"
+                   class="form-control text-xs flex-1 min-w-[16rem]">
+            <button type="submit" class="btn btn-secondary btn-sm">{{ _('Enregistrer') }}</button>
+          </form>
           {% endif %}
         </li>
         {% endfor %}
@@ -365,6 +372,18 @@ document.querySelectorAll('.pack-input').forEach(input => {
     } catch (e) {
       _modToast('error', {{ _("Erreur réseau pendant l'upload") | tojson }});
     }
+  });
+});
+
+document.querySelectorAll('.pack-link-form').forEach(form => {
+  form.addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    const res = await fetch('{{ url_for("admin.mods_pack_link", server_id=0) }}'.replace('/0/', '/' + form.dataset.server + '/'), {
+      method: 'POST', headers: { 'X-CSRFToken': _csrf }, body: new FormData(form),
+    });
+    const data = await res.json();
+    if (!data.ok) { _modToast('error', data.error || {{ _("Erreur") | tojson }}); return; }
+    _modToast('success', {{ _("Lien enregistré") | tojson }});
   });
 });
 

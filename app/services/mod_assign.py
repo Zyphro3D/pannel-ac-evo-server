@@ -189,7 +189,7 @@ def save_pack(server_id: int, file_storage) -> dict:
     tmp = d / f".upload{ext}.tmp"
     file_storage.save(str(tmp))
     for old in d.iterdir():          # un seul pack par serveur : le nouveau remplace l'ancien
-        if old.is_file() and old != tmp:
+        if old.is_file() and old != tmp and old.suffix.lower() in PACK_EXTS:
             old.unlink()
     dest = d / f"{stem}{ext}"
     os.replace(tmp, dest)
@@ -201,6 +201,39 @@ def delete_pack(server_id: int) -> bool:
     if p is None:
         return False
     p.unlink()
+    return True
+
+
+_LINK_FILE = "link.txt"
+
+
+def get_pack_url(server_id: int) -> str:
+    """Lien vers la page de téléchargement de l'auteur, quand sa licence ne permet pas de
+    redistribuer son pack : la page publique renvoie alors vers lui au lieu d'héberger ses
+    fichiers."""
+    try:
+        url = (packs_dir(server_id) / _LINK_FILE).read_text(encoding="utf-8").strip()
+    except OSError:
+        return ""
+    return url if valid_url(url) else ""
+
+
+def valid_url(url: str) -> bool:
+    from urllib.parse import urlparse
+    u = urlparse(url or "")
+    return u.scheme == "https" and bool(u.netloc) and len(url) <= 500 and not any(c in url for c in "\r\n\"'<> ")
+
+
+def set_pack_url(server_id: int, url: str) -> bool:
+    url = (url or "").strip()
+    path = packs_dir(server_id) / _LINK_FILE
+    if not url:
+        path.unlink(missing_ok=True)
+        return True
+    if not valid_url(url):
+        return False
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(url, encoding="utf-8")
     return True
 
 
@@ -222,9 +255,10 @@ def public_downloads(servers: list) -> list[dict]:
                     pass
                 mods.append({"filename": k.name, "label": name, "sizeBytes": k.stat().st_size})
         pack = get_pack(srv.id)
-        if mods or pack:
-            out.append({"server": srv, "mods": mods,
-                        "pack": {"filename": pack.name, "sizeBytes": pack.stat().st_size} if pack else None})
+        link = get_pack_url(srv.id)
+        if mods or pack or link:
+            out.append({"server": srv, "mods": mods, "link": link,
+                        "pack": {"filename": pack.name, "sizeBytes": pack.stat().st_size} if pack and not link else None})
     return out
 
 
@@ -232,6 +266,8 @@ def public_file(server_id: int, filename: str) -> Path | None:
     """Fichier téléchargeable publiquement pour ce serveur (son pack ou un mod qui lui est
     affecté), ou None. Jamais un chemin hors de la bibliothèque."""
     if "/" in filename or "\\" in filename or filename.startswith("."):
+        return None
+    if get_pack_url(server_id):          # contenu de l'auteur : on renvoie vers lui, rien n'est servi ici
         return None
     pack = get_pack(server_id)
     if pack is not None and pack.name == filename:

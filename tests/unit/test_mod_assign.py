@@ -149,3 +149,25 @@ def test_pack_accepte_les_gros_fichiers():
     # Vécu en production (25/11) : pack de 223 Mo refusé (413), la route gardait le plafond de 64 Mo.
     from app import _BIG_BODY_ENDPOINTS
     assert _BIG_BODY_ENDPOINTS["admin.mods_pack_upload"] >= 3 * 1024 ** 3
+
+
+def test_lien_externe_remplace_l_hebergement(app_ctx, monkeypatch):
+    # Pack sans licence de redistribution : on renvoie vers l'auteur, rien n'est servi ici.
+    monkeypatch.setattr(mod_assign, "enabled_server_ids", lambda: [3])
+    from types import SimpleNamespace
+    mod_assign.set_servers("drift_v1.4.kspkg", [3])
+    mod_assign.save_pack(3, _Upload("pack.zip"))
+    assert mod_assign.set_pack_url(3, "https://www.overtake.gg/downloads/x.1/")
+    assert mod_assign.public_file(3, "drift_v1.4.kspkg") is None
+    assert mod_assign.public_file(3, "pack.zip") is None
+    e = mod_assign.public_downloads([SimpleNamespace(id=3)])[0]
+    assert e["link"] == "https://www.overtake.gg/downloads/x.1/" and e["pack"] is None
+    mod_assign.save_pack(3, _Upload("autre.zip"))            # un nouveau pack n'efface pas le lien
+    assert mod_assign.get_pack_url(3)
+    assert mod_assign.set_pack_url(3, "")                    # lien retiré : hébergement de retour
+    assert mod_assign.public_file(3, "drift_v1.4.kspkg") is not None
+
+
+@pytest.mark.parametrize("url", ["http://x.fr/a", "javascript:alert(1)", "https://", "https://a.fr/\"><script>"])
+def test_lien_externe_refuse(app_ctx, url):
+    assert not mod_assign.set_pack_url(3, url)

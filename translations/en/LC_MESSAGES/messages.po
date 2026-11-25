@@ -6844,3 +6844,42 @@ msgstr "Delete this pack?"
 
 msgid "Mods requis : télécharger"
 msgstr "Mods required: download"
+
+msgid "Serveur réservé aux inscrits : expulsion après %(s)d s."
+msgstr "Registered drivers only: kicked after %(s)d s."
+
+msgid "Serveur ouvert à tous."
+msgstr "Server open to everyone."
+
+msgid "Lien invalide : adresse https:// attendue"
+msgstr "Invalid link: https:// address expected"
+
+msgid "Proposé par son auteur sur sa propre page : télécharge-le là-bas, il contient tout le nécessaire pour ce serveur (circuit et voitures)."
+msgstr "Offered by its author on their own page: download it there, it contains everything this server needs (track and cars)."
+
+msgid "Télécharger chez l'auteur"
+msgstr "Download from the author"
+
+msgid "Inclus : %(cars)s"
+msgstr "Included: %(cars)s"
+
+msgid "Si la licence de l'auteur ne permet pas de redistribuer ses fichiers, donne plutôt le lien de sa page de téléchargement : la page publique renverra vers lui et ne servira aucun de ses fichiers."
+msgstr "If the author's licence does not allow redistributing their files, give the link to their download page instead: the public page will point to it and serve none of their files."
+
+msgid "Ou lien vers la page de l'auteur"
+msgstr "Or link to the author's page"
+
+msgid "Lien enregistré"
+msgstr "Link saved"
+
+msgid "Un pilote sans inscription confirmée à un événement publié de ce serveur est prévenu par le bot (en anglais), puis expulsé à la fin du délai. Le bot doit pouvoir passer admin (mot de passe admin du serveur)."
+msgstr "A driver without a confirmed registration to a published event on this server is warned by the bot (in English), then kicked when the delay ends. The bot must be able to become admin (server admin password)."
+
+msgid "Réservé aux inscrits"
+msgstr "Registered drivers only"
+
+msgid "expulsion après"
+msgstr "kick after"
+
+msgid "Délai avant expulsion (secondes)"
+msgstr "Delay before kick (seconds)"

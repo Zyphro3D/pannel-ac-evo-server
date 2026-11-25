@@ -350,6 +350,9 @@ class Server(db.Model):
     is_enabled      = db.Column(db.Boolean, default=True)
     sort_order      = db.Column(db.Integer, default=0)
     created_at      = db.Column(db.DateTime, default=_utcnow)
+    # Réservé aux inscrits (registration_guard) : non-inscrit prévenu puis expulsé après le délai
+    registration_required = db.Column(db.Boolean, default=False)
+    registration_grace_s  = db.Column(db.Integer, default=180)
 
 
 # ── CarMeta (métadonnées enrichies des véhicules) ─────────────────────────────

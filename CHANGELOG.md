@@ -10,7 +10,13 @@
 - Le nom d'un mod garde ses points (« …_v1.4.kspkg » restait « …_v1_4 »), pour rester celui du pack que les joueurs installent.
 - **Page publique « Mods »** (`/downloads`, lien dans le menu pour tous, sans compte) : pour chaque serveur à mods, son pack et ses fichiers .kspkg à télécharger, avec la marche à suivre. L'accueil signale les serveurs qui demandent des mods.
 - **Pack client par serveur** (onglet Circuits de la page Mods) : l'archive que les joueurs doivent installer, par exemple l'installeur d'un circuit moddé et ses voitures. Un seul pack par serveur, en .zip, .7z ou .rar.
-- Pris en compte au prochain démarrage de chaque serveur. Après la mise à jour, recréer les serveurs de jeu une fois (`docker compose up -d`) : un serveur créé avant cette version garde la bibliothèque commune et l'indique dans son journal.
+- **Lien vers la page de l'auteur** à la place d'un pack hébergé, quand sa licence ne permet pas de redistribuer ses fichiers : la page publique renvoie vers lui et le panel ne sert plus aucun fichier de ce serveur.
+- Pris en compte au prochain démarrage de chaque serveur.
+
+**Serveur réservé aux inscrits**
+
+- Nouveau réglage par serveur (page Serveurs) : « Réservé aux inscrits ». Un pilote sans inscription confirmée à un événement publié de ce serveur (à venir ou commencé depuis moins de 24 h) est prévenu dans le tchat par le bot, en anglais, puis expulsé à la fin du délai choisi (3 minutes par défaut). Un événement public laisse entrer tout le monde. Le pilote est reconnu par le compte Steam lié à son compte du panel.
+- Le bot passe admin tout seul juste avant l'expulsion : il faut le mot de passe admin du serveur (Paramètres). Après la mise à jour, recréer les serveurs de jeu une fois (`docker compose up -d`) : un serveur créé avant cette version garde la bibliothèque commune et l'indique dans son journal.
 
 ### v2.7.2 — 24/11/2026
 

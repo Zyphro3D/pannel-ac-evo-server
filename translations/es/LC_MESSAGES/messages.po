@@ -6946,3 +6946,42 @@ msgstr "¿Eliminar este pack?"
 
 msgid "Mods requis : télécharger"
 msgstr "Mods necesarios: descargar"
+
+msgid "Serveur réservé aux inscrits : expulsion après %(s)d s."
+msgstr "Solo inscritos: expulsión tras %(s)d s."
+
+msgid "Serveur ouvert à tous."
+msgstr "Servidor abierto a todos."
+
+msgid "Lien invalide : adresse https:// attendue"
+msgstr "Enlace no válido: se espera una dirección https://"
+
+msgid "Proposé par son auteur sur sa propre page : télécharge-le là-bas, il contient tout le nécessaire pour ce serveur (circuit et voitures)."
+msgstr "Ofrecido por su autor en su propia página: descárgalo allí, contiene todo lo necesario para este servidor (circuito y coches)."
+
+msgid "Télécharger chez l'auteur"
+msgstr "Descargar del autor"
+
+msgid "Inclus : %(cars)s"
+msgstr "Incluye: %(cars)s"
+
+msgid "Si la licence de l'auteur ne permet pas de redistribuer ses fichiers, donne plutôt le lien de sa page de téléchargement : la page publique renverra vers lui et ne servira aucun de ses fichiers."
+msgstr "Si la licencia del autor no permite redistribuir sus archivos, indica el enlace a su página de descarga: la página pública remitirá a ella y no servirá ninguno de sus archivos."
+
+msgid "Ou lien vers la page de l'auteur"
+msgstr "O enlace a la página del autor"
+
+msgid "Lien enregistré"
+msgstr "Enlace guardado"
+
+msgid "Un pilote sans inscription confirmée à un événement publié de ce serveur est prévenu par le bot (en anglais), puis expulsé à la fin du délai. Le bot doit pouvoir passer admin (mot de passe admin du serveur)."
+msgstr "Un piloto sin inscripción confirmada en un evento publicado de este servidor recibe un aviso del bot (en inglés) y es expulsado al terminar el plazo. El bot debe poder hacerse admin (contraseña de admin del servidor)."
+
+msgid "Réservé aux inscrits"
+msgstr "Solo inscritos"
+
+msgid "expulsion après"
+msgstr "expulsión tras"
+
+msgid "Délai avant expulsion (secondes)"
+msgstr "Plazo antes de la expulsión (segundos)"

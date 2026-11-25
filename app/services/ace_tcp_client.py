@@ -875,6 +875,8 @@ def _on_connect_log(m, c, seen, server_id):
     if vehicle_changed:
         seen.add(sid)
         threading.Thread(target=_send_welcome, args=(name, server_id), daemon=True).start()
+        from app.services import registration_guard
+        registration_guard.start(sid, name, server_id)
         try:
             from app.services import discord_notifier
             discord_notifier.safe_notify(
@@ -887,6 +889,8 @@ def _on_connect_log(m, c, seen, server_id):
     elif sid not in seen:
         seen.add(sid)
         threading.Thread(target=_send_welcome, args=(name, server_id), daemon=True).start()
+        from app.services import registration_guard
+        registration_guard.start(sid, name, server_id)
         try:
             from app.services import discord_notifier
             discord_notifier.safe_notify(
