@@ -189,8 +189,8 @@ msgstr ""
 "toutes les configs)"
 
 #: app/routes/admin.py:593
-msgid "Nombre maximum de joueurs simultanés (1–128, défaut 8)"
-msgstr "Nombre maximum de joueurs simultanés (1–128, défaut 8)"
+msgid "Places d'une nouvelle configuration (1–128, défaut 8) ; ensuite, chaque configuration a son propre réglage"
+msgstr "Places d'une nouvelle configuration (1–128, défaut 8) ; ensuite, chaque configuration a son propre réglage"
 
 #: app/routes/admin.py:594
 msgid ""
@@ -6696,3 +6696,6 @@ msgstr ""
 
 msgid "Serveurs enregistrés : pris en compte au prochain démarrage de chaque serveur"
 msgstr ""
+
+msgid "Mettre à {pits}"
+msgstr "Mettre à {pits}"

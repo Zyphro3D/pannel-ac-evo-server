@@ -123,8 +123,10 @@ def server_container_stats():
     return jsonify({"available": True, **stats})
 
 
-def _do_start(auto_restart: bool = False, server_id: int = 1) -> dict:
+def _do_start(auto_restart: bool | None = None, server_id: int = 1) -> dict:
     st = get_status(server_id)
+    if auto_restart is None:
+        auto_restart = _default_auto_restart(server_id)
     if st["running"] and st["config"] != get_active_config_name():
         stop_server(server_id)
     config = load_config()
@@ -163,13 +165,20 @@ def _do_start(auto_restart: bool = False, server_id: int = 1) -> dict:
     return result
 
 
+def _default_auto_restart(server_id: int) -> bool:
+    """Garde le réglage du serveur s'il tourne déjà ; activé sinon (avant : désactivé
+    à chaque lancement ou changement de config, donc oublié en prod)."""
+    state = get_server_raw_state(server_id) or {}
+    return bool(state.get("auto_restart", True))
+
+
 @api_bp.route("/server/start", methods=["POST"])
 @login_required
 @_admin_required_json
 def server_start():
     try:
         data = request.get_json(silent=True) or {}
-        result = _do_start(auto_restart=bool(data.get("auto_restart", False)),
+        result = _do_start(auto_restart=(bool(data["auto_restart"]) if "auto_restart" in data else None),
                            server_id=_current_server_id())
     except Exception as e:
         log.exception("Server action failed")
@@ -540,7 +549,7 @@ def rotation_start():
         server_name=_rot_start_srv.name     if _rot_start_srv else None,
         server_id=sid,
     )
-    result  = start_server(sc, sd, first_cfg, auto_restart=False, server_id=sid,
+    result  = start_server(sc, sd, first_cfg, auto_restart=_default_auto_restart(sid), server_id=sid,
                            http_port=_rot_start_srv.http_port if _rot_start_srv else None)
 
     if result.get("ok"):

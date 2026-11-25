@@ -558,13 +558,28 @@ function updatePitWarning() {
   const warn = document.getElementById('pit-warning');
   if (!sel || !warn) return;
   const pits = parseInt((sel.selectedOptions[0] || {}).dataset?.pits || '0', 10);
-  const max = parseInt(sel.dataset.maxPlayers || '0', 10);
-  if (pits > 0 && max > pits) {
+  const input = document.getElementById('max-players-input');
+  const fix = document.getElementById('pit-fix');
+  const max = parseInt((input && input.value) || '0', 10);
+  const over = pits > 0 && max > pits;
+  if (over) {
     warn.textContent = (warn.dataset.msg || '').replace('{pits}', pits).replace('{max}', max);
-    warn.style.display = '';
-  } else {
-    warn.style.display = 'none';
   }
+  warn.style.display = over ? '' : 'none';
+  if (fix) {
+    fix.textContent = (fix.dataset.label || '').replace('{pits}', pits);
+    fix.style.display = over ? '' : 'none';
+  }
+}
+
+function fixMaxPlayers() {
+  const sel = document.getElementById('track-select');
+  const input = document.getElementById('max-players-input');
+  const pits = parseInt((sel.selectedOptions[0] || {}).dataset?.pits || '0', 10);
+  if (!input || pits <= 0) return;
+  input.value = pits;
+  input.dispatchEvent(new Event('change', { bubbles: true }));
+  updatePitWarning();
 }
 
 // Init au chargement

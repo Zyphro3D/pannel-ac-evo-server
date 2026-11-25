@@ -186,8 +186,8 @@ msgid ""
 msgstr "Server name shown in the ACE EVO server list (shared across all configs)"
 
 #: app/routes/admin.py:593
-msgid "Nombre maximum de joueurs simultanés (1–128, défaut 8)"
-msgstr "Maximum number of simultaneous players (1–128, default 8)"
+msgid "Places d'une nouvelle configuration (1–128, défaut 8) ; ensuite, chaque configuration a son propre réglage"
+msgstr "Player slots for a new configuration (1–128, default 8); each configuration then has its own setting"
 
 #: app/routes/admin.py:594
 msgid ""
@@ -6961,3 +6961,6 @@ msgstr "Change car"
 
 msgid "Choisis ta voiture parmi celles du serveur."
 msgstr "Choose your car among the server's cars."
+
+msgid "Mettre à {pits}"
+msgstr "Set to {pits}"

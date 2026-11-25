@@ -538,7 +538,7 @@ def server():
     current_event = config.get("Event", {})
 
     try:
-        max_players = int(os.environ.get("SERVER_MAX_PLAYERS") or config.get("Server", {}).get("MaxPlayers") or 0)
+        max_players = int(config.get("Server", {}).get("MaxPlayers") or 0)
     except (TypeError, ValueError):
         max_players = 0
 
@@ -619,7 +619,7 @@ _ENV_DESCS = {
     "ACESERVER_DIR":    _l("Dossier d'installation ACE EVO"),
     "CONFIGS_DIR":      _l("Dossier des fichiers de configuration JSON"),
     "SERVER_NAME":            _l("Nom du serveur affiché dans la liste des serveurs ACE EVO (commun à toutes les configs)"),
-    "SERVER_MAX_PLAYERS":     _l("Nombre maximum de joueurs simultanés (1–128, défaut 8)"),
+    "SERVER_MAX_PLAYERS":     _l("Places d'une nouvelle configuration (1–128, défaut 8) ; ensuite, chaque configuration a son propre réglage"),
     "SERVER_TCP_PORT":        _l("Port TCP du serveur de jeu (défaut 9700) — doit correspondre aux règles firewall"),
     "SERVER_UDP_PORT":        _l("Port UDP du serveur de jeu (défaut 9700) — généralement identique au port TCP"),
     "SERVER_DRIVER_PASSWORD": _l("Mot de passe d'accès au serveur pour les pilotes. Laisser vide = accès libre"),

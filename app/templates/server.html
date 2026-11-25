@@ -440,7 +440,7 @@
 
         <div class="form-group">
           <label>{{ _('Circuit') }}</label>
-          <select name="SelectedTrackValue" id="track-select" data-max-players="{{ max_players }}" onchange="updatePitWarning()">
+          <select name="SelectedTrackValue" id="track-select" onchange="updatePitWarning()">
             {% for ev in events_practice %}
             {% set tv = ev.track + '|' + ev.layout + '|' + ev.event_name + '|' + ev.track_length|string %}
             <option value="{{ tv }}" data-pits="{{ ev.max_pit_slot or 0 }}" {% if config.Event.SelectedTrackValue == tv %}selected{% endif %}>
@@ -450,6 +450,13 @@
           </select>
           <span class="form-hint" id="pit-warning" style="display:none; color:var(--st-amber)"
                 data-msg="{{ _('Ce circuit n\'a que {pits} stands pour {max} joueurs maximum : les pilotes en trop ne pourront pas être placés.') }}"></span>
+          <button type="button" class="btn btn-sm" id="pit-fix" style="display:none" data-label="{{ _('Mettre à {pits}') }}" onclick="fixMaxPlayers()"></button>
+        </div>
+
+        <div class="form-group">
+          <label for="max-players-input">{{ _('Joueurs max') }}</label>
+          <input type="number" name="MaxPlayers" id="max-players-input" min="1" max="128"
+                 value="{{ max_players or 8 }}" oninput="updatePitWarning()">
         </div>
 
       </form>

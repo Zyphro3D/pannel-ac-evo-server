@@ -190,8 +190,8 @@ msgstr ""
 "le configurazioni)"
 
 #: app/routes/admin.py:593
-msgid "Nombre maximum de joueurs simultanés (1–128, défaut 8)"
-msgstr "Numero massimo di giocatori simultanei (1–128, default 8)"
+msgid "Places d'une nouvelle configuration (1–128, défaut 8) ; ensuite, chaque configuration a son propre réglage"
+msgstr "Posti di una nuova configurazione (1–128, default 8); poi ogni configurazione ha la propria impostazione"
 
 #: app/routes/admin.py:594
 msgid ""
@@ -7023,3 +7023,6 @@ msgstr "Cambia auto"
 
 msgid "Choisis ta voiture parmi celles du serveur."
 msgstr "Scegli la tua auto tra quelle del server."
+
+msgid "Mettre à {pits}"
+msgstr "Imposta a {pits}"
