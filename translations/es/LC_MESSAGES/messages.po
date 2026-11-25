@@ -6985,3 +6985,63 @@ msgstr "expulsión tras"
 
 msgid "Délai avant expulsion (secondes)"
 msgstr "Plazo antes de la expulsión (segundos)"
+
+msgid "Inscription confirmée à %(n)d manche(s) : tu peux rejoindre le serveur."
+msgstr "Inscripción confirmada en %(n)d ronda(s): puedes unirte al servidor."
+
+msgid "Aucune manche ouverte pour le moment."
+msgstr "Ninguna ronda abierta por ahora."
+
+msgid "Connexion Steam expirée : recommence."
+msgstr "El inicio de sesión de Steam ha caducado: vuelve a empezar."
+
+msgid "Cet email est déjà utilisé : connecte-toi avec ce compte puis lie ton Steam."
+msgstr "Este correo ya está en uso: inicia sesión con esa cuenta y vincula tu Steam."
+
+msgid "Bienvenue %(name)s ! Inscription confirmée à %(n)d manche(s) : tu peux rejoindre le serveur."
+msgstr "¡Bienvenido %(name)s! Inscripción confirmada en %(n)d ronda(s): puedes unirte al servidor."
+
+msgid "Rejoindre le championnat"
+msgstr "Unirse al campeonato"
+
+msgid "Comment ça marche"
+msgstr "Cómo funciona"
+
+msgid "Ce serveur est réservé aux pilotes inscrits : sans inscription, le bot te prévient puis t'expulse au bout de %(m)d min."
+msgstr "Este servidor está reservado a pilotos inscritos: sin inscripción, el bot te avisa y te expulsa a los %(m)d min."
+
+msgid "Connecte-toi avec Steam (le compte avec lequel tu joues)."
+msgstr "Inicia sesión con Steam (la cuenta con la que juegas)."
+
+msgid "Première fois : choisis ton pseudo et donne ton email."
+msgstr "Primera vez: elige tu apodo e indica tu correo."
+
+msgid "Tu es inscrit tout de suite à toutes les manches à venir : rejoins le serveur."
+msgstr "Quedas inscrito al instante en todas las próximas rondas: únete al servidor."
+
+msgid "Steam vérifié. Dernière étape : ton pseudo et ton email."
+msgstr "Steam verificado. Último paso: tu apodo y tu correo."
+
+msgid "Pseudo (nom in-game)"
+msgstr "Apodo (nombre en el juego)"
+
+msgid "Créer mon compte et rejoindre"
+msgstr "Crear mi cuenta y unirme"
+
+msgid "Tu es inscrit à toutes les manches à venir. Rejoins le serveur depuis la liste des serveurs du jeu."
+msgstr "Estás inscrito en todas las próximas rondas. Únete al servidor desde la lista del juego."
+
+msgid "Se connecter avec Steam et rejoindre"
+msgstr "Iniciar sesión con Steam y unirse"
+
+msgid "Steam confirme seulement ton identifiant de joueur : aucun mot de passe n'est partagé avec ce site."
+msgstr "Steam solo confirma tu ID de jugador: no se comparte ninguna contraseña con este sitio."
+
+msgid "Manches à venir"
+msgstr "Próximas rondas"
+
+msgid "Inscrit"
+msgstr "Inscrito"
+
+msgid "Aucune manche publiée pour le moment."
+msgstr "Aún no hay rondas publicadas."

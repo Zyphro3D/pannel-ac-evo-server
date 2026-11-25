@@ -6883,3 +6883,63 @@ msgstr "kick after"
 
 msgid "Délai avant expulsion (secondes)"
 msgstr "Delay before kick (seconds)"
+
+msgid "Inscription confirmée à %(n)d manche(s) : tu peux rejoindre le serveur."
+msgstr "Registration confirmed for %(n)d round(s): you can join the server."
+
+msgid "Aucune manche ouverte pour le moment."
+msgstr "No round open right now."
+
+msgid "Connexion Steam expirée : recommence."
+msgstr "Steam sign-in expired: start again."
+
+msgid "Cet email est déjà utilisé : connecte-toi avec ce compte puis lie ton Steam."
+msgstr "This email is already in use: sign in with that account, then link your Steam."
+
+msgid "Bienvenue %(name)s ! Inscription confirmée à %(n)d manche(s) : tu peux rejoindre le serveur."
+msgstr "Welcome %(name)s! Registration confirmed for %(n)d round(s): you can join the server."
+
+msgid "Rejoindre le championnat"
+msgstr "Join the championship"
+
+msgid "Comment ça marche"
+msgstr "How it works"
+
+msgid "Ce serveur est réservé aux pilotes inscrits : sans inscription, le bot te prévient puis t'expulse au bout de %(m)d min."
+msgstr "This server is reserved for registered drivers: without registration, the bot warns you and then kicks you after %(m)d min."
+
+msgid "Connecte-toi avec Steam (le compte avec lequel tu joues)."
+msgstr "Sign in with Steam (the account you play with)."
+
+msgid "Première fois : choisis ton pseudo et donne ton email."
+msgstr "First time: choose your nickname and enter your email."
+
+msgid "Tu es inscrit tout de suite à toutes les manches à venir : rejoins le serveur."
+msgstr "You are registered right away for all upcoming rounds: join the server."
+
+msgid "Steam vérifié. Dernière étape : ton pseudo et ton email."
+msgstr "Steam verified. Last step: your nickname and email."
+
+msgid "Pseudo (nom in-game)"
+msgstr "Nickname (in-game name)"
+
+msgid "Créer mon compte et rejoindre"
+msgstr "Create my account and join"
+
+msgid "Tu es inscrit à toutes les manches à venir. Rejoins le serveur depuis la liste des serveurs du jeu."
+msgstr "You are registered for all upcoming rounds. Join the server from the in-game server list."
+
+msgid "Se connecter avec Steam et rejoindre"
+msgstr "Sign in with Steam and join"
+
+msgid "Steam confirme seulement ton identifiant de joueur : aucun mot de passe n'est partagé avec ce site."
+msgstr "Steam only confirms your player ID: no password is shared with this site."
+
+msgid "Manches à venir"
+msgstr "Upcoming rounds"
+
+msgid "Inscrit"
+msgstr "Registered"
+
+msgid "Aucune manche publiée pour le moment."
+msgstr "No round published yet."

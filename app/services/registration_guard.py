@@ -58,12 +58,15 @@ def is_registered(steam_id: str, server_id: int) -> bool:
     ).first() is not None
 
 
-def messages(name: str, site_url: str, grace_s: int) -> list[str]:
-    site = site_url or "the server website"
+def messages(name: str, site_url: str, grace_s: int, server_id: int = 0) -> list[str]:
     minutes = max(1, round(grace_s / 60))
+    if site_url and server_id:
+        how = f"Join in 1 minute with your Steam account: {site_url.rstrip('/')}/join/{server_id}"
+    else:
+        how = f"Register on {site_url or 'the server website'} with your Steam account and sign up for an event."
     return [
         f"Hi {name}, this server is reserved for registered championship drivers.",
-        f"Register on {site} with your Steam account and sign up for an event to race here.",
+        how,
         f"You will be kicked in {minutes} min if you are not registered.",
     ]
 
@@ -92,7 +95,7 @@ def guard(sid: str, name: str, server_id: int, app) -> None:
         time.sleep(max(0, c.get("welcome_delay", 20)) + 3)
         if not _still_here(c, sid):
             return
-        for line in messages(name, c.get("welcome_site", ""), grace):
+        for line in messages(name, c.get("welcome_site", ""), grace, server_id):
             bot.send_chat(line, server_id)
             time.sleep(1)
         log.info("registration_guard: %s (%s) non inscrit, expulsion dans %d s (server=%d)", name, sid, grace, server_id)

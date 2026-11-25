@@ -6948,3 +6948,63 @@ msgstr "Rauswurf nach"
 
 msgid "Délai avant expulsion (secondes)"
 msgstr "Frist bis zum Rauswurf (Sekunden)"
+
+msgid "Inscription confirmée à %(n)d manche(s) : tu peux rejoindre le serveur."
+msgstr "Anmeldung für %(n)d Lauf/Läufe bestätigt: Du kannst dem Server beitreten."
+
+msgid "Aucune manche ouverte pour le moment."
+msgstr "Derzeit ist kein Lauf offen."
+
+msgid "Connexion Steam expirée : recommence."
+msgstr "Steam-Anmeldung abgelaufen: Bitte neu starten."
+
+msgid "Cet email est déjà utilisé : connecte-toi avec ce compte puis lie ton Steam."
+msgstr "Diese E-Mail wird bereits verwendet: Melde dich mit diesem Konto an und verknüpfe dann dein Steam."
+
+msgid "Bienvenue %(name)s ! Inscription confirmée à %(n)d manche(s) : tu peux rejoindre le serveur."
+msgstr "Willkommen %(name)s! Anmeldung für %(n)d Lauf/Läufe bestätigt: Du kannst dem Server beitreten."
+
+msgid "Rejoindre le championnat"
+msgstr "Der Meisterschaft beitreten"
+
+msgid "Comment ça marche"
+msgstr "So funktioniert's"
+
+msgid "Ce serveur est réservé aux pilotes inscrits : sans inscription, le bot te prévient puis t'expulse au bout de %(m)d min."
+msgstr "Dieser Server ist angemeldeten Fahrern vorbehalten: Ohne Anmeldung warnt dich der Bot und kickt dich nach %(m)d Min."
+
+msgid "Connecte-toi avec Steam (le compte avec lequel tu joues)."
+msgstr "Melde dich mit Steam an (dem Konto, mit dem du spielst)."
+
+msgid "Première fois : choisis ton pseudo et donne ton email."
+msgstr "Beim ersten Mal: Wähle deinen Namen und gib deine E-Mail an."
+
+msgid "Tu es inscrit tout de suite à toutes les manches à venir : rejoins le serveur."
+msgstr "Du bist sofort für alle kommenden Läufe angemeldet: Tritt dem Server bei."
+
+msgid "Steam vérifié. Dernière étape : ton pseudo et ton email."
+msgstr "Steam bestätigt. Letzter Schritt: dein Name und deine E-Mail."
+
+msgid "Pseudo (nom in-game)"
+msgstr "Name (Ingame-Name)"
+
+msgid "Créer mon compte et rejoindre"
+msgstr "Konto erstellen und beitreten"
+
+msgid "Tu es inscrit à toutes les manches à venir. Rejoins le serveur depuis la liste des serveurs du jeu."
+msgstr "Du bist für alle kommenden Läufe angemeldet. Tritt dem Server über die Serverliste im Spiel bei."
+
+msgid "Se connecter avec Steam et rejoindre"
+msgstr "Mit Steam anmelden und beitreten"
+
+msgid "Steam confirme seulement ton identifiant de joueur : aucun mot de passe n'est partagé avec ce site."
+msgstr "Steam bestätigt nur deine Spieler-ID: Es wird kein Passwort mit dieser Seite geteilt."
+
+msgid "Manches à venir"
+msgstr "Kommende Läufe"
+
+msgid "Inscrit"
+msgstr "Angemeldet"
+
+msgid "Aucune manche publiée pour le moment."
+msgstr "Noch kein Lauf veröffentlicht."

@@ -6945,3 +6945,63 @@ msgstr "espulsione dopo"
 
 msgid "Délai avant expulsion (secondes)"
 msgstr "Tempo prima dell'espulsione (secondi)"
+
+msgid "Inscription confirmée à %(n)d manche(s) : tu peux rejoindre le serveur."
+msgstr "Iscrizione confermata a %(n)d gara/e: puoi entrare nel server."
+
+msgid "Aucune manche ouverte pour le moment."
+msgstr "Nessuna gara aperta al momento."
+
+msgid "Connexion Steam expirée : recommence."
+msgstr "Accesso Steam scaduto: ricomincia."
+
+msgid "Cet email est déjà utilisé : connecte-toi avec ce compte puis lie ton Steam."
+msgstr "Questa email è già in uso: accedi con quell'account e collega il tuo Steam."
+
+msgid "Bienvenue %(name)s ! Inscription confirmée à %(n)d manche(s) : tu peux rejoindre le serveur."
+msgstr "Benvenuto %(name)s! Iscrizione confermata a %(n)d gara/e: puoi entrare nel server."
+
+msgid "Rejoindre le championnat"
+msgstr "Partecipa al campionato"
+
+msgid "Comment ça marche"
+msgstr "Come funziona"
+
+msgid "Ce serveur est réservé aux pilotes inscrits : sans inscription, le bot te prévient puis t'expulse au bout de %(m)d min."
+msgstr "Questo server è riservato ai piloti iscritti: senza iscrizione, il bot ti avvisa e ti espelle dopo %(m)d min."
+
+msgid "Connecte-toi avec Steam (le compte avec lequel tu joues)."
+msgstr "Accedi con Steam (l'account con cui giochi)."
+
+msgid "Première fois : choisis ton pseudo et donne ton email."
+msgstr "Prima volta: scegli il tuo nickname e inserisci la tua email."
+
+msgid "Tu es inscrit tout de suite à toutes les manches à venir : rejoins le serveur."
+msgstr "Sei subito iscritto a tutte le prossime gare: entra nel server."
+
+msgid "Steam vérifié. Dernière étape : ton pseudo et ton email."
+msgstr "Steam verificato. Ultimo passo: nickname ed email."
+
+msgid "Pseudo (nom in-game)"
+msgstr "Nickname (nome in gioco)"
+
+msgid "Créer mon compte et rejoindre"
+msgstr "Crea il mio account e partecipa"
+
+msgid "Tu es inscrit à toutes les manches à venir. Rejoins le serveur depuis la liste des serveurs du jeu."
+msgstr "Sei iscritto a tutte le prossime gare. Entra nel server dalla lista dei server del gioco."
+
+msgid "Se connecter avec Steam et rejoindre"
+msgstr "Accedi con Steam e partecipa"
+
+msgid "Steam confirme seulement ton identifiant de joueur : aucun mot de passe n'est partagé avec ce site."
+msgstr "Steam conferma solo il tuo ID giocatore: nessuna password viene condivisa con questo sito."
+
+msgid "Manches à venir"
+msgstr "Prossime gare"
+
+msgid "Inscrit"
+msgstr "Iscritto"
+
+msgid "Aucune manche publiée pour le moment."
+msgstr "Nessuna gara pubblicata per ora."

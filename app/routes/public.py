@@ -9,13 +9,13 @@ from pathlib import Path
 
 _MEDIA_ROOT = Path(__file__).parent.parent.parent / "media"
 
-from flask import Blueprint, render_template, redirect, url_for, request, flash, current_app, send_from_directory, abort
+from flask import Blueprint, render_template, redirect, url_for, request, flash, current_app, send_from_directory, abort, session
 from flask_babel import _, get_locale
 from sqlalchemy.orm import selectinload as _pub_selectinload
 from flask_login import current_user, login_required
 from app import limiter
 
-from app.models import Driver, Event, EventRegistration, Server, SessionResult, EventStatus, RegStatus, LapRecord, LapArchive, TrackMeta
+from app.models import Driver, Event, EventRegistration, Server, SessionResult, EventStatus, RegStatus, DriverStatus, LapRecord, LapArchive, TrackMeta
 from app.routes.auth import _validate_password
 from app.services.database import db
 from app.services.process_manager import get_status, get_player_history
@@ -562,3 +562,156 @@ def pilot_unregister(event_id):
     else:
         flash(_("Impossible de se désinscrire (inscription confirmée)."), "error")
     return redirect(url_for("public.pilot_dashboard"))
+
+
+# ── Rejoindre un championnat (serveur réservé aux inscrits) ───────────────────
+# Parcours court pour un joueur expulsé par registration_guard : connexion Steam, mail et pseudo,
+# compte pilote validé et inscription confirmée aux manches à venir du serveur, sans attente.
+
+_JOIN_TTL = 900   # la connexion Steam vaut 15 minutes pour finir le formulaire
+
+
+def _join_server(server_id):
+    srv = db.session.get(Server, server_id)
+    if srv is None or not srv.is_enabled or not srv.registration_required:
+        abort(404)
+    return srv
+
+
+def _join_events(server_id):
+    from datetime import timedelta as _td
+    since = _now_utc() - _td(hours=24)
+    return (Event.query
+            .filter(Event.server_id == server_id, Event.status == EventStatus.PUBLISHED, Event.date >= since)
+            .order_by(Event.date.asc()).all())
+
+
+def _join_register(driver, server_id) -> int:
+    """Inscrit le pilote, confirmé d'office, à chaque manche à venir du serveur. Retourne le
+    nombre de manches où il est désormais inscrit."""
+    n = 0
+    for ev in _join_events(server_id):
+        reg = EventRegistration.query.filter_by(event_id=ev.id, driver_id=driver.id).first()
+        if reg is None:
+            if ev.is_full:
+                continue
+            reg = EventRegistration(event_id=ev.id, driver_id=driver.id)
+            db.session.add(reg)
+        reg.status = RegStatus.CONFIRMED
+        n += 1
+    db.session.commit()
+    return n
+
+
+@public_bp.route("/join/<int:server_id>")
+@limiter.limit("60 per minute")
+def join(server_id):
+    srv = _join_server(server_id)
+    events = _join_events(server_id)
+    registered = set()
+    if current_user.is_authenticated and current_user.is_pilot:
+        registered = {r.event_id for r in EventRegistration.query.filter_by(
+            driver_id=current_user.id, status=RegStatus.CONFIRMED).all()}
+    pending = session.get("join_pending")
+    finishing = bool(pending and pending.get("server_id") == server_id
+                     and time.time() - pending.get("ts", 0) < _JOIN_TTL)
+    return render_template("join.html", srv=srv, events=events, registered=registered, finishing=finishing)
+
+
+@public_bp.route("/join/<int:server_id>", methods=["POST"])
+@login_required
+@limiter.limit("10 per minute")
+def join_confirm(server_id):
+    _join_server(server_id)
+    if not current_user.is_pilot:
+        return redirect(url_for("public.join", server_id=server_id))
+    n = _join_register(current_user, server_id)
+    flash(_("Inscription confirmée à %(n)d manche(s) : tu peux rejoindre le serveur.", n=n) if n
+          else _("Aucune manche ouverte pour le moment."), "success" if n else "warning")
+    return redirect(url_for("public.join", server_id=server_id))
+
+
+@public_bp.route("/join/<int:server_id>/steam")
+@limiter.limit("10 per minute")
+def join_steam(server_id):
+    from app.services.steam_openid import build_auth_url
+    _join_server(server_id)
+    state = secrets.token_urlsafe(24)
+    session["join_state"] = {"state": state, "server_id": server_id}
+    return_to = url_for("public.join_steam_callback", state=state, _external=True)
+    return redirect(build_auth_url(return_to, request.url_root))
+
+
+@public_bp.route("/join/steam/callback")
+@limiter.limit("10 per minute")
+def join_steam_callback():
+    from app.services.steam_openid import verify_callback
+    from app.routes.auth import _login
+    st = session.pop("join_state", None) or {}
+    state, server_id = st.get("state"), st.get("server_id")
+    steam_id = None
+    if state and server_id and secrets.compare_digest(state, request.args.get("state", "")):
+        steam_id = verify_callback(request.args, url_for("public.join_steam_callback", state=state, _external=True))
+    if not steam_id:
+        flash(_("Impossible de vérifier votre compte Steam. Réessayez."), "error")
+        return redirect(url_for("public.join", server_id=server_id) if server_id else url_for("public.index"))
+    _join_server(server_id)
+    driver = Driver.query.filter_by(steam_id=steam_id).first()
+    if driver is not None:
+        if driver.status == DriverStatus.REJECTED:
+            flash(_("Votre compte a été refusé."), "error")
+            return redirect(url_for("public.join", server_id=server_id))
+        if driver.status != DriverStatus.APPROVED:
+            driver.status = DriverStatus.APPROVED   # demande de championnat : acceptée d'office
+        _login(driver)
+        n = _join_register(driver, server_id)
+        flash(_("Inscription confirmée à %(n)d manche(s) : tu peux rejoindre le serveur.", n=n) if n
+              else _("Aucune manche ouverte pour le moment."), "success" if n else "warning")
+        return redirect(url_for("public.join", server_id=server_id))
+    session["join_pending"] = {"steam_id": steam_id, "server_id": server_id, "ts": time.time()}
+    return redirect(url_for("public.join", server_id=server_id))
+
+
+@public_bp.route("/join/<int:server_id>/finish", methods=["POST"])
+@limiter.limit("5 per hour")
+def join_finish(server_id):
+    """Création du compte pilote après la connexion Steam : pseudo et mail (obligatoire)."""
+    from app.routes.auth import _login
+    _join_server(server_id)
+    pending = session.get("join_pending") or {}
+    if pending.get("server_id") != server_id or time.time() - pending.get("ts", 0) >= _JOIN_TTL:
+        flash(_("Connexion Steam expirée : recommence."), "error")
+        return redirect(url_for("public.join", server_id=server_id))
+    ingame = request.form.get("ingame_name", "").strip()
+    email  = request.form.get("email", "").strip().lower()
+    errors = []
+    if not _INGAME_RE.match(ingame):
+        errors.append(_("Nom in-game invalide (2–30 caractères)."))
+    if not email or "@" not in email or len(email) > 120:
+        errors.append(_("Adresse email invalide."))
+    if not errors and Driver.query.filter_by(ingame_name=ingame).first():
+        errors.append(_("Ce nom in-game est déjà utilisé."))
+    if not errors and Driver.query.filter_by(email=email).first():
+        errors.append(_("Cet email est déjà utilisé : connecte-toi avec ce compte puis lie ton Steam."))
+    if not errors and Driver.query.filter_by(steam_id=pending["steam_id"]).first():
+        errors.append(_("Ce compte Steam est déjà lié à un autre pilote."))
+    if errors:
+        for e in errors:
+            flash(e, "error")
+        return redirect(url_for("public.join", server_id=server_id))
+    session.pop("join_pending", None)
+    driver = Driver(ingame_name=ingame, email=email, status=DriverStatus.APPROVED,
+                    steam_id=pending["steam_id"], steam_id_confirmed_at=_now_utc())
+    # Pas de mot de passe choisi : un mot de passe aléatoire, « mot de passe oublié » pour en définir un
+    driver.set_password(secrets.token_urlsafe(32))
+    db.session.add(driver)
+    db.session.commit()
+    from app.services import discord_notifier
+    discord_notifier.safe_notify(discord_notifier.notify_new_registration, driver)
+    if _require_email_confirmation():
+        _send_confirmation_email(driver)
+    _login(driver)
+    n = _join_register(driver, server_id)
+    flash(_("Bienvenue %(name)s ! Inscription confirmée à %(n)d manche(s) : tu peux rejoindre le serveur.",
+            name=ingame, n=n), "success")
+    return redirect(url_for("public.join", server_id=server_id))

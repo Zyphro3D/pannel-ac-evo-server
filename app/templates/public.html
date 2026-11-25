@@ -44,6 +44,9 @@
 
       <div class="pub-srv-header">
         <span class="h-panel-title">{{ srv.name }}</span>
+        {% if srv.registration_required %}
+        <a href="{{ url_for('public.join', server_id=srv.id) }}" class="btn btn-primary btn-sm">{{ _('Rejoindre le championnat') }}</a>
+        {% endif %}
         {% if srv.id in mod_server_ids %}
         <a href="{{ url_for('public.downloads') }}" class="btn btn-primary btn-sm">{{ _('Mods requis : télécharger') }}</a>
         {% endif %}

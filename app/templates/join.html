@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Rejoindre le championnat') }} — {{ panel_title }}{% endblock %}
+{% block content %}
+<div class="page-shell max-w-[860px]">
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">{{ _('Rejoindre le championnat') }}</h1>
+      <p class="page-subtitle">{{ srv.name }}</p>
+    </div>
+  </div>
+
+  <section class="card p-6 mb-4" aria-labelledby="join-how">
+    <h2 id="join-how" class="text-lg font-semibold text-txt mb-2">{{ _('Comment ça marche') }}</h2>
+    <p class="text-sm text-txt mb-3">{{ _('Ce serveur est réservé aux pilotes inscrits : sans inscription, le bot te prévient puis t\'expulse au bout de %(m)d min.', m=((srv.registration_grace_s or 180) / 60)|round(0, 'ceil')|int) }}</p>
+    <ol class="list-decimal pl-5 space-y-1 text-sm text-txt">
+      <li>{{ _('Connecte-toi avec Steam (le compte avec lequel tu joues).') }}</li>
+      <li>{{ _('Première fois : choisis ton pseudo et donne ton email.') }}</li>
+      <li>{{ _('Tu es inscrit tout de suite à toutes les manches à venir : rejoins le serveur.') }}</li>
+    </ol>
+  </section>
+
+  <section class="card p-6 mb-4" aria-labelledby="join-action">
+    <h2 id="join-action" class="sr-only">{{ _('Inscription') }}</h2>
+    {% if finishing %}
+      <p class="text-sm text-txt mb-4">{{ _('Steam vérifié. Dernière étape : ton pseudo et ton email.') }}</p>
+      <form method="post" action="{{ url_for('public.join_finish', server_id=srv.id) }}" class="grid gap-4 sm:grid-cols-2">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div>
+          <label class="form-label" for="join-name">{{ _('Pseudo (nom in-game)') }}</label>
+          <input id="join-name" name="ingame_name" class="form-control" required minlength="2" maxlength="30"
+                 pattern="[A-Za-z0-9_\-.\s]{2,30}" autocomplete="nickname">
+        </div>
+        <div>
+          <label class="form-label" for="join-email">{{ _('Email') }}</label>
+          <input id="join-email" name="email" type="email" class="form-control" required maxlength="120" autocomplete="email">
+        </div>
+        <div class="sm:col-span-2">
+          <button type="submit" class="btn btn-primary">{{ _('Créer mon compte et rejoindre') }}</button>
+        </div>
+      </form>
+    {% elif current_user.is_authenticated and current_user.is_pilot and current_user.steam_id %}
+      {% set missing = events|rejectattr('id', 'in', registered)|list %}
+      {% if events and not missing %}
+        <p class="text-txt font-medium">✓ {{ _('Tu es inscrit à toutes les manches à venir. Rejoins le serveur depuis la liste des serveurs du jeu.') }}</p>
+      {% else %}
+        <form method="post" action="{{ url_for('public.join_confirm', server_id=srv.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn btn-primary" {% if not events %}disabled{% endif %}>{{ _('Rejoindre le championnat') }}</button>
+        </form>
+      {% endif %}
+    {% else %}
+      <a href="{{ url_for('public.join_steam', server_id=srv.id) }}" class="btn btn-primary">{{ _('Se connecter avec Steam et rejoindre') }}</a>
+      <p class="text-dim text-xs mt-2">{{ _('Steam confirme seulement ton identifiant de joueur : aucun mot de passe n\'est partagé avec ce site.') }}</p>
+    {% endif %}
+  </section>
+
+  <section class="card p-6" aria-labelledby="join-events">
+    <h2 id="join-events" class="text-lg font-semibold text-txt mb-3">{{ _('Manches à venir') }}</h2>
+    {% if events %}
+    <ul class="divide-y divide-surface2">
+      {% for ev in events %}
+      <li class="flex flex-wrap items-center justify-between gap-2 py-2">
+        <div>
+          <p class="text-txt text-sm font-medium">{{ ev.title }}</p>
+          <p class="text-dim text-xs">{{ ev.date | local_dt }}{% if ev.circuit_display %} · {{ ev.circuit_display }}{% endif %}</p>
+        </div>
+        {% if ev.id in registered %}<span class="badge badge-confirmed">{{ _('Inscrit') }}</span>{% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="text-dim text-sm">{{ _('Aucune manche publiée pour le moment.') }}</p>
+    {% endif %}
+  </section>
+
+</div>
+{% endblock %}
