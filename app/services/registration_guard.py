@@ -109,7 +109,7 @@ def car_message(name: str, reg, car_raw: str) -> str | None:
     if not expected or expected.lower() == car_raw.lower():
         return f"Hi {name}, you are registered: you can start driving. Good luck!"
     label = (getattr(reg, "car_display", "") or assigned).encode("ascii", "ignore").decode() or assigned
-    return f"Hi {name}, wrong car: you registered with {label}. Please come back with it."
+    return f"Hi {name}, wrong car: you registered with {label}. Back to the pits: please come back with it."
 
 
 def messages(name: str, site_url: str, grace_s: int, server_id: int = 0) -> list[str]:
@@ -156,6 +156,14 @@ def guard(sid: str, name: str, server_id: int, app) -> None:
                 time.sleep(max(0, c.get("welcome_delay", 20)) + 3)
                 if _still_here(c, sid):
                     bot.send_chat(note, server_id)
+                    if "wrong car" in note:
+                        # Mauvaise voiture : renvoyé au stand (commande admin du jeu, comme la page Live)
+                        num = _car_number(c, sid)
+                        if num:
+                            time.sleep(1)
+                            sent, err = bot.send_admin_command(f"\\to_pit {num}", server_id)
+                            log.info("registration_guard: %s (#%s) renvoyé au stand (mauvaise voiture) envoyé=%s %s",
+                                     sid, num, sent, err or "")
             return
         # Même délai que l'accueil : le joueur doit avoir le tchat sous les yeux
         time.sleep(max(0, c.get("welcome_delay", 20)) + 3)

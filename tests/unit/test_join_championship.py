@@ -117,5 +117,5 @@ def test_message_selon_la_voiture(monkeypatch):
     reg = SimpleNamespace(assigned_car="preset_m4gt3_mech_1", car_display="BMW M4 GT3 Evo - GT3")
     assert "start driving" in rg.car_message("Bob", reg, "ks_bmw_m4_gt3")
     wrong = rg.car_message("Bob", reg, "ks_porsche_992_gt3_r_rennsport")
-    assert "wrong car" in wrong and "BMW M4 GT3 Evo - GT3" in wrong
+    assert "wrong car" in wrong and "BMW M4 GT3 Evo - GT3" in wrong and "pits" in wrong
     assert "start driving" in rg.car_message("Bob", SimpleNamespace(assigned_car="", car_display=""), "ks_x")
