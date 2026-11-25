@@ -7045,3 +7045,21 @@ msgstr "Inscrito"
 
 msgid "Aucune manche publiée pour le moment."
 msgstr "Aún no hay rondas publicadas."
+
+msgid "Choisis ta voiture."
+msgstr "Elige tu coche."
+
+msgid "Ta voiture pour le championnat"
+msgstr "Tu coche para el campeonato"
+
+msgid "Choisir…"
+msgstr "Elegir…"
+
+msgid "Rejoins le serveur avec cette voiture : le bot te le rappelle si tu en prends une autre."
+msgstr "Únete al servidor con este coche: el bot te lo recuerda si eliges otro."
+
+msgid "Changer de voiture"
+msgstr "Cambiar de coche"
+
+msgid "Choisis ta voiture parmi celles du serveur."
+msgstr "Elige tu coche entre los del servidor."

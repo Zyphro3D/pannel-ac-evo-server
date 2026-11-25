@@ -16,6 +16,7 @@
     <ol class="list-decimal pl-5 space-y-1 text-sm text-txt">
       <li>{{ _('Connecte-toi avec Steam (le compte avec lequel tu joues).') }}</li>
       <li>{{ _('Première fois : choisis ton pseudo et donne ton email.') }}</li>
+      <li>{{ _('Choisis ta voiture parmi celles du serveur.') }}</li>
       <li>{{ _('Tu es inscrit tout de suite à toutes les manches à venir : rejoins le serveur.') }}</li>
     </ol>
   </section>
@@ -35,6 +36,16 @@
           <label class="form-label" for="join-email">{{ _('Email') }}</label>
           <input id="join-email" name="email" type="email" class="form-control" required maxlength="120" autocomplete="email">
         </div>
+        {% if cars %}
+        <div class="sm:col-span-2">
+          <label class="form-label" for="join-car">{{ _('Ta voiture pour le championnat') }}</label>
+          <select id="join-car" name="car" class="form-control" required>
+            <option value="">{{ _('Choisir…') }}</option>
+            {% for c in cars %}<option value="{{ c.name }}" {% if c.name == my_car %}selected{% endif %}>{{ c.label }}</option>{% endfor %}
+          </select>
+          <p class="text-dim text-xs mt-1">{{ _('Rejoins le serveur avec cette voiture : le bot te le rappelle si tu en prends une autre.') }}</p>
+        </div>
+        {% endif %}
         <div class="sm:col-span-2">
           <button type="submit" class="btn btn-primary">{{ _('Créer mon compte et rejoindre') }}</button>
         </div>
@@ -42,13 +53,26 @@
     {% elif current_user.is_authenticated and current_user.is_pilot and current_user.steam_id %}
       {% set missing = events|rejectattr('id', 'in', registered)|list %}
       {% if events and not missing %}
-        <p class="text-txt font-medium">✓ {{ _('Tu es inscrit à toutes les manches à venir. Rejoins le serveur depuis la liste des serveurs du jeu.') }}</p>
-      {% else %}
-        <form method="post" action="{{ url_for('public.join_confirm', server_id=srv.id) }}">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <button type="submit" class="btn btn-primary" {% if not events %}disabled{% endif %}>{{ _('Rejoindre le championnat') }}</button>
-        </form>
+        <p class="text-txt font-medium mb-4">✓ {{ _('Tu es inscrit à toutes les manches à venir. Rejoins le serveur depuis la liste des serveurs du jeu.') }}</p>
       {% endif %}
+      <form method="post" action="{{ url_for('public.join_confirm', server_id=srv.id) }}" class="grid gap-4 sm:grid-cols-2">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        {% if cars %}
+        <div class="sm:col-span-2">
+          <label class="form-label" for="join-car">{{ _('Ta voiture pour le championnat') }}</label>
+          <select id="join-car" name="car" class="form-control" required>
+            <option value="">{{ _('Choisir…') }}</option>
+            {% for c in cars %}<option value="{{ c.name }}" {% if c.name == my_car %}selected{% endif %}>{{ c.label }}</option>{% endfor %}
+          </select>
+          <p class="text-dim text-xs mt-1">{{ _('Rejoins le serveur avec cette voiture : le bot te le rappelle si tu en prends une autre.') }}</p>
+        </div>
+        {% endif %}
+        <div class="sm:col-span-2">
+          <button type="submit" class="btn btn-primary" {% if not events %}disabled{% endif %}>
+            {{ _('Changer de voiture') if (events and not missing) else _('Rejoindre le championnat') }}
+          </button>
+        </div>
+      </form>
     {% else %}
       <a href="{{ url_for('public.join_steam', server_id=srv.id) }}" class="btn btn-primary">{{ _('Se connecter avec Steam et rejoindre') }}</a>
       <p class="text-dim text-xs mt-2">{{ _('Steam confirme seulement ton identifiant de joueur : aucun mot de passe n\'est partagé avec ce site.') }}</p>

@@ -87,3 +87,35 @@ def test_message_du_bot_donne_le_lien():
     from app.services import registration_guard as rg
     lines = rg.messages("Bob", "https://evo.example/", 60, 2)
     assert "https://evo.example/join/2" in lines[1]
+
+
+def test_voiture_choisie_enregistree(admin_client, champ, monkeypatch):
+    import app.routes.public as pub
+    from app.models import Driver, EventRegistration
+    monkeypatch.setattr(pub, "_join_cars", lambda sid: [{"name": "preset_m4gt3_mech_1", "label": "BMW M4 GT3"}])
+    c = _anon(admin_client)
+    c.get("/join/1/steam")
+    with c.session_transaction() as s:
+        state = s["join_state"]["state"]
+    _steam(monkeypatch, "76561190000004250")
+    c.get(f"/join/steam/callback?state={state}")
+    assert "join-car" in c.get("/join/1").get_data(as_text=True)
+    c.post("/join/1/finish", data={"ingame_name": "JC Voiture", "email": "jc-car@test", "car": "inconnue"})
+    with admin_client.application.app_context():
+        assert Driver.query.filter_by(steam_id="76561190000004250").first() is None   # voiture hors liste refusée
+    c.post("/join/1/finish", data={"ingame_name": "JC Voiture", "email": "jc-car@test", "car": "preset_m4gt3_mech_1"})
+    with admin_client.application.app_context():
+        d = Driver.query.filter_by(steam_id="76561190000004250").first()
+        reg = EventRegistration.query.filter_by(event_id=champ, driver_id=d.id).first()
+        assert (reg.assigned_car, reg.car_display) == ("preset_m4gt3_mech_1", "BMW M4 GT3")
+
+
+def test_message_selon_la_voiture(monkeypatch):
+    from types import SimpleNamespace
+    from app.services import registration_guard as rg
+    monkeypatch.setattr(rg, "preset_car", lambda p: {"preset_m4gt3_mech_1": "ks_bmw_m4_gt3"}.get(p, ""))
+    reg = SimpleNamespace(assigned_car="preset_m4gt3_mech_1", car_display="BMW M4 GT3 Evo - GT3")
+    assert "start driving" in rg.car_message("Bob", reg, "ks_bmw_m4_gt3")
+    wrong = rg.car_message("Bob", reg, "ks_porsche_992_gt3_r_rennsport")
+    assert "wrong car" in wrong and "BMW M4 GT3 Evo - GT3" in wrong
+    assert "start driving" in rg.car_message("Bob", SimpleNamespace(assigned_car="", car_display=""), "ks_x")

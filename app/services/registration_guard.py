@@ -31,31 +31,85 @@ def server_settings(server_id: int) -> tuple[bool, int]:
     return bool(srv.registration_required), int(srv.registration_grace_s or 180)
 
 
-def is_registered(steam_id: str, server_id: int) -> bool:
-    from app.models import Driver, Event, EventRegistration, EventStatus, RegStatus, DriverStatus
+def registration_for(steam_id: str, server_id: int):
+    """« admin », « public », l'inscription confirmée (EventRegistration) ou None."""
+    from app.models import AdminAccount, Driver, Event, EventRegistration, EventStatus, RegStatus, DriverStatus
     since = _now() - _WINDOW
     events = (Event.query
               .filter(Event.server_id == server_id, Event.status == EventStatus.PUBLISHED, Event.date >= since)
-              .all())
-    if any(e.is_public for e in events):
-        return True
+              .order_by(Event.date.asc()).all())
     if not steam_id:
-        return False
+        return "public" if any(e.is_public for e in events) else None
     # Un admin du panel (Steam lié à son compte admin) n'est jamais expulsé de ses serveurs
-    from app.models import AdminAccount
     if AdminAccount.query.filter_by(steam_id=str(steam_id), is_active=True).first() is not None:
-        return True
+        driver = Driver.query.filter_by(steam_id=str(steam_id), status=DriverStatus.APPROVED).first()
+        reg = _confirmed(driver, events) if driver else None
+        return reg or "admin"
     driver = Driver.query.filter_by(steam_id=str(steam_id), status=DriverStatus.APPROVED).first()
-    if driver is None:
-        return False
+    reg = _confirmed(driver, events) if driver else None
+    if reg is not None:
+        return reg
+    return "public" if any(e.is_public for e in events) else None
+
+
+def _confirmed(driver, events):
+    from app.models import EventRegistration, RegStatus
     ids = [e.id for e in events]
     if not ids:
-        return False
-    return EventRegistration.query.filter(
-        EventRegistration.driver_id == driver.id,
-        EventRegistration.event_id.in_(ids),
-        EventRegistration.status == RegStatus.CONFIRMED,
-    ).first() is not None
+        return None
+    return (EventRegistration.query
+            .filter(EventRegistration.driver_id == driver.id, EventRegistration.event_id.in_(ids),
+                    EventRegistration.status == RegStatus.CONFIRMED)
+            .first())
+
+
+def is_registered(steam_id: str, server_id: int) -> bool:
+    return registration_for(steam_id, server_id) is not None
+
+
+_car_maps: dict[str, tuple[float, dict]] = {}    # chemin → (mtime, {variante: modèle})
+
+
+def _map_of(path) -> dict:
+    from app.services.mod_scanner import preset_car_map
+    try:
+        mtime = path.stat().st_mtime
+    except OSError:
+        return {}
+    cached = _car_maps.get(str(path))
+    if cached is None or cached[0] != mtime:
+        cached = (mtime, preset_car_map(path))
+        _car_maps[str(path)] = cached
+    return cached[1]
+
+
+def preset_car(preset: str) -> str:
+    """Modèle de voiture (car_slug) d'une variante : paquet du jeu, puis mods de la bibliothèque.
+    Lecture de la table des fichiers (mod_scanner), mise en cache tant que le fichier ne change pas."""
+    import os
+    from pathlib import Path
+    from flask import current_app
+    game = Path(os.environ.get("KSPKG_PATH") or Path(current_app.config["ACESERVER_DIR"]) / "content.kspkg")
+    car = _map_of(game).get(preset, "")
+    if car:
+        return car
+    for k in Path(current_app.config["MODS_DIR"]).glob("*.kspkg"):
+        car = _map_of(k).get(preset, "")
+        if car:
+            return car
+    return ""
+
+
+def car_message(name: str, reg, car_raw: str) -> str | None:
+    """Message d'un inscrit à son arrivée : bonne voiture ou rappel de celle choisie à l'inscription."""
+    assigned = getattr(reg, "assigned_car", "") or ""
+    if not assigned or not car_raw:
+        return f"Hi {name}, you are registered: you can start driving. Good luck!"
+    expected = preset_car(assigned)
+    if not expected or expected.lower() == car_raw.lower():
+        return f"Hi {name}, you are registered: you can start driving. Good luck!"
+    label = (getattr(reg, "car_display", "") or assigned).encode("ascii", "ignore").decode() or assigned
+    return f"Hi {name}, wrong car: you registered with {label}. Please come back with it."
 
 
 def messages(name: str, site_url: str, grace_s: int, server_id: int = 0) -> list[str]:
@@ -86,11 +140,23 @@ def guard(sid: str, name: str, server_id: int, app) -> None:
     n'exige pas d'inscription."""
     from app.services import ace_tcp_client as bot
     try:
+        c = bot._get_client(server_id)
         with app.app_context():
             required, grace = server_settings(server_id)
-            if not required or is_registered(sid, server_id):
+            if not required:
                 return
-        c = bot._get_client(server_id)
+            reg = registration_for(sid, server_id)
+            note = None
+            if reg not in (None, "admin", "public"):
+                with c["lb_lock"]:
+                    car_raw = c["sid_car_raw"].get(sid, "")
+                note = car_message(name, reg, car_raw)
+        if reg is not None:
+            if note:
+                time.sleep(max(0, c.get("welcome_delay", 20)) + 3)
+                if _still_here(c, sid):
+                    bot.send_chat(note, server_id)
+            return
         # Même délai que l'accueil : le joueur doit avoir le tchat sous les yeux
         time.sleep(max(0, c.get("welcome_delay", 20)) + 3)
         if not _still_here(c, sid):

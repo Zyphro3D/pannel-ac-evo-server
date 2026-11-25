@@ -6943,3 +6943,21 @@ msgstr "Registered"
 
 msgid "Aucune manche publiée pour le moment."
 msgstr "No round published yet."
+
+msgid "Choisis ta voiture."
+msgstr "Choose your car."
+
+msgid "Ta voiture pour le championnat"
+msgstr "Your car for the championship"
+
+msgid "Choisir…"
+msgstr "Choose…"
+
+msgid "Rejoins le serveur avec cette voiture : le bot te le rappelle si tu en prends une autre."
+msgstr "Join the server with this car: the bot reminds you if you pick another one."
+
+msgid "Changer de voiture"
+msgstr "Change car"
+
+msgid "Choisis ta voiture parmi celles du serveur."
+msgstr "Choose your car among the server's cars."

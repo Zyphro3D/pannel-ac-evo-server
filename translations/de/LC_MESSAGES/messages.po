@@ -7008,3 +7008,21 @@ msgstr "Angemeldet"
 
 msgid "Aucune manche publiée pour le moment."
 msgstr "Noch kein Lauf veröffentlicht."
+
+msgid "Choisis ta voiture."
+msgstr "Wähle dein Auto."
+
+msgid "Ta voiture pour le championnat"
+msgstr "Dein Auto für die Meisterschaft"
+
+msgid "Choisir…"
+msgstr "Auswählen…"
+
+msgid "Rejoins le serveur avec cette voiture : le bot te le rappelle si tu en prends une autre."
+msgstr "Tritt dem Server mit diesem Auto bei: Der Bot erinnert dich, wenn du ein anderes nimmst."
+
+msgid "Changer de voiture"
+msgstr "Auto wechseln"
+
+msgid "Choisis ta voiture parmi celles du serveur."
+msgstr "Wähle dein Auto aus denen des Servers."

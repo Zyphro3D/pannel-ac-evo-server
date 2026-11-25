@@ -122,6 +122,35 @@ def _best_display_name(car_name: str, source_models: set[str]) -> str:
     return prettify_name(car_name)
 
 
+def preset_car_map(file_path: str | Path) -> dict[str, str]:
+    """Variante mécanique → modèle de voiture (« preset_m4gt3_mech_1 » → « ks_bmw_m4_gt3 ») pour
+    toutes les voitures d'un .kspkg, mod ou paquet du jeu (content.kspkg). Le serveur écrit le
+    modèle à l'arrivée d'un pilote, la configuration utilise la variante. {} si illisible."""
+    path = Path(file_path)
+    out: dict[str, str] = {}
+    try:
+        size_bytes = path.stat().st_size
+        with open(path, "rb") as f:
+            table_size = _detect_table_size(f, size_bytes)
+            if table_size is None:
+                return {}
+            f.seek(size_bytes - table_size)
+            table = _xor(f.read(table_size), XOR_KEY)
+            for i in range(table_size // ENTRY_SIZE):
+                parsed = _parse_entry(table[i * ENTRY_SIZE:(i + 1) * ENTRY_SIZE])
+                if parsed is None:
+                    break
+                name, flags = parsed
+                if flags & FLAG_IS_DIRECTORY:
+                    continue
+                m = _RE_PRESET_PATH.match(name)
+                if m and m.group(3).lower() == "mechanical":
+                    out[m.group(2)] = m.group(1).lower()
+    except OSError:
+        return {}
+    return out
+
+
 def scan_kspkg(file_path: str | Path) -> dict:
     """Scan one .kspkg's file table on disk. Returns a dict with 'ok' and
     either the scan result or an 'error' string."""

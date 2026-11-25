@@ -586,9 +586,19 @@ def _join_events(server_id):
             .order_by(Event.date.asc()).all())
 
 
-def _join_register(driver, server_id) -> int:
-    """Inscrit le pilote, confirmé d'office, à chaque manche à venir du serveur. Retourne le
-    nombre de manches où il est désormais inscrit."""
+def _join_cars(server_id) -> list[dict]:
+    """Voitures proposées à l'inscription : celles de la configuration active du serveur."""
+    from app.services import ace_tcp_client
+    cfg = ace_tcp_client._read_active_config(server_id) or {}
+    return [{"name": c["name"], "label": c.get("display_name") or c["name"]}
+            for c in cfg.get("Event", {}).get("Cars", [])
+            if (c.get("is_selected") or c.get("IsSelected")) and c.get("name")]
+
+
+def _join_register(driver, server_id, car: str = "") -> int:
+    """Inscrit le pilote, confirmé d'office, à chaque manche à venir du serveur, avec la voiture
+    choisie (vérifiée par le bot à son arrivée). Retourne le nombre de manches concernées."""
+    cars = {c["name"]: c["label"] for c in _join_cars(server_id)}
     n = 0
     for ev in _join_events(server_id):
         reg = EventRegistration.query.filter_by(event_id=ev.id, driver_id=driver.id).first()
@@ -598,6 +608,8 @@ def _join_register(driver, server_id) -> int:
             reg = EventRegistration(event_id=ev.id, driver_id=driver.id)
             db.session.add(reg)
         reg.status = RegStatus.CONFIRMED
+        if car in cars:
+            reg.assigned_car, reg.car_display = car, cars[car]
         n += 1
     db.session.commit()
     return n
@@ -608,14 +620,16 @@ def _join_register(driver, server_id) -> int:
 def join(server_id):
     srv = _join_server(server_id)
     events = _join_events(server_id)
-    registered = set()
+    registered, my_car = set(), ""
     if current_user.is_authenticated and current_user.is_pilot:
-        registered = {r.event_id for r in EventRegistration.query.filter_by(
-            driver_id=current_user.id, status=RegStatus.CONFIRMED).all()}
+        regs = EventRegistration.query.filter_by(driver_id=current_user.id, status=RegStatus.CONFIRMED).all()
+        registered = {r.event_id for r in regs}
+        my_car = next((r.assigned_car for r in regs if r.event_id in {e.id for e in events} and r.assigned_car), "")
     pending = session.get("join_pending")
     finishing = bool(pending and pending.get("server_id") == server_id
                      and time.time() - pending.get("ts", 0) < _JOIN_TTL)
-    return render_template("join.html", srv=srv, events=events, registered=registered, finishing=finishing)
+    return render_template("join.html", srv=srv, events=events, registered=registered, finishing=finishing,
+                           cars=_join_cars(server_id), my_car=my_car)
 
 
 @public_bp.route("/join/<int:server_id>", methods=["POST"])
@@ -625,7 +639,11 @@ def join_confirm(server_id):
     _join_server(server_id)
     if not current_user.is_pilot:
         return redirect(url_for("public.join", server_id=server_id))
-    n = _join_register(current_user, server_id)
+    car = request.form.get("car", "")
+    if _join_cars(server_id) and car not in {c["name"] for c in _join_cars(server_id)}:
+        flash(_("Choisis ta voiture."), "error")
+        return redirect(url_for("public.join", server_id=server_id))
+    n = _join_register(current_user, server_id, car)
     flash(_("Inscription confirmée à %(n)d manche(s) : tu peux rejoindre le serveur.", n=n) if n
           else _("Aucune manche ouverte pour le moment."), "success" if n else "warning")
     return redirect(url_for("public.join", server_id=server_id))
@@ -663,10 +681,8 @@ def join_steam_callback():
             return redirect(url_for("public.join", server_id=server_id))
         if driver.status != DriverStatus.APPROVED:
             driver.status = DriverStatus.APPROVED   # demande de championnat : acceptée d'office
-        _login(driver)
-        n = _join_register(driver, server_id)
-        flash(_("Inscription confirmée à %(n)d manche(s) : tu peux rejoindre le serveur.", n=n) if n
-              else _("Aucune manche ouverte pour le moment."), "success" if n else "warning")
+        db.session.commit()
+        _login(driver)    # la page propose ensuite le choix de la voiture et « Rejoindre »
         return redirect(url_for("public.join", server_id=server_id))
     session["join_pending"] = {"steam_id": steam_id, "server_id": server_id, "ts": time.time()}
     return redirect(url_for("public.join", server_id=server_id))
@@ -684,7 +700,10 @@ def join_finish(server_id):
         return redirect(url_for("public.join", server_id=server_id))
     ingame = request.form.get("ingame_name", "").strip()
     email  = request.form.get("email", "").strip().lower()
+    car    = request.form.get("car", "")
     errors = []
+    if _join_cars(server_id) and car not in {c["name"] for c in _join_cars(server_id)}:
+        errors.append(_("Choisis ta voiture."))
     if not _INGAME_RE.match(ingame):
         errors.append(_("Nom in-game invalide (2–30 caractères)."))
     if not email or "@" not in email or len(email) > 120:
@@ -711,7 +730,7 @@ def join_finish(server_id):
     if _require_email_confirmation():
         _send_confirmation_email(driver)
     _login(driver)
-    n = _join_register(driver, server_id)
+    n = _join_register(driver, server_id, car)
     flash(_("Bienvenue %(name)s ! Inscription confirmée à %(n)d manche(s) : tu peux rejoindre le serveur.",
             name=ingame, n=n), "success")
     return redirect(url_for("public.join", server_id=server_id))

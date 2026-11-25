@@ -7005,3 +7005,21 @@ msgstr "Iscritto"
 
 msgid "Aucune manche publiée pour le moment."
 msgstr "Nessuna gara pubblicata per ora."
+
+msgid "Choisis ta voiture."
+msgstr "Scegli la tua auto."
+
+msgid "Ta voiture pour le championnat"
+msgstr "La tua auto per il campionato"
+
+msgid "Choisir…"
+msgstr "Scegli…"
+
+msgid "Rejoins le serveur avec cette voiture : le bot te le rappelle si tu en prends une autre."
+msgstr "Entra nel server con questa auto: il bot te lo ricorda se ne scegli un'altra."
+
+msgid "Changer de voiture"
+msgstr "Cambia auto"
+
+msgid "Choisis ta voiture parmi celles du serveur."
+msgstr "Scegli la tua auto tra quelle del server."
