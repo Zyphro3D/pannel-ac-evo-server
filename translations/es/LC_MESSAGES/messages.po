@@ -6856,3 +6856,18 @@ msgstr "Retraso antes de los mensajes de bienvenida del bot (20 s por defecto): 
 
 msgid "trop de requêtes, réessaie dans une minute"
 msgstr "demasiadas solicitudes, vuelve a intentarlo en un minuto"
+
+msgid "Un serveur exige de ses joueurs tous les mods qu'il charge, même ceux absents de sa liste de voitures. Pris en compte au prochain démarrage du serveur."
+msgstr "Un servidor exige a sus jugadores todos los mods que carga, incluso los que no están en su lista de coches. Se aplica en el próximo arranque del servidor."
+
+msgid "Aucun"
+msgstr "Ninguno"
+
+msgid "Serveur invalide"
+msgstr "Servidor no válido"
+
+msgid "Serveurs qui chargent %(name)s"
+msgstr "Servidores que cargan %(name)s"
+
+msgid "Serveurs enregistrés : pris en compte au prochain démarrage de chaque serveur"
+msgstr "Servidores guardados: se aplica en el próximo arranque de cada servidor"

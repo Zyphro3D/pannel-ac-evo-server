@@ -6681,3 +6681,18 @@ msgstr "Envoie sur le webhook course les contacts avec dégâts, regroupés une 
 
 msgid "Contacts avec dégâts sur Discord (salon course, regroupés par minute) : interrupteur dans Paramètres → Notifications, désactivé par défaut."
 msgstr "Contacts avec dégâts sur Discord (salon course, regroupés par minute) : interrupteur dans Paramètres → Notifications, désactivé par défaut."
+
+msgid "Un serveur exige de ses joueurs tous les mods qu'il charge, même ceux absents de sa liste de voitures. Pris en compte au prochain démarrage du serveur."
+msgstr ""
+
+msgid "Aucun"
+msgstr ""
+
+msgid "Serveur invalide"
+msgstr ""
+
+msgid "Serveurs qui chargent %(name)s"
+msgstr ""
+
+msgid "Serveurs enregistrés : pris en compte au prochain démarrage de chaque serveur"
+msgstr ""

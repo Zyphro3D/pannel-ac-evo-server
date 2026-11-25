@@ -57,6 +57,7 @@
             <th class="px-5 py-3 font-medium">{{ _('Fichier') }}</th>
             <th class="px-5 py-3 font-medium">{{ _('Voiture détectée') }}</th>
             <th class="px-5 py-3 font-medium">{{ _('Identifiant(s)') }}</th>
+            <th class="px-5 py-3 font-medium" title="{{ _('Un serveur exige de ses joueurs tous les mods qu\'il charge, même ceux absents de sa liste de voitures. Pris en compte au prochain démarrage du serveur.') }}">{{ _('Serveurs') }}</th>
             <th class="px-5 py-3 font-medium">{{ _('Taille') }}</th>
             <th class="px-5 py-3 font-medium text-right">{{ _('Actions') }}</th>
           </tr>
@@ -95,6 +96,22 @@
               </div>
               {% endif %}
             </td>
+            <td class="px-5 py-3">
+              {% set on = mod_servers.get(mod.filename, []) %}
+              {% if current_user.is_admin %}
+              <fieldset class="mod-servers flex flex-col gap-1" data-filename="{{ mod.filename }}">
+                <legend class="sr-only">{{ _('Serveurs qui chargent %(name)s', name=mod.filename) }}</legend>
+                {% for srv in servers %}
+                <label class="flex items-center gap-2 text-xs text-txt whitespace-nowrap">
+                  <input type="checkbox" value="{{ srv.id }}" {% if srv.id in on %}checked{% endif %}>
+                  <span>#{{ srv.id }} {{ srv.name }}</span>
+                </label>
+                {% endfor %}
+              </fieldset>
+              {% else %}
+              <span class="text-xs text-dim">{% for srv in servers if srv.id in on %}#{{ srv.id }} {{ srv.name }}{% if not loop.last %}, {% endif %}{% else %}{{ _('Aucun') }}{% endfor %}</span>
+              {% endif %}
+            </td>
             <td class="px-5 py-3 text-dim">{{ (mod.sizeBytes / 1048576)|round(1) }} Mo</td>
             <td class="px-5 py-3 text-right whitespace-nowrap">
               <a href="{{ url_for('public.mods_download', filename=mod.filename) }}"
@@ -107,7 +124,7 @@
               {% endif %}
             </td>
             {% else %}
-            <td class="px-5 py-3 text-red-400" colspan="3">{{ _('Non reconnu') }} — {{ mod.error }}</td>
+            <td class="px-5 py-3 text-red-400" colspan="4">{{ _('Non reconnu') }} — {{ mod.error }}</td>
             <td class="px-5 py-3 text-right">
               {% if current_user.is_admin %}
               <button class="btn btn-secondary btn-sm text-red-400 mod-delete-btn"
@@ -302,6 +319,23 @@ document.querySelectorAll('.mod-cover-input').forEach(input => {
       setTimeout(() => location.reload(), 800);
     } catch (e) {
       _modToast('error', {{ _("Erreur réseau pendant l'upload") | tojson }});
+    }
+  });
+});
+
+document.querySelectorAll('.mod-servers').forEach(box => {
+  box.addEventListener('change', async () => {
+    const body = new FormData();
+    box.querySelectorAll('input:checked').forEach(i => body.append('servers', i.value));
+    try {
+      const res = await fetch('{{ url_for("admin.mods_set_servers", filename="__FILENAME__") }}'.replace('__FILENAME__', encodeURIComponent(box.dataset.filename)), {
+        method: 'POST', headers: { 'X-CSRFToken': _csrf }, body,
+      });
+      const data = await res.json();
+      if (!data.ok) { _modToast('error', data.error || {{ _("Erreur") | tojson }}); return; }
+      _modToast('success', {{ _("Serveurs enregistrés : pris en compte au prochain démarrage de chaque serveur") | tojson }});
+    } catch (e) {
+      _modToast('error', {{ _("Erreur réseau") | tojson }});
     }
   });
 });

@@ -6819,3 +6819,18 @@ msgstr "Verzögerung vor den Willkommensnachrichten des Bots (standardmäßig 20
 
 msgid "trop de requêtes, réessaie dans une minute"
 msgstr "zu viele Anfragen, versuche es in einer Minute erneut"
+
+msgid "Un serveur exige de ses joueurs tous les mods qu'il charge, même ceux absents de sa liste de voitures. Pris en compte au prochain démarrage du serveur."
+msgstr "Ein Server verlangt von seinen Spielern alle Mods, die er lädt, auch solche, die nicht in seiner Fahrzeugliste stehen. Wirksam beim nächsten Serverstart."
+
+msgid "Aucun"
+msgstr "Keiner"
+
+msgid "Serveur invalide"
+msgstr "Ungültiger Server"
+
+msgid "Serveurs qui chargent %(name)s"
+msgstr "Server, die %(name)s laden"
+
+msgid "Serveurs enregistrés : pris en compte au prochain démarrage de chaque serveur"
+msgstr "Server gespeichert: wirksam beim nächsten Start jedes Servers"

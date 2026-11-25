@@ -459,7 +459,7 @@ def server():
             "error",
         )
         config = default_config()
-    cars            = load_cars()
+    cars            = load_cars(sid)
     events_practice = load_events("practice")
     events_race     = load_events("race")
     status          = get_status(sid)
@@ -1672,7 +1672,30 @@ def track_upload_image(track_id):
 @login_required
 def mods():
     from app.services.mod_scanner import list_mods
-    return render_template("mods.html", mods=list_mods())
+    from app.services import mod_assign
+    servers = Server.query.filter_by(is_enabled=True).order_by(Server.sort_order, Server.id).all()
+    ids = [s.id for s in servers]
+    assignments = mod_assign.load_assignments()
+    mod_servers = {m["filename"]: mod_assign.servers_of(m["filename"], ids, assignments) for m in list_mods()}
+    return render_template("mods.html", mods=list_mods(), servers=servers, mod_servers=mod_servers)
+
+
+@admin_bp.route("/mods/<path:filename>/servers", methods=["POST"])
+@_admin_required
+def mods_set_servers(filename):
+    """Serveurs qui chargent ce mod (et l'exigent donc de leurs joueurs)."""
+    from app.services.mod_scanner import list_mods
+    from app.services import mod_assign
+    if not any(m["filename"] == filename for m in list_mods()):
+        return jsonify({"ok": False, "error": _("Mod introuvable")}), 404
+    valid = set(mod_assign.enabled_server_ids())
+    try:
+        ids = sorted({int(i) for i in request.form.getlist("servers")} & valid)
+    except ValueError:
+        return jsonify({"ok": False, "error": _("Serveur invalide")}), 400
+    mod_assign.set_servers(filename, ids)
+    mod_assign.sync_all()
+    return jsonify({"ok": True, "servers": ids})
 
 
 @admin_bp.route("/mods/upload", methods=["POST"])
@@ -1695,6 +1718,10 @@ def mods_upload():
     result = save_uploaded_mod(f, cover_file_storage=cover_f, cover_ext=cover_ext)
     if not result["ok"]:
         return jsonify({"ok": False, "error": result["error"]}), 400
+    # Un nouveau mod n'est chargé par aucun serveur tant qu'on ne l'a pas affecté (mod_assign) :
+    # chargé partout, il serait exigé des joueurs de tous les serveurs.
+    from app.services import mod_assign
+    mod_assign.set_servers(result["filename"], [])
     return jsonify(result)
 
 
@@ -1708,6 +1735,9 @@ def mods_delete(filename):
     if tags:
         db.session.delete(tags)
         db.session.commit()
+    from app.services import mod_assign
+    mod_assign.forget(filename)
+    mod_assign.sync_all()
     return jsonify({"ok": True})
 
 

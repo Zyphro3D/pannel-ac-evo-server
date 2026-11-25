@@ -1038,6 +1038,13 @@ def start_server(serverconfig_b64: str, seasondefinition_b64: str,
         run_id = uuid.uuid4().hex
 
         if _DEPLOY_MODE == "docker_split":
+            # Dossier de mods propre au serveur (mod_assign) : un mod affecté à un autre serveur
+            # ne doit pas être exigé des joueurs de celui-ci.
+            try:
+                from app.services import mod_assign
+                mod_assign.sync_server_mods(server_id, mod_assign.enabled_server_ids())
+            except Exception as e:
+                log.error("start_server: mods du serveur %d non synchronisés : %s", server_id, e)
             lcp = _launch_config_path(server_id)
             lcp.write_text(json.dumps({
                 "serverconfig":    serverconfig_b64,

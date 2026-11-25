@@ -6816,3 +6816,18 @@ msgstr "Ritardo prima dei messaggi di benvenuto del bot (20 s predefiniti): Impo
 
 msgid "trop de requêtes, réessaie dans une minute"
 msgstr "troppe richieste, riprova tra un minuto"
+
+msgid "Un serveur exige de ses joueurs tous les mods qu'il charge, même ceux absents de sa liste de voitures. Pris en compte au prochain démarrage du serveur."
+msgstr "Un server richiede ai suoi giocatori tutti i mod che carica, anche quelli assenti dalla sua lista di auto. Applicato al prossimo avvio del server."
+
+msgid "Aucun"
+msgstr "Nessuno"
+
+msgid "Serveur invalide"
+msgstr "Server non valido"
+
+msgid "Serveurs qui chargent %(name)s"
+msgstr "Server che caricano %(name)s"
+
+msgid "Serveurs enregistrés : pris en compte au prochain démarrage de chaque serveur"
+msgstr "Server salvati: applicato al prossimo avvio di ogni server"

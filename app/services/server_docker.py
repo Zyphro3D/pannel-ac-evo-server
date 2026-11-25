@@ -91,13 +91,8 @@ def create_server_container(server) -> dict:
     volumes = {}
     if info["aceserver_host_path"]:
         volumes[info["aceserver_host_path"]] = {"bind": "/aceserver", "mode": "rw"}
-        # Bibliothèque de mods partagée (même dossier que /aceserver/mods, vu par le
-        # panel) posée sur le dossier Wine que ServerLauncher.exe scanne nativement.
-        mods_host_path = os.path.join(info["aceserver_host_path"], "mods")
-        volumes[mods_host_path] = {
-            "bind": "/root/.wine/drive_c/users/root/Saved Games/ACE-Server/mods",
-            "mode": "rw",
-        }
+        # Pas de montage de la bibliothèque de mods : l'entrypoint relie le dossier Wine à
+        # /aceserver/mods-server/<id> (mod_assign), propre à chaque serveur.
     volumes[wine_volume] = {"bind": "/root/.wine", "mode": "rw"}
 
     if info["network_name"] == "host":
@@ -206,7 +201,6 @@ def _compose_override_yaml(servers: list, image: str, reference_volume: str = ""
             f"    volumes:",
             f"      - ./aceserver:/aceserver",
             f"      - {wine_vol}:/root/.wine",
-            f"      - ./aceserver/mods:/root/.wine/drive_c/users/root/Saved Games/ACE-Server/mods",
             f"    environment:",       # pas d'env_file : voir le service aceserver de docker-compose.yml
             f'      SERVER_ID: "{srv.id}"',
             f"    security_opt:",

@@ -6754,3 +6754,18 @@ msgstr "Delay before the bot's welcome messages (20 s by default): Settings → 
 
 msgid "trop de requêtes, réessaie dans une minute"
 msgstr "too many requests, try again in a minute"
+
+msgid "Un serveur exige de ses joueurs tous les mods qu'il charge, même ceux absents de sa liste de voitures. Pris en compte au prochain démarrage du serveur."
+msgstr "A server requires its players to have every mod it loads, even ones missing from its car list. Applied at the server's next start."
+
+msgid "Aucun"
+msgstr "None"
+
+msgid "Serveur invalide"
+msgstr "Invalid server"
+
+msgid "Serveurs qui chargent %(name)s"
+msgstr "Servers that load %(name)s"
+
+msgid "Serveurs enregistrés : pris en compte au prochain démarrage de chaque serveur"
+msgstr "Servers saved: applied at each server's next start"

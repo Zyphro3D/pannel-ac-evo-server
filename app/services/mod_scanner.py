@@ -337,7 +337,8 @@ def extract_badge_png(kspkg_path: str | Path, car_name: str) -> bytes | None:
 # régénéré au listing s'il manque ou ne correspond plus au fichier — l'utilisateur
 # n'a jamais à en écrire un à la main.
 
-_SAFE_STEM_RE = re.compile(r"[^a-zA-Z0-9_-]")
+# Le point est gardé (« …_v1.4 ») : le nom reste celui du pack que les joueurs installent.
+_SAFE_STEM_RE = re.compile(r"[^a-zA-Z0-9_.-]")
 _COVER_EXTS = (".jpg", ".jpeg", ".png", ".webp")
 
 
@@ -490,7 +491,7 @@ def save_uploaded_mod(file_storage, cover_file_storage=None, cover_ext: str | No
     if not original_name.lower().endswith(".kspkg"):
         return {"ok": False, "error": "not a .kspkg file"}
 
-    stem = _SAFE_STEM_RE.sub("_", Path(original_name).stem)[:64].strip("_") or "mod"
+    stem = _SAFE_STEM_RE.sub("_", Path(original_name).stem)[:64].strip("_.") or "mod"
     mods_dir = _mods_dir()
     dest = mods_dir / f"{stem}.kspkg"
     suffix = 1

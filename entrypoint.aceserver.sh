@@ -49,6 +49,22 @@ echo "[aceserver] Initializing Wine prefix..."
 wine wineboot 2>/dev/null || true
 echo "[aceserver] Wine ready."
 
+# Mods propres à ce serveur : le jeu exige des joueurs tout ce qu'il trouve dans ce dossier, donc
+# chaque serveur lit /aceserver/mods-server/<id>, rempli par le panel (mod_assign). Un conteneur
+# créé avant cette version y a encore la bibliothèque commune montée : on la laisse jusqu'à sa
+# recréation (docker compose up -d).
+MODS_LINK="$WINEPREFIX/drive_c/users/root/Saved Games/ACE-Server/mods"
+if python3 -c "import os,sys; sys.exit(0 if os.path.ismount(sys.argv[1]) else 1)" "$MODS_LINK"; then
+    echo "[aceserver] WARNING: shared mods library still mounted; recreate this container to use per-server mods."
+else
+    mkdir -p "$(dirname "$MODS_LINK")"
+    if [ -d "$MODS_LINK" ] && [ ! -L "$MODS_LINK" ]; then
+        rmdir "$MODS_LINK" 2>/dev/null || mv "$MODS_LINK" "$MODS_LINK.old-$(date +%s)"
+    fi
+    ln -sfn "/aceserver/mods-server/$SERVER_ID" "$MODS_LINK"
+    echo "[aceserver] Mods folder: /aceserver/mods-server/$SERVER_ID"
+fi
+
 # Visual C++ 2022 runtime (msvcp140, vcruntime140...). Wine's own copy is incomplete and the server
 # aborts on it ("unimplemented function msvcp140.dll..."). Installed once into the Wine prefix
 # (wine_prefix volume): from the package Steam ships with the server when it is complete, otherwise

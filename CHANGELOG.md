@@ -1,5 +1,15 @@
 # Changelog
 
+### À venir
+
+**Mods par serveur**
+
+- Un mod n'est plus chargé par tous les serveurs : sur la page Mods, des cases indiquent quels serveurs l'utilisent. Le jeu exige d'un joueur tous les mods chargés par le serveur, même une voiture absente de sa liste ; avant, un mod envoyé pour un seul serveur empêchait de rejoindre tous les autres sans l'installer (« Content unavailable or version mismatch »).
+- Un mod envoyé n'est affecté à aucun serveur tant qu'on ne coche pas ses serveurs. Les mods déjà installés restent sur tous les serveurs, comme avant.
+- La liste des voitures d'un serveur ne propose que les mods qui lui sont affectés.
+- Le nom d'un mod garde ses points (« …_v1.4.kspkg » restait « …_v1_4 »), pour rester celui du pack que les joueurs installent.
+- Pris en compte au prochain démarrage de chaque serveur. Après la mise à jour, recréer les serveurs de jeu une fois (`docker compose up -d`) : un serveur créé avant cette version garde la bibliothèque commune et l'indique dans son journal.
+
 ### v2.7.2 — 24/11/2026
 
 **Corrections**

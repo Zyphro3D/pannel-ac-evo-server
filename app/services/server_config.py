@@ -655,7 +655,7 @@ def apply_server_patch(patch: dict, is_superadmin: bool = False) -> dict:
         elif key == "Cars":
             patch_map = {c["name"]: c for c in value}
             new_cars = []
-            for car in load_cars():
+            for car in load_cars(_current_server_id()):
                 p = patch_map.get(car["name"], {})
                 selected = bool(p.get("IsSelected", False))
                 try:
@@ -732,7 +732,7 @@ def load_official_cars() -> list:
         return []
 
 
-def load_cars() -> list:
+def load_cars(server_id: int | None = None) -> list:
     """Officielles + mods. Un mod ne peut jamais écraser une voiture officielle
     du même nom, mais deux mods qui partagent le même identifiant (même
     convertisseur générique, ex: Honda/Nissan via "ks_modded_car") apparaissent
@@ -743,8 +743,14 @@ def load_cars() -> list:
     sélectionnable en jeu, l'autre chargera le même contenu sous un autre nom)."""
     cars = load_official_cars()
     official_names = {c["name"] for c in cars}
+    # server_id donné : seulement les mods affectés à ce serveur (mod_assign), les autres
+    # n'existent pas pour lui et seraient refusés par le jeu.
+    allowed = None
+    if server_id is not None:
+        from app.services import mod_assign
+        allowed = mod_assign.allowed_mod_car_names(server_id, mod_assign.enabled_server_ids())
     for car in load_mod_cars():
-        if car.get("name") not in official_names:
+        if car.get("name") not in official_names and (allowed is None or car.get("name") in allowed):
             cars.append(car)
     return cars
 
