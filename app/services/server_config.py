@@ -592,7 +592,6 @@ _INT_FIELDS: dict[str, tuple[int, int]] = {
 # Mapping : variable d'environnement globale → (clé JSON, valeur par défaut)
 _GLOBAL_FIELDS: dict[str, tuple[str, object]] = {
     "SERVER_NAME":            ("ServerName",     "ACE EVO Server"),
-    "SERVER_MAX_PLAYERS":     ("MaxPlayers",      8),
     "SERVER_TCP_PORT":        ("TcpPort",         9700),
     "SERVER_UDP_PORT":        ("UdpPort",         9700),
     "SERVER_DRIVER_PASSWORD": ("DriverPassword",  ""),
@@ -629,7 +628,7 @@ def apply_server_patch(patch: dict, is_superadmin: bool = False) -> dict:
     server_fields = {
         "HttpPort", "SpectatorPassword",
         "EntryListUrl", "ResultsPostUrl", "SelectedServerTypeValue",
-        "SelectedTuningTypeValue",
+        "SelectedTuningTypeValue", "MaxPlayers",
     }
     event_fields = {
         "SelectedSessionTypeValue", "SelectedWeatherTypeValue",
