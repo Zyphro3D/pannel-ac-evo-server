@@ -143,3 +143,9 @@ def test_page_publique_sans_connexion(admin_client):
     assert anon.get("/downloads").status_code == 200
     assert anon.get("/downloads/1/inconnu.kspkg").status_code == 404
     assert anon.get("/").status_code == 200
+
+
+def test_pack_accepte_les_gros_fichiers():
+    # Vécu en production (25/11) : pack de 223 Mo refusé (413), la route gardait le plafond de 64 Mo.
+    from app import _BIG_BODY_ENDPOINTS
+    assert _BIG_BODY_ENDPOINTS["admin.mods_pack_upload"] >= 3 * 1024 ** 3

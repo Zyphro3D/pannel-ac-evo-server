@@ -339,6 +339,7 @@ def _sync_track_meta(db):
 # contrôle CSRF (before_request suivant), les autres gardent MAX_CONTENT_LENGTH (config.py).
 _BIG_BODY_ENDPOINTS = {
     "admin.mods_upload":           3 * 1024 ** 3 + 64 * 1024 ** 2,   # mod (3 Go) + couverture
+    "admin.mods_pack_upload":      3 * 1024 ** 3 + 64 * 1024 ** 2,   # pack client d'un serveur (3 Go)
     "tools.backup_restore_upload": 1024 ** 3 + 64 * 1024 ** 2,       # backup.MAX_TOTAL_BYTES + marge
 }
 
