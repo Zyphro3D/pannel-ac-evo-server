@@ -119,3 +119,24 @@ def test_message_selon_la_voiture(monkeypatch):
     wrong = rg.car_message("Bob", reg, "ks_porsche_992_gt3_r_rennsport")
     assert "wrong car" in wrong and "BMW M4 GT3 Evo - GT3" in wrong and "pits" in wrong
     assert "start driving" in rg.car_message("Bob", SimpleNamespace(assigned_car="", car_display=""), "ks_x")
+
+
+def test_mails_de_validation(admin_client, champ, monkeypatch):
+    import app.routes.public as pub
+    from app.services import mailer
+    sent = []
+    monkeypatch.setattr(mailer, "send_registration_approved", lambda d: sent.append(("compte", d.email)))
+    monkeypatch.setattr(mailer, "send_event_registration_confirmed",
+                        lambda d, ev, car="": sent.append(("manche", ev.title, car)))
+    monkeypatch.setattr(pub, "_join_cars", lambda sid: [{"name": "preset_m4gt3_mech_1", "label": "BMW M4 GT3"}])
+    c = _anon(admin_client)
+    c.get("/join/1/steam")
+    with c.session_transaction() as s:
+        state = s["join_state"]["state"]
+    _steam(monkeypatch, "76561190000004260")
+    c.get(f"/join/steam/callback?state={state}")
+    c.post("/join/1/finish", data={"ingame_name": "JC Mails", "email": "jc-mail@test", "car": "preset_m4gt3_mech_1"})
+    assert ("compte", "jc-mail@test") in sent and ("manche", "JC manche", "BMW M4 GT3") in sent
+    sent.clear()
+    c.post("/join/1", data={"car": "preset_m4gt3_mech_1"})      # « Changer de voiture » renvoie le récapitulatif
+    assert sent == [("manche", "JC manche", "BMW M4 GT3")]

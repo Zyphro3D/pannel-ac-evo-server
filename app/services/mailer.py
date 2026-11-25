@@ -327,13 +327,14 @@ def send_registration_rejected(driver):
     _send(driver.email, "[ACE EVO] Inscription refusée", _html_registration_rejected(driver))
 
 
-def _html_event_registration_confirmed(driver, event) -> str:
+def _html_event_registration_confirmed(driver, event, car_display: str = "") -> str:
     date_str = event.date.strftime("%d/%m/%Y à %H:%M") + " UTC"
     url = _cfg["panel_url"]
+    car = f"<br>Voiture&nbsp;: <strong>{_e(car_display)}</strong>" if car_display else ""
     body = f"""
 <p style="margin:0 0 10px">Bonjour <strong>{_e(driver.ingame_name)}</strong>,</p>
 <p style="margin:0 0 10px">Votre inscription à <strong>{_e(event.title)}</strong> a été confirmée&nbsp;!</p>
-<p style="margin:0">{date_str}<br>{_e(event.circuit_display or event.circuit or "—")} &middot; {_e(event.mode_display)}</p>
+<p style="margin:0">{date_str}<br>{_e(event.circuit_display or event.circuit or "—")} &middot; {_e(event.mode_display)}{car}</p>
 """
     return _layout(
         eyebrow="Événement",
@@ -345,8 +346,8 @@ def _html_event_registration_confirmed(driver, event) -> str:
     )
 
 
-def send_event_registration_confirmed(driver, event):
-    html = _html_event_registration_confirmed(driver, event)
+def send_event_registration_confirmed(driver, event, car_display: str = ""):
+    html = _html_event_registration_confirmed(driver, event, car_display)
     _send(driver.email, f"[ACE EVO] Inscription confirmée — {event.title}", html)
 
 

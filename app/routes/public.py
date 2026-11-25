@@ -599,7 +599,7 @@ def _join_register(driver, server_id, car: str = "") -> int:
     """Inscrit le pilote, confirmé d'office, à chaque manche à venir du serveur, avec la voiture
     choisie (vérifiée par le bot à son arrivée). Retourne le nombre de manches concernées."""
     cars = {c["name"]: c["label"] for c in _join_cars(server_id)}
-    n = 0
+    n, done = 0, []
     for ev in _join_events(server_id):
         reg = EventRegistration.query.filter_by(event_id=ev.id, driver_id=driver.id).first()
         if reg is None:
@@ -611,7 +611,12 @@ def _join_register(driver, server_id, car: str = "") -> int:
         if car in cars:
             reg.assigned_car, reg.car_display = car, cars[car]
         n += 1
+        done.append(reg)
     db.session.commit()
+    # Un mail par manche : inscription confirmée, avec la voiture (inscription ou changement)
+    from app.services import mailer
+    for reg in done:
+        mailer.send_event_registration_confirmed(driver, reg.event, reg.car_display or "")
     return n
 
 
@@ -725,8 +730,9 @@ def join_finish(server_id):
     driver.set_password(secrets.token_urlsafe(32))
     db.session.add(driver)
     db.session.commit()
-    from app.services import discord_notifier
+    from app.services import discord_notifier, mailer
     discord_notifier.safe_notify(discord_notifier.notify_new_registration, driver)
+    mailer.send_registration_approved(driver)     # compte créé et validé d'office
     if _require_email_confirmation():
         _send_confirmation_email(driver)
     _login(driver)

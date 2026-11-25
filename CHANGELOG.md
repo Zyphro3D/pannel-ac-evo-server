@@ -4,6 +4,7 @@
 
 **Corrections**
 
+- Rejoindre un championnat envoie maintenant les mails attendus : « compte validé » à la création du compte, puis « inscription confirmée » pour chaque manche, avec la voiture choisie (aussi à chaque changement de voiture).
 - Avec un port SMTP enregistré depuis la page Paramètres (465, SSL), aucun email ne partait : le panel parlait SMTP en clair sur le port SSL et attendait jusqu'au délai dépassé.
 
 ### v2.8.0 — 25/11/2026
