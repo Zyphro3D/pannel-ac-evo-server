@@ -126,12 +126,16 @@ Public ⊂ Pilote ⊂ Admin ⊂ Superadmin.
 - **Historique personnel des tours** : chaque tour roulé est enregistré en direct (temps, voiture, circuit), sans attendre la fin d'une session — au-delà d'une rétention configurable, l'historique est condensé en résumés mensuels plutôt que supprimé
 - Liaison de compte Steam (identité vérifiée, requise pour l'historique des tours)
 - Consultation de la bibliothèque de mods véhicules (upload réservé aux admins)
+- **Page publique « Mods »** : pour chaque serveur à mods, le pack et les fichiers à installer (ou le lien vers la page de l'auteur), sans compte
+- **Rejoindre un championnat en une minute** : connexion Steam, pseudo, email et voiture, inscription confirmée aux manches à venir du serveur
 
 **🛠️ Admin**
 - Démarrage / arrêt / restart du serveur, watchdog auto-restart, logs et métriques CPU/RAM en direct
 - Éditeur de config JSON complet : circuit, météo, sessions (Practice / Qualifying / Warmup / Race), voitures
 - Banque de véhicules (97 voitures, catégories Road/Race/Track, filtres, images) et banque de circuits (36 circuits, layout, longueur, images), upload des images véhicules/circuits
 - **Gestion des mods véhicules** : upload multiple par glisser-déposer (`.kspkg`), tags manuels (catégorie, PI), image de couverture auto-détectée ou personnalisée, détection et signalement des conflits d'identifiant entre mods
+- **Mods par serveur** : chaque mod n'est chargé (et donc exigé des joueurs) que par les serveurs cochés ; pack client ou lien vers l'auteur par serveur
+- **Serveur réservé aux inscrits** : le bot prévient en anglais un pilote non inscrit puis l'expulse après un délai, accueille un inscrit et renvoie au stand celui qui n'a pas la voiture de son inscription ; un admin du panel n'est jamais expulsé
 - Roulement de configs avec file d'attente propre à chaque serveur, glisser-déposer, option cycle
 - Menu Admin en 4 groupes expliqués, recherche « Où régler… ? » (`Ctrl+K`) qui mène directement au bon réglage
 - Gestion complète des événements (création, publication, inscriptions, génération de l'`entry_list.json`) et des comptes pilotes (approbation/rejet)
