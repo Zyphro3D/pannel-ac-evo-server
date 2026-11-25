@@ -172,7 +172,10 @@ def index():
 
     recent_sessions, _ = _group_sessions(recent_sessions)
 
+    from app.services import mod_assign
+    mod_server_ids = {e["server"].id for e in mod_assign.public_downloads(servers)}
     return render_template("public.html",
+                           mod_server_ids=mod_server_ids,
                            servers=servers,
                            statuses=statuses,
                            server_infos=server_infos,
@@ -512,6 +515,28 @@ def result_detail(result_id):
     slug = collision_map.slug_for(parsed)
     cm_slug = slug if (parsed.get("hits") and collision_map.has_map(slug)) else None
     return render_template("result_detail.html", result=r, parsed=parsed, cm_slug=cm_slug)
+
+
+@public_bp.route("/downloads")
+@limiter.limit("60 per minute")
+def downloads():
+    """Page publique : ce qu'il faut installer pour rejoindre chaque serveur à mods."""
+    from app.services import mod_assign
+    servers = Server.query.filter_by(is_enabled=True).order_by(Server.sort_order, Server.id).all()
+    return render_template("downloads.html", entries=mod_assign.public_downloads(servers))
+
+
+@public_bp.route("/downloads/<int:server_id>/<path:filename>")
+@limiter.limit("30 per minute")
+def downloads_file(server_id, filename):
+    from app.services import mod_assign
+    srv = db.session.get(Server, server_id)
+    if srv is None or not srv.is_enabled:
+        abort(404)
+    path = mod_assign.public_file(server_id, filename)
+    if path is None:
+        abort(404)
+    return send_from_directory(path.parent, path.name, as_attachment=True)
 
 
 @public_bp.route("/mods/<path:filename>/download")

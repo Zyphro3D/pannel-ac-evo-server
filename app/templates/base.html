@@ -100,9 +100,7 @@
       {{ navlink('public.index',   _('Accueil')) }}
       {{ navlink('public.results', _('Résultats'), ['public.result_detail', 'leaderboard.leaderboard']) }}
       {{ navlink('live.timing_page', _('Live')) }}
-      {% if current_user.is_authenticated %}
-        {{ navlink('admin.mods', _('Mods')) }}
-      {% endif %}
+      {{ navlink('public.downloads', _('Mods'), ['public.downloads_file']) }}
       {% if current_user.is_authenticated and current_user.steam_id %}
         {{ navlink('public.pilot_history', _('Mes temps')) }}
       {% endif %}
@@ -258,8 +256,8 @@
     <a href="{{ url_for('public.results') }}" class="nav-dropdown-item rounded-lg py-3 text-base">{{ _('Résultats') }}</a>
     <a href="{{ url_for('leaderboard.leaderboard') }}" class="nav-dropdown-item rounded-lg py-3 text-base">{{ _('Classement') }}</a>
     <a href="{{ url_for('live.timing_page') }}" class="nav-dropdown-item rounded-lg py-3 text-base">{{ _('Live') }}</a>
+    <a href="{{ url_for('public.downloads') }}" class="nav-dropdown-item rounded-lg py-3 text-base">{{ _('Mods') }}</a>
     {% if current_user.is_authenticated %}
-      <a href="{{ url_for('admin.mods') }}" class="nav-dropdown-item rounded-lg py-3 text-base">{{ _('Mods') }}</a>
       {% if current_user.steam_id %}
         <a href="{{ url_for('public.pilot_history') }}" class="nav-dropdown-item rounded-lg py-3 text-base">{{ _('Mes temps') }}</a>
       {% endif %}

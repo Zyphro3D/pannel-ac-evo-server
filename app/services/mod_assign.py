@@ -155,3 +155,92 @@ def sync_all() -> None:
             sync_server_mods(sid, ids)
         except OSError as e:
             log.error("mod_assign: synchronisation du serveur %d impossible : %s", sid, e)
+
+
+# ── Pack client d'un serveur et téléchargements publics ─────────────────────
+# Un circuit moddé ne se résume pas à un .kspkg : le joueur passe par l'installeur de son auteur.
+# Chaque serveur peut donc proposer un « pack » (archive fournie par l'admin), téléchargeable par
+# tous avec ses mods sur la page publique /downloads.
+
+PACK_EXTS = (".zip", ".7z", ".rar")
+
+
+def packs_dir(server_id: int) -> Path:
+    return _mods_dir() / "packs" / str(int(server_id))
+
+
+def get_pack(server_id: int) -> Path | None:
+    d = packs_dir(server_id)
+    if not d.is_dir():
+        return None
+    files = [p for p in d.iterdir() if p.is_file() and p.suffix.lower() in PACK_EXTS]
+    return files[0] if files else None
+
+
+def save_pack(server_id: int, file_storage) -> dict:
+    import re
+    name = Path(file_storage.filename or "").name
+    ext = Path(name).suffix.lower()
+    if ext not in PACK_EXTS:
+        return {"ok": False, "error": "bad_extension"}
+    stem = re.sub(r"[^a-zA-Z0-9_.-]", "_", Path(name).stem)[:80].strip("_.") or "pack"
+    d = packs_dir(server_id)
+    d.mkdir(parents=True, exist_ok=True)
+    tmp = d / f".upload{ext}.tmp"
+    file_storage.save(str(tmp))
+    for old in d.iterdir():          # un seul pack par serveur : le nouveau remplace l'ancien
+        if old.is_file() and old != tmp:
+            old.unlink()
+    dest = d / f"{stem}{ext}"
+    os.replace(tmp, dest)
+    return {"ok": True, "filename": dest.name, "sizeBytes": dest.stat().st_size}
+
+
+def delete_pack(server_id: int) -> bool:
+    p = get_pack(server_id)
+    if p is None:
+        return False
+    p.unlink()
+    return True
+
+
+def public_downloads(servers: list) -> list[dict]:
+    """Serveurs actifs qui demandent quelque chose aux joueurs : leur pack et leurs mods."""
+    ids = [s.id for s in servers]
+    assignments = load_assignments()
+    kspkgs = sorted(_mods_dir().glob("*.kspkg"))
+    out = []
+    for srv in servers:
+        mods = []
+        for k in kspkgs:
+            if srv.id in servers_of(k.name, ids, assignments):
+                name = k.stem
+                try:
+                    cars = json.loads(k.with_suffix(".json").read_text(encoding="utf-8")).get("cars", [])
+                    name = ", ".join(c.get("display_name") or c.get("name") for c in cars) or name
+                except (OSError, ValueError):
+                    pass
+                mods.append({"filename": k.name, "label": name, "sizeBytes": k.stat().st_size})
+        pack = get_pack(srv.id)
+        if mods or pack:
+            out.append({"server": srv, "mods": mods,
+                        "pack": {"filename": pack.name, "sizeBytes": pack.stat().st_size} if pack else None})
+    return out
+
+
+def public_file(server_id: int, filename: str) -> Path | None:
+    """Fichier téléchargeable publiquement pour ce serveur (son pack ou un mod qui lui est
+    affecté), ou None. Jamais un chemin hors de la bibliothèque."""
+    if "/" in filename or "\\" in filename or filename.startswith("."):
+        return None
+    pack = get_pack(server_id)
+    if pack is not None and pack.name == filename:
+        return pack
+    if not filename.lower().endswith(".kspkg"):
+        return None
+    path = _mods_dir() / filename
+    if not path.is_file() or path.parent != _mods_dir():
+        return None
+    if server_id not in servers_of(filename, enabled_server_ids()):
+        return None
+    return path

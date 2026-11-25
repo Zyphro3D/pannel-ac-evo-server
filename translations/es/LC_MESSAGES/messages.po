@@ -6871,3 +6871,78 @@ msgstr "Servidores que cargan %(name)s"
 
 msgid "Serveurs enregistrés : pris en compte au prochain démarrage de chaque serveur"
 msgstr "Servidores guardados: se aplica en el próximo arranque de cada servidor"
+
+msgid "Archive attendue : .zip, .7z ou .rar"
+msgstr "Se espera un archivo: .zip, .7z o .rar"
+
+msgid "Mods à télécharger"
+msgstr "Mods para descargar"
+
+msgid "Certains serveurs utilisent du contenu moddé : installe-le avant de les rejoindre, sinon le jeu refuse la connexion (« Content unavailable or version mismatch »)."
+msgstr "Algunos servidores usan contenido modificado: instálalo antes de unirte o el juego rechazará la conexión («Content unavailable or version mismatch»)."
+
+msgid "Installation"
+msgstr "Instalación"
+
+msgid "Ferme Assetto Corsa EVO."
+msgstr "Cierra Assetto Corsa EVO."
+
+msgid "Pack : décompresse l'archive et lance l'installeur qu'elle contient, ou suis son fichier README."
+msgstr "Pack: descomprime el archivo y ejecuta el instalador que contiene, o sigue su README."
+
+msgid "Fichiers .kspkg seuls : copie-les dans ce dossier (crée-le s'il n'existe pas) :"
+msgstr "Archivos .kspkg sueltos: cópialos en esta carpeta (créala si no existe):"
+
+msgid "Relance le jeu et rejoins le serveur depuis la liste des serveurs."
+msgstr "Reinicia el juego y únete al servidor desde la lista de servidores."
+
+msgid "Les fichiers doivent être exactement ceux du serveur : ne renomme pas et ne remplace pas un mod par une autre version."
+msgstr "Los archivos deben ser exactamente los del servidor: no los renombres ni sustituyas un mod por otra versión."
+
+msgid "Pack complet"
+msgstr "Pack completo"
+
+msgid "Contient tout le nécessaire pour ce serveur (circuit et voitures) : c'est le seul téléchargement à faire."
+msgstr "Contiene todo lo necesario para este servidor (circuito y coches): es la única descarga necesaria."
+
+msgid "Télécharger le pack"
+msgstr "Descargar el pack"
+
+msgid "Fichiers .kspkg (%(n)d)"
+msgstr "Archivos .kspkg (%(n)d)"
+
+msgid "déjà inclus dans le pack"
+msgstr "ya incluidos en el pack"
+
+msgid "Aucun serveur ne demande de mod pour le moment : tu peux tous les rejoindre directement."
+msgstr "Ningún servidor requiere mods por ahora: puedes unirte a todos directamente."
+
+msgid "Pack client par serveur"
+msgstr "Pack de cliente por servidor"
+
+msgid "Un circuit moddé s'installe côté serveur avec l'installeur de son auteur. Ici, tu déposes l'archive que les joueurs doivent installer (circuit et voitures) : elle est proposée à tous sur la page publique Mods, avec les .kspkg affectés au serveur."
+msgstr "Un circuito modificado se instala en el servidor con el instalador de su autor. Aquí subes el archivo que los jugadores deben instalar (circuito y coches): se ofrece a todos en la página pública Mods, junto con los .kspkg asignados al servidor."
+
+msgid "Voir la page publique"
+msgstr "Ver la página pública"
+
+msgid "Aucun pack"
+msgstr "Ningún pack"
+
+msgid "Remplacer"
+msgstr "Reemplazar"
+
+msgid "Envoyer un pack"
+msgstr "Subir un pack"
+
+msgid "Envoi du pack…"
+msgstr "Subiendo el pack…"
+
+msgid "Pack enregistré"
+msgstr "Pack guardado"
+
+msgid "Supprimer ce pack ?"
+msgstr "¿Eliminar este pack?"
+
+msgid "Mods requis : télécharger"
+msgstr "Mods necesarios: descargar"

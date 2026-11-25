@@ -8,6 +8,8 @@
 - Un mod envoyé n'est affecté à aucun serveur tant qu'on ne coche pas ses serveurs. Les mods déjà installés restent sur tous les serveurs, comme avant.
 - La liste des voitures d'un serveur ne propose que les mods qui lui sont affectés.
 - Le nom d'un mod garde ses points (« …_v1.4.kspkg » restait « …_v1_4 »), pour rester celui du pack que les joueurs installent.
+- **Page publique « Mods »** (`/downloads`, lien dans le menu pour tous, sans compte) : pour chaque serveur à mods, son pack et ses fichiers .kspkg à télécharger, avec la marche à suivre. L'accueil signale les serveurs qui demandent des mods.
+- **Pack client par serveur** (onglet Circuits de la page Mods) : l'archive que les joueurs doivent installer, par exemple l'installeur d'un circuit moddé et ses voitures. Un seul pack par serveur, en .zip, .7z ou .rar.
 - Pris en compte au prochain démarrage de chaque serveur. Après la mise à jour, recréer les serveurs de jeu une fois (`docker compose up -d`) : un serveur créé avant cette version garde la bibliothèque commune et l'indique dans son journal.
 
 ### v2.7.2 — 24/11/2026

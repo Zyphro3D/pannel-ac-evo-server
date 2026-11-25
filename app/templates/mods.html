@@ -149,9 +149,34 @@
   </div>
 
   <div x-show="modTab === 'tracks'" style="display:none">
-    <div class="card flex flex-col items-center justify-center gap-3 py-16 text-center">
-      <p class="text-txt font-semibold">{{ _('Mods de circuits — en cours de développement') }}</p>
-      <p class="text-dim text-sm">{{ _('Le support des circuits moddés arrivera dans une prochaine mise à jour.') }}</p>
+    <div class="card p-6 mb-4">
+      <h2 class="text-lg font-semibold text-txt mb-1">{{ _('Pack client par serveur') }}</h2>
+      <p class="text-dim text-sm">{{ _("Un circuit moddé s'installe côté serveur avec l'installeur de son auteur. Ici, tu déposes l'archive que les joueurs doivent installer (circuit et voitures) : elle est proposée à tous sur la page publique Mods, avec les .kspkg affectés au serveur.") }}</p>
+      <p class="text-sm mt-2"><a class="text-accent underline" href="{{ url_for('public.downloads') }}">{{ _('Voir la page publique') }}</a></p>
+    </div>
+    <div class="card p-0 overflow-hidden">
+      <ul class="divide-y divide-surface2">
+        {% for srv in servers %}
+        {% set pk = packs.get(srv.id) %}
+        <li class="flex flex-wrap items-center justify-between gap-3 px-5 py-3">
+          <div class="min-w-0">
+            <p class="text-txt text-sm">#{{ srv.id }} {{ srv.name }}</p>
+            <p class="text-dim text-xs font-mono break-all">{% if pk %}{{ pk.filename }} · {{ (pk.sizeBytes / 1048576)|round(0)|int }} Mo{% else %}{{ _('Aucun pack') }}{% endif %}</p>
+          </div>
+          {% if current_user.is_admin %}
+          <div class="flex gap-2">
+            <label class="btn btn-secondary btn-sm cursor-pointer">
+              {{ _('Remplacer') if pk else _('Envoyer un pack') }}
+              <input type="file" accept=".zip,.7z,.rar" class="sr-only pack-input" data-server="{{ srv.id }}">
+            </label>
+            {% if pk %}
+            <button type="button" class="btn btn-secondary btn-sm text-red-400 pack-delete-btn" data-server="{{ srv.id }}">{{ _('Supprimer') }}</button>
+            {% endif %}
+          </div>
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
     </div>
   </div>
 
@@ -320,6 +345,38 @@ document.querySelectorAll('.mod-cover-input').forEach(input => {
     } catch (e) {
       _modToast('error', {{ _("Erreur réseau pendant l'upload") | tojson }});
     }
+  });
+});
+
+document.querySelectorAll('.pack-input').forEach(input => {
+  input.addEventListener('change', async () => {
+    if (!input.files.length) return;
+    const body = new FormData();
+    body.append('file', input.files[0]);
+    _modToast('success', {{ _("Envoi du pack…") | tojson }});
+    try {
+      const res = await fetch('{{ url_for("admin.mods_pack_upload", server_id=0) }}'.replace('/0/', '/' + input.dataset.server + '/'), {
+        method: 'POST', headers: { 'X-CSRFToken': _csrf }, body,
+      });
+      const data = await res.json();
+      if (!data.ok) { _modToast('error', data.error || {{ _("Erreur") | tojson }}); return; }
+      _modToast('success', {{ _("Pack enregistré") | tojson }});
+      setTimeout(() => location.reload(), 800);
+    } catch (e) {
+      _modToast('error', {{ _("Erreur réseau pendant l'upload") | tojson }});
+    }
+  });
+});
+
+document.querySelectorAll('.pack-delete-btn').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    if (!confirm({{ _("Supprimer ce pack ?") | tojson }})) return;
+    const res = await fetch('{{ url_for("admin.mods_pack_delete", server_id=0) }}'.replace('/0/', '/' + btn.dataset.server + '/'), {
+      method: 'POST', headers: { 'X-CSRFToken': _csrf },
+    });
+    const data = await res.json();
+    if (!data.ok) { _modToast('error', data.error || {{ _("Erreur") | tojson }}); return; }
+    location.reload();
   });
 });
 

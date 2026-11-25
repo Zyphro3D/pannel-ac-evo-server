@@ -1677,7 +1677,40 @@ def mods():
     ids = [s.id for s in servers]
     assignments = mod_assign.load_assignments()
     mod_servers = {m["filename"]: mod_assign.servers_of(m["filename"], ids, assignments) for m in list_mods()}
-    return render_template("mods.html", mods=list_mods(), servers=servers, mod_servers=mod_servers)
+    packs = {}
+    for s in servers:
+        p = mod_assign.get_pack(s.id)
+        if p is not None:
+            packs[s.id] = {"filename": p.name, "sizeBytes": p.stat().st_size}
+    return render_template("mods.html", mods=list_mods(), servers=servers, mod_servers=mod_servers, packs=packs)
+
+
+@admin_bp.route("/mods/packs/<int:server_id>/upload", methods=["POST"])
+@_admin_required
+def mods_pack_upload(server_id):
+    """Pack client d'un serveur (archive de l'auteur, ex. installeur d'un circuit), proposé
+    au public sur /downloads."""
+    from app.services import mod_assign
+    if server_id not in mod_assign.enabled_server_ids():
+        return jsonify({"ok": False, "error": _("Serveur invalide")}), 404
+    if request.content_length and request.content_length > 3 * 1024 * 1024 * 1024:
+        return jsonify({"ok": False, "error": _("Fichier trop volumineux (max 3 Go)")}), 413
+    f = request.files.get("file")
+    if not f or not f.filename:
+        return jsonify({"ok": False, "error": _("Aucun fichier fourni")}), 400
+    result = mod_assign.save_pack(server_id, f)
+    if not result["ok"]:
+        return jsonify({"ok": False, "error": _("Archive attendue : .zip, .7z ou .rar")}), 400
+    return jsonify(result)
+
+
+@admin_bp.route("/mods/packs/<int:server_id>/delete", methods=["POST"])
+@_admin_required
+def mods_pack_delete(server_id):
+    from app.services import mod_assign
+    if not mod_assign.delete_pack(server_id):
+        return jsonify({"ok": False, "error": _("Mod introuvable")}), 404
+    return jsonify({"ok": True})
 
 
 @admin_bp.route("/mods/<path:filename>/servers", methods=["POST"])

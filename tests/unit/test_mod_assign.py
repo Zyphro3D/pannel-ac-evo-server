@@ -96,3 +96,50 @@ def test_page_mods_et_route_d_affectation(admin_client):
     assert admin_client.get("/mods").status_code == 200
     r = admin_client.post("/mods/inconnu.kspkg/servers", data={"servers": ["1"]})
     assert r.status_code == 404
+
+
+class _Upload:
+    def __init__(self, name, data=b"pack"):
+        self.filename, self._data = name, data
+
+    def save(self, path):
+        Path(path).write_bytes(self._data)
+
+
+def test_pack_un_seul_par_serveur(app_ctx):
+    assert mod_assign.save_pack(3, _Upload("HDC Client 1.4.zip"))["filename"] == "HDC_Client_1.4.zip"
+    mod_assign.save_pack(3, _Upload("autre.7z"))
+    assert mod_assign.get_pack(3).name == "autre.7z"
+    assert [p.name for p in mod_assign.packs_dir(3).iterdir()] == ["autre.7z"]
+    assert mod_assign.save_pack(3, _Upload("virus.exe")) == {"ok": False, "error": "bad_extension"}
+
+
+def test_fichier_public_seulement_si_affecte_au_serveur(app_ctx, monkeypatch):
+    monkeypatch.setattr(mod_assign, "enabled_server_ids", lambda: [1, 3])
+    mod_assign.set_servers("drift_v1.4.kspkg", [3])
+    mod_assign.set_servers("gt_v2.kspkg", [])
+    mod_assign.save_pack(3, _Upload("pack.zip"))
+    assert mod_assign.public_file(3, "drift_v1.4.kspkg") is not None
+    assert mod_assign.public_file(3, "pack.zip") is not None
+    assert mod_assign.public_file(1, "drift_v1.4.kspkg") is None      # pas affecté au serveur 1
+    assert mod_assign.public_file(1, "pack.zip") is None              # pack du serveur 3
+    assert mod_assign.public_file(3, "gt_v2.kspkg") is None
+    assert mod_assign.public_file(3, "drift_v1.4.json") is None       # seulement .kspkg et le pack
+    assert mod_assign.public_file(3, "../mods/drift_v1.4.kspkg") is None
+    assert mod_assign.public_file(3, ".servers.json") is None
+
+
+def test_liste_publique(app_ctx):
+    from types import SimpleNamespace
+    mod_assign.set_servers("drift_v1.4.kspkg", [3])
+    mod_assign.set_servers("gt_v2.kspkg", [])
+    out = mod_assign.public_downloads([SimpleNamespace(id=1), SimpleNamespace(id=3)])
+    assert [e["server"].id for e in out] == [3]
+    assert [m["filename"] for m in out[0]["mods"]] == ["drift_v1.4.kspkg"]
+
+
+def test_page_publique_sans_connexion(admin_client):
+    anon = admin_client.application.test_client()
+    assert anon.get("/downloads").status_code == 200
+    assert anon.get("/downloads/1/inconnu.kspkg").status_code == 404
+    assert anon.get("/").status_code == 200

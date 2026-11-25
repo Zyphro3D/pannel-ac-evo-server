@@ -14,6 +14,9 @@
     </h1>
     <div class="h-hero-actions">
       <a href="{{ url_for('public.results') }}" class="btn btn-primary">{{ _('Voir les résultats') }} ›</a>
+      {% if mod_server_ids %}
+      <a href="{{ url_for('public.downloads') }}" class="btn btn-ghost">{{ _('Mods à télécharger') }}</a>
+      {% endif %}
       {% if discord_invite %}
       <a href="{{ discord_invite }}" target="_blank" rel="noopener noreferrer" class="btn btn-ghost">{{ _('Rejoindre le Discord') }}</a>
       {% elif not current_user.is_authenticated %}
@@ -41,6 +44,9 @@
 
       <div class="pub-srv-header">
         <span class="h-panel-title">{{ srv.name }}</span>
+        {% if srv.id in mod_server_ids %}
+        <a href="{{ url_for('public.downloads') }}" class="btn btn-primary btn-sm">{{ _('Mods requis : télécharger') }}</a>
+        {% endif %}
         {% if st.running %}
         <span class="pub-srv-status online">
           <span class="dot online"></span>{{ _('En direct') }}
