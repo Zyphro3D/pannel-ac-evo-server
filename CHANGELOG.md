@@ -1,5 +1,11 @@
 # Changelog
 
+### À venir
+
+**Corrections**
+
+- Avec un port SMTP enregistré depuis la page Paramètres (465, SSL), aucun email ne partait : le panel parlait SMTP en clair sur le port SSL et attendait jusqu'au délai dépassé.
+
 ### v2.8.0 — 25/11/2026
 
 **Mods par serveur**

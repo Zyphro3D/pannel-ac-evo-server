@@ -16,14 +16,23 @@ log = logging.getLogger(__name__)
 _cfg: dict = {}
 
 
+def _int(value, default: int) -> int:
+    try:
+        return int(str(value).strip())
+    except (TypeError, ValueError):
+        return default
+
+
 def init(config):
     global _cfg
     panel_url = config.get("PANEL_URL", "http://localhost:4300")
     logo_img  = config.get("PANEL_LOGO_IMG", "")
     _cfg = {
         "server":      config.get("MAIL_SERVER",   ""),
-        "port":        config.get("MAIL_PORT",     587),
-        "use_tls":     config.get("MAIL_USE_TLS",  True),
+        # settings.json garde les valeurs en texte (« 465 ») : sans conversion, « port == 465 »
+        # échouait et le panel parlait SMTP en clair sur le port SSL → délai dépassé (25/11).
+        "port":        _int(config.get("MAIL_PORT"), 587),
+        "use_tls":     str(config.get("MAIL_USE_TLS", True)).lower() == "true",
         "username":    config.get("MAIL_USERNAME", ""),
         "password":    config.get("MAIL_PASSWORD", ""),
         "from":        config.get("MAIL_FROM",     ""),
