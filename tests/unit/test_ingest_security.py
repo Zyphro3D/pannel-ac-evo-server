@@ -72,13 +72,13 @@ def _seen_by_app(remote_addr, xff):
 
 
 def test_forwarded_for_ignored_from_direct_visitor(monkeypatch):
-    monkeypatch.setenv("TRUSTED_PROXIES", "10.10.5.2")
+    monkeypatch.setenv("TRUSTED_PROXIES", "10.0.0.9")
     assert _seen_by_app("203.0.113.9", "198.51.100.1") == "203.0.113.9"
 
 
 def test_forwarded_for_honoured_from_trusted_proxy(monkeypatch):
-    monkeypatch.setenv("TRUSTED_PROXIES", "10.10.5.2")
-    assert _seen_by_app("10.10.5.2", "198.51.100.1") == "198.51.100.1"
+    monkeypatch.setenv("TRUSTED_PROXIES", "10.0.0.9")
+    assert _seen_by_app("10.0.0.9", "198.51.100.1") == "198.51.100.1"
 
 
 def test_oversized_ingest_body_is_refused_before_reading(admin_client):
