@@ -24,7 +24,7 @@ from app.services.server_config import get_running_server_info, CAR_CATEGORY_ORD
 
 public_bp = Blueprint("public", __name__)
 
-_INGAME_RE = re.compile(r'^[A-Za-z0-9_\-.\s]{2,30}$')
+_INGAME_RE = re.compile(r'^[A-Za-z0-9_\-. ]{2,30}\Z')  # espace simple seulement : ni tabulation ni retour à la ligne (sujet des mails, chat du jeu)
 
 
 def _now_utc():
