@@ -229,3 +229,6 @@ nav.fixed { background: var(--barbg) !important; border-bottom: 1px solid var(--
 .mod-srv:hover { border-color: rgb(var(--fg-rgb) / .3); }
 .mod-srv:has(.zy-check:checked) { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); color: rgb(var(--fg-rgb)); }
 .mod-srv .zy-check { width: 15px; height: 15px; }
+
+/* Page Serveurs : le tableau (nom, container, ports, accès) a besoin de toute la largeur — 27/11/2026 */
+.page-shell.page-shell-wide { max-width: none; }
