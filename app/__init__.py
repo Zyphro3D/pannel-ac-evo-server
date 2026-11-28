@@ -535,7 +535,8 @@ def _register_request_hooks(app):
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; "
             f"script-src 'self' 'nonce-{nonce}' 'unsafe-inline' https://cdn.jsdelivr.net 'unsafe-eval'{extra_script}; "
-            "script-src-attr 'unsafe-inline'; "
+            # Aucun gestionnaire en ligne (onclick=…) : ils passent par data-on (static/js/app.js), d'où script-src-attr 'none'.
+            "script-src-attr 'none'; "
             "style-src 'self' 'unsafe-inline'; "
             "img-src 'self' data: https://cdn.jsdelivr.net; "
             "font-src 'self'; "

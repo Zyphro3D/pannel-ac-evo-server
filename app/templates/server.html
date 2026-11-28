@@ -56,7 +56,7 @@
         <div>
           <label class="form-label">{{ _('Nouveau nom') }}</label>
           <input type="text" id="modal-rename-new" class="form-control" placeholder="nouveau-nom.json"
-                 onkeydown="if(event.key==='Enter') submitRename()">
+                 data-on="enter:submitRename">
         </div>
       </div>
       <div class="modal-foot">
@@ -212,7 +212,7 @@
           <div class="v" id="srv-auto-restart-label" style="font-size:0.82rem;font-family:'Inter',sans-serif;font-weight:700;text-transform:uppercase;color:var(--dim)">{{ _('Désactivé') }}</div>
         </div>
         <label class="toggle">
-          <input type="checkbox" id="srv-auto-restart-card" onchange="toggleAutoRestart(this.checked)">
+          <input type="checkbox" id="srv-auto-restart-card" data-on="change:toggleAutoRestart:checked">
           <span class="slider"></span>
         </label>
       </div>
@@ -362,7 +362,7 @@
       <button class="btn-restart" id="btn-restart">{{ _('Redémarrer') }}</button>
       <button class="btn-logs"    id="btn-logs-edit">{{ _('Logs') }}</button>
       <label class="toggle-label" title="{{ _('Relancer automatiquement en cas de crash') }}">
-        <input type="checkbox" id="chk-auto-restart" class="switch" onchange="toggleAutoRestart(this.checked)">
+        <input type="checkbox" id="chk-auto-restart" class="switch" data-on="change:toggleAutoRestart:checked">
         <span>{{ _('Auto-restart') }}</span>
       </label>
     </div>
@@ -375,7 +375,7 @@
 
         <div class="form-group">
           <label>{{ _('Type de session') }}</label>
-          <select name="SelectedSessionTypeValue" id="session-type-select" onchange="onSessionTypeChange(this.value)">
+          <select name="SelectedSessionTypeValue" id="session-type-select" data-on="change:onSessionTypeChange:value">
             <option value="GameModeType_PRACTICE"     {% if config.Event.SelectedSessionTypeValue == 'GameModeType_PRACTICE'     %}selected{% endif %}>{{ _('Libre') }}</option>
             <option value="GameModeType_RACE_WEEKEND" {% if config.Event.SelectedSessionTypeValue == 'GameModeType_RACE_WEEKEND' %}selected{% endif %}>{{ _('Race Weekend') }}</option>
             <optgroup label="{{ _('Autres modes') }}">
@@ -440,7 +440,7 @@
 
         <div class="form-group">
           <label>{{ _('Circuit') }}</label>
-          <select name="SelectedTrackValue" id="track-select" onchange="updatePitWarning()">
+          <select name="SelectedTrackValue" id="track-select" data-on="change:updatePitWarning">
             {% for ev in events_practice %}
             {% set tv = ev.track + '|' + ev.layout + '|' + ev.event_name + '|' + ev.track_length|string %}
             <option value="{{ tv }}" data-pits="{{ ev.max_pit_slot or 0 }}" {% if config.Event.SelectedTrackValue == tv %}selected{% endif %}>
@@ -450,13 +450,13 @@
           </select>
           <span class="form-hint" id="pit-warning" style="display:none; color:var(--st-amber)"
                 data-msg="{{ _('Ce circuit n\'a que {pits} stands pour {max} joueurs maximum : les pilotes en trop ne pourront pas être placés.') }}"></span>
-          <button type="button" class="btn btn-sm" id="pit-fix" style="display:none" data-label="{{ _('Mettre à {pits}') }}" onclick="fixMaxPlayers()"></button>
+          <button type="button" class="btn btn-sm" id="pit-fix" style="display:none" data-label="{{ _('Mettre à {pits}') }}" data-on="click:fixMaxPlayers"></button>
         </div>
 
         <div class="form-group">
           <label for="max-players-input">{{ _('Joueurs max') }}</label>
           <input type="number" name="MaxPlayers" id="max-players-input" min="1" max="128"
-                 value="{{ max_players or 8 }}" oninput="updatePitWarning()">
+                 value="{{ max_players or 8 }}" data-on="input:updatePitWarning">
         </div>
 
       </form>
@@ -471,9 +471,9 @@
       <label>{{ _('Durée') }} <span class="hint">{{ _('(0 = ignoré)') }}</span></label>
       <input type="number" name="{{ key }}[Length]" id="dur-{{ key }}" value="{{ seconds }}" style="display:none">
       <div class="dur-widget">
-        <input type="number" min="0" max="24" value="{{ h }}" class="dur-part" oninput="calcDur('{{ key }}',this.closest('.dur-widget'))"><span class="dur-sep">h</span>
-        <input type="number" min="0" max="59" value="{{ m }}" class="dur-part" oninput="calcDur('{{ key }}',this.closest('.dur-widget'))"><span class="dur-sep">min</span>
-        <input type="number" min="0" max="59" value="{{ s }}" class="dur-part" oninput="calcDur('{{ key }}',this.closest('.dur-widget'))"><span class="dur-sep">s</span>
+        <input type="number" min="0" max="24" value="{{ h }}" class="dur-part" data-dur-key="{{ key }}" data-on="input:calcDurEl:el"><span class="dur-sep">h</span>
+        <input type="number" min="0" max="59" value="{{ m }}" class="dur-part" data-dur-key="{{ key }}" data-on="input:calcDurEl:el"><span class="dur-sep">min</span>
+        <input type="number" min="0" max="59" value="{{ s }}" class="dur-part" data-dur-key="{{ key }}" data-on="input:calcDurEl:el"><span class="dur-sep">s</span>
       </div>
     </div>
     {% endmacro %}
@@ -619,7 +619,7 @@
           {{ _('Arrêter le cycle') }}
         </button>
         <label class="toggle-label m-0" title="{{ _('Reprend automatiquement la config suivante au prochain arrêt du serveur (différent du cycle en cours, affiché ci-contre).') }}">
-          <input type="checkbox" id="rot-enabled" class="switch" onchange="onRotEnabledChange()">
+          <input type="checkbox" id="rot-enabled" class="switch" data-on="change:onRotEnabledChange">
           <span>{{ _('Reprise auto') }}</span>
         </label>
       </div>
@@ -641,7 +641,7 @@
 
       <div class="rot-cycle-row">
         <label class="toggle-label">
-          <input type="checkbox" id="rot-cycle" class="switch" onchange="saveRotation()">
+          <input type="checkbox" id="rot-cycle" class="switch" data-on="change:saveRotation">
           <span>{{ _('Cycle — recommencer depuis le début après le dernier') }}</span>
         </label>
       </div>
@@ -650,8 +650,8 @@
         <label for="rot-idle-timeout">{{ _('Passer à la configuration suivante après (minutes sans joueur)') }}</label>
         <div class="flex gap-2 items-center">
           <input type="number" id="rot-idle-timeout" class="form-control" min="0" step="1"
-                 placeholder="0" style="max-width: 8rem" onchange="saveRotation(true)">
-          <button type="button" class="btn btn-secondary" onclick="saveRotation(true)">{{ _('Valider') }}</button>
+                 placeholder="0" style="max-width: 8rem" data-on="change:saveRotation:true">
+          <button type="button" class="btn btn-secondary" data-on="click:saveRotation:true">{{ _('Valider') }}</button>
         </div>
         <p class="form-hint">{{ _('0 = désactivé. Avance automatiquement dans le roulement si aucun joueur n\'est connecté pendant ce délai, indépendamment de toute session jouée.') }}</p>
       </div>
@@ -690,19 +690,19 @@
 
       <div class="cars-filters">
         <div class="cars-filters-top">
-          <input type="text" id="car-search" placeholder="{{ _('Rechercher...') }}" oninput="filterCars()">
+          <input type="text" id="car-search" placeholder="{{ _('Rechercher...') }}" data-on="input:filterCars">
           <label class="toggle-label">
-            <input type="checkbox" id="show-selected-only" class="switch" onchange="filterCars()">
+            <input type="checkbox" id="show-selected-only" class="switch" data-on="change:filterCars">
             <span>{{ _('Sélectionnés seulement') }}</span>
           </label>
           <label class="toggle-label">
             <input type="checkbox" id="show-official-only" class="switch"
-                   onchange="if (this.checked) document.getElementById('show-mods-only').checked = false; filterCars()">
+                   data-uncheck="show-mods-only" data-on="change:filterCars">
             <span>{{ _('Véhicules officiels uniquement') }}</span>
           </label>
           <label class="toggle-label">
             <input type="checkbox" id="show-mods-only" class="switch"
-                   onchange="if (this.checked) document.getElementById('show-official-only').checked = false; filterCars()">
+                   data-uncheck="show-official-only" data-on="change:filterCars">
             <span>{{ _('Mods uniquement') }}</span>
           </label>
           <button class="btn btn-secondary" id="cars-select-all-btn">{{ _('Tout sélectionner') }}</button>
@@ -715,10 +715,10 @@
             <div class="pi-slider-track" id="pi-slider-track"></div>
             <input type="range" id="pi-range-min"
                    min="{{ pi_min }}" max="{{ pi_max }}" value="{{ pi_min }}" step="any"
-                   oninput="updatePiSlider()">
+                   data-on="input:updatePiSlider">
             <input type="range" id="pi-range-max"
                    min="{{ pi_min }}" max="{{ pi_max }}" value="{{ pi_max }}" step="any"
-                   oninput="updatePiSlider()">
+                   data-on="input:updatePiSlider">
           </div>
         </div>
 

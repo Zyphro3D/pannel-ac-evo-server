@@ -117,7 +117,7 @@
       <!-- Sélecteur de pilote -->
       <div class="timing-react-target">
         <label class="timing-react-label" for="timing-react-driver">{{ _('Pour') }} :</label>
-        <select id="timing-react-driver" class="timing-react-select" onchange="_updateReactTitles()">
+        <select id="timing-react-driver" class="timing-react-select" data-on="change:_updateReactTitles">
           <option value="">{{ _('Tout le monde') }}</option>
         </select>
       </div>
@@ -152,7 +152,7 @@
         </button>
       </div>
       <div class="timing-admin-chat-form">
-        <select id="admin-cmd-select" class="form-control timing-admin-select" onchange="onCmdSelect(this)" disabled>
+        <select id="admin-cmd-select" class="form-control timing-admin-select" data-on="change:onCmdSelect:el" disabled>
           <option value="">— {{ _('Commande admin…') }} —</option>
           <optgroup label="{{ _('Session') }}">
             <option value="\skip">{{ _('Phase suivante') }} (\skip)</option>
@@ -176,7 +176,7 @@
             <option value="\del_penalty  sg">\del_penalty [#num] sg — {{ _('Retirer stop &amp; go') }}</option>
           </optgroup>
         </select>
-        <select id="admin-car-select" class="form-control timing-admin-select" onchange="onCarSelect(this)" style="display:none" disabled>
+        <select id="admin-car-select" class="form-control timing-admin-select" data-on="change:onCarSelect:el" style="display:none" disabled>
           <option value="">— {{ _('Pilote…') }} —</option>
         </select>
         <input type="text" id="admin-chat-input" class="form-control timing-admin-input"

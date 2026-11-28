@@ -34,7 +34,7 @@
               <button class="btn btn-ghost btn-sm" type="submit">{{ sym }}</button></form>
             {% endfor %}
             <form method="post" action="{{ url_for('championships.championship_round_delete', cid=champ.id, rid=r.id) }}" class="m-0"
-                  onsubmit='return confirm({{ _("Retirer cette manche du championnat ?")|tojson }})'>
+                  data-confirm-submit="{{ _("Retirer cette manche du championnat ?") }}">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <button class="btn btn-ghost btn-sm" type="submit">{{ _('Retirer') }}</button></form>
           </div></td>
@@ -60,7 +60,7 @@
   </div>
 
   <form method="post" action="{{ url_for('championships.championship_delete', cid=champ.id) }}"
-        onsubmit='return confirm({{ _("Supprimer ce championnat ? Les courses ne sont pas supprimées.")|tojson }})'>
+        data-confirm-submit="{{ _("Supprimer ce championnat ? Les courses ne sont pas supprimées.") }}">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <button class="btn btn-secondary btn-sm" type="submit">{{ _('Supprimer le championnat') }}</button>
   </form>

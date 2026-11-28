@@ -512,6 +512,9 @@ function updatePiSlider(autoSelect = true) {
 }
 
 /* ── Duration widget ── */
+// Appelé par data-on="input:calcDurEl:el" (champs de durée de server.html, data-dur-key = la session)
+function calcDurEl(el) { calcDur(el.dataset.durKey, el.closest('.dur-widget')); }
+
 function calcDur(key, widget) {
   const parts = widget.querySelectorAll('.dur-part');
   let h = parseInt(parts[0].value) || 0;
@@ -820,13 +823,16 @@ function renderRotList() {
       `<span class="rot-item-pos">${idx + 1}</span>` +
       `<span class="rot-item-name"></span>` +
       `<div class="rot-item-actions">` +
-        `<button class="rot-btn" onclick="rotMove(${idx},-1)" ${idx === 0 ? 'disabled' : ''}>↑</button>` +
-        `<button class="rot-btn" onclick="rotMove(${idx},1)" ${idx === _rotConfigs.length - 1 ? 'disabled' : ''}>↓</button>` +
-        `<button class="rot-btn rot-btn-del" onclick="rotRemove(${idx})"><span class="icon-trash"></span></button>` +
+        `<button class="rot-btn" data-rot="up" ${idx === 0 ? 'disabled' : ''}>↑</button>` +
+        `<button class="rot-btn" data-rot="down" ${idx === _rotConfigs.length - 1 ? 'disabled' : ''}>↓</button>` +
+        `<button class="rot-btn rot-btn-del" data-rot="del"><span class="icon-trash"></span></button>` +
       `</div>`;
     // textContent : .rotation.json vit dans le dossier partagé avec le conteneur du jeu, son contenu
     // n'est pas une source de confiance pour du HTML
     item.querySelector('.rot-item-name').textContent = cfg;
+    item.querySelector('[data-rot=up]').addEventListener('click', () => rotMove(idx, -1));
+    item.querySelector('[data-rot=down]').addEventListener('click', () => rotMove(idx, 1));
+    item.querySelector('[data-rot=del]').addEventListener('click', () => rotRemove(idx));
     list.appendChild(item);
   });
   updateRotationStatus();
@@ -918,6 +924,47 @@ async function stopRotationCycle() {
 }
 
 if (document.getElementById('rot-enabled')) loadRotation();
+
+// Gestionnaires déclarés dans le HTML sans attribut on* : la CSP n'autorise plus script-src-attr 'unsafe-inline'.
+//   data-on="change:maFonction"                 → maFonction()
+//   data-on="change:maFonction:value"           → maFonction(el.value)   (aussi : checked, el, files, true, false)
+//   data-on="input:f1|change:f2:el"             → plusieurs événements ; « enter » = touche Entrée (keydown)
+//   data-uncheck="id"                           → case cochée : décoche la case #id avant les autres gestionnaires
+//   data-autosubmit                             → envoie le formulaire au changement
+// Délégué au document : marche aussi pour le HTML ajouté plus tard (htmx, innerHTML). Seules les fonctions
+// globales (déclarées par « function ») sont appelables, jamais une expression.
+const _ON_ARGS = {
+  value: (el) => [el.value], checked: (el) => [el.checked], el: (el) => [el],
+  files: (el) => [el.files && el.files[0]], true: () => [true], false: () => [false],
+};
+function _onDispatch(type, e) {
+  const el = type === 'click' ? e.target.closest('[data-on]') : e.target;
+  if (!el || !el.dataset || !el.dataset.on) return;
+  for (const part of el.dataset.on.split('|')) {
+    const [ev, fn, arg] = part.split(':');
+    if (ev !== type && !(ev === 'enter' && type === 'keydown' && e.key === 'Enter')) continue;
+    const f = window[fn];
+    if (typeof f !== 'function') { console.error('data-on : fonction introuvable', fn); continue; }
+    f(...(arg ? (_ON_ARGS[arg] || (() => [arg]))(el) : []));
+  }
+}
+for (const type of ['click', 'change', 'input', 'keydown']) {
+  document.addEventListener(type, (e) => {
+    if (type === 'change' && e.target.dataset) {
+      const other = e.target.dataset.uncheck;
+      if (other && e.target.checked) { const o = document.getElementById(other); if (o) o.checked = false; }
+      if ('autosubmit' in e.target.dataset && e.target.form) e.target.form.requestSubmit();
+    }
+    _onDispatch(type, e);
+  });
+}
+// Formulaires à confirmer (remplace onsubmit="return confirm(...)")
+document.addEventListener('submit', async (e) => {
+  const form = e.target;
+  if (!form.dataset || !form.dataset.confirmSubmit || form.dataset.confirmed) return;
+  e.preventDefault();
+  if (await showConfirm(form.dataset.confirmSubmit)) { form.dataset.confirmed = '1'; form.requestSubmit(); delete form.dataset.confirmed; }
+});
 
 // Boutons de confirmation générique (remplace les anciens onclick="return confirm(...)")
 document.addEventListener('click', async (e) => {

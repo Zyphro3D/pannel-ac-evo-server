@@ -259,7 +259,7 @@
       {% endif %}
       {% if current_user.is_authenticated and current_user.is_superadmin %}
       <form method="post" action="{{ url_for('tools.fairplay_reset') }}" class="mb-3"
-            onsubmit='return confirm({{ _("Remettre le compteur fair-play à zéro ? Les incidents passés ne compteront plus.")|tojson }})'>
+            data-confirm-submit="{{ _("Remettre le compteur fair-play à zéro ? Les incidents passés ne compteront plus.") }}">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button type="submit" class="btn btn-secondary btn-sm">{{ _('Remettre le compteur à zéro') }}</button>
       </form>

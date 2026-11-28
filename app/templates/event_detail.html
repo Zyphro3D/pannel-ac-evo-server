@@ -50,7 +50,7 @@
                     class="flex items-center gap-2 m-0">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <select name="assigned_car" class="form-control text-xs py-1 max-w-[200px]"
-                        onchange="updateDisplay(this)">
+                        data-on="change:updateDisplay:el">
                   <option value="">— {{ _('Non assignée') }} —</option>
                   {% for car in cars %}
                   <option value="{{ car.name }}" data-display="{{ car.display_name }}"

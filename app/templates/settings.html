@@ -210,7 +210,7 @@
                ondragleave="this.classList.remove('dragging')"
                ondrop="handleDrop(event)">
             <input type="file" id="file-input" hidden accept=".jpg,.jpeg,.png,.gif,.webp"
-                   onchange="uploadFile(this.files[0])">
+                   data-on="change:uploadFile:files">
             <strong>{{ _('Déposer une image') }}</strong>
             <span>{{ _('JPG, PNG, GIF, WEBP · 5 Mo max') }}</span>
             <div id="upload-status"></div>

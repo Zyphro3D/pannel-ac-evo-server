@@ -11,7 +11,7 @@
     {% if circuits|length > 1 %}
     <form method="get" class="flex items-center gap-2">
       <label class="text-sm text-dim" for="cm-circuit">{{ _('Circuit') }}</label>
-      <select id="cm-circuit" name="c" class="form-control" onchange="this.form.submit()">
+      <select id="cm-circuit" name="c" class="form-control" data-autosubmit>
         {% for c in circuits %}<option value="{{ c.slug }}" {% if c.slug == slug %}selected{% endif %}>{{ c.track }} — {{ c.layout }} ({{ c.count }})</option>{% endfor %}
       </select>
     </form>

@@ -66,13 +66,13 @@
               <div class="flex gap-1.5 justify-end whitespace-nowrap items-center">
                 <a class="btn btn-secondary btn-sm" href="{{ url_for('tools.backup_download', name=b.name) }}">{{ _('Télécharger') }}</a>
                 <form method="post" action="{{ url_for('tools.backup_restore_stored', name=b.name) }}" class="m-0 flex gap-1 items-center"
-                      onsubmit='return confirm({{ _("Remplacer l\'état actuel du panel par cette sauvegarde ?")|tojson }})'>
+                      data-confirm-submit="{{ _("Remplacer l\'état actuel du panel par cette sauvegarde ?") }}">
                   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                   <input class="form-control" name="confirm" placeholder="RESTAURER" style="width:8.5rem" autocomplete="off">
                   <button class="btn btn-secondary btn-sm" type="submit">{{ _('Restaurer') }}</button>
                 </form>
                 <form method="post" action="{{ url_for('tools.backup_delete', name=b.name) }}" class="m-0"
-                      onsubmit='return confirm({{ _("Supprimer cette sauvegarde ?")|tojson }})'>
+                      data-confirm-submit="{{ _("Supprimer cette sauvegarde ?") }}">
                   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                   <button class="btn btn-ghost btn-sm" type="submit">{{ _('Supprimer') }}</button>
                 </form>
@@ -90,7 +90,7 @@
     <h2 class="text-lg font-bold text-txt mb-3">{{ _('Restaurer depuis un fichier') }}</h2>
     <p class="text-sm text-dim mb-3">{{ _('Le fichier est vérifié avant tout changement (contenu autorisé, base intacte, version compatible), et l\'état actuel est sauvegardé automatiquement avant de le remplacer.') }}</p>
     <form method="post" action="{{ url_for('tools.backup_restore_upload') }}" enctype="multipart/form-data" class="flex items-end gap-3 flex-wrap"
-          onsubmit='return confirm({{ _("Remplacer l\'état actuel du panel par ce fichier ?")|tojson }})'>
+          data-confirm-submit="{{ _("Remplacer l\'état actuel du panel par ce fichier ?") }}">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <div><label class="form-label">{{ _('Fichier .zip') }}</label>
         <input class="form-control" type="file" name="file" accept=".zip" required></div>

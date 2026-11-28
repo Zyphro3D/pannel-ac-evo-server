@@ -83,7 +83,7 @@
       {# ── Circuit + mode ── #}
       <div>
         <label class="form-label">{{ _('Circuit') }}</label>
-        <select name="circuit" id="circuit-select" class="form-control" onchange="updateCircuitDisplay(this)">
+        <select name="circuit" id="circuit-select" class="form-control" data-on="change:updateCircuitDisplay:el">
           {% for tr in tracks %}
           {% set tv = tr.track + '|' + tr.layout + '|' + tr.event_name + '|' + tr.track_length|string %}
           {% set disp = tr.track ~ ' — ' ~ tr.layout %}
@@ -100,7 +100,7 @@
       <div class="grid grid-cols-2 gap-4">
         <div>
           <label class="form-label">{{ _('Mode') }}</label>
-          <select name="mode" id="mode-select" class="form-control" onchange="onModeChange(this.value)">
+          <select name="mode" id="mode-select" class="form-control" data-on="change:onModeChange:value">
             <option value="GameModeType_PRACTICE"     {% if not event or event.mode == 'GameModeType_PRACTICE'     %}selected{% endif %}>{{ _('Libre') }}</option>
             <option value="GameModeType_RACE_WEEKEND" {% if event and event.mode == 'GameModeType_RACE_WEEKEND' %}selected{% endif %}>{{ _('Race Weekend') }}</option>
           </select>
@@ -236,15 +236,15 @@
 
         <div class="cars-filters">
           <div class="cars-filters-top">
-            <input type="text" id="ef-car-search" class="form-control" placeholder="{{ _('Rechercher...') }}" oninput="efApplyFilters()">
+            <input type="text" id="ef-car-search" class="form-control" placeholder="{{ _('Rechercher...') }}" data-on="input:efApplyFilters">
             <label class="toggle-label">
               <input type="checkbox" id="ef-official-only" class="switch"
-                     onchange="if (this.checked) document.getElementById('ef-mods-only').checked = false; efApplyFilters(true)">
+                     data-uncheck="ef-mods-only" data-on="change:efApplyFilters:true">
               <span>{{ _('Véhicules officiels uniquement') }}</span>
             </label>
             <label class="toggle-label">
               <input type="checkbox" id="ef-mods-only" class="switch"
-                     onchange="if (this.checked) document.getElementById('ef-official-only').checked = false; efApplyFilters(true)">
+                     data-uncheck="ef-official-only" data-on="change:efApplyFilters:true">
               <span>{{ _('Mods uniquement') }}</span>
             </label>
             <button type="button" id="ef-select-all-btn" class="btn-secondary btn-sm">{{ _('Tout sélectionner') }}</button>
@@ -255,9 +255,9 @@
             <div class="pi-slider-wrapper">
               <div class="pi-slider-track" id="ef-pi-track"></div>
               <input type="range" id="ef-pi-min" min="{{ pi_min }}" max="{{ pi_max }}"
-                     value="{{ pi_min }}" step="any" oninput="efSyncPi('min')">
+                     value="{{ pi_min }}" step="any" data-on="input:efSyncPi:min">
               <input type="range" id="ef-pi-max" min="{{ pi_min }}" max="{{ pi_max }}"
-                     value="{{ pi_max }}" step="any" oninput="efSyncPi('max')">
+                     value="{{ pi_max }}" step="any" data-on="input:efSyncPi:max">
             </div>
             <span class="pi-range-label">
               <span id="ef-pi-min-val">{{ "%.1f"|format(pi_min) }}</span>

@@ -146,7 +146,7 @@
             <td class="mono">{{ r.restrictor if not r.banned else '—' }}</td>
             <td>
               <form method="post" action="{{ url_for('events_admin.access_rule_delete', rule_id=r.id) }}"
-                    onsubmit="return confirm('{{ _('Supprimer cette règle ?') }}')">
+                    data-confirm-submit="{{ _('Supprimer cette règle ?') }}">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="btn-secondary btn-sm">{{ _('Supprimer') }}</button>
               </form>
