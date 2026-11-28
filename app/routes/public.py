@@ -211,7 +211,7 @@ def register():
             errors.append(_("Les mots de passe ne correspondent pas."))
 
         if not errors:
-            if Driver.query.filter_by(ingame_name=ingame).first():
+            if Driver.nom_pris(ingame):
                 errors.append(_("Ce nom in-game est déjà utilisé."))
             if Driver.query.filter_by(email=email).first():
                 errors.append(_("Cet email est déjà utilisé."))
@@ -713,7 +713,7 @@ def join_finish(server_id):
         errors.append(_("Nom in-game invalide (2–30 caractères)."))
     if not email or "@" not in email or len(email) > 120:
         errors.append(_("Adresse email invalide."))
-    if not errors and Driver.query.filter_by(ingame_name=ingame).first():
+    if not errors and Driver.nom_pris(ingame):
         errors.append(_("Ce nom in-game est déjà utilisé."))
     if not errors and Driver.query.filter_by(email=email).first():
         errors.append(_("Cet email est déjà utilisé : connecte-toi avec ce compte puis lie ton Steam."))

@@ -101,7 +101,7 @@ def login():
         identifier = request.form.get("username", "").strip()
         password   = request.form.get("password", "")
 
-        account = (AdminAccount.query.filter_by(username=identifier, is_active=True).first()
+        account = (AdminAccount.par_nom(identifier, is_active=True)
                    or AdminAccount.query.filter_by(email=identifier.lower(), is_active=True).first())
         if account and account.check_password(password):
             _bf_ok(ip)
@@ -119,7 +119,7 @@ def login():
             return redirect(url_for("admin.server"))
 
         driver = (Driver.query.filter_by(email=identifier.lower()).first()
-                  or Driver.query.filter_by(ingame_name=identifier).first())
+                  or Driver.par_nom(identifier))
         if driver and driver.check_password(password):
             if driver.status == DriverStatus.PENDING:
                 flash(_("Votre compte est en attente de validation."), "warning")
@@ -163,7 +163,7 @@ def forgot_password():
         started = time.monotonic()
         identifier = request.form.get("identifier", "").strip()
         driver = (Driver.query.filter_by(email=identifier.lower()).first()
-                  or Driver.query.filter_by(ingame_name=identifier).first())
+                  or Driver.par_nom(identifier))
 
         # Même message qu'il existe ou non (sécurité anti-énumération)
         flash(_("Un email de réinitialisation a été envoyé si le compte existe."), "success")

@@ -2,6 +2,7 @@ import hmac
 import secrets
 from datetime import datetime, timezone
 from flask_login import UserMixin
+from sqlalchemy import func
 from werkzeug.security import generate_password_hash, check_password_hash
 from app.services.database import db
 
@@ -58,6 +59,14 @@ class AdminAccount(SessionTokenMixin, UserMixin, db.Model):
     display_name = db.Column(db.String(100), default="")
     _pw_hash     = db.Column("password_hash", db.String(256), nullable=False, default="")
     role         = db.Column(db.String(20), default="admin")   # "admin" | "superadmin"
+
+    @classmethod
+    def par_nom(cls, nom, **filtres):
+        return _par_nom(cls, cls.username, nom, **filtres)
+
+    @classmethod
+    def nom_pris(cls, nom, sauf_id=None):
+        return _nom_pris(cls, cls.username, nom, sauf_id)
     is_active    = db.Column(db.Boolean, default=True)
     created_at   = db.Column(db.DateTime, default=_utcnow)
     last_login   = db.Column(db.DateTime, nullable=True)
@@ -98,6 +107,28 @@ class AdminAccount(SessionTokenMixin, UserMixin, db.Model):
         return self.display_name or self.username
 
 
+# ── Pseudos et identifiants sans tenir compte de la casse ─────────────────────
+# « Zyphro » et « zyphro » sont le même nom : on cherche d'abord le nom exact, puis la seule variante de casse.
+# Si deux comptes ne diffèrent que par la casse (créés avant cette règle), seul le nom exact les départage.
+# Les deux côtés passent par lower() de la base, donc par la même règle. SQLite ne replie que l'ASCII :
+# « É » et « é » restent deux noms distincts.
+
+def _par_nom(model, col, nom, **filtres):
+    q = model.query.filter_by(**filtres)
+    exact = q.filter(col == nom).first()
+    if exact:
+        return exact
+    rows = q.filter(func.lower(col) == func.lower(nom)).limit(2).all()
+    return rows[0] if len(rows) == 1 else None
+
+
+def _nom_pris(model, col, nom, sauf_id=None):
+    q = model.query.filter(func.lower(col) == func.lower(nom))
+    if sauf_id is not None:
+        q = q.filter(model.id != sauf_id)
+    return db.session.query(q.exists()).scalar()
+
+
 # ── Driver (pilote, stocké en DB) ─────────────────────────────────────────────
 
 class Driver(SessionTokenMixin, UserMixin, db.Model):
@@ -110,6 +141,14 @@ class Driver(SessionTokenMixin, UserMixin, db.Model):
     _pw_hash    = db.Column("password_hash", db.String(256), nullable=False)
     status      = db.Column(db.String(20), default=DriverStatus.PENDING)  # pending/approved/rejected
     created_at  = db.Column(db.DateTime,  default=_utcnow)
+
+    @classmethod
+    def par_nom(cls, nom):
+        return _par_nom(cls, cls.ingame_name, nom)
+
+    @classmethod
+    def nom_pris(cls, nom, sauf_id=None):
+        return _nom_pris(cls, cls.ingame_name, nom, sauf_id)
 
     reset_token         = db.Column(db.String(64),  nullable=True)
     reset_token_expires = db.Column(db.DateTime,    nullable=True)

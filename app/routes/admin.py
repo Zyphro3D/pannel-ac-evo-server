@@ -1077,7 +1077,7 @@ def account_create():
         return redirect(url_for("admin.settings", tab="accounts"))
     if role not in ("admin", "superadmin"):
         role = "admin"
-    if AdminAccount.query.filter_by(username=username).first():
+    if AdminAccount.nom_pris(username):
         flash(_("Cet identifiant est déjà utilisé."), "error")
         return redirect(url_for("admin.settings", tab="accounts"))
     acc = AdminAccount(username=username, display_name=display_name, role=role)
@@ -1108,7 +1108,7 @@ def account_edit(account_id):
             flash(_("Impossible : il doit rester au moins un superadmin actif."), "error")
             return redirect(url_for("admin.settings", tab="accounts"))
     if new_username and new_username != acc.username:
-        if AdminAccount.query.filter_by(username=new_username).first():
+        if AdminAccount.nom_pris(new_username, sauf_id=acc.id):
             flash(_("Cet identifiant est déjà utilisé."), "error")
             return redirect(url_for("admin.settings", tab="accounts"))
         acc.username = new_username
@@ -1208,7 +1208,7 @@ def account_role_change():
         if new_role == "pilote":
             return jsonify({"ok": True})
         username = driver.ingame_name
-        if AdminAccount.query.filter_by(username=username).first():
+        if AdminAccount.nom_pris(username):
             return jsonify({"ok": False, "error": _("Cet identifiant est déjà utilisé par un compte admin — renomme le pilote ou l'admin existant.")}), 400
         acc = AdminAccount(username=username, display_name=driver.ingame_name, role=new_role)
         # Même format de hash (werkzeug) pour Driver et AdminAccount : on réutilise
