@@ -199,8 +199,8 @@ function _modToast(type, msg) {
   const zone = document.getElementById('toast-zone');
   if (!zone) return;
   const div = document.createElement('div');
-  div.innerHTML = `<div x-data="{ show: true }"
-    x-show="show" x-init="setTimeout(() => show = false, 5000)" x-transition
+  div.innerHTML = `<div x-data="toast" data-ms="5000"
+    x-show="show"  x-transition
     class="toast toast-${type}" role="alert">
     <span>${msg}</span>
     <button @click="show = false" class="toast-close">✕</button>

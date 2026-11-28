@@ -1158,21 +1158,7 @@
       {# ── COMPTES ── Gestion des administrateurs ──────────────────────────── #}
       {# ═══════════════════════════════════════════════════════════════════════ #}
       {% elif tab in ['accounts', 'users', 'events', 'live'] %}
-      <div x-data="{
-        showCreate: false,
-        showEdit: false,
-        editId: null,
-        editUsername: '',
-        editDisplayName: '',
-        openEdit(id, u, dn) {
-          this.editId = id; this.editUsername = u;
-          this.editDisplayName = dn;
-          this.showEdit = true;
-        },
-        openCreate() {
-          this.showCreate = true;
-        }
-      }">
+      <div x-data="comptesAdmin">
 
       <section>
         <div class="settings-card">

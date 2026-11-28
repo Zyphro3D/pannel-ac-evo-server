@@ -534,11 +534,12 @@ def _register_request_hooks(app):
         response.headers["Referrer-Policy"]        = "strict-origin-when-cross-origin"
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; "
-            f"script-src 'self' 'nonce-{nonce}' 'unsafe-inline' https://cdn.jsdelivr.net 'unsafe-eval'{extra_script}; "
+            # Ni 'unsafe-eval' (Alpine en version CSP, htmx sans eval) ni 'unsafe-inline' : chaque script en ligne porte le nonce.
+            f"script-src 'self' 'nonce-{nonce}'{extra_script}; "
             # Aucun gestionnaire en ligne (onclick=…) : ils passent par data-on (static/js/app.js), d'où script-src-attr 'none'.
             "script-src-attr 'none'; "
             "style-src 'self' 'unsafe-inline'; "
-            "img-src 'self' data: https://cdn.jsdelivr.net; "
+            "img-src 'self' data:; "
             "font-src 'self'; "
             "object-src 'none'; base-uri 'self'; frame-ancestors 'none'; "
             f"connect-src 'self'{extra_connect}"

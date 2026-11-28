@@ -1,3 +1,22 @@
+// ── Composants Alpine (version CSP : pas de fonction dans les attributs, la logique vit ici) ──
+document.addEventListener('alpine:init', () => {
+  // Toast qui se ferme seul : x-data="toast" data-ms="4500"
+  Alpine.data('toast', () => ({
+    show: true,
+    init() { setTimeout(() => { this.show = false; }, parseInt(this.$el.dataset.ms || '4500', 10)); },
+  }));
+  // Bouton du menu mobile : prévient le menu (écouteur @toggle-mobile-nav.window)
+  Alpine.data('navToggle', () => ({
+    toggle() { window.dispatchEvent(new CustomEvent('toggle-mobile-nav')); },
+  }));
+  // Paramètres → Comptes : fenêtres de création et de modification d'un compte admin
+  Alpine.data('comptesAdmin', () => ({
+    showCreate: false, showEdit: false, editId: null, editUsername: '', editDisplayName: '',
+    openEdit(id, u, dn) { this.editId = id; this.editUsername = u; this.editDisplayName = dn; this.showEdit = true; },
+    openCreate() { this.showCreate = true; },
+  }));
+});
+
 /* ── CSRF helper ── */
 function _csrfHeaders(extra) {
   const token = document.querySelector('meta[name="csrf-token"]')?.content || '';
@@ -203,8 +222,8 @@ function showToast(msg, type = 'success') {
   const zone = document.getElementById('toast-zone');
   if (!zone) return;
   const div = document.createElement('div');
-  div.innerHTML = `<div x-data="{ show: true }"
-    x-show="show" x-init="setTimeout(() => show = false, 4500)" x-transition
+  div.innerHTML = `<div x-data="toast" data-ms="4500"
+    x-show="show"  x-transition
     class="toast toast-${type}" role="alert" aria-live="polite">
     <span></span>
     <button @click="show = false" class="toast-close" aria-label="Fermer">✕</button>

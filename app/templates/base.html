@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/charte.css', v=static_version) }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-nav.css', v=static_version) }}">
   <script src="{{ url_for('static', filename='js/htmx.min.js', v=static_version) }}"></script>
-  <script defer src="{{ url_for('static', filename='js/alpine.min.js', v=static_version) }}"></script>
+  <script defer src="{{ url_for('static', filename='js/alpine-csp.min.js', v=static_version) }}"></script>
   {% include "_partials/local_head.html" ignore missing %}
   {% block head %}{% endblock %}
 </head>
@@ -231,7 +231,7 @@
       {% endif %}
 
       {# ── Hamburger (mobile) ── #}
-      <button x-data @click="$dispatch('toggle-mobile-nav')"
+      <button x-data="navToggle" @click="toggle()"
               class="lg:hidden p-2 rounded-lg text-txt/80 hover:text-txt hover:bg-fg/5
                      transition-colors duration-150" aria-label="{{ _('Menu') }}">
         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -475,6 +475,7 @@
 
 <script nonce="{{ csp_nonce }}">
 htmx.config.useTemplateFragments = true;
+htmx.config.allowEval = false;   // CSP sans 'unsafe-eval' : aucun filtre ni hx-on évalué
 const I18N = {
   online:            "{{ _('En ligne') }}",
   offline:           "{{ _('Hors ligne') }}",
