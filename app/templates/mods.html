@@ -99,11 +99,11 @@
             <td class="px-5 py-3">
               {% set on = mod_servers.get(mod.filename, []) %}
               {% if current_user.is_admin %}
-              <fieldset class="mod-servers flex flex-col gap-1" data-filename="{{ mod.filename }}">
+              <fieldset class="mod-servers flex flex-wrap gap-1.5" data-filename="{{ mod.filename }}">
                 <legend class="sr-only">{{ _('Serveurs qui chargent %(name)s', name=mod.filename) }}</legend>
                 {% for srv in servers %}
-                <label class="flex items-center gap-2 text-xs text-txt whitespace-nowrap">
-                  <input type="checkbox" value="{{ srv.id }}" {% if srv.id in on %}checked{% endif %}>
+                <label class="mod-srv">
+                  <input type="checkbox" class="zy-check" value="{{ srv.id }}" {% if srv.id in on %}checked{% endif %}>
                   <span>#{{ srv.id }} {{ srv.name }}</span>
                 </label>
                 {% endfor %}

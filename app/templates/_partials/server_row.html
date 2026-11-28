@@ -45,7 +45,7 @@
           title="{{ _('Un pilote sans inscription confirmée à un événement publié de ce serveur est prévenu par le bot (en anglais), puis expulsé à la fin du délai. Le bot doit pouvoir passer admin (mot de passe admin du serveur).') }}">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <label class="flex items-center gap-1.5">
-        <input type="checkbox" name="required" value="1" x-model="on" {% if srv.registration_required %}checked{% endif %}>
+        <input type="checkbox" class="zy-check" name="required" value="1" x-model="on" {% if srv.registration_required %}checked{% endif %}>
         {{ _('Réservé aux inscrits') }}
       </label>
       <label class="flex items-center gap-1" x-show="on" {% if not srv.registration_required %}style="display:none"{% endif %}>

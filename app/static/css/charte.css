@@ -213,3 +213,22 @@ nav.fixed { background: var(--barbg) !important; border-bottom: 1px solid var(--
 .server-section-head { flex-wrap: wrap; gap: 12px; }
 .server-section-head h1 { min-width: 0; overflow-wrap: anywhere; }
 @media (max-width: 640px) { .server-section-head h1 { font-size: clamp(1.4rem, 7vw, 2rem); } }
+
+/* Cases à cocher aux couleurs de la charte (page Serveurs, choix des serveurs d'un mod) — 27/11/2026 */
+.zy-check { appearance: none; -webkit-appearance: none; flex: none; width: 18px; height: 18px; margin: 0;
+  border: 1.5px solid rgb(var(--fg-rgb) / .35); border-radius: 4px; background: transparent;
+  display: inline-grid; place-content: center; cursor: pointer; background-image: none; box-shadow: none; transition: background .15s, border-color .15s; }
+.zy-check:hover { border-color: var(--accent); }
+.zy-check:checked { background: var(--accent); background-image: none; border-color: var(--accent); }
+.zy-check:checked::after { content: ""; width: 5px; height: 10px; border: solid #fff; border-width: 0 2px 2px 0;
+  transform: translateY(-1px) rotate(45deg); }
+.zy-check:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.mod-srv { display: inline-flex; align-items: center; gap: .45rem; padding: .3rem .7rem .3rem .45rem; font-size: .75rem;
+  white-space: nowrap; border: 1px solid rgb(var(--fg-rgb) / .14); border-radius: 999px; cursor: pointer;
+  color: rgb(var(--fg-rgb) / .75); transition: border-color .15s, background .15s, color .15s; }
+.mod-srv:hover { border-color: rgb(var(--fg-rgb) / .3); }
+.mod-srv:has(.zy-check:checked) { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); color: rgb(var(--fg-rgb)); }
+.mod-srv .zy-check { width: 15px; height: 15px; }
+
+/* Page Serveurs : le tableau (nom, container, ports, accès) a besoin de toute la largeur — 27/11/2026 */
+.page-shell.page-shell-wide { max-width: none; }

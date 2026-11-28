@@ -7,6 +7,7 @@
 - Le nom in-game n'accepte plus de retour à la ligne ni de tabulation (inscription et page « Rejoindre ») : seules les espaces simples restent permises.
 - Le redémarrage automatique n'est plus désactivé à chaque lancement : il reste tel qu'il était sur un serveur qui tourne, et il est activé par défaut sur un serveur arrêté (lancement depuis la page, changement de configuration, roulement).
 - Le nombre de joueurs se règle dans chaque configuration, à côté du circuit. Quand le circuit a moins de stands que de places, un bouton « Mettre à N » ramène les places au nombre de stands. SERVER_MAX_PLAYERS (Paramètres) n'est plus que la valeur d'une nouvelle configuration et n'écrase plus celle des configurations existantes.
+- Cases à cocher aux couleurs du panel sur les pages Serveurs et Mods (choix des serveurs d'un mod), et page Serveurs en pleine largeur.
 
 ### v2.8.2 — 25/11/2026
 
