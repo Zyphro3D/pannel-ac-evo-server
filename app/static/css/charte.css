@@ -139,7 +139,7 @@ nav.fixed { background: var(--barbg) !important; border-bottom: 1px solid var(--
 
 /* Boutons : pilules, rouge plein pour l'action principale, verre pour le reste */
 .btn, .btn-primary, .btn-secondary, .btn-ghost, .btn-danger, .btn-success, .btn-start, .btn-stop, .cat-btn { border-radius: 99px !important; }
-.btn-primary { background: var(--accent) !important; color: var(--on-red) !important; border-color: transparent !important; box-shadow: none !important; }
+.btn-primary { background: var(--btn-primary-bg, var(--accent)) !important; color: var(--on-red) !important; border-color: transparent !important; box-shadow: none !important; }
 .btn-primary:hover { background: var(--accent-dark) !important; }
 .btn-secondary { background: rgb(var(--fg-rgb) / .055) !important; border: 1px solid var(--border-light) !important; color: var(--text) !important; }
 .btn-secondary:hover { background: rgb(var(--fg-rgb) / .1) !important; }
@@ -233,3 +233,11 @@ nav.fixed { background: var(--barbg) !important; border-bottom: 1px solid var(--
 
 /* Page Serveurs : le tableau (nom, container, ports, accès) a besoin de toute la largeur — 27/11/2026 */
 .page-shell.page-shell-wide { max-width: none; }
+
+/* Téléphone : cibles de la barre du haut à 44 px au moins (logo, thème, langue, menu) — constat qualite-sites du 28/11 */
+@media (max-width: 640px) {
+  nav.fixed.top-0 .theme-toggle { width: 44px; height: 44px; }
+  nav.fixed.top-0 > div > a:first-child,
+  nav.fixed.top-0 .relative > button,
+  nav.fixed.top-0 button.lg\:hidden { min-height: 44px; min-width: 44px; }
+}
