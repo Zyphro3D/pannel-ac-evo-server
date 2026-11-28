@@ -365,6 +365,7 @@ let _piMin = PI_MIN, _piMax = PI_MAX;
 function efUpdatePiTrack() {
   const slMin = document.getElementById('ef-pi-min');
   const slMax = document.getElementById('ef-pi-max');
+  if (!slMin || !slMax) return;   // aucune voiture connue : pas de curseur PI sur la page
   const lo = parseInt(slMin.min), hi = parseInt(slMin.max), span = hi - lo;
   const p1 = span > 0 ? ((_piMin - lo) / span * 100) : 0;
   const p2 = span > 0 ? ((_piMax - lo) / span * 100) : 100;
