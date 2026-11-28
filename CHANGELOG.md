@@ -1,6 +1,6 @@
 # Changelog
 
-### À venir
+### v2.8.3 — 28/11/2026
 
 **Sécurité**
 
