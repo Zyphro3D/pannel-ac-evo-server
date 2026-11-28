@@ -2,8 +2,19 @@
 
 ### À venir
 
+**Sécurité**
+
+- Politique de sécurité du navigateur (CSP) plus stricte : plus aucun script dans les attributs HTML (`script-src-attr 'none'`). Une injection de HTML ne peut plus déclencher de code par un `onclick` ou un `onerror`.
+
+**Page publique**
+
+- Bouton principal au rouge de la charte, lisible (contraste 4,8:1 au lieu de 4,2).
+- Cartes de serveur lisibles sur téléphone : les voitures ne s'écrasent plus lettre par lettre, l'état « En direct » et les boutons ne recouvrent plus le nom du serveur.
+- Textes plus grands (chips de voitures, podium, pied de page), boutons de la barre du haut et liens du pied de page à 44 px sur téléphone.
+
 **Corrections**
 
+- Le formulaire d'événement ne plante plus au chargement quand aucun circuit ni aucune voiture n'est encore connu.
 - Le pseudo ne tient plus compte des majuscules : « Zyphro » et « zyphro » sont le même nom. On se connecte (et on demande un nouveau mot de passe) avec n'importe quelle écriture, et l'inscription refuse un nom qui ne diffère d'un autre que par la casse. Pareil pour les identifiants des comptes admin. Deux comptes déjà créés avec la même lettre près restent distincts : chacun se connecte avec son écriture exacte.
 - Le nom in-game n'accepte plus de retour à la ligne ni de tabulation (inscription et page « Rejoindre ») : seules les espaces simples restent permises.
 - Le redémarrage automatique n'est plus désactivé à chaque lancement : il reste tel qu'il était sur un serveur qui tourne, et il est activé par défaut sur un serveur arrêté (lancement depuis la page, changement de configuration, roulement).
