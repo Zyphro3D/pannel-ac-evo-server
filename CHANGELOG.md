@@ -4,7 +4,11 @@
 
 **Sécurité**
 
-- Politique de sécurité du navigateur (CSP) plus stricte : plus aucun script dans les attributs HTML (`script-src-attr 'none'`). Une injection de HTML ne peut plus déclencher de code par un `onclick` ou un `onerror`.
+- Politique de sécurité du navigateur (CSP) bien plus stricte : plus aucun script dans les attributs HTML (`script-src-attr 'none'`), plus d'`eval` (`'unsafe-eval'` retiré, Alpine.js passe dans sa version CSP 3.17.5) et plus aucun script en ligne sans nonce (`'unsafe-inline'` retiré). Une injection de HTML ne peut plus faire exécuter de code dans le panel.
+
+**Documentation**
+
+- README en anglais, version française dans `README.fr.md`. Tutos vidéo en anglais et en français.
 
 **Page publique**
 
