@@ -344,7 +344,7 @@ Référence complète des variables `.env` (voir aussi `.env.example`) :
 | `ACESERVER_TCP_HOST` | Hôte TCP ACE EVO | `127.0.0.1` |
 | `ACESERVER_TCP_PORT` | Port TCP ACE EVO | `9700` |
 | `SERVER_NAME` | Nom affiché dans la liste des serveurs ACE EVO | `ACE EVO Server` |
-| `SERVER_MAX_PLAYERS` | Nombre maximum de joueurs | `8` |
+| `SERVER_MAX_PLAYERS` | Nombre de joueurs d'une nouvelle configuration (chacune garde ensuite le sien, réglé à côté du circuit) | `8` |
 
 ### Bot TCP in-game *(optionnel)*
 
