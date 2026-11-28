@@ -244,3 +244,6 @@ nav.fixed { background: var(--barbg) !important; border-bottom: 1px solid var(--
 }
 /* Pied de page : 12 px au moins (le text-xs de Tailwind donne 11,25 px avec la racine à 15 px) */
 footer .text-xs, #cookie-accept-btn { font-size: .8rem; }
+/* Liens du pied de page : jamais coupés en deux lignes ; c'est la rangée qui passe à la ligne */
+footer nav { flex-wrap: wrap; row-gap: 0; }
+footer nav a { white-space: nowrap; }
