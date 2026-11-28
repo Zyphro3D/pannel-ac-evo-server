@@ -302,7 +302,7 @@
         <div class="h-result-carname">
           {% if winner and winner.car %}<span>{{ winner.car }}</span>{% endif %}
           {% if s.car_image %}
-          <img src="{{ url_for('serve_media', filename=s.car_image) }}" class="h-result-car-img" alt="">
+          <img src="{{ url_for('serve_media', filename=s.car_image) }}" class="h-result-car-img" alt="" width="150" height="66" loading="lazy" decoding="async">
           {% endif %}
         </div>
         {% endif %}

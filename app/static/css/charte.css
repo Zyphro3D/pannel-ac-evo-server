@@ -24,6 +24,7 @@
   --tw-bg: 19 20 23;  --tw-sidebar: 16 17 20;  --tw-card: 28 29 33;  --tw-surface: 31 32 36;
   --tw-surface2: 37 38 43;  --tw-inp: 23 24 27;  --tw-txt: 238 239 241;  --tw-dim: 154 158 166;
   --tw-muted: 108 113 123;  --tw-accent: 223 64 71;  --tw-accent-dark: 179 38 43;
+  --btn-primary-bg: #d92b36;   /* CHARTE.md : fond du bouton principal, texte blanc ≥ 4,5:1 (le rouge de marque donne 4,2) */
 
   --bg:           rgb(var(--tw-bg));
   --bg-sidebar:   rgb(var(--tw-sidebar));
@@ -71,7 +72,7 @@
     --fg-rgb: 22 24 29;  --bg-rgb: 236 238 241;  --red-rgb: 200 50 58;  --dim-rgb: 87 94 107;
     --tw-bg: 236 238 241;  --tw-sidebar: 230 232 236;  --tw-card: 248 249 250;  --tw-surface: 242 243 245;
     --tw-surface2: 230 232 236;  --tw-inp: 255 255 255;  --tw-txt: 22 24 29;  --tw-dim: 87 94 107;
-    --tw-muted: 125 132 145;  --tw-accent: 200 50 58;  --tw-accent-dark: 168 38 43;
+    --tw-muted: 125 132 145;  --tw-accent: 200 50 58;  --tw-accent-dark: 168 38 43;  --btn-primary-bg: rgb(var(--tw-accent));
     --bg-hover: #e1e4e8;  --shadow: 0 18px 40px rgb(30 34 44 / .14);  --barbg: rgb(236 238 241 / .92);
     --border: rgb(var(--fg-rgb) / .12);  --border-light: rgb(var(--fg-rgb) / .24);
     --st-green: #047857;  --st-amber: #b45309;  --st-purple: #7e22ce;  --st-blue: #1d4ed8;  --st-red: rgb(var(--tw-accent));
@@ -82,7 +83,7 @@
   --fg-rgb: 22 24 29;  --bg-rgb: 236 238 241;  --red-rgb: 200 50 58;  --dim-rgb: 87 94 107;
   --tw-bg: 236 238 241;  --tw-sidebar: 230 232 236;  --tw-card: 248 249 250;  --tw-surface: 242 243 245;
   --tw-surface2: 230 232 236;  --tw-inp: 255 255 255;  --tw-txt: 22 24 29;  --tw-dim: 87 94 107;
-  --tw-muted: 125 132 145;  --tw-accent: 200 50 58;  --tw-accent-dark: 168 38 43;
+  --tw-muted: 125 132 145;  --tw-accent: 200 50 58;  --tw-accent-dark: 168 38 43;  --btn-primary-bg: rgb(var(--tw-accent));
   --bg-hover: #e1e4e8;  --shadow: 0 18px 40px rgb(30 34 44 / .14);  --barbg: rgb(236 238 241 / .92);
   --border: rgb(var(--fg-rgb) / .12);  --border-light: rgb(var(--fg-rgb) / .24);
   --st-green: #047857;  --st-amber: #b45309;  --st-purple: #7e22ce;  --st-blue: #1d4ed8;  --st-red: rgb(var(--tw-accent));

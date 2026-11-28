@@ -198,7 +198,7 @@ textarea { resize: vertical; }
   white-space: nowrap;
 }
 .btn:hover { opacity: 0.85; }
-.btn-primary  { background: var(--accent);  color: #fff; }
+.btn-primary  { background: var(--btn-primary-bg, var(--accent));  color: #fff; }
 .btn-success  { background: var(--green);   color: #fff; }
 .btn-danger   { background: var(--red);     color: #fff; }
 .btn-secondary {
@@ -1681,7 +1681,7 @@ body::before {
   -webkit-backdrop-filter: blur(2px);
 }
 .h-result-card.is-first .h-place {
-  background: var(--accent);
+  background: var(--btn-primary-bg, var(--accent));
   box-shadow: 0 4px 14px rgb(var(--red-rgb) / 0.4);
 }
 
@@ -3870,13 +3870,15 @@ body::before {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  flex-wrap: wrap;   /* boutons et état passent sous le nom au lieu de le recouvrir (téléphone) */
+  gap: 8px 12px;
 }
+.pub-srv-header .h-panel-title { flex: 1 1 12rem; min-width: 0; }
 .pub-srv-status {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  font-size: 0.72rem;
+  font-size: 0.8rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -4018,8 +4020,8 @@ body::before {
   background: rgb(var(--fg-rgb) / 0.04);
   border: 1px solid var(--border-light);
   border-radius: 7px;
-  font-size: 0.78rem;
-  color: rgb(var(--fg-rgb) / 0.72);
+  font-size: 0.82rem;
+  color: rgb(var(--fg-rgb) / 0.78);
 }
 .car-chip-more {
   color: #ff8a8a;
@@ -4034,6 +4036,9 @@ body::before {
 @media (max-width: 600px) {
   .pub-servers-grid-2,
   .pub-servers-grid-3 { grid-template-columns: 1fr; }
+  /* Téléphone : infos et chiffres l'un sous l'autre, sinon les noms de voitures s'écrasent lettre par lettre */
+  .pub-srv-info-bar { flex-direction: column; }
+  .pub-srv-info-side { flex-basis: auto; border-left: 0; border-top: 1px solid var(--border); }
 }
 
 /* ─── Page Véhicules ──────────────────────────────────────────── */

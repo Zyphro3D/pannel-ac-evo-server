@@ -418,7 +418,7 @@
         <div class="flex items-center gap-1.5 px-3 py-1 bg-surface rounded-full border border-muted/20 text-xs text-dim">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald inline-block"></span>
           v{{ app_version }}
-          {% if git_hash %}<span class="text-dim/40">· {{ git_hash }}</span>{% endif %}
+          {% if git_hash %}<span>· {{ git_hash }}</span>{% endif %}
         </div>
 
         {# Links #}
@@ -441,7 +441,7 @@
         {% endif %}
 
       </div>
-      <div class="mt-6 pt-5 border-t border-fg/5 text-xs text-dim/60 flex flex-wrap gap-2">
+      <div class="mt-6 pt-5 border-t border-fg/5 text-xs text-dim flex flex-wrap gap-2">
         <span>© {{ now.year }} <strong class="text-dim">Florian</strong> (Zyphro)</span>
         <span>·</span>
         <span>{{ _('Sous licence Elastic 2.0') }}</span>
