@@ -1,3 +1,5 @@
+🇫🇷 [Version française](README.fr.md)
+
 <p align="center">
   <img src="docs/banner.png" alt="AC EVO Server Panel" width="600">
 </p>
@@ -5,182 +7,182 @@
 <h1 align="center">AC EVO Server Panel</h1>
 
 <p align="center">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/licence-Elastic%202.0-lightgrey" alt="Licence"></a>
-  <img src="https://img.shields.io/github/v/release/Zyphro3D/pannel-ac-evo-server" alt="Dernière release">
-  <img src="https://img.shields.io/github/last-commit/Zyphro3D/pannel-ac-evo-server" alt="Dernier commit">
-  <img src="https://img.shields.io/github/issues/Zyphro3D/pannel-ac-evo-server" alt="Issues ouvertes">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/licence-Elastic%202.0-lightgrey" alt="License"></a>
+  <img src="https://img.shields.io/github/v/release/Zyphro3D/pannel-ac-evo-server" alt="Latest release">
+  <img src="https://img.shields.io/github/last-commit/Zyphro3D/pannel-ac-evo-server" alt="Last commit">
+  <img src="https://img.shields.io/github/issues/Zyphro3D/pannel-ac-evo-server" alt="Open issues">
   <img src="https://img.shields.io/github/stars/Zyphro3D/pannel-ac-evo-server" alt="Stars">
 </p>
 
 <p align="center">
-  Interface web pour gérer un ou plusieurs serveurs dédiés Assetto Corsa EVO.<br>
-  <strong>Déploiement Docker (Linux) — panel et serveur dans des containers séparés.</strong>
+  Web interface to manage one or more Assetto Corsa EVO dedicated servers.<br>
+  <strong>Docker deployment (Linux) — panel and server in separate containers.</strong>
 </p>
 
 <p align="center">
-  <a href="https://evopanel.zyphro.fr">🌐 Site evopanel.zyphro.fr</a> •
+  <a href="https://evopanel.zyphro.fr">🌐 evopanel.zyphro.fr website</a> •
   <a href="https://github.com/Zyphro3D/pannel-ac-evo-server/wiki/Getting-Started">📖 Getting started (EN)</a> •
-  <a href="https://youtu.be/gVG6A2pLf04">🎬 Tuto vidéo (FR)</a> •
   <a href="https://youtu.be/8FkRYu5EXPA">🎬 Video tutorial (EN)</a> •
+  <a href="https://youtu.be/gVG6A2pLf04">🎬 Video tutorial (FR)</a> •
   <a href="#-installation">🚀 Installation</a> •
   <a href="#configuration">Configuration</a> •
-  <a href="#mise-à-jour">Mise à jour</a> •
+  <a href="#update">Update</a> •
   <a href="#changelog">Changelog</a> •
-  <a href="CONTRIBUTING.md">Contribuer</a> •
-  <a href="https://patreon.com/Zyphro">Soutenir sur Patreon</a>
+  <a href="CONTRIBUTING.md">Contributing</a> •
+  <a href="https://patreon.com/Zyphro">Support on Patreon</a>
 </p>
 
 ---
 
 <p align="center">
-  <strong>Le code source est public : utilisez-le et modifiez-le librement.</strong><br>
-  Si le panel tourne sur votre serveur et vous fait gagner du temps, vous pouvez soutenir Zyphro sur Patreon<br>
-  (versions en avance, et votre mot dans les prochaines fonctionnalités).
+  <strong>The source code is public: use it and modify it as you wish.</strong><br>
+  If the panel runs on your server and saves you time, you can support Zyphro on Patreon<br>
+  (early access to versions, and a say in upcoming features).
 </p>
 
 <p align="center">
-  <a href="https://patreon.com/Zyphro"><strong>Soutenir Zyphro sur Patreon</strong></a>
+  <a href="https://patreon.com/Zyphro"><strong>Support Zyphro on Patreon</strong></a>
 </p>
 
 ---
 
-## Aperçu
+## Overview
 
 <table>
   <tr>
-    <td><img src="docs/screenshots/home.png" alt="Page d'accueil" title="Page d'accueil publique"></td>
-    <td><img src="docs/screenshots/results-light.png" alt="Détail d'un résultat, thème clair" title="Le même panel en thème clair"></td>
+    <td><img src="docs/screenshots/home.png" alt="Home page" title="Public home page"></td>
+    <td><img src="docs/screenshots/results-light.png" alt="Result details, light theme" title="The same panel in light theme"></td>
   </tr>
   <tr>
-    <td><img src="docs/screenshots/results-overview.png" alt="Résultats" title="Résultats de session"></td>
-    <td><img src="docs/screenshots/results.png" alt="Détail résultats" title="Détail d'un résultat"></td>
+    <td><img src="docs/screenshots/results-overview.png" alt="Results" title="Session results"></td>
+    <td><img src="docs/screenshots/results.png" alt="Result details" title="Result details"></td>
   </tr>
   <tr>
-    <td><img src="docs/screenshots/leaderboard.png" alt="Classement global" title="Classement global de la saison"></td>
-    <td><img src="docs/screenshots/server-status.png" alt="Statut serveur" title="Onglet statut du serveur"></td>
+    <td><img src="docs/screenshots/leaderboard.png" alt="Global leaderboard" title="Global season leaderboard"></td>
+    <td><img src="docs/screenshots/server-status.png" alt="Server status" title="Server status tab"></td>
   </tr>
   <tr>
-    <td><img src="docs/screenshots/config.png" alt="Configuration" title="Éditeur de configuration serveur"></td>
-    <td><img src="docs/screenshots/scheduling.png" alt="Programmation" title="Programmation des sessions"></td>
+    <td><img src="docs/screenshots/config.png" alt="Configuration" title="Server configuration editor"></td>
+    <td><img src="docs/screenshots/scheduling.png" alt="Scheduling" title="Session scheduling"></td>
   </tr>
   <tr>
-    <td colspan="2"><img src="docs/screenshots/server-create.png" alt="Création de serveur" title="Création d'un serveur additionnel"></td>
+    <td colspan="2"><img src="docs/screenshots/server-create.png" alt="Server creation" title="Creating an additional server"></td>
   </tr>
   <tr>
-    <td colspan="2"><img src="docs/screenshots/collision-map.png" alt="Carte des accrochages" title="Carte des accrochages : le plan du circuit et la voiture en 3D"></td>
+    <td colspan="2"><img src="docs/screenshots/collision-map.png" alt="Collision map" title="Collision map: the track layout and the car in 3D"></td>
   </tr>
 </table>
 
 ---
 
-## Fonctionnalités
+## Features
 
-Organisées par niveau d'accès — chaque rôle hérite des fonctionnalités des rôles en dessous :
-Public ⊂ Pilote ⊂ Admin ⊂ Superadmin.
+Organized by access level — each role inherits the features of the roles below it:
+Public ⊂ Driver ⊂ Admin ⊂ Superadmin.
 
 <details>
-<summary><strong>Voir la matrice complète des droits</strong> (cliquer pour déplier)</summary>
+<summary><strong>See the full permissions matrix</strong> (click to expand)</summary>
 
-| Fonctionnalité | Public | Pilote | Admin | Superadmin |
+| Feature | Public | Driver | Admin | Superadmin |
 |---|:---:|:---:|:---:|:---:|
-| Accueil, résultats, classements, timing en direct | ✓ | ✓ | ✓ | ✓ |
-| Fair-play, ELO, championnats, carte des accrochages, exports CSV des classements | ✓ | ✓ | ✓ | ✓ |
-| Inscription pilote, mot de passe oublié | ✓ | ✓ | ✓ | ✓ |
-| Tableau de bord, inscription/désinscription aux événements | — | ✓ | ✓ | ✓ |
-| Historique personnel des tours, liaison Steam | — | ✓ | ✓ | ✓ |
-| Consulter / télécharger un mod véhicule | — | ✓ | ✓ | ✓ |
-| Démarrer / arrêter / redémarrer le serveur, logs, métriques | — | — | ✓ | ✓ |
-| Éditeur de config (circuit, météo, sessions, voitures), roulement | — | — | ✓ | ✓ |
-| Créer / publier un événement, gérer les inscriptions | — | — | ✓ | ✓ |
-| Approuver / rejeter un compte pilote | — | — | ✓ | ✓ |
-| Uploader / supprimer un mod, poser ses tags (catégorie, PI) | — | — | ✓ | ✓ |
-| Uploader une image véhicule / circuit | — | — | ✓ | ✓ |
-| Modération in-game : chat, kick, mute, pénalités, lest | — | — | ✓ | ✓ |
-| Gérer les championnats, l'accès au serveur (bannissements, lest), voir la santé du serveur | — | — | ✓ | ✓ |
-| Journal d'audit, sauvegarde / restauration, réglages d'accès et de sécurité | — | — | — | ✓ |
-| Variables `.env`, mise à jour SteamCMD du serveur de jeu | — | — | — | ✓ |
-| Créer / supprimer un serveur additionnel (multi-serveurs) | — | — | — | ✓ |
-| Créer / supprimer un compte admin, changer un rôle | — | — | — | ✓ |
+| Home, results, leaderboards, live timing | ✓ | ✓ | ✓ | ✓ |
+| Fair play, ELO, championships, collision map, CSV exports of leaderboards | ✓ | ✓ | ✓ | ✓ |
+| Driver sign-up, forgotten password | ✓ | ✓ | ✓ | ✓ |
+| Dashboard, event registration/unregistration | — | ✓ | ✓ | ✓ |
+| Personal lap history, Steam linking | — | ✓ | ✓ | ✓ |
+| View / download a vehicle mod | — | ✓ | ✓ | ✓ |
+| Start / stop / restart the server, logs, metrics | — | — | ✓ | ✓ |
+| Config editor (track, weather, sessions, cars), rotation | — | — | ✓ | ✓ |
+| Create / publish an event, manage registrations | — | — | ✓ | ✓ |
+| Approve / reject a driver account | — | — | ✓ | ✓ |
+| Upload / delete a mod, set its tags (category, PI) | — | — | ✓ | ✓ |
+| Upload a vehicle / track image | — | — | ✓ | ✓ |
+| In-game moderation: chat, kick, mute, penalties, ballast | — | — | ✓ | ✓ |
+| Manage championships, server access (bans, ballast), view server health | — | — | ✓ | ✓ |
+| Audit log, backup / restore, access and security settings | — | — | — | ✓ |
+| `.env` variables, SteamCMD update of the game server | — | — | — | ✓ |
+| Create / delete an additional server (multi-server) | — | — | — | ✓ |
+| Create / delete an admin account, change a role | — | — | — | ✓ |
 
 </details>
 
-**🌍 Public — aucun compte requis**
-- Page d'accueil : serveurs en direct (joueurs connectés, circuit en cours), calendrier des prochains événements, derniers résultats
-- Timing en direct par serveur, tours invalides signalés en temps réel (track limits, split manqué)
-- Chat in-game en direct sur la page timing (messages des joueurs, historique conservé 30 jours, réponses du serveur aux commandes admin visibles par les admins)
-- Réactions emoji vers le chat in-game depuis la page timing (envoyées avec un symbole que le jeu sait afficher)
-- Résultats de session détaillés : drapeaux, meilleurs tours, secteurs color-codés, gap au leader
-- Classement par circuit avec filtres (véhicule, catégorie, plage de performance/PI) et meilleur temps mis en avant
-- **Session en cours** sur le timing : nom de la session, phase (attente de départ, en cours, dernier tour, terminée) et temps restant estimé
-- **Incidents et sanctions** dans chaque résultat : contacts, murs, objets, chocs avec dégâts, sanctions de course (avec leur cause, le tour et le moment)
-- **Fair-play** : classement des pilotes à la conduite la plus propre (incidents par tour), avec un compteur que l'administrateur peut remettre à zéro
-- **ELO** : niveau des pilotes d'après leurs courses, dans l'esprit de Low Fuel Motorsport (informatif ; refus de participation sous un seuil possible, désactivé par défaut)
-- **Championnats** : points cumulés sur plusieurs courses (barème libre, bonus pole / meilleur tour, pires manches retirées, participation minimale), publics ou privés
-- **Carte des accrochages** : le plan du circuit et une voiture en 3D, reliés — chaque impact (mur, voiture, objet) s'affiche à l'endroit de la piste et de la voiture où il a eu lieu, avec sa vitesse, ses dégâts et les pilotes concernés ; filtres, vue densité (37 circuits calés)
-- **Contacts en direct** sur le timing (option) : qui vient de toucher qui, un mur ou un objet
-- **Direction de course** (admins, avec « Contacts en direct ») : tous les contacts de la session avec l'heure et le tour, bilan par pilote, pilotes « à surveiller » à partir de 3 contacts ; résumé optionnel sur Discord, un message par minute
-- Exports CSV : classement d'une session, fair-play, championnats
-- Inscription pilote (validation manuelle ensuite par un admin), confirmation d'email optionnelle
-- Interface multilingue : FR / EN / ES / DE / IT
+**🌍 Public — no account required**
+- Home page: live servers (connected players, current track), calendar of upcoming events, latest results
+- Live timing per server, invalid laps flagged in real time (track limits, missed split)
+- Live in-game chat on the timing page (player messages, history kept for 30 days, server replies to admin commands visible to admins)
+- Emoji reactions sent to the in-game chat from the timing page (sent as a symbol the game can display)
+- Detailed session results: flags, best laps, color-coded sectors, gap to the leader
+- Leaderboard per track with filters (vehicle, category, performance/PI range) and best time highlighted
+- **Current session** on the timing page: session name, phase (waiting for start, in progress, last lap, finished) and estimated time remaining
+- **Incidents and penalties** in each result: contacts, walls, objects, impacts with damage, race penalties (with their cause, the lap and the moment)
+- **Fair play**: ranking of the drivers with the cleanest driving (incidents per lap), with a counter the administrator can reset to zero
+- **ELO**: driver level based on their races, in the spirit of Low Fuel Motorsport (informational; refusing entry below a threshold is possible, disabled by default)
+- **Championships**: points accumulated over several races (custom scoring, pole / best lap bonuses, worst rounds dropped, minimum participation), public or private
+- **Collision map**: the track layout and a 3D car, linked — each impact (wall, car, object) is shown at the place on the track and on the car where it happened, with its speed, its damage and the drivers involved; filters, density view (37 tracks calibrated)
+- **Live contacts** on the timing page (option): who just touched whom, a wall or an object
+- **Race control** (admins, with "Live contacts"): all contacts of the session with the time and lap, summary per driver, "to watch" drivers from 3 contacts; optional summary on Discord, one message per minute
+- CSV exports: session leaderboard, fair play, championships
+- Driver sign-up (then manual validation by an admin), optional email confirmation
+- Multilingual interface: FR / EN / ES / DE / IT
 
-**🏎️ Pilote — compte connecté**
-- Tableau de bord : inscriptions à venir/passées, événements privés disponibles, désinscription tant que l'inscription est en attente
-- **Historique personnel des tours** : chaque tour roulé est enregistré en direct (temps, voiture, circuit), sans attendre la fin d'une session — au-delà d'une rétention configurable, l'historique est condensé en résumés mensuels plutôt que supprimé
-- Liaison de compte Steam (identité vérifiée, requise pour l'historique des tours)
-- Consultation de la bibliothèque de mods véhicules (upload réservé aux admins)
-- **Page publique « Mods »** : pour chaque serveur à mods, le pack et les fichiers à installer (ou le lien vers la page de l'auteur), sans compte
-- **Rejoindre un championnat en une minute** : connexion Steam, pseudo, email et voiture, inscription confirmée aux manches à venir du serveur
+**🏎️ Driver — signed-in account**
+- Dashboard: upcoming/past registrations, available private events, unregistration while the registration is pending
+- **Personal lap history**: every lap driven is recorded live (time, car, track), without waiting for the end of a session — beyond a configurable retention period, the history is condensed into monthly summaries rather than deleted
+- Steam account linking (verified identity, required for the lap history)
+- Browsing the vehicle mod library (upload reserved for admins)
+- **Public "Mods" page**: for each server with mods, the pack and the files to install (or the link to the author's page), without an account
+- **Join a championship in one minute**: Steam sign-in, nickname, email and car, registration confirmed for the server's upcoming rounds
 
 **🛠️ Admin**
-- Démarrage / arrêt / restart du serveur, watchdog auto-restart, logs et métriques CPU/RAM en direct
-- Éditeur de config JSON complet : circuit, météo, sessions (Practice / Qualifying / Warmup / Race), voitures
-- Banque de véhicules (97 voitures, catégories Road/Race/Track, filtres, images) et banque de circuits (36 circuits, layout, longueur, images), upload des images véhicules/circuits
-- **Gestion des mods véhicules** : upload multiple par glisser-déposer (`.kspkg`), tags manuels (catégorie, PI), image de couverture auto-détectée ou personnalisée, détection et signalement des conflits d'identifiant entre mods
-- **Mods par serveur** : chaque mod n'est chargé (et donc exigé des joueurs) que par les serveurs cochés ; pack client ou lien vers l'auteur par serveur
-- **Serveur réservé aux inscrits** : le bot prévient en anglais un pilote non inscrit puis l'expulse après un délai, accueille un inscrit et renvoie au stand celui qui n'a pas la voiture de son inscription ; un admin du panel n'est jamais expulsé
-- Roulement de configs avec file d'attente propre à chaque serveur, glisser-déposer, option cycle
-- Menu Admin en 4 groupes expliqués, recherche « Où régler… ? » (`Ctrl+K`) qui mène directement au bon réglage
-- Gestion complète des événements (création, publication, inscriptions, génération de l'`entry_list.json`) et des comptes pilotes (approbation/rejet)
-- Emails transactionnels (approbation, rejet, rappel)
-- Modération in-game depuis le panel : chat admin, kick, envoi aux stands, mute, pénalités, lest/restricteur, saut de session, **bannissement en direct** (`\ban`, enregistré dans la page Accès et signalé sur Discord)
-- **Modes de jeu supplémentaires** : course instantanée, tour lancé, rallye, A vers B, test drive
-- **Options de course** : course au nombre de tours, arrêt aux stands obligatoire (pneus / ravitaillement), sanctions personnalisées — toutes désactivées par défaut
-- **Page Accès** : liste blanche des pilotes approuvés, bannissement par SteamID, lest et restricteur par joueur, refus selon le niveau ELO (option)
-- **Avertissement de capacité** : si le nombre de joueurs dépasse celui des stands du circuit choisi
-- **Santé du serveur** : en marche ou non, joueurs, CPU, mémoire, redémarrages, disponibilité sur 24 h et courbes, espace disque, dernière sauvegarde
-- **Championnats** : création, choix des manches parmi les courses jouées, barème et bonus
-- Exports CSV : tous les résultats, pilotes
-- Élévation du bot du panel en admin in-game à la demande, redémarrage du container du serveur de jeu
+- Server start / stop / restart, auto-restart watchdog, live logs and CPU/RAM metrics
+- Full JSON config editor: track, weather, sessions (Practice / Qualifying / Warmup / Race), cars
+- Vehicle bank (97 cars, Road/Race/Track categories, filters, images) and track bank (36 tracks, layout, length, images), upload of vehicle/track images
+- **Vehicle mod management**: multiple upload by drag and drop (`.kspkg`), manual tags (category, PI), auto-detected or custom cover image, detection and reporting of identifier conflicts between mods
+- **Mods per server**: each mod is loaded (and therefore required from players) only by the servers that are checked; client pack or link to the author per server
+- **Registered-only server**: the bot warns an unregistered driver in English then kicks them after a delay, welcomes a registered one and sends back to the pits anyone who does not have the car of their registration; a panel admin is never kicked
+- Config rotation with a queue specific to each server, drag and drop, cycle option
+- Admin menu in 4 explained groups, "Where do I set…?" search (`Ctrl+K`) that leads straight to the right setting
+- Complete management of events (creation, publication, registrations, generation of `entry_list.json`) and driver accounts (approval/rejection)
+- Transactional emails (approval, rejection, reminder)
+- In-game moderation from the panel: admin chat, kick, send to the pits, mute, penalties, ballast/restrictor, session skip, **live ban** (`\ban`, recorded in the Access page and reported on Discord)
+- **Additional game modes**: quick race, hotlap, rally, A to B, test drive
+- **Race options**: race by number of laps, mandatory pit stop (tires / refueling), custom penalties — all disabled by default
+- **Access page**: whitelist of approved drivers, ban by SteamID, ballast and restrictor per player, refusal based on ELO level (option)
+- **Capacity warning**: if the number of players exceeds the number of pit boxes of the chosen track
+- **Server health**: running or not, players, CPU, memory, restarts, 24 h availability and charts, disk space, last backup
+- **Championships**: creation, choice of rounds among the races played, scoring and bonuses
+- CSV exports: all results, drivers
+- Elevation of the panel bot to in-game admin on demand, restart of the game server container
 
 **👑 Superadmin**
-- Toutes les variables `.env` éditables depuis l'interface, sans accès SSH
-- Gestion des comptes admin/superadmin (création, désactivation, suppression)
-- Multi-serveurs : création, activation/désactivation, suppression de serveurs — chacun dans son propre container Docker, avec son propre bot et son propre watchdog
-- **Mise à jour du serveur de jeu ACE EVO depuis l'interface** (SteamCMD, identifiants + code Steam Guard, suivi de progression en direct) — distincte de la mise à jour du panel lui-même
-- **Journal d'audit** : qui a fait quoi, quand et depuis quelle adresse (connexions, serveur, réglages, comptes, sauvegardes) — jamais de secret ; filtres, export CSV, conservation configurable
-- **Sauvegarde et restauration en un clic** : base, réglages, configurations, images ; sauvegarde automatique quotidienne ; restauration vérifiée (contenu, intégrité de la base, version) avec sauvegarde de sécurité préalable
-- **Double authentification** : réinitialisation du 2FA d'un compte (appareil perdu)
-- Upload des images véhicules/circuits
+- All `.env` variables editable from the interface, without SSH access
+- Management of admin/superadmin accounts (creation, deactivation, deletion)
+- Multi-server: creation, activation/deactivation, deletion of servers — each in its own Docker container, with its own bot and its own watchdog
+- **Update of the ACE EVO game server from the interface** (SteamCMD, credentials + Steam Guard code, live progress tracking) — separate from the update of the panel itself
+- **Audit log**: who did what, when and from which address (logins, server, settings, accounts, backups) — never any secret; filters, CSV export, configurable retention
+- **One-click backup and restore**: database, settings, configurations, images; automatic daily backup; verified restore (content, database integrity, version) with a prior safety backup
+- **Two-factor authentication**: reset of an account's 2FA (lost device)
+- Upload of vehicle/track images
 
-**🔒 Sécurité**
-- **Panel sans root** : dans son conteneur, le panel tourne sous un compte sans droits (uid 1000) ; les installations existantes sont converties au premier démarrage
-- CSRF, rate limiting, protection anti brute-force sur le login (blocage IP après 5 échecs), HSTS, CSP, X-Frame-Options
-- **Double authentification (TOTP)** pour les comptes administrateurs : Google Authenticator, Aegis, 2FAS, Bitwarden… avec QR code, 10 codes de secours à usage unique, codes non rejouables
-- **Journal d'audit** de toutes les actions d'administration
-- **Ingestion des résultats authentifiée** : le serveur de jeu s'identifie par un jeton propre à l'installation, avec ou sans reverse proxy ; toute requête passée par un proxy sans jeton est refusée
-- **IP réelle des visiteurs** derrière un reverse proxy (`TRUSTED_PROXIES`) : limite de débit et anti-brute-force par visiteur, pas par proxy
-- Dépendances à jour (contrôle `pip-audit`), restauration de sauvegarde protégée contre les archives piégées
+**🔒 Security**
+- **Rootless panel**: inside its container, the panel runs under an unprivileged account (uid 1000); existing installations are converted at first startup
+- CSRF, rate limiting, brute-force protection on the login (IP block after 5 failures), HSTS, CSP, X-Frame-Options
+- **Two-factor authentication (TOTP)** for administrator accounts: Google Authenticator, Aegis, 2FAS, Bitwarden… with QR code, 10 single-use backup codes, non-replayable codes
+- **Audit log** of all administration actions
+- **Authenticated results ingestion**: the game server identifies itself with a token specific to the installation, with or without a reverse proxy; any request that went through a proxy without a token is refused
+- **Real visitor IP** behind a reverse proxy (`TRUSTED_PROXIES`): rate limiting and brute-force protection per visitor, not per proxy
+- Up-to-date dependencies (`pip-audit` check), backup restore protected against booby-trapped archives
 
-**🔔 Notifications Discord**
-- Webhooks configurables par serveur : démarrage/arrêt/crash, connexions joueurs, meilleur tour, actions admin — avec fallback sur le webhook global
-- Messages lisibles : serveur en en-tête, heure affichée dans le fuseau de chaque lecteur, noms de voitures et de circuits en clair, pseudo cliquable vers Steam, record du serveur rappelé avec le meilleur tour, message de plantage qui passe au vert quand le serveur repart
-- **Récapitulatif de fin de session** (option) : podium, meilleur tour, incidents et sanctions regroupés par pilote ; notification des bannissements
+**🔔 Discord notifications**
+- Webhooks configurable per server: start/stop/crash, player connections, best lap, admin actions — with fallback to the global webhook
+- Readable messages: server in the header, time shown in each reader's time zone, car and track names in plain language, clickable nickname linking to Steam, server record recalled with the best lap, crash message that turns green when the server comes back up
+- **End-of-session summary** (option): podium, best lap, incidents and penalties grouped by driver; ban notifications
 
 **🎨 Interface**
-- **Thème clair et thème foncé** (bouton soleil/lune ; suit le réglage de l'appareil par défaut), lisible sur téléphone
-- UI Tailwind CSS v3 + HTMX + Alpine.js — actions sans rechargement, toasts temps réel, transitions fluides
-- Fuseau horaire configurable, statut rafraîchi toutes les 5 s
-- Footer avec version, git hash et liens GitHub
+- **Light and dark theme** (sun/moon button; follows the device setting by default), readable on a phone
+- Tailwind CSS v3 + HTMX + Alpine.js UI — actions without page reload, real-time toasts, smooth transitions
+- Configurable time zone, status refreshed every 5 s
+- Footer with version, git hash and GitHub links
 
 ---
 
@@ -188,11 +190,11 @@ Public ⊂ Pilote ⊂ Admin ⊂ Superadmin.
 
 > 📖 **Pas à pas avec captures / step-by-step guide with screenshots (English):** [Getting started](https://github.com/Zyphro3D/pannel-ac-evo-server/wiki/Getting-Started)
 >
-> 🎬 **Tuto vidéo (8 min) :** [en français](https://youtu.be/gVG6A2pLf04) · [in English](https://youtu.be/8FkRYu5EXPA) : installation, premiers pas, serveur, mods, pilotes, événements, direct et résultats.
+> 🎬 **Video tutorial (8 min):** [in English](https://youtu.be/8FkRYu5EXPA) · [en français](https://youtu.be/gVG6A2pLf04): installation, first steps, server, mods, drivers, events, live and results.
 
-Une seule commande installe le panel et son serveur de jeu (Docker, Wine compris) ; **la même commande le met à jour**. Rien à cloner, rien à configurer à la main : clés et mots de passe sont générés, et le panel installe lui-même SteamCMD puis vous propose de télécharger le serveur ACE EVO dès la première connexion — il suffit de saisir votre compte Steam.
+A single command installs the panel and its game server (Docker, Wine included); **the same command updates it**. Nothing to clone, nothing to configure by hand: keys and passwords are generated, and the panel installs SteamCMD itself and then offers to download the ACE EVO server at first login — you just enter your Steam account.
 
-**Prérequis** : un compte Steam qui possède Assetto Corsa EVO (le compte anonyme de Steam n'a pas accès au serveur).
+**Requirements**: a Steam account that owns Assetto Corsa EVO (Steam's anonymous account cannot access the server).
 
 ### 🐧 Linux (Debian, Ubuntu…)
 
@@ -200,56 +202,56 @@ Une seule commande installe le panel et son serveur de jeu (Docker, Wine compris
 curl -fsSL https://raw.githubusercontent.com/Zyphro3D/pannel-ac-evo-server/master/install.sh | sudo bash
 ```
 
-Docker est proposé à l'installation s'il manque. Le panel s'installe dans `/opt/pannel-ac-evo-server` (option `--dir`).
+Docker is offered during installation if it is missing. The panel is installed in `/opt/pannel-ac-evo-server` (option `--dir`).
 
 ### 🪟 Windows 10 / 11
 
-Dans **Terminal (administrateur)** (clic droit sur Démarrer) :
+In **Terminal (administrator)** (right-click on Start):
 
 ```powershell
 irm https://raw.githubusercontent.com/Zyphro3D/pannel-ac-evo-server/master/install.ps1 | iex
 ```
 
-Docker Desktop est installé (winget) s'il manque : redémarrez alors Windows, ouvrez Docker Desktop une fois, et relancez la commande. Le script ouvre aussi les ports du panel et du jeu dans le pare-feu Windows (réseau privé). Le panel s'installe dans `%USERPROFILE%\ace-evo-panel`.
+Docker Desktop is installed (winget) if it is missing: then restart Windows, open Docker Desktop once, and run the command again. The script also opens the panel and game ports in the Windows firewall (private network). The panel is installed in `%USERPROFILE%\ace-evo-panel`.
 
-> **Docker Desktop doit rester lancé** pour que le panel et le serveur tournent : activez *Settings → General → Start Docker Desktop when you sign in to your computer*.
+> **Docker Desktop must stay running** for the panel and the server to run: enable *Settings → General → Start Docker Desktop when you sign in to your computer*.
 
-### Ensuite
+### Next steps
 
-1. À la fin, le script affiche l'adresse du panel (`http://IP:4300`) et les identifiants générés (aussi dans le fichier `.env`) : **changez les mots de passe** dans le panel.
-2. Connectez-vous en **superadmin** : le panel propose de télécharger le serveur ACE EVO. Saisissez votre compte Steam (identifiant, mot de passe, code Steam Guard si demandé) — rien n'est conservé.
-3. Démarrez le serveur depuis la page **Serveur**. Au premier démarrage, le runtime Visual C++ nécessaire au serveur sous Wine s'installe tout seul (une à deux minutes).
+1. At the end, the script displays the panel address (`http://IP:4300`) and the generated credentials (also in the `.env` file): **change the passwords** in the panel.
+2. Sign in as **superadmin**: the panel offers to download the ACE EVO server. Enter your Steam account (username, password, Steam Guard code if requested) — nothing is stored.
+3. Start the server from the **Server** page. At first startup, the Visual C++ runtime needed by the server under Wine installs by itself (one to two minutes).
 
-Premier lancement : environ 10 minutes (construction des images).
+First launch: about 10 minutes (building the images).
 
-### Ouvrir les ports (accès depuis internet)
+### Opening the ports (access from the internet)
 
-Configurez une redirection de ports sur votre box/routeur vers l'IP locale de votre serveur.
+Set up port forwarding on your box/router to the local IP of your server.
 
-| Port | Protocole | Usage |
+| Port | Protocol | Usage |
 |---|---|---|
-| `9700` | UDP + TCP | Connexions des joueurs (serveur de jeu ACE EVO) |
-| `8081` | TCP | API HTTP ACE EVO — enregistrement Kunos (liste publique des serveurs) |
-| `4300` | TCP | Interface web du panel — HTTP direct |
-| `443` | TCP | Interface web du panel — HTTPS (Let's Encrypt ou reverse proxy) |
+| `9700` | UDP + TCP | Player connections (ACE EVO game server) |
+| `8081` | TCP | ACE EVO HTTP API — Kunos registration (public server list) |
+| `4300` | TCP | Panel web interface — direct HTTP |
+| `443` | TCP | Panel web interface — HTTPS (Let's Encrypt or reverse proxy) |
 
-> **Multi-serveur** : chaque serveur supplémentaire utilise ses propres ports (ex. serveur 2 : 9701 TCP/UDP + 8082 HTTP). Ouvrez les ports correspondants.
+> **Multi-server**: each additional server uses its own ports (e.g. server 2: 9701 TCP/UDP + 8082 HTTP). Open the corresponding ports.
 
-### Accès HTTPS (optionnel)
+### HTTPS access (optional)
 
-**Mode 1 — HTTP direct** (défaut, aucune config supplémentaire)
+**Mode 1 — Direct HTTP** (default, no extra configuration)
 ```
 http://IP:4300
 ```
 
-**Mode 2 — HTTPS intégré via Let's Encrypt**
+**Mode 2 — Built-in HTTPS via Let's Encrypt**
 
 ```bash
 sudo apt install certbot
 sudo certbot certonly --standalone -d votre-domaine.fr
 ```
 
-Dans `.env` :
+In `.env`:
 ```env
 PANEL_PORT=443
 SSL_CERTFILE=/etc/letsencrypt/live/votre-domaine.fr/fullchain.pem
@@ -257,19 +259,19 @@ SSL_KEYFILE=/etc/letsencrypt/live/votre-domaine.fr/privkey.pem
 SESSION_COOKIE_SECURE=true
 ```
 
-Dans `docker-compose.yml`, décommentez la ligne :
+In `docker-compose.yml`, uncomment the line:
 ```yaml
 - /etc/letsencrypt:/etc/letsencrypt:ro
 ```
 
-Après chaque renouvellement du certificat :
+After each certificate renewal:
 ```bash
 docker compose up -d panel
 ```
 
 **Mode 3 — Reverse proxy (Nginx, Caddy…)**
 
-Laissez le panel sur HTTP port 4300 et gérez le SSL côté reverse proxy. Assurez-vous que `SESSION_COOKIE_SECURE=true` est défini dans `.env`.
+Leave the panel on HTTP port 4300 and handle SSL on the reverse proxy side. Make sure `SESSION_COOKIE_SECURE=true` is set in `.env`.
 
 ### Architecture
 
@@ -289,7 +291,7 @@ Volumes persistants :
   steam_session                   (fichiers de travail de SteamCMD)
 ```
 
-**Structure du dossier `aceserver/` :**
+**Structure of the `aceserver/` folder:**
 ```
 aceserver/
 ├── AssettoCorsaEVOServer.exe   ← téléchargé par le panel (SteamCMD), non versionné
@@ -308,129 +310,129 @@ aceserver/
 
 ## Configuration
 
-Référence complète des variables `.env` (voir aussi `.env.example`) :
+Complete reference of the `.env` variables (see also `.env.example`):
 
-### Général
+### General
 
-| Variable | Description | Défaut |
+| Variable | Description | Default |
 |---|---|---|
-| `SECRET_KEY` | Clé secrète Flask — **obligatoire en production** | — |
-| `ADMIN_USERNAME` / `ADMIN_PASSWORD` | Compte admin | `admin` / — |
-| `SUPERADMIN_USERNAME` / `SUPERADMIN_PASSWORD` | Compte superadmin | `superadmin` / — |
-| `PANEL_URL` | URL publique (liens dans les emails) | `http://localhost:4300` |
-| `PANEL_TIMEZONE` | Fuseau horaire | `Europe/Paris` |
-| `DEFAULT_LOCALE` | Langue par défaut (`fr` / `en` / `es` / `de` / `it`) | `fr` |
-| `SESSION_COOKIE_SECURE` | `true` derrière HTTPS, `false` en HTTP direct | `true` |
-| `PANEL_PORT` | Port d'écoute du panel | `4300` |
-| `PANEL_GITHUB_URL` | URL GitHub du projet (affichée dans le footer) | dépôt officiel |
-| `RESULTS_INGEST_SECRET` | Secret HMAC du webhook résultats (`/api/results/ingest`). Facultatif : le serveur de jeu s'authentifie déjà par le jeton `sig` de l'URL que le panel lui donne, ou par le réseau interne (Docker / localhost) ; toute requête passée par un reverse proxy est refusée | — |
-| `TRUSTED_PROXIES` | Reverse proxys autorisés à indiquer l'IP réelle du visiteur (adresses ou réseaux CIDR, séparés par des virgules). **Derrière Caddy/nginx/Cloudflare**, indiquer l'adresse du proxy vue par le panel : sans cela, limite de débit et anti-brute-force du login sont partagés par tous les visiteurs. Panel exposé directement : laisser vide | — |
-| `BACKUP_AUTO` / `BACKUP_KEEP` | Sauvegarde automatique quotidienne du panel (base, réglages, configurations, images) et nombre de sauvegardes automatiques conservées | `true` / `7` |
-| `PANEL_RUN_AS_ROOT` | `1` = le panel reste en root dans son conteneur, comme avant la 2.6.0 (à réserver aux montages que le compte `panel` ne peut pas lire) | — |
-| `AUDIT_RETENTION_DAYS` | Durée de conservation du journal d'audit, en jours | `365` |
-| `RATING_ENFORCE` / `RATING_MIN_TO_JOIN` / `RATING_MIN_RACES` | Refus des pilotes définitifs dont l'ELO est sous le seuil (liste noire du serveur de jeu, nécessite le contrôle d'accès) ; réglé depuis la page Accès | `false` / `0` / `5` |
-| `LIVE_COLLISIONS` | Affiche les derniers contacts sur le timing : lance le serveur de jeu avec `-log_debug gameplay` (une douzaine de lignes de log par session) ; pris en compte au prochain démarrage du serveur de jeu | `false` |
-| `ACCESS_CONTROL_ENABLED` / `ACCESS_APPROVED_ONLY` | Contrôle d'accès au serveur de jeu (liste blanche des pilotes approuvés, bannissements, lest et restricteur) ; réglé depuis la page Accès | `false` / `false` |
-| `SERVER_ENTRY_LIST_PATH` | Chemin d'un fichier d'engagés défini à la main : il reste prioritaire sur le contrôle d'accès | — |
-| `LAP_HISTORY_RETENTION_MONTHS` | Nombre de mois de conservation détaillée de l'historique des tours pilote, au-delà archivé en résumé mensuel | `6` |
+| `SECRET_KEY` | Flask secret key — **required in production** | — |
+| `ADMIN_USERNAME` / `ADMIN_PASSWORD` | Admin account | `admin` / — |
+| `SUPERADMIN_USERNAME` / `SUPERADMIN_PASSWORD` | Superadmin account | `superadmin` / — |
+| `PANEL_URL` | Public URL (links in emails) | `http://localhost:4300` |
+| `PANEL_TIMEZONE` | Time zone | `Europe/Paris` |
+| `DEFAULT_LOCALE` | Default language (`fr` / `en` / `es` / `de` / `it`) | `fr` |
+| `SESSION_COOKIE_SECURE` | `true` behind HTTPS, `false` on direct HTTP | `true` |
+| `PANEL_PORT` | Panel listening port | `4300` |
+| `PANEL_GITHUB_URL` | GitHub URL of the project (shown in the footer) | official repository |
+| `RESULTS_INGEST_SECRET` | HMAC secret of the results webhook (`/api/results/ingest`). Optional: the game server already authenticates with the `sig` token in the URL the panel gives it, or through the internal network (Docker / localhost); any request that went through a reverse proxy is refused | — |
+| `TRUSTED_PROXIES` | Reverse proxies allowed to indicate the visitor's real IP (addresses or CIDR networks, comma-separated). **Behind Caddy/nginx/Cloudflare**, set the proxy address as seen by the panel: without it, rate limiting and login brute-force protection are shared by all visitors. Panel exposed directly: leave empty | — |
+| `BACKUP_AUTO` / `BACKUP_KEEP` | Automatic daily backup of the panel (database, settings, configurations, images) and number of automatic backups kept | `true` / `7` |
+| `PANEL_RUN_AS_ROOT` | `1` = the panel stays root in its container, as before 2.6.0 (reserve for mounts that the `panel` account cannot read) | — |
+| `AUDIT_RETENTION_DAYS` | Audit log retention period, in days | `365` |
+| `RATING_ENFORCE` / `RATING_MIN_TO_JOIN` / `RATING_MIN_RACES` | Refusal of established drivers whose ELO is below the threshold (game server blacklist, requires access control); set from the Access page | `false` / `0` / `5` |
+| `LIVE_COLLISIONS` | Shows the latest contacts on the timing page: starts the game server with `-log_debug gameplay` (about a dozen log lines per session); applied at the next game server start | `false` |
+| `ACCESS_CONTROL_ENABLED` / `ACCESS_APPROVED_ONLY` | Access control for the game server (whitelist of approved drivers, bans, ballast and restrictor); set from the Access page | `false` / `false` |
+| `SERVER_ENTRY_LIST_PATH` | Path of a hand-defined entry list file: it keeps priority over access control | — |
+| `LAP_HISTORY_RETENTION_MONTHS` | Number of months the driver lap history is kept in detail, after which it is archived as a monthly summary | `6` |
 
-### Serveur de jeu
+### Game server
 
-| Variable | Description | Défaut |
+| Variable | Description | Default |
 |---|---|---|
-| `ACESERVER_HTTP_PORT` | Port HTTP de l'API ACE EVO (Kunos registration) | `8081` |
-| `ACESERVER_TCP_HOST` | Hôte TCP ACE EVO | `127.0.0.1` |
-| `ACESERVER_TCP_PORT` | Port TCP ACE EVO | `9700` |
-| `SERVER_NAME` | Nom affiché dans la liste des serveurs ACE EVO | `ACE EVO Server` |
-| `SERVER_MAX_PLAYERS` | Nombre maximum de joueurs | `8` |
+| `ACESERVER_HTTP_PORT` | HTTP port of the ACE EVO API (Kunos registration) | `8081` |
+| `ACESERVER_TCP_HOST` | ACE EVO TCP host | `127.0.0.1` |
+| `ACESERVER_TCP_PORT` | ACE EVO TCP port | `9700` |
+| `SERVER_NAME` | Name shown in the ACE EVO server list | `ACE EVO Server` |
+| `SERVER_MAX_PLAYERS` | Maximum number of players | `8` |
 
-### Bot TCP in-game *(optionnel)*
+### In-game TCP bot *(optional)*
 
-Le bot TCP se connecte au serveur ACE EVO pour envoyer des messages de bienvenue, détecter les meilleurs tours et alimenter le timing en direct.
+The TCP bot connects to the ACE EVO server to send welcome messages, detect best laps and feed the live timing.
 
-| Variable | Description | Défaut |
+| Variable | Description | Default |
 |---|---|---|
-| `ACE_BOT_STEAM_ID` | Steam ID du compte bot — **laisser vide pour désactiver** | — |
-| `ACE_BOT_CAR_MODEL` | Modèle de voiture utilisé par le bot pour la connexion | `preset_190_evo_ii` |
-| `ACE_BOT_IS_ADMIN` | `true` pour envoyer automatiquement `\admin <password>` à la connexion | `false` |
-| `ACE_BOT_NAME` | Nom affiché comme expéditeur des messages du bot dans le chat du jeu (le bot occupe alors une place de stand) | — (« LoadingPlayer ») |
-| `ACE_BOT_WELCOME_DELAY` | Délai en secondes avant les messages d'accueil | `20` |
-| `ACE_BOT_MSG_WELCOME` | Message de bienvenue (variables : `{name}`, `{discord_url}`, `{site_url}`) | — |
-| `ACE_BOT_MSG_DISCORD` | Message Discord envoyé si `DISCORD_INVITE_URL` est défini | — |
-| `ACE_BOT_MSG_SITE` | Message site envoyé si `PANEL_URL` est défini | — |
+| `ACE_BOT_STEAM_ID` | Steam ID of the bot account — **leave empty to disable** | — |
+| `ACE_BOT_CAR_MODEL` | Car model used by the bot to connect | `preset_190_evo_ii` |
+| `ACE_BOT_IS_ADMIN` | `true` to automatically send `\admin <password>` on connection | `false` |
+| `ACE_BOT_NAME` | Name displayed as the sender of the bot's messages in the game chat (the bot then takes up a pit box) | — ("LoadingPlayer") |
+| `ACE_BOT_WELCOME_DELAY` | Delay in seconds before the welcome messages | `20` |
+| `ACE_BOT_MSG_WELCOME` | Welcome message (variables: `{name}`, `{discord_url}`, `{site_url}`) | — |
+| `ACE_BOT_MSG_DISCORD` | Discord message sent if `DISCORD_INVITE_URL` is set | — |
+| `ACE_BOT_MSG_SITE` | Site message sent if `PANEL_URL` is set | — |
 
-> **Multi-serveur** : un bot indépendant est démarré automatiquement pour chaque serveur activé. Chaque bot se connecte au container ACE EVO correspondant sur son port interne.
+> **Multi-server**: an independent bot is started automatically for each enabled server. Each bot connects to the matching ACE EVO container on its internal port.
 
-### HTTPS / SSL *(optionnel)*
+### HTTPS / SSL *(optional)*
 
 | Variable | Description |
 |---|---|
-| `SSL_CERTFILE` | Chemin vers le certificat (ex: `/etc/letsencrypt/live/domain/fullchain.pem`) |
-| `SSL_KEYFILE` | Chemin vers la clé privée (ex: `/etc/letsencrypt/live/domain/privkey.pem`) |
+| `SSL_CERTFILE` | Path to the certificate (e.g. `/etc/letsencrypt/live/domain/fullchain.pem`) |
+| `SSL_KEYFILE` | Path to the private key (e.g. `/etc/letsencrypt/live/domain/privkey.pem`) |
 
-> Si les deux variables sont renseignées, le panel démarre en HTTPS via gunicorn. Sinon, il utilise waitress en HTTP.
+> If both variables are set, the panel starts in HTTPS via gunicorn. Otherwise, it uses waitress over HTTP.
 
-### Discord *(optionnel)*
+### Discord *(optional)*
 
 | Variable | Description |
 |---|---|
-| `DISCORD_WEBHOOK_URL` | Webhook principal (démarrage / arrêt / crash) |
-| `DISCORD_PILOTS_WEBHOOK_URL` | Webhook pilotes — fallback sur le principal si vide |
-| `DISCORD_RACE_WEBHOOK_URL` | Webhook course — fallback sur le principal si vide |
-| `DISCORD_INVITE_URL` | Lien d'invitation affiché sur la page d'accueil |
-| `DISCORD_NOTIFY_SESSION_SUMMARY` | Récapitulatif de fin de session sur le webhook course (podium, meilleur tour, incidents, sanctions) | `false` |
-| `DISCORD_NOTIFY_CONTACTS` | Contacts avec dégâts sur le webhook course, regroupés en un message par minute (demande « Contacts en direct ») | `false` |
+| `DISCORD_WEBHOOK_URL` | Main webhook (start / stop / crash) |
+| `DISCORD_PILOTS_WEBHOOK_URL` | Drivers webhook — falls back to the main one if empty |
+| `DISCORD_RACE_WEBHOOK_URL` | Race webhook — falls back to the main one if empty |
+| `DISCORD_INVITE_URL` | Invitation link shown on the home page |
+| `DISCORD_NOTIFY_SESSION_SUMMARY` | End-of-session summary on the race webhook (podium, best lap, incidents, penalties) | `false` |
+| `DISCORD_NOTIFY_CONTACTS` | Contacts with damage on the race webhook, grouped in one message per minute (requires "Live contacts") | `false` |
 
-### Emails *(optionnel)*
+### Emails *(optional)*
 
-| Variable | Description | Défaut |
+| Variable | Description | Default |
 |---|---|---|
-| `MAIL_SERVER` | Serveur SMTP — vide pour désactiver | — |
-| `MAIL_PORT` | Port SMTP | `587` |
+| `MAIL_SERVER` | SMTP server — empty to disable | — |
+| `MAIL_PORT` | SMTP port | `587` |
 | `MAIL_USE_TLS` | STARTTLS | `true` |
-| `MAIL_USERNAME` / `MAIL_PASSWORD` | Identifiants SMTP | — |
-| `MAIL_FROM` | Adresse expéditeur | — |
-| `MAIL_ADMIN` | Adresse(s) admin pour les notifications (virgule) | — |
+| `MAIL_USERNAME` / `MAIL_PASSWORD` | SMTP credentials | — |
+| `MAIL_FROM` | Sender address | — |
+| `MAIL_ADMIN` | Admin address(es) for notifications (comma-separated) | — |
 
 ---
 
-## Mise à jour
+## Update
 
-**Depuis le panel** : *Admin → Mise à jour*, bouton « Mettre à jour » (superadmin). Chaque version est signée ; la machine vérifie signature et empreinte, reconstruit, redémarre et revient à la version précédente si le panel ne répond plus. Cette fonction s'active en lançant une fois la commande d'installation ci-dessous (elle installe l'agent de mise à jour : service systemd sous Linux, tâche planifiée à l'ouverture de session sous Windows).
+**From the panel**: *Admin → Mise à jour*, "Mettre à jour" button (superadmin). Each version is signed; the machine checks the signature and fingerprint, rebuilds, restarts and goes back to the previous version if the panel stops responding. This feature is enabled by running the installation command below once (it installs the update agent: a systemd service on Linux, a scheduled task at sign-in on Windows).
 
-**À la main** : relancez la commande d'installation (Linux : `curl … install.sh | sudo bash`, Windows : `irm … install.ps1 | iex`) : elle télécharge la dernière version, vérifie son empreinte SHA-256, remplace le code et reconstruit les containers.
+**By hand**: run the installation command again (Linux: `curl … install.sh | sudo bash`, Windows: `irm … install.ps1 | iex`): it downloads the latest version, checks its SHA-256 fingerprint, replaces the code and rebuilds the containers.
 
-Le `.env`, la base de données, les configurations et les fichiers du jeu ne sont jamais modifiés par une mise à jour. Les migrations de schéma s'appliquent automatiquement au démarrage.
+The `.env`, the database, the configurations and the game files are never modified by an update. Schema migrations are applied automatically at startup.
 
-> **Installation faite avec `git clone`** : `git pull` puis `docker compose up -d --build` fonctionne toujours ; le script d'installation peut aussi être lancé dans le même dossier (`--dir`), vos réglages sont conservés.
+> **Installation done with `git clone`**: `git pull` then `docker compose up -d --build` still works; the installation script can also be run in the same folder (`--dir`), your settings are kept.
 
-> **Rebuild complet et multi-serveur** : `docker-compose.override.yml` est auto-généré par le panel et référence tous vos serveurs additionnels. Un `docker compose up -d --build` reconstruit **tous** les containers (principal + additionnels) sans intervention manuelle.
+> **Full rebuild and multi-server**: `docker-compose.override.yml` is auto-generated by the panel and references all your additional servers. A `docker compose up -d --build` rebuilds **all** containers (main + additional) without manual intervention.
 
-> **Personnalisations Docker locales** : ne modifiez pas `docker-compose.yml` directement — vos changements seraient écrasés à chaque mise à jour. Utilisez `docker-compose.override.yml` à la place (Docker Compose le fusionne automatiquement). Notez que le panel régénère ce fichier pour la section `services` des serveurs additionnels ; ajoutez vos surcharges dans une section séparée.
+> **Local Docker customizations**: do not modify `docker-compose.yml` directly — your changes would be overwritten at every update. Use `docker-compose.override.yml` instead (Docker Compose merges it automatically). Note that the panel regenerates this file for the `services` section of the additional servers; add your overrides in a separate section.
 
-> **Configs serveur** : les fichiers `aceserver/configs/*.json` sont créés et gérés par le panel, ils ne sont pas versionnés. Une mise à jour ne les modifiera jamais.
+> **Server configs**: the `aceserver/configs/*.json` files are created and managed by the panel, they are not versioned. An update will never modify them.
 
-> **Ceci met à jour le panel, pas le serveur de jeu.** Pour mettre à jour ACE EVO Server lui-même (nouveau build Steam), utilisez le bouton de mise à jour dans l'interface (superadmin) — il lance SteamCMD avec suivi de progression, sans passer par la ligne de commande.
+> **This updates the panel, not the game server.** To update ACE EVO Server itself (new Steam build), use the update button in the interface (superadmin) — it runs SteamCMD with progress tracking, without going through the command line.
 
 ---
 
 ## Changelog
 
-Voir [CHANGELOG.md](CHANGELOG.md) pour l'historique complet des versions.
+See [CHANGELOG.md](CHANGELOG.md) for the complete version history.
 
 ---
 
-## Soutenir le projet
+## Supporting the project
 
-Le panel est développé sur le temps libre, distribué gratuitement, et maintenu activement.
-Si vous l'utilisez pour vos courses ou votre club, le soutien sur Patreon aide à financer les prochaines fonctionnalités.
+The panel is developed in spare time, distributed openly, and actively maintained.
+If you use it for your races or your club, support on Patreon helps fund upcoming features.
 
-<a href="https://patreon.com/Zyphro"><strong>Soutenir Zyphro sur Patreon</strong></a>
+<a href="https://patreon.com/Zyphro"><strong>Support Zyphro on Patreon</strong></a>
 
 ---
 
-## Licence
+## License
 
-[Elastic License 2.0](LICENSE) — vous pouvez utiliser, copier, modifier et redistribuer le panel, y compris pour un club ou une communauté qui encaisse des inscriptions. Il est interdit de le proposer à des tiers comme service hébergé ou géré (revendre l’accès au panel) et de retirer les mentions de licence. © 2026 Florian Praturlon. Les versions publiées jusqu’à la v2.3.0 restent sous CC BY-NC 4.0 pour celles et ceux qui les ont reçues.
+[Elastic License 2.0](LICENSE) — you can use, copy, modify and redistribute the panel, including for a club or a community that collects registration fees. It is forbidden to offer it to third parties as a hosted or managed service (reselling access to the panel) and to remove the license notices. © 2026 Florian Praturlon. Versions published up to v2.3.0 remain under CC BY-NC 4.0 for those who received them.
 
-> **Crédits Wine** : approche Docker inspirée de [VandaLpr/acevo-docker-server](https://github.com/VandaLpr/acevo-docker-server).
+> **Wine credits**: Docker approach inspired by [VandaLpr/acevo-docker-server](https://github.com/VandaLpr/acevo-docker-server).
