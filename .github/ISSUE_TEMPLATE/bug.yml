@@ -1,0 +1,44 @@
+name: Bug report
+description: Something does not work as expected in EVO Panel
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! Please remove passwords, tokens, webhook URLs and IP addresses from anything you paste.
+        Français accepté.
+  - type: input
+    id: version
+    attributes:
+      label: Panel version
+      description: Shown at the bottom of every page (for example v2.8.3).
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Host system
+      options: [Linux, Windows 10 / 11 (Docker Desktop), Other]
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, and what you got instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Go to …
+        2. Click on …
+        3. See …
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots
+      description: "Panel logs: `docker compose logs panel --tail 100` in the install folder."
+      render: text

@@ -1,0 +1,16 @@
+name: Feature request
+description: Suggest an idea for EVO Panel
+labels: [enhancement]
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: What do you need?
+      description: The problem you want to solve, as seen from your server or your drivers.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your idea
+      description: How you picture it in the panel (optional).

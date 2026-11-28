@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Help and questions (Discord)
+    url: https://discord.gg/bqfRZhG5MS
+    about: Setup questions and quick help, in English or French.
+  - name: Getting started guide
+    url: https://github.com/Zyphro3D/pannel-ac-evo-server/wiki/Getting-Started
+    about: Step-by-step install guide with screenshots.
+  - name: Video tutorial
+    url: https://youtu.be/8FkRYu5EXPA
+    about: The whole setup in 8 minutes (French version https://youtu.be/gVG6A2pLf04).
