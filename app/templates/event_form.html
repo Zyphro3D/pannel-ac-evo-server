@@ -346,8 +346,8 @@
 {% block scripts %}
 <script nonce="{{ csp_nonce }}">
 function updateCircuitDisplay(sel) {
-  const opt = sel.options[sel.selectedIndex];
-  document.getElementById('circuit-display').value = opt.dataset.display || '';
+  const opt = sel && sel.options[sel.selectedIndex];   // liste vide (aucun circuit connu) : rien à afficher
+  document.getElementById('circuit-display').value = (opt && opt.dataset.display) || '';
 }
 
 function onModeChange(val) {
